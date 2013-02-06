@@ -263,9 +263,13 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
 	BEGIN
 		typ := dcl^.typ; prev := typ;
-		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & (typ^.form # NoTyp)
-			& ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr)) DO
-			prev := typ; typ := typ^.BaseTyp
+		LOOP
+			IF ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record)
+				& (typ^.form # NoTyp) & ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr)) THEN
+				IF typ = typ^.BaseTyp THEN OPM.WriteString(prev^.strobj^.name); EXIT END;
+				prev := typ; typ := typ^.BaseTyp
+			ELSE EXIT
+			END;
 		END ;
 		obj := typ^.strobj;
 		IF typ^.form = NoTyp THEN	(* proper procedure *)
