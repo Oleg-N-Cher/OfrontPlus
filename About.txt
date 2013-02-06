@@ -1,0 +1,35 @@
+OfrontTM 1.2.3 for Windows (under BlackBox 1.6rc6)
+==================================================
+
+It's my own fork of Ofront for Windows/BlackBox.
+
+Installation
+------------
+
+There are two ways to install.
+
+1. Download and unpack BB-XDev, Ofront is present there as a subsystem.
+
+   https://github.com/Oleg-N-Cher/BB-XDev/
+
+2. Unpack the folder "Ofront" from the distribution archive to BlackBox root.
+   Unpack the folder "Nav" from "Ofront/Arch/Ofront for Windows/ofrontBB1.4.zip" to BlackBox root.
+   Open "Ofront/Docu/Rebuild-Ofront.odc" and press the commander to rebuild the Ofront.
+
+
+Differences from the original ver. from Josef Templ, Software Templ OG
+======================================================================
+
+- Added support for character '_' in identifiers. Use this feature with caution, and only when absolutely necessary (for WinApi constants, etc). Remember, this character is not present in the standards of Oberon/Oberon-2.
+
+- Added very basic support for unsigned data types - SYSTEM.SHORTCARD, SYSTEM.CARDINAL, SYSTEM.LONGCARD. Still are problems: assignments to UType if value > MAX(corresponding SType), MIN/MAX(UType), export/import UTypes.
+
+- Set Ofront default option 'allow interface change' to On. Set object files (*.h, *.c, *.sym) directory to 'Ofront/Obj'.
+
+- You can use F11 (in BlackBox) to translate a source through Ofront.
+
+
+-- 
+Oleg N. Cher
+VEDAsoft Oberon Club
+http://zx.oberon2.ru
