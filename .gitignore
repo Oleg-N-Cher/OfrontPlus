@@ -1,1 +1,4 @@
+Obj/*.sym
+Obj/*.c
+Obj/*.h
 +Git.bat
