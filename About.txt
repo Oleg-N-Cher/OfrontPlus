@@ -28,6 +28,8 @@ Differences from the original ver. from Josef Templ, Software Templ OG
 
 - You can use F11 (in BlackBox) to translate a source through Ofront.
 
+- Added possibility of static linking to typebound procedures (a procedure name as additional parameter in macro __SEND (in "SYSTEM.h")).
+
 
 -- 
 Oleg N. Cher
