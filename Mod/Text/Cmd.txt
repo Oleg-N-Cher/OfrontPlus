@@ -57,6 +57,16 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		IF done THEN Module(done) END
 	END Translate;
 
+	PROCEDURE TranslateDone* (): BOOLEAN;
+		VAR done: BOOLEAN;
+	BEGIN
+		InitParams(FALSE);
+		OPM.Init(done);
+		OPM.InitOptions();
+		IF done THEN Module(done) END;
+	RETURN done
+	END TranslateDone;
+
 	PROCEDURE TranslateModuleList*;
 		VAR done: BOOLEAN;
 	BEGIN
