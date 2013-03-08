@@ -80,6 +80,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		SFext = ".sym";	(* symbol file extension *)
 		BFext = ".c";	(* body file extension *)
 		HFext = ".h";	(* header file extension *)
+		SFsubdir = "/Sym";
+		CFsubdir = "/Obj";
 		SFtag = 0F7X;	(* symbol file tag *)
 
 		HeaderFile* = 0;
@@ -123,6 +125,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		translateList: BOOLEAN;
 		oldSF: Stores.Reader; newSF: Stores.Writer;
 		R: ARRAY 3 OF Files.Writer;
+		subsysPath: Files.Name;
+		addSubdir: BOOLEAN;
 		oldSFile, newSFile, HFile, BFile, HIFile: Files.File;
 		stop, useLineNo: BOOLEAN;	(*useLineNo not supported under Windows *)
 
@@ -142,23 +146,31 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	BEGIN ch := dirs[pos]; i := 0;
 		WHILE ch = ';' DO INC(pos); ch := dirs[pos] END ;
 		WHILE (ch # 0X) & (ch # ';') DO dir[i] := ch; INC(i); INC(pos); ch := dirs[pos] END ;
-		dir[i] := 0X
+		dir[i] := 0X;
+		Strings.Find(dir, "%Subsys%", 0, i);
+		IF i # -1 THEN
+			Strings.Replace (dir, i, 8, subsysPath)
+		END
 	END Scan;
 
-	PROCEDURE FilesNew(): Files.File;
+	PROCEDURE FilesNew(subdir: ARRAY 5 OF CHAR): Files.File;
 		VAR dirs, dir: ARRAY 256 OF CHAR; pos: INTEGER;
 	BEGIN
 		Dialog.MapString(options.dirs, dirs);
 		pos := 0; Scan(dirs, dir, pos);
-		RETURN Files.dir.New(Files.dir.This(dir), Files.ask)
+		IF ~addSubdir THEN subdir := 0X END;
+		RETURN Files.dir.New(Files.dir.This(dir + subdir), Files.ask)
 	END FilesNew;
 
-	PROCEDURE FilesOld(name: Files.Name): Files.File;
+	PROCEDURE FilesOld(name: Files.Name; subdir: ARRAY 5 OF CHAR): Files.File;
 		VAR dirs, dir: ARRAY 256 OF CHAR; pos: INTEGER; F: Files.File;
 	BEGIN
 		Dialog.MapString(options.dirs, dirs);
 		pos := 0; Scan(dirs, dir, pos);
-		REPEAT F := Files.dir.Old(Files.dir.This(dir), name, Files.shared); Scan(dirs, dir, pos) UNTIL (F # NIL) OR (dir = "");
+		IF ~addSubdir THEN subdir := 0X END;
+		REPEAT
+			F := Files.dir.Old(Files.dir.This(dir + subdir), name, Files.shared); Scan(dirs, dir, pos)
+		UNTIL (F # NIL) OR (dir = "");
 		RETURN F
 	END FilesOld;
 
@@ -488,7 +500,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
 		MaxSet := 31;
 		(* read Ofront.par *)
-		F := FilesOld("Ofront.par");
+		F := FilesOld("Ofront.par", CFsubdir);
 		IF F # NIL THEN
 			R := F.NewReader(NIL);
 			R.SetPos(0);
@@ -563,7 +575,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	PROCEDURE OldSym*(VAR modName: ARRAY OF SHORTCHAR; VAR done: BOOLEAN);
 		VAR ch: SHORTCHAR; fileName: Files.Name;
 	BEGIN MakeFileName(modName, fileName, SFext);
-		oldSFile := FilesOld(fileName); done := oldSFile # NIL;
+		oldSFile := FilesOld(fileName, SFsubdir); done := oldSFile # NIL;
 		IF done THEN
 			oldSF.ConnectTo(oldSFile); oldSF.ReadSChar(ch);
 			IF ch # SFtag THEN err(-306);  (*possibly a symbol file from another Oberon implementation, e.g. HP-Oberon*)
@@ -620,7 +632,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	PROCEDURE NewSym*(VAR modName: ARRAY OF SHORTCHAR);
 		VAR fileName: Files.Name;
 	BEGIN MakeFileName(modName, fileName, SFext);
-		newSFile := FilesNew();
+		newSFile := FilesNew(SFsubdir);
 		IF newSFile # NIL THEN
 			newSF.ConnectTo(newSFile); newSF.WriteSChar(SFtag)
 		ELSE err(153)
@@ -718,17 +730,17 @@ suffix does not work in K&R *)
 		VAR FName: Files.Name;
 	BEGIN
 		modName := moduleName$;
-		HFile := FilesNew();
+		HFile := FilesNew(CFsubdir);
 		IF HFile # NIL THEN R[HeaderFile] := HFile.NewWriter(NIL) ELSE err(153) END;
 		MakeFileName(moduleName, FName, BFext);
-		BFile := FilesNew();
+		BFile := FilesNew(CFsubdir);
 		IF BFile # NIL THEN R[BodyFile] := BFile.NewWriter(NIL) ELSE err(153) END ;
 		MakeFileName(moduleName, FName, HFext);
-		HIFile := FilesNew();
+		HIFile := FilesNew(CFsubdir);
 		IF HIFile # NIL THEN R[HeaderInclude] := HIFile.NewWriter(NIL) ELSE err(153) END ;
 		IF include0 IN opt THEN
-			MakeFileName(moduleName, FName, ".h0"); Append(R[HeaderInclude], FilesOld(FName));
-			MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], FilesOld(FName))
+			MakeFileName(moduleName, FName, ".h0"); Append(R[HeaderInclude], FilesOld(FName, CFsubdir));
+			MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], FilesOld(FName, CFsubdir))
 		END
 	END OpenFiles;
 
@@ -805,7 +817,19 @@ suffix does not work in K&R *)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
 
+	PROCEDURE SetWorkDir* (IN path: ARRAY OF CHAR; addsubdir: BOOLEAN);
+	VAR
+		i: INTEGER;
+	BEGIN
+		subsysPath := path$;
+		i := LEN(subsysPath$) - 1; IF (i >= 0) & ((subsysPath[i] = "\") OR (subsysPath[i] = "/")) THEN
+			subsysPath[i] := 0X
+		END;
+		addSubdir := addsubdir
+	END SetWorkDir;
+
 BEGIN
+	subsysPath := ""; addSubdir := FALSE;
 	locate.num := 0; GetDefaultOptions
 END OfrontOPM.
 
