@@ -123,7 +123,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		translateList: BOOLEAN;
 		oldSF: Stores.Reader; newSF: Stores.Writer;
 		R: ARRAY 3 OF Files.Writer;
-		subsysDir, workDir: Files.Name;
+		workDir, subsys: Files.Name;
 		SFsubdir, CFsubdir: ARRAY 5 OF CHAR;
 		oldSFile, newSFile, HFile, BFile, HIFile: Files.File;
 		stop, useLineNo: BOOLEAN;	(*useLineNo not supported under Windows *)
@@ -145,12 +145,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		WHILE ch = ';' DO INC(pos); ch := dirs[pos] END ;
 		WHILE (ch # 0X) & (ch # ';') DO dir[i] := ch; INC(i); INC(pos); ch := dirs[pos] END ;
 		dir[i] := 0X;
-		Strings.Find(dir, "%Subsys%", 0, i);
-		IF i # -1 THEN
-			Strings.Replace (dir, i, 8, subsysDir)
-		ELSE
-			Strings.Find(dir, "%WorkDir%", 0, i); IF i # -1 THEN Strings.Replace (dir, i, 9, workDir) END
-		END;
+		Strings.Find(dir, "%WorkDir%", 0, i); IF i # -1 THEN Strings.Replace (dir, i, 9, workDir) END;
+		Strings.Find(dir, "%Subsys%", 0, i); IF i # -1 THEN Strings.Replace (dir, i, 8, subsys) END;
 	END Scan;
 
 	PROCEDURE FilesNew(IN subdir: ARRAY OF CHAR): Files.File;
@@ -815,27 +811,23 @@ suffix does not work in K&R *)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
 
-	PROCEDURE SetWorkDir* (IN workpath, subsys: ARRAY OF CHAR; addSubdir: BOOLEAN);
+	PROCEDURE SetWorkDir* (IN workdir, subsysdir: ARRAY OF CHAR; useSymObj: BOOLEAN);
 	VAR
 		i: INTEGER;
 	BEGIN
-		workDir := workpath$;
-		i := LEN(workDir$) - 1; IF (i >= 0) & ((workDir[i] = "\") OR (workDir[i] = "/")) THEN
-			workDir[i] := 0X
-		END;
-		subsysDir := subsys$;
-		i := LEN(subsysDir$) - 1; IF (i >= 0) & ((subsysDir[i] = "\") OR (subsysDir[i] = "/")) THEN
-			subsysDir[i] := 0X
-		END;
-		IF addSubdir THEN
-			SFsubdir := "/Sym"; CFsubdir := "/Obj"
+		workDir := workdir$;
+		i := LEN(workDir$) - 1; IF (i >= 0) & ((workDir[i] = "\") OR (workDir[i] = "/")) THEN workDir[i] := 0X END;
+		subsys := subsysdir$;
+		i := LEN(subsys$) - 1; IF (i >= 0) & ((subsys[i] = "\") OR (subsys[i] = "/")) THEN subsys[i] := 0X END;
+		IF useSymObj THEN
+			SFsubdir := "/Sym"; CFsubdir := "/Obj";
 		ELSE
-			SFsubdir := ""; CFsubdir := ""
-		END
+			SFsubdir := ""; CFsubdir := "";
+		END;
 	END SetWorkDir;
 
 BEGIN
-	subsysDir := ""; workDir := ""; SFsubdir := ""; CFsubdir := "";
+	subsys := ""; workDir := ""; SFsubdir := ""; CFsubdir := "";
 	locate.num := 0; GetDefaultOptions
 END OfrontOPM.
 
