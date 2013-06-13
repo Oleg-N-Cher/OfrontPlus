@@ -48,7 +48,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	BEGIN first := TRUE;
 		res := (result # NIL) (* hidden mthd *) & (result # OPT.notyp);
 		paren := res OR (par # NIL);
-		IF paren THEN Wch("(") END ;
+		IF paren THEN Ws(" (") END ;
 		WHILE par # NIL DO
 			IF ~first THEN Ws("; ") ELSE first := FALSE END ;
 			IF option = "x" THEN Wi(par^.adr); Wch(" ") END ;
