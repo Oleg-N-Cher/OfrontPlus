@@ -7,15 +7,15 @@ and here you've a script that shows the sequence of actions.
 ###############################
 
 # Create /bin commands: oberon ocat ofront showdef
-wget https://github.com/Oleg-N-Cher/Ofront/blob/master/Arch/Ofront%20for%20Linux/ofront-1.2-linux2+.tar.gz?raw=true
-tar xvzf ofront-1.2-linux2.tar.gz
-rm ofront-1.2-linux2.tar.gz
+wget https://github.com/Oleg-N-Cher/Ofront/blob/master/Arch/Ofront%20for%20Linux/ofront-1.2-linux2%2B.tar.gz?raw=true -O ofront-1.2-linux2+.tar.gz
+tar xvzf ofront-1.2-linux2+.tar.gz
+rm ofront-1.2-linux2+.tar.gz
 sudo cp linux2/bin/* /bin
 rm -rf linux2
 
 # Rebuild Ofront from sources:
-wget https://github.com/Oleg-N-Cher/Ofront/blob/master/Arch/Ofront%20for%20Linux/ofront+.tar.gz?raw=true
-tar xvzf ofront.tar.gz
+wget https://github.com/Oleg-N-Cher/Ofront/blob/master/Arch/Ofront%20for%20Linux/ofront%2B.tar.gz?raw=true -O ofront+.tar.gz
+tar xvzf ofront+.tar.gz
 cd ofront/v4/linux2
 sudo make
 ls ../../..
