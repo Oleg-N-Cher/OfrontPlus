@@ -4,6 +4,15 @@ Ofront for Linux
 It's Ofront for Linux modified by VEDAsoft Oberon Club.
 In our work we need some features, and have added easily.
 
+The project lives at:
+
+  https://github.com/Oleg-N-Cher/Ofront-for-Linux
+
+Support forum (English and Russian languages are welcome):
+
+  http://zx.oberon2.ru/forum/viewforum.php?f=32
+
+
 Thanks to Dr. Josef Templ for this great product!
 
 
