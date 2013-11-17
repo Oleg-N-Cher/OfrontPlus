@@ -124,7 +124,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		oldSF: Stores.Reader; newSF: Stores.Writer;
 		R: ARRAY 3 OF Files.Writer;
 		workDir, subsys: Files.Name;
-		SFsubdir, CFsubdir: ARRAY 5 OF CHAR;
+		SFsubdir, CFsubdir: ARRAY 5 + 2 OF CHAR;
 		oldSFile, newSFile, HFile, BFile, HIFile: Files.File;
 		stop, useLineNo: BOOLEAN;	(*useLineNo not supported under Windows *)
 
@@ -812,7 +812,8 @@ suffix does not work in K&R *)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
 
-	PROCEDURE SetWorkDir* (IN workdir, subsysdir: ARRAY OF CHAR; useSymObj: BOOLEAN);
+	PROCEDURE SetWorkDir* (
+		IN workdir, subsysdir: ARRAY OF CHAR; useSymObj: BOOLEAN; IN addtoObj: ARRAY 3 OF CHAR);
 	VAR
 		i: INTEGER;
 	BEGIN
@@ -821,7 +822,7 @@ suffix does not work in K&R *)
 		subsys := subsysdir$;
 		i := LEN(subsys$) - 1; IF (i >= 0) & ((subsys[i] = "\") OR (subsys[i] = "/")) THEN subsys[i] := 0X END;
 		IF useSymObj THEN
-			SFsubdir := "/Sym"; CFsubdir := "/Obj";
+			SFsubdir := "/Sym"; CFsubdir := "/Obj" + addtoObj;
 		ELSE
 			SFsubdir := ""; CFsubdir := "";
 		END;
