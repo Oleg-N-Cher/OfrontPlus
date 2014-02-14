@@ -106,7 +106,7 @@ insertMarkers	Insert Markers
 119	redefinition textually precedes procedure bound to base type
 120	type of expression following IF, WHILE, UNTIL or ASSERT is not BOOLEAN
 121	called object is not a procedure (or is an interrupt procedure)
-122	actual VAR-parameter is not a variable
+122	actual VAR-, or IN-parameter is not a variable
 123	type of actual parameter is not identical with that of formal VAR-parameter
 124	type of result expression differs from that of procedure
 125	type of case expression is neither INTEGER nor CHAR
@@ -126,6 +126,7 @@ insertMarkers	Insert Markers
 155	generation of new symbol file not allowed
 156	parameter file not found
 157	syntax error in parameter file
+177	IN only allowed for records and arrays
 200	not yet implemented
 201	lower bound of set range greater than higher bound
 202	set element greater than MAX(SET) or less than 0
