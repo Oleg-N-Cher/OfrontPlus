@@ -30,7 +30,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			name*: OPS.Name;
 			leaf*: BOOLEAN;
 			mode*, mnolev*: BYTE;	(* mnolev < 0 -> mno = -mnolev *)
-			vis*: BYTE;	(* internal, external, externalR *)
+			vis*: BYTE;	(* internal, external, externalR, inPar *)
 			history*: BYTE;	(* relevant if name # "" *)
 			used*, fpdone*: BOOLEAN;
 			fprint*: INTEGER;
@@ -100,7 +100,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		bitfn = 28; valfn = 29; sysnewfn = 30; movefn = 31;
 		
 		(* module visibility of objects *)
-		internal = 0; external = 1; externalR = 2;
+		internal = 0; external = 1; externalR = 2; inPar = 3;
 
 		(* history of imported objects *)
 		inserted = 0; same = 1; pbmodified = 2; pvmodified = 3; removed = 4; inconsistent = 5;
@@ -109,6 +109,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
 		Svalpar = 23; Svarpar = 24; Sfld = 25; Srfld = 26; Shdptr = 27; Shdpro = 28; Stpro = 29; Shdtpro = 30;
 		Sxpro = 31; Sipro = 32; Scpro = 33; Sstruct = 34; Ssys = 35; Sptr = 36; Sarr = 37; Sdarr = 38; Srec = 39; Spro = 40;
+		Sinpar = 25;
 		
 	TYPE
 		ImpCtxt = RECORD
@@ -543,7 +544,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		WHILE tag # Send DO
 			new := NewObj(); new^.mnolev := SHORT(SHORT(-mno));
 			IF last = NIL THEN par := new ELSE last^.link := new END ;
-			IF tag = Svalpar THEN new^.mode := Var ELSE new^.mode := VarPar END ;
+			IF tag = Svalpar THEN new^.mode := Var
+			ELSE new^.mode := VarPar; IF tag = Sinpar THEN new^.vis := inPar END END ;
 			InStruct(new^.typ); new^.adr := OPM.SymRInt(); InName(new^.name);
 			last := new; tag := OPM.SymRInt()
 		END
@@ -838,7 +840,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		OutStr(result);
 		WHILE par # NIL DO
-			IF par^.mode = Var THEN OPM.SymWInt(Svalpar) ELSE OPM.SymWInt(Svarpar) END ;
+			IF par^.mode = Var THEN OPM.SymWInt(Svalpar)
+			ELSIF par^.vis = inPar THEN OPM.SymWInt(Sinpar)
+			ELSE OPM.SymWInt(Svarpar) END ;
 			OutStr(par^.typ);
 			OPM.SymWInt(par^.adr);
 			OutName(par^.name); par := par^.link
@@ -1106,7 +1110,7 @@ Objects:
    ------------------------------------------------
     Undef |                                         Not used
     Var   | vadr           next              regopt Glob or loc var or proc value parameter
-    VarPar| vadr           next              regopt Procedure var parameter
+    VarPar| vadr           next              regopt Procedure var parameter (vis = 0 | inPar)
     Con   |        val                              Constant
     Fld   | off            next                     Record field
     Typ   |                                         Named type
