@@ -56,7 +56,7 @@ insertMarkers	Insert Markers
 67	actual parameter corresponding to open array is not an array
 68	control variable must be integer
 69	parameter must be an integer constant
-70	pointer or VAR record required as formal receiver
+70	pointer or VAR / IN record required as formal receiver
 71	pointer expected as actual receiver
 72	procedure must be bound to a record of the same scope
 73	procedure must have level 0
@@ -73,7 +73,7 @@ insertMarkers	Insert Markers
 84	dereferenced variable is not a pointer
 85	guard or test type is not an extension of variable type
 86	guard or testtype is not a pointer
-87	guarded or tested variable is neither a pointer nor a VAR-parameter record
+87	guarded or tested variable is neither a pointer nor a VAR- or IN-parameter record
 88	open array not allowed as variable, record field or array element
 89	base type not yet defined
 92	operand of IN not an integer, or not a set
@@ -107,7 +107,7 @@ insertMarkers	Insert Markers
 120	type of expression following IF, WHILE, UNTIL or ASSERT is not BOOLEAN
 121	called object is not a procedure (or is an interrupt procedure)
 122	actual VAR-, or IN-parameter is not a variable
-123	type of actual parameter is not identical with that of formal VAR-parameter
+123	type is not identical with that of formal VAR-, or IN-parameter
 124	type of result expression differs from that of procedure
 125	type of case expression is neither INTEGER nor CHAR
 126	this expression cannot be a type or a procedure
