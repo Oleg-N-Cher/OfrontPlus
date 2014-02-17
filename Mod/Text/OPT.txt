@@ -281,6 +281,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IdFPrint(result); OPM.FPrint(fp, result^.idfp);
 		WHILE par # NIL DO
 			OPM.FPrint(fp, par^.mode); IdFPrint(par^.typ); OPM.FPrint(fp, par^.typ^.idfp);
+			IF (par^.mode = VarPar) & (par^.vis # 0) THEN OPM.FPrint(fp, par^.vis) END;	(* IN *)
 			(* par^.name and par^.adr not considered *)
 			par := par^.link
 		END
