@@ -888,7 +888,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IdentList(OPT.topScope^.scope, 0); OPM.WriteLn;
 		GenDynTypes(n, internal); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 0); OPM.WriteLn;
-		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn
+		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn;
+		OPM.WriteString("/*============================================================================*/");
+		OPM.WriteLn; OPM.WriteLn;
 	END GenBdy;
 
 	PROCEDURE RegCmds(obj: OPT.Object);
@@ -1017,7 +1019,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	PROCEDURE EnterProc* (proc: OPT.Object);
 		VAR var, scope: OPT.Object; typ: OPT.Struct; dim: SHORTINT;
 	BEGIN
-		IF proc^.vis # external THEN OPM.WriteString(Static) END ;
+(*
+		IF proc^.vis # external THEN OPM.WriteString(Static) END ; (* No static for smart link *)
+*)
 		ProcHeader(proc, TRUE);
 		BegBlk;
 		scope := proc^.scope;
@@ -1149,7 +1153,10 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END ;
 		IF eoBlock THEN EndBlk; OPM.WriteLn
 		ELSIF indent THEN BegStat
-		END
+		END;
+		IF eoBlock THEN
+			OPM.WriteString("/*----------------------------------------------------------------------------*/"); OPM.WriteLn;
+		END;
 	END ExitProc;
 
 	PROCEDURE CompleteIdent*(obj: OPT.Object);
