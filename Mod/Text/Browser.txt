@@ -124,9 +124,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						Ws(obj^.name);
 						Wsign(obj^.typ, obj^.link);
 						IF obj^.mode = CProc THEN
-							ext := obj^.conval^.ext; m := ORD(ext^[0]); i := 1; Ws('  "');
-							WHILE i <= m DO Wch(ext^[i]); INC(i) END ;
-							Wch('"');
+							ext := obj^.conval^.ext; m := ORD(ext^[0]); i := 1;
+							IF m > 0 THEN Ws('  "'); WHILE i <= m DO Wch(ext^[i]); INC(i) END; Wch('"') END;
 						END ;
 						Wch(";"); Wln
 				END
