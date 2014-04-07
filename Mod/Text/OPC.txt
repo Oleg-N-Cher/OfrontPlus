@@ -203,7 +203,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 ; DEC(starsLevel);
 	END Stars;
 
-	PROCEDURE ^AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
+	PROCEDURE ^AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
 
 	PROCEDURE DeclareObj(dcl: OPT.Object; scopeDef: BOOLEAN);
 		VAR
@@ -229,7 +229,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
 				IF openClause THEN OPM.Write(CloseParen); openClause := FALSE END ;
 				IF form = ProcTyp THEN
-					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE)
+					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE, TRUE)
 					ELSE OPM.WriteString(")()")
 					END ;
 					EXIT
@@ -384,7 +384,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END
 	END LenList;
 
-	PROCEDURE DeclareParams(par: OPT.Object; macro: BOOLEAN);
+	PROCEDURE DeclareParams(par: OPT.Object; macro, showOberonParams: BOOLEAN);
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE par # NIL DO
@@ -393,11 +393,13 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				IF (par^.mode = Var) & (par^.typ^.form = Real) THEN OPM.Write("_") END ;
 				Ident(par)
 			END ;
-			IF par^.typ^.comp = DynArr THEN
-				OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
-			ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) THEN
-				OPM.WriteString(Comma); OPM.WriteStringVar(par.name); OPM.WriteString(TagExt)
-			END ;
+			IF showOberonParams THEN
+				IF par^.typ^.comp = DynArr THEN
+					OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
+				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) THEN
+					OPM.WriteString(Comma); OPM.WriteStringVar(par.name); OPM.WriteString(TagExt)
+				END ;
+			END;
 			par := par^.link;
 			IF par # NIL THEN OPM.WriteString(Comma) END
 		END ;
@@ -457,7 +459,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF (obj^.mode = TProc) & (obj = BaseTProc(obj)) & ((OPM.currFile # OPM.HeaderFile) OR (obj^.vis = external)) THEN
 				OPM.WriteString("#define __");
 				Ident(obj);
-				DeclareParams(obj^.link, TRUE);
+				DeclareParams(obj^.link, TRUE, TRUE);
 				OPM.WriteString(" __SEND(");
 				IF obj^.link^.typ^.form = Pointer THEN
 					OPM.WriteString("__TYPEOF("); Ident(obj^.link); OPM.Write(")")
@@ -468,12 +470,12 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END ;
 				OPM.WriteString("(*)");
 				IF ansi THEN
-					AnsiParamList(obj^.link, FALSE);
+					AnsiParamList(obj^.link, FALSE, TRUE);
 				ELSE
 					OPM.WriteString("()");
 				END ;
 				OPM.WriteString(", ");
-				DeclareParams(obj^.link, TRUE);
+				DeclareParams(obj^.link, TRUE, TRUE);
 				OPM.Write(")"); OPM.WriteLn
 			END ;
 			DefineTProcMacros(obj^.right, empty)
@@ -544,10 +546,17 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				ext := obj.conval.ext; i := 1;
 				IF (ext[1] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN 
 					OPM.WriteString("#define "); Ident(obj);
-					DeclareParams(obj^.link, TRUE);
+					DeclareParams(obj^.link, TRUE, TRUE);
 					OPM.Write(Tab);
 				END ;
 				FOR i := i TO ORD(obj.conval.ext[0]) DO OPM.Write(obj.conval.ext[i]) END;
+				IF ORD(obj.conval.ext[0]) = 0 THEN
+					OPM.WriteStringVar(obj^.name); DeclareParams(obj^.link, TRUE, FALSE);
+					OPM.WriteLn; OPM.WriteString("__EXTERN ");
+					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
+					OPM.WriteString(" __CALL "); OPM.WriteStringVar(obj^.name);
+					AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
+				END;
 				OPM.WriteLn
 			END ;
 			CProcDefs(obj^.right, vis)
@@ -729,7 +738,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IF ~first THEN EndStat END
 	END IdentList;
 
-	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
+	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
 		VAR name: ARRAY 32 OF SHORTCHAR;
 	BEGIN
 		OPM.Write("(");
@@ -742,13 +751,15 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				ELSE
 					name := obj^.name$;  obj^.name := ""; DeclareObj(obj, FALSE); obj^.name := name$
 				END ;
-				IF obj^.typ^.comp = DynArr THEN
-					OPM.WriteString(", LONGINT ");
-					LenList(obj, TRUE, showParamNames)
-				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
-					OPM.WriteString(", LONGINT *");
-					IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
-				END ;
+				IF showOberonParams THEN
+					IF obj^.typ^.comp = DynArr THEN
+						OPM.WriteString(", LONGINT ");
+						LenList(obj, TRUE, showParamNames)
+					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
+						OPM.WriteString(", LONGINT *");
+						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
+					END ;
+				END;
 				IF (obj^.link = NIL) OR (obj^.link.mode = TProc) THEN EXIT END ;
 				OPM.WriteString(", ");
 				obj := obj^.link
@@ -762,11 +773,11 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IF proc^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(proc^.typ^.strobj) END ;
 		OPM.Write(Blank); Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
-			AnsiParamList(proc^.link, TRUE);
+			AnsiParamList(proc^.link, TRUE, TRUE);
 			IF ~define THEN OPM.Write(";") END ;
 			OPM.WriteLn;
 		ELSIF define THEN
-			DeclareParams(proc^.link, FALSE);
+			DeclareParams(proc^.link, FALSE, TRUE);
 			OPM.WriteLn;
 			Indent(1); IdentList(proc^.link, 2(* map REAL to double *)); Indent(-1)
 		ELSE OPM.WriteString("();"); OPM.WriteLn
