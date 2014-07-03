@@ -85,10 +85,13 @@ Differences from the original ver. from Josef Templ, Software Templ OG
 - Allow the SHORTINT type to has the size of 2 bytes (set this in Ofront.par).
 
 
-Vers. from VEDAsoft uses the same distro name with suffix '+':
+Vers. from VEDAsoft uses the same distro name with suffix '+'.
 
-  ofront-1.2-linux2+.tar.gz
-  ofront+.tar.gz
+  Binary distribution: ofront-1.2-linux2+.tar.gz
+  https://github.com/Oleg-N-Cher/Ofront/blob/master/Arch/Ofront%20for%20Linux/ofront-1.2-linux2%2B.tar.gz?raw=true
+
+  Source code: ofront+.tar.gz
+  https://github.com/Oleg-N-Cher/Ofront/blob/master/Arch/Ofront%20for%20Linux/ofront%2B.tar.gz?raw=true
 
 
 --
