@@ -374,6 +374,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 		ELSIF (n^.class = Nmop) & (n^.subcl = val) THEN
 			(*SYSTEM.VAL(typ, var par rec)*)
 			OPC.TypeOf(n^.left^.obj)
+		ELSIF n^.typ^.form = NilTyp THEN (* NIL *)
+			OPM.Write("0")
 		ELSE	(* var par rec *)
 			OPC.TypeOf(n^.obj)
 		END
@@ -498,8 +500,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 			END ;
 			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
 				IF mode = VarPar THEN
-					IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END ;
-					OPM.Write("&"); prec := 9
+					IF n^.typ^.form # NilTyp THEN
+						IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END ;
+						OPM.Write("&")
+					END; prec := 9
 				ELSIF ansi THEN
 					IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN
 						OPM.WriteString("(CHAR*)")	(* force to unsigned char *)
