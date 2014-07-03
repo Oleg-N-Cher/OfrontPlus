@@ -21,6 +21,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		loop = 50; with = 51; exit = 52; return = 53; array = 54;
 		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
 		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
+		out = 71;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -49,7 +50,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		super = 1;
 		
 		(* module visibility of objects *)
-		internal = 0; external = 1; externalR = 2; inPar = 3;
+		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
 		(* procedure flags (conval^.setval) *)
 		hasBody = 1; isRedef = 2; slNeeded = 3;
@@ -253,6 +254,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				vis := 0;
 				IF sym = var THEN OPS.Get(sym); mode := VarPar
 				ELSIF sym = in THEN OPS.Get(sym); mode := VarPar; vis := inPar
+				ELSIF sym = out THEN OPS.Get(sym); mode := VarPar; vis := outPar
 				ELSE mode := Var
 				END ;
 				LOOP

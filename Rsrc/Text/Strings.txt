@@ -106,8 +106,8 @@ insertMarkers	Insert Markers
 119	redefinition textually precedes procedure bound to base type
 120	type of expression following IF, WHILE, UNTIL or ASSERT is not BOOLEAN
 121	called object is not a procedure (or is an interrupt procedure)
-122	actual VAR-, or IN-parameter is not a variable
-123	type is not identical with that of formal VAR-, or IN-parameter
+122	actual VAR-, IN-, or OUT-parameter is not a variable
+123	type is not identical with that of formal VAR-, IN-, or OUT-parameter
 124	type of result expression differs from that of procedure
 125	type of case expression is neither INTEGER nor CHAR
 126	this expression cannot be a type or a procedure
