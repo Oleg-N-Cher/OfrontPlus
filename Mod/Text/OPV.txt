@@ -80,7 +80,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 		MaxPrec = 12;
 		ProcTypeVar = 11; (* precedence number when a call is made with a proc type variable *)
 
-		internal = 0;
+		internal = 0; outPar = 4;
 
 	TYPE
 		ExitInfo = RECORD level, label: SHORTINT END ;
@@ -495,8 +495,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 		OPM.Write(OpenParen);
 		WHILE n # NIL DO typ := fp^.typ;
 			comp := typ^.comp; form := typ^.form; mode := fp^.mode; prec := MinPrec;
-			IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
-				OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
+			IF (mode = VarPar) THEN
+				IF (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
+					OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
+				ELSIF (fp^.vis = outPar) & (OPC.NofPtrs(typ) # 0) & (aptyp # OPT.niltyp) THEN
+					(*IPFree(n, ap)*)
+				END
 			END ;
 			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
 				IF mode = VarPar THEN

@@ -46,7 +46,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		bitfn = 28; valfn = 29; sysnewfn = 30; movefn = 31;
 
 		(* module visibility of objects *)
-		internal = 0; external = 1; externalR = 2; inPar = 3;
+		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
 		(* procedure flags (conval^.setval) *)
 		hasBody = 1; isRedef = 2; slNeeded = 3;
