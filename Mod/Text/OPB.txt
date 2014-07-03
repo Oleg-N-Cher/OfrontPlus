@@ -1447,7 +1447,8 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN
 		IF fp.typ.form # Undef THEN
 			IF fp^.mode = VarPar THEN
-				IF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) THEN (* ok *)
+				IF (ap^.typ^.form = NilTyp) & OPT.SYSimported THEN (* ok *)
+				ELSIF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) THEN (* ok *)
 				ELSIF (fp^.typ^.comp = DynArr) & (fp^.typ^.sysflag = 0) & (fp^.typ^.n = 0) & (ap^.class = Ndop) THEN
 					(* ok *)
 				ELSE
