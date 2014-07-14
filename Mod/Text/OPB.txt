@@ -455,7 +455,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(115)
 					END
 				END ;
-				IF (fp^.mode # ap^.mode) OR checkNames & (fp^.name # ap^.name) THEN err(115) END ;
+				IF (fp^.mode # ap^.mode) OR (fp^.vis # ap^.vis)
+					OR checkNames & (fp^.name # ap^.name) THEN err(115) END ;
 				ap := ap^.link
 			ELSE err(116)
 			END ;
