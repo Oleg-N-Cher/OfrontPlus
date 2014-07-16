@@ -51,6 +51,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		(* procedure flags (conval^.setval) *)
 		hasBody = 1; isRedef = 2; slNeeded = 3;
 
+		(* sysflags *)
+		nilBit = 1;
+
 		AssertTrap = 0;	(* default trap number *)
 
 	VAR
@@ -455,7 +458,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(115)
 					END
 				END ;
-				IF (fp^.mode # ap^.mode) OR (fp^.vis # ap^.vis)
+				IF (fp^.mode # ap^.mode) OR (fp^.sysflag # ap^.sysflag) OR (fp^.vis # ap^.vis)
 					OR checkNames & (fp^.name # ap^.name) THEN err(115) END ;
 				ap := ap^.link
 			ELSE err(116)
@@ -1448,7 +1451,8 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN
 		IF fp.typ.form # Undef THEN
 			IF fp^.mode = VarPar THEN
-				IF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) THEN (* ok *)
+				IF ODD(fp^.sysflag DIV nilBit) & (ap^.typ = OPT.niltyp) THEN (* ok *)
+				ELSIF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) THEN (* ok *)
 				ELSIF (fp^.typ^.comp = DynArr) & (fp^.typ^.sysflag = 0) & (fp^.typ^.n = 0) & (ap^.class = Ndop) THEN
 					(* ok *)
 				ELSE
