@@ -20,6 +20,9 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
+		(* sysflags *)
+		nilBit = 1;
+
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
 		Svalpar = 23; Svarpar = 24; Sfld = 25; Srfld = 26; Shdptr = 27; Shdpro = 28; Stpro = 29; Shdtpro = 30;
@@ -53,7 +56,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			IF ~first THEN Ws("; ") ELSE first := FALSE END ;
 			IF option = "x" THEN Wi(par^.adr); Wch(" ") END ;
 			IF par^.mode = VarPar THEN
-				IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
+				IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END;
+				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 			END ;
 			Ws(par^.name); Ws(": "); Wtype(par^.typ);
 			par := par^.link
@@ -147,7 +151,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 					IF obj^.link^.mode = VarPar THEN
 						IF obj^.link^.vis = inPar THEN Ws("IN ")
 						ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ")
-						END
+						END;
+						IF ODD(obj^.link^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 					END ;
 					Ws(obj^.link^.name); Ws(": "); Wtype(obj^.link^.typ)
 				END ;

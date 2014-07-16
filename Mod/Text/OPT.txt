@@ -29,6 +29,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			left*, right*, link*, scope*: Object;
 			name*: OPS.Name;
 			leaf*: BOOLEAN;
+			sysflag*: BYTE;
 			mode*, mnolev*: BYTE;	(* mnolev < 0 -> mno = -mnolev *)
 			vis*: BYTE;	(* internal, external, externalR, inPar, outPar *)
 			history*: BYTE;	(* relevant if name # "" *)
@@ -104,6 +105,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 		(* history of imported objects *)
 		inserted = 0; same = 1; pbmodified = 2; pvmodified = 3; removed = 4; inconsistent = 5;
+
+		(* sysflags *)
+		inBit = 2; outBit = 4;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -545,6 +549,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		WHILE tag # Send DO
 			new := NewObj(); new^.mnolev := SHORT(SHORT(-mno));
 			IF last = NIL THEN par := new ELSE last^.link := new END ;
+			IF tag = Ssys THEN
+				new^.sysflag := SHORT(SHORT(OPM.SymRInt())); tag := OPM.SymRInt();
+				IF ODD(new^.sysflag DIV inBit) THEN new^.vis := inPar
+				ELSIF ODD(new^.sysflag DIV outBit) THEN new^.vis := outPar
+				END
+			END;
 			IF tag = Svalpar THEN new^.mode := Var
 			ELSE new^.mode := VarPar;
 				IF tag = Sinpar THEN new^.vis := inPar
@@ -845,6 +855,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		OutStr(result);
 		WHILE par # NIL DO
+			IF par^.sysflag # 0 THEN OPM.SymWInt(Ssys); OPM.SymWInt(par^.sysflag) END;
 			IF par^.mode = Var THEN OPM.SymWInt(Svalpar)
 			ELSIF par^.vis = inPar THEN OPM.SymWInt(Sinpar)
 			ELSIF par^.vis = outPar THEN OPM.SymWInt(Soutpar)
