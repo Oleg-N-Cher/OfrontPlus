@@ -1165,7 +1165,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IF eoBlock THEN EndBlk; OPM.WriteLn
 		ELSIF indent THEN BegStat
 		END;
-		IF eoBlock THEN
+		IF eoBlock & (proc^.vis = external) THEN
 			OPM.WriteString("/*----------------------------------------------------------------------------*/"); OPM.WriteLn;
 		END;
 	END ExitProc;
