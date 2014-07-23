@@ -404,6 +404,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			IF pos < 0 THEN pos := 0 END ;
 			IF (pos < lasterrpos) OR (lasterrpos + 9 < pos) THEN lasterrpos := pos;
 				IF n < 249 THEN
+					IF inC = NIL THEN RETURN END;
 					E := DevMarkers.dir.New(DevMarkers.message);
 					Strings.IntToString(n, s); Dialog.MapString("#ofront:"+s, s);
 					E.InitErr(n); E.InitMsg(s);
