@@ -19,7 +19,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 		conv = 20; abs = 21; cap = 22; odd = 23; not = 33;
 		(*SYSTEM*)
 		adr = 24; cc = 25; bit = 26; lsh = 27; rot = 28; val = 29;
-
+		unsgn = 40; (* ?????????????? unsigned  ??? div *)
+		
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; Pointer = 13; ProcTyp = 14; Comp = 15;
@@ -264,7 +265,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 					RETURN 9
 		|	Nmop:
 					CASE subclass OF
-						not, minus, adr, val, conv:
+						not, minus, adr, val, conv, unsgn:
 								RETURN 9
 					|	is, abs, cap, odd, cc:
 								RETURN 10
@@ -634,6 +635,11 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 									OPM.WriteString("__VAL("); OPC.Ident(n^.typ^.strobj); OPM.WriteString(Comma);
 									expr(l, MinPrec); OPM.Write(CloseParen)
 								END
+					|	unsgn:
+								IF form < LInt THEN OPM.WriteString("(unsigned)")
+													ELSE OPM.WriteString("(unsigned long)")
+								END ;
+								OPM.Write("("); expr(l, MinPrec); OPM.Write(")")
 					ELSE OPM.err(200)
 					END
 		|	Ndop:
@@ -874,6 +880,31 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 
 	PROCEDURE stat(n: OPT.Node; outerProc: OPT.Object);
 		VAR proc: OPT.Object; saved: ExitInfo; l, r: OPT.Node;
+
+		(* ?????? ??????? ????? do...while() ??? ????????? FOR *)
+		PROCEDURE ForUntil (id: OPT.Node; cond: SHORTINT; z: OPT.Node);
+		(* id-?????????? ?????, cond - ??????? ?????????? ?????, z -??? *)
+			VAR step: LONGINT;
+		BEGIN
+			step := z^.conval^.intval;
+			IF cond = neq THEN OPM.WriteString( "!" ) ; END;
+			IF step = 1 THEN OPM.WriteString( "++" ) ; OPC.CompleteIdent(id^.obj)
+			ELSIF step = -1 THEN OPM.WriteString( "--" ) ; OPC.CompleteIdent(id^.obj)
+			ELSIF step = 0 THEN OPC.CompleteIdent(id^.obj)  (* ?????? ?????????, ????????? ?????????? ?????????? ? ?????? ????? *)
+			ELSE (* ??? ?? ????????? *)
+				IF cond # eql THEN OPM.WriteString( "(" ) END;
+				OPC.CompleteIdent(id^.obj); OPM.WriteString( "+=" ); expr(z, MinPrec);
+				IF cond # eql THEN OPM.WriteString( ")" ) END;
+			END;
+			CASE cond OF (* ??????? ~cond *)
+			eql, neq :    (* empty *);
+			| lss  : OPM.WriteString(" >= 0");
+			| leq  : OPM.WriteString(" > 0");
+			| gtr   : OPM.WriteString(" <= 0");
+			| geq : OPM.WriteString(" < 0");
+			END;
+		END ForUntil;
+
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
 			OPM.errpos := n^.conval^.intval;
@@ -981,7 +1012,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 						DEC(exit.level)
 			|	Nrepeat:
 						INC(exit.level); OPM.WriteString("do "); OPC.BegBlk; stat(n^.left, outerProc); OPC.EndBlk0;
-						OPM.WriteString(" while (!");  expr(n^.right, 9); OPM.Write(CloseParen);
+						IF n^.right^.class = Nassign THEN (* ???? FOR *)
+							OPM.WriteString(" while (");
+							ForUntil(n^.right^.left, n^.right^.subcl, n^.right^.right);
+							OPM.Write(")");
+						ELSE (* ??????? REPEAT UNTIL *)
+							OPM.WriteString(" while (!");  expr(n^.right, 9); OPM.Write(CloseParen);
+						END;
 						DEC(exit.level)
 			|	Nloop:
 						saved := exit; exit.level := 0; exit.label := -1;
