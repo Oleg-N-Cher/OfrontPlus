@@ -988,10 +988,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					| IProc:
 						OPM.SymWInt(Sipro); OutSign(obj^.typ, obj^.link); OutName(obj^.name)
 					| CProc:
-						OPM.SymWInt(Scpro); OutSign(obj^.typ, obj^.link); ext := obj^.conval^.ext;
-						j := ORD(ext^[0]); i := 1; OPM.SymWInt(j);
-						WHILE i <= j DO OPM.SymWCh(ext^[i]); INC(i) END ;
-						OutName(obj^.name)
+						IF obj^.name # "_init" THEN
+							OPM.SymWInt(Scpro); OutSign(obj^.typ, obj^.link); ext := obj^.conval^.ext;
+							j := ORD(ext^[0]); i := 1; OPM.SymWInt(j);
+							WHILE i <= j DO OPM.SymWCh(ext^[i]); INC(i) END ;
+							OutName(obj^.name)
+						END
 					END
 				END
 			END ;
