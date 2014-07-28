@@ -1242,7 +1242,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					ELSE
 						OPM.WriteString("0x"); OPM.WriteHex (caseVal);
 					END;
-		|	SInt, Int, LInt :
+		|	Byte, SInt, Int, LInt :
 					OPM.WriteInt (caseVal);
 		END;
 		OPM.WriteString(Colon);
