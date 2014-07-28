@@ -752,10 +752,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			IF f IN intSet + {Char} THEN  xval := x^.conval^.intval
 			ELSE err(61); xval := 1
 			END ;
-			IF f IN intSet THEN
-				IF LabelForm < f THEN err(60) END
-			ELSIF LabelForm # f THEN err(60)
-			END ;
+			IF (f IN intSet) # (LabelForm IN intSet) THEN err(60) END;
 			IF sym = upto THEN
 				OPS.Get(sym); ConstExpression(y); yval := y^.conval^.intval;
 				IF (y^.typ^.form # f) & ~((f IN intSet) & (y^.typ^.form IN intSet)) THEN err(60) END ;
@@ -886,7 +883,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		BEGIN
 			Expression(x); pos := OPM.errpos;
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-			ELSIF ~(x^.typ^.form IN {Char..LInt}) THEN err(125)
+			ELSIF ~(x^.typ^.form IN {Byte, Char..LInt}) THEN err(125)
 			END ;
 			CheckSym(of); cases := NIL; lastcase := NIL; n := 0;
 			LOOP
