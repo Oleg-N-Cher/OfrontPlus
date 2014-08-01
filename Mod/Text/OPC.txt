@@ -190,7 +190,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				openClause := (typ^.comp = Array)
 			ELSIF typ^.form = ProcTyp THEN
 				OPM.Write(OpenParen); OPM.Write(Star)
-			ELSE
+			ELSIF ~ (typ^.comp IN {Byte, Char}) THEN
 				pointers := 0;
 				WHILE (typ^.strobj = NIL) & (typ^.form = Pointer) DO INC (pointers); typ := typ^.BaseTyp END ;
 				IF typ^.comp # DynArr THEN Stars (typ, openClause) END ;
