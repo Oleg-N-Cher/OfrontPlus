@@ -190,7 +190,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				openClause := (typ^.comp = Array)
 			ELSIF typ^.form = ProcTyp THEN
 				OPM.Write(OpenParen); OPM.Write(Star)
-			ELSIF ~ (typ^.comp IN {Byte, Char}) THEN
+			ELSE
 				pointers := 0;
 				WHILE (typ^.strobj = NIL) & (typ^.form = Pointer) DO INC (pointers); typ := typ^.BaseTyp END ;
 				IF typ^.comp # DynArr THEN Stars (typ, openClause) END ;
@@ -1030,9 +1030,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	PROCEDURE EnterProc* (proc: OPT.Object);
 		VAR var, scope: OPT.Object; typ: OPT.Struct; dim: SHORTINT;
 	BEGIN
-(*
-		IF proc^.vis # external THEN OPM.WriteString(Static) END ; (* No static for smart link *)
-*)
+		IF proc^.vis # external THEN OPM.WriteString(Static) END ;
 		ProcHeader(proc, TRUE);
 		BegBlk;
 		scope := proc^.scope;
