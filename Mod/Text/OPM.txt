@@ -96,7 +96,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		LIntSize*, SetSize*, RealSize*, LRealSize*, PointerSize*, ProcSize*, RecSize*,
 		CharAlign*, BoolAlign*, SIntAlign*, IntAlign*,
 		LIntAlign*, SetAlign*, RealAlign*, LRealAlign*, PointerAlign*, ProcAlign*, RecAlign*,
-		ByteOrder*, BitOrder*, MaxSet*: INTEGER;
+		ByteOrder*, BitOrder*, ForN-, MaxSet*: INTEGER;
 		MinSInt*, MinInt*, MinLInt*, MaxSInt*, MaxInt*, MaxLInt*, MaxIndex*: INTEGER;
 		MinReal*, MaxReal*, MinLReal*, MaxLReal*: REAL;
 
@@ -483,6 +483,24 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END
 	END GetProperty;
 
+	PROCEDURE GetProperty1(R: Files.Reader; name: ARRAY OF CHAR; VAR par: INTEGER; defval: INTEGER);
+		VAR ch: SHORTCHAR; i: INTEGER; s: ARRAY 32 OF CHAR;
+	BEGIN
+		ch := " "; i := 0;
+		WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
+		WHILE (~R.eof) & (ch >" ") DO s[i] := ch; INC(i); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
+		s[i] := 0X;
+		IF s = name THEN i := 0;
+			WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
+			IF (~R.eof) & (ch >= "0") & (ch <= "9") THEN
+				WHILE (~R.eof) & (ch >= "0") & (ch <= "9") DO i := i * 10 + ORD(ch) - ORD("0"); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
+				par := i;
+			ELSE par := defval
+			END
+		ELSE par := defval
+		END
+	END GetProperty1;
+
 	PROCEDURE GetProperties();
 		VAR F: Files.File; R: Files.Reader;
 	BEGIN
@@ -514,6 +532,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
 			*)
 			GetProperty(R, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
+			GetProperty1(R, "FOR", ForN, 0);	(* 0: Original (default); 1: Extended; 2: Experimenal *)
+			IF (ForN >= 0) & (ForN <= 2) THEN (* Ok *) ELSE ForN := 0; Mark(-157, -1) END
 		ELSE Mark(-156, -1)
 		END ;
 		IF RealSize = 4 THEN MaxReal := 3.40282346E38
