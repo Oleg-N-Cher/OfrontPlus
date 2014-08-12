@@ -77,7 +77,7 @@ MODULE Reals;
 		WHILE i >= 0 DO d[i] := "0"; DEC(i) END ;
 	END ConvertL;
 
-	PROCEDURE Unpack(VAR b, d: ARRAY OF S.BYTE);
+	PROCEDURE Unpack(VAR b, d: ARRAY OF BYTE);
 		VAR i, k: SHORTINT; len: LONGINT;
 	BEGIN i := 0; len := LEN(b);
 		WHILE i < len DO
