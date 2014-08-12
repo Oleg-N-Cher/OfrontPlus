@@ -1,34 +1,29 @@
 MODULE Console;	(* J. Templ, 29-June-96 *)
 
-	(* output to Unix standard output device based Write system call *)
+	(* output to Unix/Windows standard output device based printf *)
 
 	IMPORT SYSTEM;
 
-	VAR line: ARRAY 128 OF CHAR;
-		pos: INTEGER;
-
-	PROCEDURE -Write(adr, n: LONGINT)
-		"write(1/*stdout*/, adr, n)";
+	PROCEDURE -includestdio()	"#include <stdio.h>";
+	PROCEDURE -fflushstdout()	"fflush(stdout)";
+	PROCEDURE -writeCh(ch: CHAR)	'printf("%c", ch)';
+	PROCEDURE -writeStr(str: ARRAY OF CHAR)	'printf("%s", str)';
+	PROCEDURE -writeLn()	'printf("\n")';
 
 	PROCEDURE -read(VAR ch: CHAR): LONGINT
 		"read(0/*stdin*/, ch, 1)";
 
 	PROCEDURE Flush*();
-	BEGIN
-		Write(SYSTEM.ADR(line), pos); pos := 0;
+	BEGIN fflushstdout()
 	END Flush;
 
 	PROCEDURE Char*(ch: CHAR);
-	BEGIN
-		IF pos = LEN(line) THEN Flush() END ;
-		line[pos] := ch;  INC(pos);
-		IF ch = 0AX THEN Flush() END
+	BEGIN writeCh(ch); IF ch = 0AX THEN fflushstdout() END 
 	END Char;
 
-	PROCEDURE String*(s: ARRAY OF CHAR);
-		VAR i: INTEGER;
-	BEGIN i := 0;
-		WHILE s[i] # 0X DO Char(s[i]); INC(i) END
+	PROCEDURE String*(s: ARRAY[1] OF CHAR);
+	(** UNSAFE! Make sure that value of array 'str' is null-terminated. *)
+	BEGIN writeStr(s)
 	END String;
 
 	PROCEDURE Int*(i, n: LONGINT);
@@ -45,11 +40,11 @@ MODULE Console;	(* J. Templ, 29-June-96 *)
 		END ;
 		IF i < 0 THEN s[k] := "-"; INC(k) END ;
 		WHILE n > k DO Char(" "); DEC(n) END ;
-		WHILE k > 0 DO  DEC(k); Char(s[k]) END
+		WHILE k > 0 DO	DEC(k); Char(s[k]) END
 	END Int;
 
 	PROCEDURE Ln*;
-	BEGIN Char(0AX);	(* Unix end-of-line *)
+	BEGIN writeLn; fflushstdout()
 	END Ln;
 
 	PROCEDURE Bool*(b: BOOLEAN);
@@ -82,5 +77,6 @@ MODULE Console;	(* J. Templ, 29-June-96 *)
 		line[i] := 0X
 	END ReadLine;
 
-BEGIN pos := 0;
+(*PROCEDURE- _init* "/*-noinit*/";*)
+
 END Console.
