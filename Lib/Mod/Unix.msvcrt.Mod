@@ -23,7 +23,7 @@ CONST
   TCP* = 0;
 
 (* flag sets, cf. /usr/include/asm/fcntl.h *)
-  rdonly* = {}; wronly* = {0}; rdwr* = {1}; creat* = {6}; excl* = {7}; trunc* = {9}; append* = {10}; ndelay = {11};
+  rdonly* = {}; wronly* = {0}; rdwr* = {1}; creat* = {8}; excl* = {10}; trunc* = {9}; append* = {3}; binary* = {15};
 
 (* error numbers *)
 
