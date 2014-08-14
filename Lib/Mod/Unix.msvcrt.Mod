@@ -175,6 +175,12 @@ TYPE
     minuteswest*, dsttime*: LONGINT
   END ;
 
+  (* /usr/include/sys/timeb.h *)
+  Timeb = RECORD
+    time: LONGINT;
+    millitm, timezone, dstflag: INTEGER
+  END ;
+
   Itimerval* = RECORD
     interval*, value*: Timeval
   END ;
@@ -234,6 +240,9 @@ TYPE
   PROCEDURE -includeErrno()
     "#include <errno.h>";
 
+  PROCEDURE -includeSóstimeb()
+    "#include <sys/timeb.h>";
+
   PROCEDURE -err(): LONGINT
     "errno";
 
@@ -254,8 +263,20 @@ TYPE
   PROCEDURE -Select*(width: LONGINT; VAR readfds, writefds, exceptfds: FdSet; VAR timeout: Timeval): LONGINT
     "select(width, readfds, writefds, exceptfds, timeout)";
 
-  PROCEDURE -Gettimeofday* (VAR tv: Timeval; VAR tz: Timezone)
-    "gettimeofday(tv, tz)";
+  PROCEDURE -Ftime* (VAR timebuf: Timeb)
+    "_ftime((struct _timeb*)timebuf)";
+
+  PROCEDURE Gettimeofday* (VAR tv: Timeval; VAR tz: Timezone);
+  (* From: Martin Lambers
+     Subject:  gettimeofday() for Win32
+     http://lists.gnu.org/archive/html/bug-gnulib/2005-08/msg00166.html
+  *)
+    VAR timebuf: Timeb;
+  BEGIN
+    Ftime(timebuf);
+    tv.sec := timebuf.time;
+    tv.usec := timebuf.millitm * 1000;
+  END Gettimeofday;
 
   PROCEDURE -Read* (fd, buf, nbyte: LONGINT): LONGINT
     "read(fd, buf, nbyte)";
