@@ -243,6 +243,10 @@ TYPE
   PROCEDURE -includeSóstimeb()
     "#include <sys/timeb.h>";
 
+  (* for _chsize() *)
+  PROCEDURE -includeIo()
+     "#include <io.h>";
+
   PROCEDURE -err(): LONGINT
     "errno";
 
@@ -365,7 +369,7 @@ TYPE
     "flock(fd, operation)";
 
   PROCEDURE -Ftruncate*(fd, length: LONGINT): LONGINT
-    "ftruncate(fd, length)";
+    "_chsize(fd, length)";
 
   PROCEDURE -Readblk*(fd: LONGINT; VAR buf: ARRAY OF BYTE; len: LONGINT): LONGINT
     "read(fd, buf, len)";
