@@ -105,6 +105,7 @@ MODULE Kernel;
 	END  UserTime;
 *)
 
+(*
 	PROCEDURE Select*(delay: LONGINT);
 		VAR rs, ws, xs: Unix.FdSet; n: LONGINT; tv: Unix.Timeval;
 	BEGIN
@@ -115,6 +116,7 @@ MODULE Kernel;
 		n := Unix.Select(256, rs, ws, xs, tv);
 		IF n >= 0 THEN readySet := rs END
 	END Select;
+*)
 
 	PROCEDURE -GC*(markStack: BOOLEAN)
 		"SYSTEM_GC(markStack)";
