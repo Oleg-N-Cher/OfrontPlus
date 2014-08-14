@@ -140,8 +140,8 @@ MODULE Kernel;
 	END LargestAvailable;
 
 	PROCEDURE Halt(n: LONGINT);
-		VAR res: LONGINT;
-	BEGIN res := Unix.Kill(Unix.Getpid(), 4);
+		(*VAR res: LONGINT;*)
+	BEGIN (*res := *) Unix.Exit(n); (*Kill(Unix.Getpid(), 4);*)
 	END Halt;
 
 	PROCEDURE EndianTest;
