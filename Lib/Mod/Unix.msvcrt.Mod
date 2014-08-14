@@ -360,7 +360,7 @@ TYPE
     "lseek(fd, offset, origin)";
 
   PROCEDURE -Fsync*(fd: LONGINT): LONGINT
-    "fsync(fd)";
+    "_commit(fd)";
 
   PROCEDURE -Fcntl*(fd, cmd, arg: LONGINT ): LONGINT
     "fcntl(fd, cmd, arg)";
