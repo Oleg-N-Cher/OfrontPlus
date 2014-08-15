@@ -121,12 +121,12 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 				f.workName := f.registerName; f.registerName := ""; f.tempFile := FALSE
 			END ;
 			errno := Unix.Unlink(f.workName);	(*unlink first to avoid stale NFS handles and to avoid reuse of inodes*)
-			f.fd := Unix.Open(f.workName, Unix.rdwr + Unix.creat + Unix.trunc, {2, 4,5, 7,8});
+			f.fd := Unix.Open(f.workName, Unix.rdwr + Unix.binary + Unix.creat + Unix.trunc, {2, 4,5, 7,8});
 			done := f.fd >= 0; errno := Unix.errno();
 			IF (~done & ((errno = Unix.ENFILE) OR (errno = Unix.EMFILE))) OR (done & (f.fd >= fileTabSize)) THEN
 				IF done & (f.fd >= fileTabSize) THEN errno := Unix.Close(f.fd) END ;
 				Kernel.GC(TRUE);
-				f.fd := Unix.Open(f.workName, Unix.rdwr + Unix.creat + Unix.trunc, {2, 4,5, 7,8});
+				f.fd := Unix.Open(f.workName, Unix.rdwr + Unix.binary + Unix.creat + Unix.trunc, {2, 4,5, 7,8});
 				done := f.fd >= 0
 			END ;
 			IF done THEN
@@ -238,17 +238,17 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 			ELSE pos := 0; ScanPath(pos, dir); MakeFileName(dir, name, path); ScanPath(pos, dir)
 			END ;
 			LOOP
-				fd := Unix.Open(path, Unix.rdwr, {}); done := fd >= 0; errno := Unix.errno();
+				fd := Unix.Open(path, Unix.rdwr + Unix.binary, {}); done := fd >= 0; errno := Unix.errno();
 				IF (~done & ((errno = Unix.ENFILE) OR (errno = Unix.EMFILE))) OR (done & (fd >= fileTabSize)) THEN
 					IF done & (fd >= fileTabSize) THEN res := Unix.Close(fd) END ;
 					Kernel.GC(TRUE);
-					fd := Unix.Open(path, Unix.rdwr, {});
+					fd := Unix.Open(path, Unix.rdwr + Unix.binary, {});
 					done := fd >= 0; errno := Unix.errno();
 					IF ~done & ((errno = Unix.ENFILE) OR (errno = Unix.EMFILE)) THEN Err("too many files open", f, errno) END
 				END ;
 				IF ~done & ((errno = Unix.EACCES) OR (errno = Unix.EROFS) OR (errno = Unix.EAGAIN)) THEN
 					(* errno EAGAIN observed on Solaris 2.4 *)
-					fd := Unix.Open(path, Unix.rdonly, {}); done :=  fd >= 0; errno := Unix.errno()
+					fd := Unix.Open(path, Unix.rdonly + Unix.binary, {}); done :=  fd >= 0; errno := Unix.errno()
 				END ;
 IF (~done) & (errno # Unix.ENOENT) THEN 
 	Console.String("warning Files.Old "); Console.String(name); 
@@ -457,9 +457,9 @@ Especially Length would become fairly complex.
 			r := Unix.Rename(old, new);
 			IF r < 0 THEN res := SHORT(Unix.errno());
 				IF res = Unix.EXDEV THEN (* cross device link, move the file *)
-					fdold := Unix.Open(old, Unix.rdonly, {});
+					fdold := Unix.Open(old, Unix.rdonly + Unix.binary, {});
 					IF fdold < 0 THEN res := 2; RETURN END ;
-					fdnew := Unix.Open(new, Unix.rdwr + Unix.creat + Unix.trunc, {2,  4,5,  7,8});
+					fdnew := Unix.Open(new, Unix.rdwr + Unix.binary + Unix.creat + Unix.trunc, {2,  4,5,  7,8});
 					IF fdnew < 0 THEN r := Unix.Close(fdold); res := 3; RETURN END ;
 					n := Unix.Read(fdold, SYSTEM.ADR(buf), bufsize);
 					WHILE n > 0 DO
