@@ -158,13 +158,13 @@ TYPE
   END ;
 
   Status* = RECORD (* struct stat *)
-    dev*, devX*: LONGINT; (* 64 bit in Linux 2.2 *)
-    pad1: INTEGER;
-    ino*, mode*, nlink*, uid*, gid*: LONGINT;
-    rdev*, rdevX*: LONGINT; (* 64 bit in Linux 2.2 *)
-    pad2: INTEGER;
-    size*, blksize*, blocks*, atime*, unused1*, mtime*, unused2*, ctime*, 
-    unused3*, unused4*, unused5*: LONGINT;
+    dev* (*, devX* *) : LONGINT; (* unsigned int in msvcrt *)
+    (*pad1: INTEGER;*)
+    ino*, mode*, nlink*, uid*, gid*: INTEGER;
+    rdev* (*, rdevX* *): LONGINT; (* unsigned int in msvcrt *)
+    (*pad2: INTEGER;*)
+    size*, (* blksize*, blocks*, *) atime*, (* unused1*, *) mtime*,
+    (* unused2*, *) ctime* (*, unused3*, unused4*, unused5* *): LONGINT;
   END ;
   
   Timeval* = RECORD
@@ -332,8 +332,8 @@ TYPE
   BEGIN
     res := stat(name, statbuf);
     (* make the first 4 bytes as unique as possible (used in module Files for caching!) *) 
-    INC(statbuf.dev, statbuf.devX);
-    INC(statbuf.rdev, statbuf.rdevX);
+    INC(statbuf.dev, statbuf.dev);
+    INC(statbuf.rdev, statbuf.rdev);
     RETURN res;
   END Stat;
 
@@ -345,8 +345,8 @@ TYPE
   BEGIN
     res := fstat(fd, statbuf);
     (* make the first 4 bytes as unique as possible (used in module Files for caching!) *) 
-    INC(statbuf.dev, statbuf.devX); 
-    INC(statbuf.rdev, statbuf.rdevX);
+    INC(statbuf.dev, statbuf.dev); 
+    INC(statbuf.rdev, statbuf.rdev);
     RETURN res;
   END Fstat;
 
