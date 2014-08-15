@@ -42,7 +42,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 			f: File;
 			chg: BOOLEAN;
 			org, size: LONGINT;
-			data: ARRAY bufsize OF SYSTEM.BYTE
+			data: ARRAY bufsize OF BYTE
 		END ;
 
 		Rider* = RECORD 
@@ -330,7 +330,7 @@ END ;
 		r.buf := buf; r.org := org; r.offset := offset; r.eof := FALSE; r.res := 0
 	END Set;
 
-	PROCEDURE Read* (VAR r: Rider; VAR x: SYSTEM.BYTE);
+	PROCEDURE Read* (VAR r: Rider; VAR x: BYTE);
 		VAR offset: LONGINT; buf: Buffer;
 	BEGIN
 		buf := r.buf; offset := r.offset;
@@ -345,7 +345,7 @@ END ;
 		END
 	END Read;
 
-	PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR xpos, min, restInBuf, offset: LONGINT; buf: Buffer;
 	BEGIN
 		IF n > LEN(x) THEN IdxTrap END ;
@@ -368,7 +368,7 @@ END ;
 	BEGIN RETURN r.buf.f
 	END Base;
 
-	PROCEDURE Write* (VAR r: Rider; x: SYSTEM.BYTE);
+	PROCEDURE Write* (VAR r: Rider; x: BYTE);
 		VAR buf: Buffer; offset: LONGINT;
 	BEGIN
 		buf := r.buf; offset := r.offset;
@@ -384,7 +384,7 @@ END ;
 		r.offset := offset + 1; r.res := 0
 	END Write;
 
-	PROCEDURE WriteBytes* (VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+	PROCEDURE WriteBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT);
 		VAR xpos, min, restInBuf, offset: LONGINT; buf: Buffer;
 	BEGIN
 		IF n > LEN(x) THEN IdxTrap END ;
@@ -409,7 +409,7 @@ No code duplication, more symmetric, only two ifs for
 Read and Write in buffer, buf.size replaced by bufsize in Write ops, buf.size and len
 must be made consistent with offset (if offset > buf.size) in a lazy way.
 
-PROCEDURE Write* (VAR r: Rider; x: SYSTEM.BYTE);
+PROCEDURE Write* (VAR r: Rider; x: BYTE);
 	VAR buf: Buffer; offset: LONGINT;
 BEGIN
 	buf := r.buf; offset := r.offset;
@@ -421,7 +421,7 @@ END Write;
 
 PROCEDURE WriteBytes ...
 
-PROCEDURE Read* (VAR r: Rider; VAR x: SYSTEM.BYTE);
+PROCEDURE Read* (VAR r: Rider; VAR x: BYTE);
 	VAR offset: LONGINT; buf: Buffer;
 BEGIN
 	buf := r.buf; offset := r.offset;
@@ -500,7 +500,7 @@ Especially Length would become fairly complex.
 		getcwd(Kernel.CWD)
 	END ChangeDirectory;
 
-	PROCEDURE FlipBytes(VAR src, dest: ARRAY OF SYSTEM.BYTE);
+	PROCEDURE FlipBytes(VAR src, dest: ARRAY OF BYTE);
 		VAR i, j: LONGINT;
 	BEGIN
 		IF ~Kernel.littleEndian THEN i := LEN(src); j := 0;
