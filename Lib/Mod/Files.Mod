@@ -207,9 +207,24 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 		RETURN ch = "/"
 	END HasDir;
 
+  (* the idea is to avoid opening of one and the same file multiple times. *)
+  (* so, when we have a file opened by the program, we may for some reason *)
+  (*  open that file again with Files.Old and in this case Files.Old must  *)
+  (*  not return a newly opened file but a pointer to the originally       *)
+  (*  opened file. look at Files.Old to see what is going on. it opens a   *)
+  (*  new Unix file descriptor and gets the stat structure in order to see *)
+  (*  if the file already exists in the table of open files (fileTab).     *)
+  (* in the stat there is a unique identification of that file that is     *)
+  (*  independent of the file name and path used to open it. it's the pair *)
+  (*  consisting of (dev, ino), where dev means the Unix device number     *)
+  (*  the file resides on and ino means the internal Unix node number      *)
+  (*  (i-node), which is local to dev. jt, 2014. *)
+
+  (* p.s. in Windows the field stat.st_ino is always zero. onc, 2014. *)
+
 	PROCEDURE CacheEntry(dev, ino: LONGINT; mtime: LONGINT): File;
-		VAR f: File; i: INTEGER; stat: Unix.Status; res: LONGINT;
-	BEGIN i := 0;
+		(*VAR f: File; i: INTEGER; stat: Unix.Status; res: LONGINT;*)
+	BEGIN (* i := 0;
 		WHILE i < fileTabSize DO
 			f := SYSTEM.VAL(File, fileTab[i]);
 			IF (f # NIL) & (ino = f.ino) & (dev = f.dev) THEN 
@@ -225,6 +240,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 			END ;
 			INC(i)
 		END ;
+*)
 		RETURN NIL
 	END CacheEntry;
 
