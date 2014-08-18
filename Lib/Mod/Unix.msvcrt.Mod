@@ -331,9 +331,23 @@ TYPE
     VAR res: LONGINT;
   BEGIN
     res := stat(name, statbuf);
-    (* make the first 4 bytes as unique as possible (used in module Files for caching!) *) 
-    INC(statbuf.dev, statbuf.dev);
-    INC(statbuf.rdev, statbuf.rdev);
+    (* make the first 4 bytes as unique as possible (used in module Files for caching!) *)
+
+    (* now, in Linux 2.2 the dev is actually 64 bit,  *)
+    (* consisting of 2 consecutive LONGINTs. dev&devX.*)
+    (* since I didn't want to modify module Files for *)
+    (*  every Unix version, it still uses 4-byte dev  *)
+    (*  and ino for checking the file identity. but   *)
+    (* how to put a 64 bit value into a 32 bit value? *)
+    (* use a hash function: dev + devX, rdev + rdevX. *)
+    (* this is not very clean, because in some (rare) *)
+    (*  cases it could produce a collision.           *)
+    (* if we don't have devX we are lucky, because    *)
+    (*  then we don't need a hash function. jt, 2014. *)
+(*
+    INC(statbuf.dev, statbuf.devX);
+    INC(statbuf.rdev, statbuf.rdevX);
+*)
     RETURN res;
   END Stat;
 
@@ -344,9 +358,23 @@ TYPE
     VAR res: LONGINT;
   BEGIN
     res := fstat(fd, statbuf);
-    (* make the first 4 bytes as unique as possible (used in module Files for caching!) *) 
-    INC(statbuf.dev, statbuf.dev); 
-    INC(statbuf.rdev, statbuf.rdev);
+    (* make the first 4 bytes as unique as possible (used in module Files for caching!) *)
+
+    (* now, in Linux 2.2 the dev is actually 64 bit,  *)
+    (* consisting of 2 consecutive LONGINTs. dev&devX.*)
+    (* since I didn't want to modify module Files for *)
+    (*  every Unix version, it still uses 4-byte dev  *)
+    (*  and ino for checking the file identity. but   *)
+    (* how to put a 64 bit value into a 32 bit value? *)
+    (* use a hash function: dev + devX, rdev + rdevX. *)
+    (* this is not very clean, because in some (rare) *)
+    (*  cases it could produce a collision.           *)
+    (* if we don't have devX we are lucky, because    *)
+    (*  then we don't need a hash function. jt, 2014. *)
+(*
+    INC(statbuf.dev, statbuf.devX);
+    INC(statbuf.rdev, statbuf.rdevX);
+*)
     RETURN res;
   END Fstat;
 
