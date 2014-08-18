@@ -33,14 +33,14 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 				END ;
 				buf[bufpos] := 0X; Console.String(buf)	(* flush *)
 			ELSE
-				Console.String("ocat: cannot open "); Console.String(path); Console.Ln
+				Console.String("OCat: cannot open "); Console.String(path); Console.Ln
 			END ;
 			INC(i); path  := "";
 			Args.Get(i, path)
 		END
 	END Cat;
 
-BEGIN Cat
+BEGIN (*$MAIN*) Cat
 END OCatCmd.
 
 
