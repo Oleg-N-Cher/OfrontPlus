@@ -80,7 +80,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		END
 	END Translate;
 
-BEGIN
+BEGIN (*$MAIN*)
 	signal(2, Trap);	(* interrupt *)
 	signal(3, Trap);	(* quit *)
 	signal(4, Trap);	(* illegal instruction, HALT *)
