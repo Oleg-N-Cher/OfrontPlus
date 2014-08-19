@@ -612,9 +612,6 @@ void CmdlnTexts_Read (CmdlnTexts_Reader *R, LONGINT *R__typ, CHAR *ch)
 	if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
 		Files_Read(&(*R).rider, Files_Rider__typ, (void*)&*ch);
 		(*R).elem = NIL;
-		if (*ch == 0x0a && __GUARDP(u, CmdlnTexts_PieceDesc, 1)->ascii) {
-			*ch = 0x0d;
-		}
 	} else if (__ISP(u, CmdlnTexts_ElemDesc, 1)) {
 		*ch = 0x1c;
 		(*R).elem = __GUARDP(u, CmdlnTexts_ElemDesc, 1);
@@ -752,7 +749,7 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 	ch = (*S).nextCh;
 	i = 0;
 	for (;;) {
-		if (ch == 0x0d) {
+		if (ch == 0x0d || ch == 0x0a) {
 			(*S).line += 1;
 		} else if (ch != ' ' && ch != 0x09) {
 			break;
