@@ -116,7 +116,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		S: INTEGER;
 		stop, useLineNo: BOOLEAN;
-		prevch: CHAR;	(* previous char to calculate a line number *)
 
 
 	(* ------------------------- Log Output ------------------------- *)
@@ -218,19 +217,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- read source text -------------------------*)
 	
 	PROCEDURE Get*(VAR ch: CHAR);	(* read next character from source text, 0X if eof *)
-	BEGIN (* supported 0DX (Oberon), 0AX (UNIX), 0DX+0AX (Windows) *)
+	BEGIN
 		Texts.Read(inR, ch);
-		IF useLineNo THEN
-			CASE ch OF
-			| 0DX:
-					curpos := (curpos DIV 256 + 1) * 256
-			| 0AX:
-					IF prevch # 0DX THEN curpos := (curpos DIV 256 + 1) * 256 END
-			ELSE
-				IF curpos MOD 256 # 255 THEN INC(curpos) END
+		IF useLineNo THEN 
+			IF ch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
+			ELSIF curpos MOD 256 # 255 THEN INC(curpos)
 				(* at 255 means:  >= 255 *)
-			END;
-			prevch := ch
+			END
 		ELSE
 			INC(curpos)
 		END ;
@@ -621,5 +614,5 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
 
-BEGIN prevch := 0X; Texts.OpenWriter(W)
+BEGIN Texts.OpenWriter(W)
 END OfrontOPM.

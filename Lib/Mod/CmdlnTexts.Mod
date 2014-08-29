@@ -332,6 +332,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 		VAR u: Run;
 	BEGIN u := R.run; R.fnt := u.fnt; R.col := u.col; R.voff := u.voff; INC(R.off);
 		IF u IS Piece THEN Files.Read(R.rider, ch); R.elem := NIL;
+			IF (ch = 0AX) & u(Piece).ascii THEN ch := CR END	(* << LF to CR *)
 		ELSIF u IS Elem THEN ch := ElemChar; R.elem := u(Elem)
 		ELSE ch := 0X; R.elem := NIL; R.eot := TRUE
 		END;
@@ -403,7 +404,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 
 	BEGIN ch := S.nextCh; i := 0;
 		LOOP
-			IF (ch = CR) OR (ch = 0AX) THEN INC(S.line)
+			IF ch = CR THEN INC(S.line)
 			ELSIF (ch # " ") & (ch # TAB) THEN EXIT
 			END ;
 			Read(S, ch)
