@@ -224,6 +224,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			ELSIF curpos MOD 256 # 255 THEN INC(curpos)
 				(* at 255 means:  >= 255 *)
 			END
+		ELSIF ch = 0DX THEN
+			curpos := Texts.Pos(inR)	(* supports CR LF mapping *)
 		ELSE
 			INC(curpos)
 		END ;
