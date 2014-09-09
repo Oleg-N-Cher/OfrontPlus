@@ -307,6 +307,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			ELSIF c = Array THEN IdFPrint(btyp); OPM.FPrint(idfp, btyp^.idfp); OPM.FPrint(idfp, typ^.n)
 			ELSIF f = ProcTyp THEN FPrintSign(idfp, btyp, typ^.link)
 			END ;
+			IF typ^.sysflag # 0 THEN OPM.FPrint(idfp, typ^.sysflag) END;  (* J. Templ, moved from FPrintStr *)
 			typ^.idfp := idfp
 		END
 	END IdFPrint;
@@ -368,7 +369,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		IF ~typ^.fpdone THEN
 			IdFPrint(typ); pbfp := typ^.idfp;
-			IF typ^.sysflag # 0 THEN OPM.FPrint(pbfp, typ^.sysflag) END ;
+			(* IF typ^.sysflag # 0 THEN OPM.FPrint(pbfp, typ^.sysflag) END ;   J. Templ, moved to IdFPrint *)
 			pvfp := pbfp; typ^.pbfp := pbfp; typ^.pvfp := pvfp;	(* initial fprints may be used recursively *)
 			typ^.fpdone := TRUE;
 			f := typ^.form; c := typ^.comp; btyp := typ^.BaseTyp;
@@ -716,6 +717,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF ~impCtxt.self THEN obj^.vis := external END	(* type name visible now, obj^.fprint already done *)
 		ELSE
 			obj := NewObj(); obj^.mnolev := SHORT(SHORT(-mno)); obj^.vis := external;
+			IF tag = Ssys THEN obj^.sysflag := SHORT(SHORT(OPM.SymRInt())); tag := OPM.SymRInt() END;
 			IF tag <= Pointer THEN	(* Constant *)
 				obj^.mode := Con; obj^.typ := impCtxt.ref[tag]; obj^.conval := NewConst(); InConstant(tag, obj^.conval)
 			ELSIF tag >= Sxpro THEN
@@ -970,6 +972,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					| pbmodified: FPrintErr(obj, 252)
 					| pvmodified: FPrintErr(obj, 251)
 					END ;
+					IF obj^.sysflag # 0 THEN OPM.SymWInt(Ssys); OPM.SymWInt(obj^.sysflag) END;
 					CASE obj^.mode OF
 					| Con:
 						OutConstant(obj); OutName(obj^.name)
