@@ -612,6 +612,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			name: OPS.Name;
 			mode, vis: BYTE;
 			forward: BOOLEAN;
+			sys: SHORTINT;
 
 		PROCEDURE GetCode;
 			VAR ext: OPT.ConstExt; n: SHORTINT; c: INTEGER;
@@ -640,6 +641,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		PROCEDURE GetParams;
 		BEGIN
 			proc^.vis := vis; proc^.mode := mode; proc^.typ := OPT.notyp;
+			proc^.sysflag := SHORT(sys);
 			proc^.conval := OPT.NewConst(); proc^.conval^.setval := {};
 			IF sym = lparen THEN
 				OPS.Get(sym); FormalParameters(proc^.link, proc^.typ)
@@ -710,16 +712,22 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			END
 		END TProcDecl;
 
-	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc;
+	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc; sys := 0;
 		IF (sym # ident) & (sym # lparen) THEN
-			IF sym = times THEN	(* mode set later in OPB.CheckAssign *)
-			ELSIF sym = arrow THEN forward := TRUE
-			ELSIF sym = plus THEN mode := IProc
-			ELSIF sym = minus THEN mode := CProc
-			ELSE err(ident)
-			END ;
-			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ;
-			OPS.Get(sym)
+			CheckSysFlag(sys, 0);
+			IF sys # 0 THEN
+				IF ~OPT.SYSimported THEN err(135) END;
+				IF sym = minus THEN mode := CProc; OPS.Get(sym) END
+			ELSE
+				IF sym = times THEN	(* mode set later in OPB.CheckAssign *)
+				ELSIF sym = arrow THEN forward := TRUE
+				ELSIF sym = plus THEN mode := IProc
+				ELSIF sym = minus THEN mode := CProc
+				ELSE err(ident)
+				END ;
+				IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ;
+				OPS.Get(sym)
+			END
 		END ;
 		IF sym = lparen THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(fwd);
