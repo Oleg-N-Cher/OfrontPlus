@@ -546,7 +546,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE CheckProc(x: OPT.Struct; y: OPT.Object);	(* proc var x := proc y, check compatibility *)
 	BEGIN
-		IF y^.mode IN {XProc, IProc, LProc} THEN
+		IF (y^.mode IN {XProc, IProc, LProc}) & (x^.sysflag = y^.sysflag) THEN
 			IF y^.mode = LProc THEN
 				IF y^.mnolev = 0 THEN y^.mode := XProc
 				ELSE err(73)

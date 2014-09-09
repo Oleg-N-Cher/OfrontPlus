@@ -124,6 +124,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
 						Indent(1); Ws("PROCEDURE ");
+						IF obj^.sysflag # 0 THEN Ws("[1] ") END;
 						IF obj^.mode = IProc THEN Wch("+")
 						ELSIF obj^.mode = CProc THEN Wch("-")
 						END ;

@@ -189,7 +189,8 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				Stars (typ^.BaseTyp, openClause);
 				openClause := (typ^.comp = Array)
 			ELSIF typ^.form = ProcTyp THEN
-				OPM.Write(OpenParen); OPM.Write(Star)
+				OPM.Write(OpenParen);
+				IF typ^.sysflag # 0 THEN OPM.WriteString("__CALL_1 ") END; OPM.Write(Star)
 			ELSE
 				pointers := 0;
 				WHILE (typ^.strobj = NIL) & (typ^.form = Pointer) DO INC (pointers); typ := typ^.BaseTyp END ;
@@ -554,8 +555,8 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					OPM.WriteStringVar(obj^.name); DeclareParams(obj^.link, TRUE, FALSE);
 					OPM.WriteLn; OPM.WriteString("__EXTERN ");
 					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
-					OPM.WriteString(" __CALL "); OPM.WriteStringVar(obj^.name);
-					AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
+					IF obj^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END; OPM.Write(Blank);
+					OPM.WriteStringVar(obj^.name); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 				END;
 				OPM.WriteLn
 			END ;
@@ -771,6 +772,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	PROCEDURE ProcHeader(proc: OPT.Object; define: BOOLEAN);
 	BEGIN
 		IF proc^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(proc^.typ^.strobj) END ;
+		IF proc^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END ;
 		OPM.Write(Blank); Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
 			AnsiParamList(proc^.link, TRUE, TRUE);
