@@ -147,7 +147,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		IF obj # NIL THEN
 			Wmthd(obj^.left);
 			IF obj^.mode = TProc THEN
-				Indent(3); Ws("PROCEDURE (");
+				Indent(3); Wch("(");
 				IF obj^.name # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN
 						IF obj^.link^.vis = inPar THEN Ws("IN ")
@@ -186,7 +186,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		| Pointer:
 				Ws("POINTER "); SysFlag; Ws("TO "); Wtype(typ^.BaseTyp)
 		| ProcTyp:
-				Ws("PROCEDURE "); SysFlag; Wsign(typ^.BaseTyp, typ^.link)
+				Ws("PROCEDURE"); IF typ^.sysflag # 0 THEN Ws(" [1]") END; Wsign(typ^.BaseTyp, typ^.link)
 		| Comp:
 				CASE typ^.comp OF
 				| Array:
