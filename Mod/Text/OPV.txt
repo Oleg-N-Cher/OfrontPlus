@@ -267,7 +267,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 					CASE subclass OF
 						not, minus, adr, val, conv, unsgn:
 								RETURN 9
-					|	is, abs, cap, odd, cc:
+					|	is, abs, cap, odd, cc, bit:
 								RETURN 10
 					END
 		|	Ndop:
@@ -331,7 +331,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 	PROCEDURE Convert(n: OPT.Node; form, prec: SHORTINT);
 		VAR from: SHORTINT;
 	BEGIN from := n^.typ^.form;
-		IF form = Set THEN OPM.WriteString(SetOfFunc); Entier(n, MinPrec); OPM.Write(CloseParen)
+		IF form = Set THEN OPM.WriteString("(SET)"); Entier(n, 9)
 		ELSIF form = LInt THEN
 			IF from < LInt THEN OPM.WriteString("(LONGINT)") END ;
 			Entier(n, 9)
@@ -637,6 +637,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 									OPM.WriteString("__VAL("); OPC.Ident(n^.typ^.strobj); OPM.WriteString(Comma);
 									expr(l, MinPrec); OPM.Write(CloseParen)
 								END
+					|	bit:
+								OPM.WriteString(SetOfFunc); expr(l, MinPrec); OPM.Write(CloseParen)
 					|	unsgn:
 								IF form < LInt THEN OPM.WriteString("(unsigned)")
 													ELSE OPM.WriteString("(unsigned long)")

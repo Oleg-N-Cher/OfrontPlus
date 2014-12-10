@@ -1023,7 +1023,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ELSE err(202)
 			END ;
 			x^.obj := NIL
-		ELSE Convert(x, OPT.settyp)
+		ELSE BindNodes(Nmop, OPT.settyp, x, NIL); x^.subcl := bit
 		END ;
 		x^.typ := OPT.settyp
 	END SetElem;
