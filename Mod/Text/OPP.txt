@@ -147,12 +147,9 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE CheckSysFlagVarPar(VAR sysflag: SHORTINT);
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
-			IF sym = ident THEN
-				IF OPT.SYSimported THEN
-					IF OPS.name = "nil" THEN OPS.Get(sym); sysflag := nilBit ELSE err(ident) END
-				ELSE err(135)
-				END;
-			ELSE err(51); sysflag := 0
+			IF ~OPT.SYSimported THEN err(135) END;
+			IF (sym = ident) & (OPS.name = "nil") THEN OPS.Get(sym); sysflag := nilBit
+			ELSE OPS.Get(sym); err(220); sysflag := 0
 			END ;
 			CheckSym(rbrak)
 		ELSE sysflag := 0
