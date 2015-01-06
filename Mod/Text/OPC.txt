@@ -695,6 +695,41 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END
 		END
 	END FieldList;
+	
+	PROCEDURE WriteConstArr (VAR obj: OPT.Object; typ: OPT.Struct); 
+	(* ????????? ??????????? "??????????? ??????". typ - ??????? ??????? ??????? *)
+	VAR apar:  OPT.Node; i: INTEGER; 
+	
+		PROCEDURE WriteElem (arr: OPT.ConstArr; i: INTEGER);
+		(* ??????? ? ??????? i-? ??????? ???????????? ??????? arr *)
+		BEGIN
+			WITH 
+			|  arr : OPT.ConstArrOfByte DO OPM.WriteInt(arr.val[i]);
+			|  arr : OPT.ConstArrOfSInt DO OPM.WriteInt(arr.val[i]);			
+			|  arr : OPT.ConstArrOfInt    DO OPM.WriteInt(arr.val[i]);			
+			END;
+		END WriteElem;	
+		
+	BEGIN
+		OPM.WriteString("{"); (* ?????? (  *)
+		i := 0;
+		IF  typ^.BaseTyp^.form # 15  THEN (* ?????? ?? ??????? ????????? *)
+			FOR i := 0 TO typ^.n-2 DO  
+						WriteElem(obj^.conval^.arr , i+obj^.conval^.intval);  OPM.WriteString(",");
+						IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END;
+			END;
+			WriteElem(obj^.conval^.arr , typ^.n-1+obj^.conval^.intval); (* ????????? ??????? *)	
+			INC(obj^.conval^.intval, typ^.n); (* ???? ?????????? ???????? *)					
+		ELSE (* ?????? ?? ???????? *)
+			FOR i := 0 TO typ^.n-2 DO
+				WriteConstArr (obj, typ^.BaseTyp);  (* ??????????? ????????? ?????????? *)	
+				OPM.WriteString(","); OPM.WriteLn;
+				BegStat;
+			END;
+			WriteConstArr (obj, typ^.BaseTyp); (* ????????? ??????? *)
+		END;	
+		OPM.WriteString("}"); 
+	END WriteConstArr;
 
 	PROCEDURE IdentList (obj: OPT.Object; vis: SHORTINT);
 	(* generate var and param lists; vis: 0 all global vars, local var, 1 exported(R) var, 2 par list, 3 scope var *)
@@ -703,17 +738,23 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		base := NIL; first := TRUE;
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
-				IF (obj^.typ # base) OR (obj^.vis # lastvis) THEN	(* new variable base type definition required *)
+				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR 
+				((obj^.conval # NIL) & (obj^.conval^.arr # NIL)) THEN	(* ?????? ?????.?????? ????????*)
+				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;
 					base := obj^.typ; lastvis := obj^.vis;
 					BegStat;
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
-						IF obj^.vis = internal THEN OPM.WriteString(Static)
+						IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* ?????.?????? *)
+								OPM.WriteString("__CONSTARR ");
+						ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
 						ELSE OPM.WriteString(Export)
 						END
-					END ;
+					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN  (* ?????.?????? *)
+								OPM.WriteString("__CONSTARRLOC ")
+					END;
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
 					ELSE DeclareBase(obj)
 					END
@@ -732,6 +773,12 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					base := NIL
 				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) & (obj^.typ^.form = Pointer) THEN
 					OPM.WriteString(" = NIL")
+				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN (* ???????? ?????.??????? *)
+					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
+					BegStat; 
+					obj^.conval^.intval := 0;
+					WriteConstArr (obj, obj^.typ); 
+					Indent(-1);
 				END
 			END ;
 			obj := obj^.link
