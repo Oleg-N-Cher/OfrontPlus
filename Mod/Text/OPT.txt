@@ -17,12 +17,31 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Node* = POINTER TO NodeDesc;
 		ConstExt* = POINTER TO OPS.String;
 
+		ConstArr* = POINTER TO EXTENSIBLE RECORD END;
+		
+		ConstArrOfByte* = POINTER TO RECORD(ConstArr)
+			val*: POINTER TO ARRAY OF BYTE;
+		END;
+		
+		ConstArrOfSInt*= POINTER TO RECORD(ConstArr)
+			val*: POINTER TO ARRAY OF SHORTINT;
+		END;
+		
+		ConstArrOfInt* = POINTER TO RECORD(ConstArr)
+			val*: POINTER TO ARRAY OF INTEGER;
+		END;
+		
+		ConstArrOfLInt* = POINTER TO RECORD(ConstArr)
+			val*: POINTER TO ARRAY OF LONGINT;
+		END;		
+
 		ConstDesc* = RECORD
 			ext*: ConstExt;	(* string or code for code proc *)
 			intval*: INTEGER;	(* constant value or adr, proc par size, text position or least case label *)
 			intval2*: INTEGER;	(* string length, proc var size or larger case label *)
 			setval*: SET;	(* constant value, procedure body present or "ELSE" present in case *)
-			realval*: REAL	(* real or longreal constant value *)
+			realval*: REAL;	(* real or longreal constant value *)
+			arr*: ConstArr; (*  ??? ?????? ???????????? ??????? *)
 		END ;
 
 		ObjDesc* = EXTENSIBLE RECORD
