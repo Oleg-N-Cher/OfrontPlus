@@ -843,7 +843,7 @@ suffix does not work in K&R *)
 		subsys := subsysdir$;
 		i := LEN(subsys$) - 1; IF (i >= 0) & ((subsys[i] = "\") OR (subsys[i] = "/")) THEN subsys[i] := 0X END;
 		IF useSymObj THEN
-			SFsubdir := "/Sym"; CFsubdir := "/Obj" + addtoObj;
+			SFsubdir := "/Sym" + addtoObj; CFsubdir := "/Obj" + addtoObj;
 		ELSE
 			SFsubdir := ""; CFsubdir := "";
 		END;
