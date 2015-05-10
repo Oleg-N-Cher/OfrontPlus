@@ -501,7 +501,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval+i] := SHORT(ORD(a^.conval^.ext^[i]));
 		END;
 	END String2Chars;
-	
+
 	PROCEDURE ConstArray (VAR x: OPT.Node; typ: OPT.Struct); 
 	(* ??????????? "??????????? ??????". typ - ??????? ??????? ??????? *)
 	VAR apar:  OPT.Node; n, i: INTEGER; fp: OPT.Object;  y: OPT.ConstArr;
@@ -538,12 +538,18 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 							OPB.Param(apar, fp); (* ???????? ?? ?????????????*)
 							(* ??? ????? ???????? ??????? ? ????? ?????? *)
 							WITH 
-							| y : OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, SYSTEM.BYTE (??? Ofront'?) *)
-									y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval)); 
+							| y : OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, BYTE (??? Ofront'?) *)
+									IF x^.conval^.intval+i < LEN(y.val^) THEN
+										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval));
+									ELSE  err(64) END;
 							| y : OPT.ConstArrOfSInt DO (* ???? ? ???????? ? 2 ????? *)
-									y.val[x^.conval^.intval+i] := SHORT(apar^.conval^.intval); 
+									IF x^.conval^.intval+i < LEN(y.val^) THEN
+										y.val[x^.conval^.intval+i] := SHORT(apar^.conval^.intval); 
+									ELSE  err(64) END;
 							| y : OPT.ConstArrOfInt DO (* ???? ? ???????? ? 4 ????? *)
-									y.val[x^.conval^.intval+i] := apar^.conval^.intval; 
+									IF x^.conval^.intval+i < LEN(y.val^) THEN
+										y.val[x^.conval^.intval+i] := apar^.conval^.intval;
+									ELSE  err(64) END;
 							END;
 						END;
 						INC(i);
