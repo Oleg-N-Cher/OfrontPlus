@@ -194,7 +194,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			ELSE
 				pointers := 0;
 				WHILE (typ^.strobj = NIL) & (typ^.form = Pointer) DO INC (pointers); typ := typ^.BaseTyp END ;
-				IF typ^.comp # DynArr THEN Stars (typ, openClause) END ;
+				IF (typ^.comp # DynArr) & (pointers # 0) THEN Stars (typ, openClause) END ;
 				IF pointers > 0 THEN
 					IF openClause THEN OPM.Write(OpenParen); openClause := FALSE END ;
 					WHILE pointers > 0 DO OPM.Write(Star); DEC (pointers) END
