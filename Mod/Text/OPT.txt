@@ -1086,9 +1086,6 @@ BEGIN topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 	undftyp^.BaseTyp := undftyp;
 
 	(*initialization of module SYSTEM*)
-	EnterTyp("SHORTCARD", SInt, SHORT(OPM.SIntSize), sinttyp);
-	EnterTyp("CARDINAL", Int, SHORT(OPM.IntSize), inttyp);
-	EnterTyp("LONGCARD", LInt, SHORT(OPM.LIntSize), linttyp);
 	EnterTyp("PTR", Pointer, SHORT(OPM.PointerSize), sysptrtyp);
 	EnterProc("ADR", adrfn);
 	EnterProc("CC", ccfn);
