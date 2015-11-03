@@ -1,8 +1,10 @@
 MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 (* C source code generator version 
 
-	30.4.2000 jt, synchronized with BlackBox version, in particular
+	2000-04-30 jt, synchronized with BlackBox version, in particular
 		various promotion rules changed (long) => (LONGINT), xxxL avoided
+	2015-10-07 jt, fixed endless recursion in Stars for imported fields of anonymous type POINTER TO DynArr;
+		param typ has a strobj pointer to an anonymous object, i.e. typ.strobj.name = ""
 *)
 
 	IMPORT OPT := OfrontOPT, OPM := OfrontOPM;
@@ -188,9 +190,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.Write(OpenParen); OPM.Write(Star)
 			ELSE
 				pointers := 0;
-				WHILE (typ^.strobj = NIL) & (typ^.form = Pointer) DO INC (pointers); typ := typ^.BaseTyp END ;
-				IF (typ^.comp # DynArr) & (pointers # 0) THEN Stars (typ, openClause) END ;
+				WHILE ((typ^.strobj = NIL) OR (typ^.strobj^.name = "")) & (typ^.form = Pointer) DO
+					INC (pointers); typ := typ^.BaseTyp
+				END ;
 				IF pointers > 0 THEN
+					IF typ^.comp # DynArr THEN Stars (typ, openClause) END ;
 					IF openClause THEN OPM.Write(OpenParen); openClause := FALSE END ;
 					WHILE pointers > 0 DO OPM.Write(Star); DEC (pointers) END
 				END
