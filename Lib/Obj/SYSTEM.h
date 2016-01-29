@@ -90,6 +90,7 @@ extern void SYSTEM_ENUMR();
 #define __ROT(x, n, t)	((n)>=0? __ROTL(x, n, t): __ROTR(x, -(n), t))
 #define __BIT(x, n)	(*(unsigned long*)(x)>>(n)&1)
 #define __MOVE(s, d, n)	memcpy((char*)(d),(char*)(s),n)
+#define __COPYREC(d, s, n) d=s
 
 /* std procs and operator mappings */
 #define __SHORT(x, y)	((int)((unsigned long)(x)+(y)<(y)+(y)?(x):(__HALT(-8),0)))
@@ -142,8 +143,8 @@ static int __STRCMP(x, y)
 #define __GUARDP(p, typ, level)	((typ*)(__ISP(p,typ,level)?p:(__HALT(-5),p)))
 #define __GUARDR(r, typ, level)	(*((typ*)(__IS(r##__typ,typ,level)?r:(__HALT(-5),r))))
 #define __GUARDA(p, typ, level)	((struct typ*)(__IS(__TYPEOF(p),typ,level)?p:(__HALT(-5),p)))
-#define __GUARDEQR(p, dyntyp, typ)	if(dyntyp!=typ##__typ) __HALT(-6);*(p)
-#define __GUARDEQP(p, typ)	if(__TYPEOF(p)!=typ##__typ)__HALT(-6);*(p)
+#define __GUARDEQR(p, dyntyp, typ)	*((dyntyp!=typ##__typ)?__HALT(-6):p)
+#define __GUARDEQP(p, typ)	*((__TYPEOF(p)!=typ##__typ)?__HALT(-6):p)
 #define __WITHCHK	__HALT(-7)
 #define __R(i, ub)	(((unsigned)(long)(i)<(unsigned long)(ub))?i:(__HALT(-8),0))
 #define __RF(i, ub)	SYSTEM_RCHK((long)(i),(long)(ub))
