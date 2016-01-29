@@ -942,13 +942,17 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 									END ;
 									OPM.Write(CloseParen)
 								ELSE
+									IF l^.typ^.comp = Record THEN OPM.WriteString("__COPYREC(") END;
 									IF (l^.typ^.form = Pointer) & (l^.obj # NIL) & (l^.obj^.adr = 1) & (l^.obj^.mode = Var) THEN
 										l^.obj^.adr := 0; design(l, MinPrec); l^.obj^.adr := 1;			(* avoid cast of WITH-variable *)
 										IF r^.typ^.form # NilTyp THEN OPM.WriteString(" = (void*)")
 										ELSE OPM.WriteString(" = ")
 										END
 									ELSE
-										design(l, MinPrec); OPM.WriteString(" = ")
+										design(l, MinPrec);
+										IF l^.typ^.comp = Record THEN OPM.WriteString(Comma)
+										ELSE OPM.WriteString(" = ")
+										END
 									END ;
 									IF l^.typ = r^.typ THEN expr(r, MinPrec)
 									ELSIF (l^.typ^.form = Pointer) & (r^.typ^.form # NilTyp) & (l^.typ^.strobj # NIL) THEN
@@ -956,6 +960,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 									ELSIF l^.typ^.comp = Record THEN
 										OPM.WriteString("*("); OPC.Andent(l^.typ); OPM.WriteString("*)&"); expr(r, 9)
 									ELSE expr(r, MinPrec)
+									END;
+									IF l^.typ^.comp = Record THEN
+										OPM.WriteString(Comma); OPM.WriteInt(l^.typ^.size); OPM.Write(")")
 									END
 								END
 					|	newfn:
