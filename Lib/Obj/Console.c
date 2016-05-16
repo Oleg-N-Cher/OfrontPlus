@@ -2,6 +2,8 @@
 #include "SYSTEM.h"
 
 
+static CHAR Console_line[128];
+static INTEGER Console_pos;
 
 
 export void Console_Bool (BOOLEAN b);
@@ -14,33 +16,41 @@ export void Console_Read (CHAR *ch);
 export void Console_ReadLine (CHAR *line, LONGINT line__len);
 export void Console_String (CHAR *s, LONGINT s__len);
 
-#define Console_fflushstdout()	fflush(stdout)
-#include <stdio.h>
+#define Console_Write(adr, n)	write(1/*stdout*/, adr, n)
 #define Console_read(ch)	read(0/*stdin*/, ch, 1)
-#define Console_writeCh(ch)	printf("%c", ch)
-#define Console_writeLn()	printf("\n")
-#define Console_writeStr(str, str__len)	printf("%s", str)
 
 /*============================================================================*/
 
 void Console_Flush (void)
 {
-	Console_fflushstdout();
+	Console_Write((LONGINT)Console_line, Console_pos);
+	Console_pos = 0;
 }
 
 /*----------------------------------------------------------------------------*/
 void Console_Char (CHAR ch)
 {
-	Console_writeCh(ch);
+	if (Console_pos == 128) {
+		Console_Flush();
+	}
+	Console_line[__X(Console_pos, 128)] = ch;
+	Console_pos += 1;
 	if (ch == 0x0a) {
-		Console_fflushstdout();
+		Console_Flush();
 	}
 }
 
 /*----------------------------------------------------------------------------*/
 void Console_String (CHAR *s, LONGINT s__len)
 {
-	Console_writeStr(s, s__len);
+	INTEGER i;
+	__DUP(s, s__len, CHAR);
+	i = 0;
+	while (s[__X(i, s__len)] != 0x00) {
+		Console_Char(s[__X(i, s__len)]);
+		i += 1;
+	}
+	__DEL(s);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -79,8 +89,7 @@ void Console_Int (LONGINT i, LONGINT n)
 /*----------------------------------------------------------------------------*/
 void Console_Ln (void)
 {
-	Console_writeLn();
-	Console_fflushstdout();
+	Console_Char(0x0a);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -145,5 +154,6 @@ export void *Console__init(void)
 	__REGCMD("Flush", Console_Flush);
 	__REGCMD("Ln", Console_Ln);
 /* BEGIN */
+	Console_pos = 0;
 	__ENDMOD;
 }

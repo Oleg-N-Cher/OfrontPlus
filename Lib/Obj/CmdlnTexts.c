@@ -604,6 +604,8 @@ void CmdlnTexts_OpenReader (CmdlnTexts_Reader *R, LONGINT *R__typ, CmdlnTexts_Te
 void CmdlnTexts_Read (CmdlnTexts_Reader *R, LONGINT *R__typ, CHAR *ch)
 {
 	CmdlnTexts_Run u = NIL;
+	LONGINT pos;
+	CHAR nextch;
 	u = (*R).run;
 	(*R).fnt = u->fnt;
 	(*R).col = u->col;
@@ -612,6 +614,17 @@ void CmdlnTexts_Read (CmdlnTexts_Reader *R, LONGINT *R__typ, CHAR *ch)
 	if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
 		Files_Read(&(*R).rider, Files_Rider__typ, (void*)&*ch);
 		(*R).elem = NIL;
+		if (*ch == 0x0a && __GUARDP(u, CmdlnTexts_PieceDesc, 1)->ascii) {
+			*ch = 0x0d;
+		} else if (*ch == 0x0d && __GUARDP(u, CmdlnTexts_PieceDesc, 1)->ascii) {
+			pos = Files_Pos(&(*R).rider, Files_Rider__typ);
+			Files_Read(&(*R).rider, Files_Rider__typ, (void*)&nextch);
+			if (nextch == 0x0a) {
+				(*R).off += 1;
+			} else {
+				Files_Set(&(*R).rider, Files_Rider__typ, __GUARDP(u, CmdlnTexts_PieceDesc, 1)->file, pos);
+			}
+		}
 	} else if (__ISP(u, CmdlnTexts_ElemDesc, 1)) {
 		*ch = 0x1c;
 		(*R).elem = __GUARDP(u, CmdlnTexts_ElemDesc, 1);
@@ -749,7 +762,7 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 	ch = (*S).nextCh;
 	i = 0;
 	for (;;) {
-		if (ch == 0x0d || ch == 0x0a) {
+		if (ch == 0x0d) {
 			(*S).line += 1;
 		} else if (ch != ' ' && ch != 0x09) {
 			break;
