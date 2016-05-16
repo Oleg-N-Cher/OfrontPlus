@@ -27,7 +27,6 @@ static Files_Rider OfrontOPM_R[3];
 static Files_File OfrontOPM_oldSFile, OfrontOPM_newSFile, OfrontOPM_HFile, OfrontOPM_BFile, OfrontOPM_HIFile;
 static INTEGER OfrontOPM_S;
 static BOOLEAN OfrontOPM_stop, OfrontOPM_useLineNo;
-static CHAR OfrontOPM_prevch;
 
 
 static void OfrontOPM_Append (Files_Rider *R, LONGINT *R__typ, Files_File F);
@@ -255,22 +254,13 @@ void OfrontOPM_Get (CHAR *ch)
 {
 	CmdlnTexts_Read(&OfrontOPM_inR, CmdlnTexts_Reader__typ, &*ch);
 	if (OfrontOPM_useLineNo) {
-		switch (*ch) {
-			case 0x0d: 
-				OfrontOPM_curpos = __ASHL(__ASHR(OfrontOPM_curpos, 8) + 1, 8);
-				break;
-			case 0x0a: 
-				if (OfrontOPM_prevch != 0x0d) {
-					OfrontOPM_curpos = __ASHL(__ASHR(OfrontOPM_curpos, 8) + 1, 8);
-				}
-				break;
-			default: 
-				if (__MASK(OfrontOPM_curpos, -256) != 255) {
-					OfrontOPM_curpos += 1;
-				}
-				break;
+		if (*ch == 0x0d) {
+			OfrontOPM_curpos = __ASHL(__ASHR(OfrontOPM_curpos, 8) + 1, 8);
+		} else if (__MASK(OfrontOPM_curpos, -256) != 255) {
+			OfrontOPM_curpos += 1;
 		}
-		OfrontOPM_prevch = *ch;
+	} else if (*ch == 0x0d) {
+		OfrontOPM_curpos = CmdlnTexts_Pos(&OfrontOPM_inR, CmdlnTexts_Reader__typ);
 	} else {
 		OfrontOPM_curpos += 1;
 	}
@@ -959,7 +949,6 @@ export void *OfrontOPM__init(void)
 	__REGCMD("RegisterNewSym", OfrontOPM_RegisterNewSym);
 	__REGCMD("WriteLn", OfrontOPM_WriteLn);
 /* BEGIN */
-	OfrontOPM_prevch = 0x00;
 	CmdlnTexts_OpenWriter(&OfrontOPM_W, CmdlnTexts_Writer__typ);
 	__ENDMOD;
 }
