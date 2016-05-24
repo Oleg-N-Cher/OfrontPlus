@@ -1,0 +1,1 @@
+-Zpe -Zcon -D_WIN32 -O2 -s -I ..\Lib\Obj -I "..\..\WinDev\Bin\djgpp\include\win32" ..\Lib\OfrontDJGPP.a ..\..\WinDev\Bin\djgpp\lib\libmsvcrt.a -o ..\Ofront.exe
