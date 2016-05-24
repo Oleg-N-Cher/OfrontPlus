@@ -1040,7 +1040,6 @@ BEGIN topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 	undftyp^.BaseTyp := undftyp;
 
 	(*initialization of module SYSTEM*)
-	EnterTyp("BYTE", Byte, OPM.ByteSize, bytetyp);
 	EnterTyp("PTR", Pointer, OPM.PointerSize, sysptrtyp);
 	EnterProc("ADR", adrfn);
 	EnterProc("CC", ccfn);
@@ -1057,6 +1056,7 @@ BEGIN topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 	syslink := topScope^.right;
 	universe := topScope; topScope^.right := NIL;
 
+	EnterTyp("BYTE", Byte, OPM.ByteSize, bytetyp);
 	EnterTyp("CHAR", Char, OPM.CharSize, chartyp);
 	EnterTyp("SET", Set, OPM.SetSize, settyp);
 	EnterTyp("REAL", Real, OPM.RealSize, realtyp);
@@ -1097,7 +1097,7 @@ BEGIN topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 	impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp
 END OfrontOPT.
 
-Objects:
+Objects:
 
     mode  | adr    conval  link     scope    leaf
    ------------------------------------------------

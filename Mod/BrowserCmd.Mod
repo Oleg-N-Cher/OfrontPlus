@@ -211,7 +211,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		obj := typ^.strobj;
 		IF obj^.name # "" THEN
 			IF typ^.mno # 0 THEN Ws(OPT.GlbMod[typ^.mno].name); Wch(".")
-			ELSIF (typ = OPT.bytetyp) OR (typ = OPT.sysptrtyp) THEN Ws("SYSTEM.")
+			ELSIF typ = OPT.sysptrtyp THEN Ws("SYSTEM.")
 			ELSIF obj^.vis = internal THEN Wch("#")
 			END ;
 			Ws(obj^.name)

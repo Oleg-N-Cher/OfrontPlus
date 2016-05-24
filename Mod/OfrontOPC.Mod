@@ -171,7 +171,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSE OPM.WriteStringVar(OPM.modName)
 				END ;
 				OPM.Write(Underscore)
-			ELSIF (obj = OPT.sysptrtyp^.strobj) OR (obj = OPT.bytetyp^.strobj) THEN
+			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END ;
 			OPM.WriteStringVar(obj^.name)
