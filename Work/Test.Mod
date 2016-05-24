@@ -1,0 +1,4 @@
+MODULE Test123;
+BEGIN (*$MAIN*)
+
+END Test1231.
