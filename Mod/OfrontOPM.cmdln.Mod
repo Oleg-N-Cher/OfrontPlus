@@ -169,9 +169,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		IF Args.argc = 1 THEN stop := TRUE;
 			Console.Ln;
-			Console.String("Ofront (TM) - Oberon-2 to C Translator V1.2"); Console.Ln;
+			Console.String("OfrontPlus - Oberon-2 to C Translator v1.0"); Console.Ln;
 			Console.String("Copyright (c) Software Templ OEG, 1995-2007"); Console.Ln;
-			Console.Ln;
+			Console.String("              VEDAsoft Oberon Club, 2012-2016");
+			Console.Ln; Console.Ln;
 			Console.String("SYNOPSIS"); Console.Ln;
 				Console.String('  command = "ofront" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
