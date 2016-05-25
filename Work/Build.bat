@@ -1,4 +1,5 @@
 @SET PATH=..\Bin;%PATH%
-ofront -lm Test.Mod
-ECHO %errorlevel%
-@PAUSE
+@SET OBERON=%CD%;%CD%\..\Lib\Sym
+
+ofront -m Hello.Mod
+CALL gcc Hello.c
