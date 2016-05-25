@@ -134,6 +134,9 @@ static void OfrontOPP_CheckSysFlag (INTEGER *sysflag, INTEGER default_)
 	LONGINT sf;
 	if (OfrontOPP_sym == 31) {
 		OfrontOPS_Get(&OfrontOPP_sym);
+		if (!OfrontOPT_SYSimported) {
+			OfrontOPP_err(135);
+		}
 		OfrontOPP_ConstExpression(&x);
 		if (__IN(x->typ->form, 0x70)) {
 			sf = x->conval->intval;

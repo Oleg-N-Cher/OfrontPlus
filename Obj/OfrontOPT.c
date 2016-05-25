@@ -1733,7 +1733,6 @@ export void *OfrontOPT__init(void)
 	OfrontOPT_InitStruct(&OfrontOPT_stringtyp, 10);
 	OfrontOPT_InitStruct(&OfrontOPT_niltyp, 11);
 	OfrontOPT_undftyp->BaseTyp = OfrontOPT_undftyp;
-	OfrontOPT_EnterTyp((CHAR*)"BYTE", 1, OfrontOPM_ByteSize, &OfrontOPT_bytetyp);
 	OfrontOPT_EnterTyp((CHAR*)"PTR", 13, OfrontOPM_PointerSize, &OfrontOPT_sysptrtyp);
 	OfrontOPT_EnterProc((CHAR*)"ADR", 20);
 	OfrontOPT_EnterProc((CHAR*)"CC", 21);
@@ -1750,6 +1749,7 @@ export void *OfrontOPT__init(void)
 	OfrontOPT_syslink = OfrontOPT_topScope->right;
 	OfrontOPT_universe = OfrontOPT_topScope;
 	OfrontOPT_topScope->right = NIL;
+	OfrontOPT_EnterTyp((CHAR*)"BYTE", 1, OfrontOPM_ByteSize, &OfrontOPT_bytetyp);
 	OfrontOPT_EnterTyp((CHAR*)"CHAR", 3, OfrontOPM_CharSize, &OfrontOPT_chartyp);
 	OfrontOPT_EnterTyp((CHAR*)"SET", 9, OfrontOPM_SetSize, &OfrontOPT_settyp);
 	OfrontOPT_EnterTyp((CHAR*)"REAL", 7, OfrontOPM_RealSize, &OfrontOPT_realtyp);

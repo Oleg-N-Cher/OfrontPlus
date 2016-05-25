@@ -212,7 +212,7 @@ void OfrontOPC_Ident (OfrontOPT_Object obj)
 				OfrontOPM_WriteStringVar((void*)OfrontOPM_modName, 32);
 			}
 			OfrontOPM_Write('_');
-		} else if (obj == OfrontOPT_sysptrtyp->strobj || obj == OfrontOPT_bytetyp->strobj) {
+		} else if (obj == OfrontOPT_sysptrtyp->strobj) {
 			OfrontOPM_WriteString((CHAR*)"SYSTEM_", (LONGINT)8);
 		}
 		OfrontOPM_WriteStringVar((void*)obj->name, 32);

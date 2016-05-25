@@ -331,7 +331,7 @@ static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len)
 	CHAR home[256];
 	i = 0;
 	ch = Kernel_OBERON[__X(*pos, 1024)];
-	while (ch == ' ' || ch == ':') {
+	while (ch == ' ' || ch == ';') {
 		*pos += 1;
 		ch = Kernel_OBERON[__X(*pos, 1024)];
 	}
@@ -344,13 +344,13 @@ static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len)
 			dir[__X(i, dir__len)] = home[__X(i, 256)];
 			i += 1;
 		}
-		if (((ch != '/' && ch != 0x00) && ch != ':') && ch != ' ') {
-			while (i > 0 && dir[__X(i - 1, dir__len)] != '/') {
+		if ((((ch != '\\' && ch != '/') && ch != 0x00) && ch != ';') && ch != ' ') {
+			while ((i > 0 && dir[__X(i - 1, dir__len)] != '\\') && dir[__X(i - 1, dir__len)] != '/') {
 				i -= 1;
 			}
 		}
 	}
-	while (ch != 0x00 && ch != ':') {
+	while (ch != 0x00 && ch != ';') {
 		dir[__X(i, dir__len)] = ch;
 		i += 1;
 		*pos += 1;

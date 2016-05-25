@@ -634,6 +634,10 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				z->typ = OfrontOPT_booltyp;
 				break;
 			case 24: 
+				if ((z->class == 7 && f == 3) && z->conval->intval >= 32) {
+					OfrontOPB_CharToString(z);
+					f = 10;
+				}
 				if (z->class < 7 || f == 10) {
 					z = NewOp__29(op, typ, z);
 				} else {

@@ -377,7 +377,7 @@ static void BrowserCmd_Wtype (OfrontOPT_Struct typ)
 		if (typ->mno != 0) {
 			BrowserCmd_Ws(OfrontOPT_GlbMod[__X(typ->mno, 64)]->name, 32);
 			BrowserCmd_Wch('.');
-		} else if (typ == OfrontOPT_bytetyp || typ == OfrontOPT_sysptrtyp) {
+		} else if (typ == OfrontOPT_sysptrtyp) {
 			BrowserCmd_Ws((CHAR*)"SYSTEM.", (LONGINT)8);
 		} else if (obj->vis == 0) {
 			BrowserCmd_Wch('#');

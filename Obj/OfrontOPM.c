@@ -165,9 +165,11 @@ void OfrontOPM_OpenPar (void)
 	if (Args_argc == 1) {
 		OfrontOPM_stop = 1;
 		Console_Ln();
-		Console_String((CHAR*)"Ofront (TM) - Oberon-2 to C Translator V1.2", (LONGINT)44);
+		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0", (LONGINT)43);
 		Console_Ln();
 		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007", (LONGINT)44);
+		Console_Ln();
+		Console_String((CHAR*)"              VEDAsoft Oberon Club, 2012-2016", (LONGINT)46);
 		Console_Ln();
 		Console_Ln();
 		Console_String((CHAR*)"SYNOPSIS", (LONGINT)9);
