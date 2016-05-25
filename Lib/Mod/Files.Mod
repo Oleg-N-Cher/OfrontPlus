@@ -186,16 +186,16 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 		VAR i: INTEGER; ch: CHAR; home: ARRAY 256 OF CHAR;
 	BEGIN
 		i := 0; ch := Kernel.OBERON[pos];
-		WHILE (ch = " ") OR (ch = ":") DO INC(pos); ch := Kernel.OBERON[pos] END ;
+		WHILE (ch = " ") OR (ch = ";") DO INC(pos); ch := Kernel.OBERON[pos] END ;
 		IF ch = "~" THEN
 			INC(pos); ch := Kernel.OBERON[pos];
 			home := ""; Args.GetEnv("HOME", home);
 			WHILE home[i] # 0X DO dir[i] := home[i]; INC(i) END ;
-			IF (ch # "/") & (ch # 0X) & (ch # ":") & (ch # " ") THEN
-				WHILE (i > 0) & (dir[i-1] # "/") DO DEC(i) END
+			IF (ch # "\") & (ch # "/") & (ch # 0X) & (ch # ";") & (ch # " ") THEN
+				WHILE (i > 0) & (dir[i-1] # "\") & (dir[i-1] # "/") DO DEC(i) END
 			END
 		END ;
-		WHILE (ch # 0X) & (ch # ":") DO dir[i] := ch; INC(i); INC(pos); ch := Kernel.OBERON[pos] END ;
+		WHILE (ch # 0X) & (ch # ";") DO dir[i] := ch; INC(i); INC(pos); ch := Kernel.OBERON[pos] END ;
 		WHILE (i > 0) & (dir[i-1] = " ") DO DEC(i) END ;
 		dir[i] := 0X
 	END ScanPath;
