@@ -1,4 +1,8 @@
-@IF /%XDev%==/ GOTO NoXDev
+@IF NOT /%XDev%==/ GOTO XDev
+@ECHO Please set system variable XDev=X:\Path\To\XDev
+@PAUSE
+
+:XDev
 
 @SET WinDev=%XDev%\WinDev
 @SET PATH=%WinDev%\Bin\MinGW\bin;%PATH%
@@ -7,9 +11,3 @@
 
 %gcc% %1 ..\Lib\Ofront.a -o %1.exe
 @IF errorlevel 1 PAUSE
-@EXIT
-
-:NoXDev
-
-@ECHO Please set system variable XDev=X:\Path\To\XDev
-@PAUSE
