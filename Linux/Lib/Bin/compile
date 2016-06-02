@@ -1,0 +1,18 @@
+#!/bin/bash
+export OBERON=.:../Sym
+
+if [ "$2" == "SYSTEM" ]; then
+  ../../Bin/ofront -iapxe ../Mod/$2.Mod
+else
+  ../../Bin/ofront -se ../Mod/$2.Mod
+  errCode=$?
+  if [ $errCode != 0 ]; then echo "ERROR #"$errCode; sleep 1000m; fi
+  mv -f $2.sym ../Sym
+fi
+
+gcc -c $2.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
+errCode=$?
+if [ $errCode != 0 ]; then echo "ERROR #"$errCode; sleep 1000m; fi
+
+ar -rc $1 $2.o
+rm $2.o

@@ -1,0 +1,18 @@
+#!/bin/bash
+cd ../Obj
+
+Lib=../Ofront.a
+if [ -f $Lib ]; then rm $Lib; fi
+rm ../Sym/*.sym
+
+../Bin/compile $Lib SYSTEM
+../Bin/compile $Lib Args
+../Bin/compile $Lib Console
+../Bin/compile $Lib Unix -noinit
+../Bin/compile $Lib Kernel
+../Bin/compile $Lib Files
+../Bin/compile $Lib Reals -noinit
+../Bin/compile $Lib Modules -noinit
+../Bin/compile $Lib CmdlnTexts
+#../Bin/clear
+

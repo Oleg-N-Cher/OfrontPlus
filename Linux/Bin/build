@@ -1,0 +1,17 @@
+#!/bin/bash
+cd ../Obj
+../Bin/ofront ../Mod/
+
+Lib=../Ofront.a
+# @IF EXIST %Lib% DEL %Lib%
+
+../Bin/compile %Lib% SYSTEM0
+../Bin/compile %Lib% Args
+../Bin/compile %Lib% Console
+../Bin/compile %Lib% Unix -noinit
+../Bin/compile %Lib% Kernel
+../Bin/compile %Lib% Files
+../Bin/compile %Lib% Reals -noinit
+../Bin/compile %Lib% Modules -noinit
+../Bin/compile %Lib% CmdlnTexts
+# ../Bin/clear
