@@ -13,7 +13,7 @@ typedef
 		Files_File f;
 		BOOLEAN chg;
 		LONGINT org, size;
-		SYSTEM_BYTE data[4096];
+		BYTE data[4096];
 	} Files_BufDesc;
 
 typedef
@@ -64,7 +64,7 @@ static void Files_Create (Files_File f);
 export void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res);
 static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, LONGINT errno);
 static void Files_Finalize (SYSTEM_PTR o);
-static void Files_FlipBytes (SYSTEM_BYTE *src, LONGINT src__len, SYSTEM_BYTE *dest, LONGINT dest__len);
+static void Files_FlipBytes (BYTE *src, LONGINT src__len, BYTE *dest, LONGINT dest__len);
 static void Files_Flush (Files_Buffer buf);
 export void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d);
 static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *name, LONGINT name__len);
@@ -76,9 +76,9 @@ export Files_File Files_New (CHAR *name, LONGINT name__len);
 export Files_File Files_Old (CHAR *name, LONGINT name__len);
 export LONGINT Files_Pos (Files_Rider *r, LONGINT *r__typ);
 export void Files_Purge (Files_File f);
-export void Files_Read (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x);
+export void Files_Read (Files_Rider *r, LONGINT *r__typ, BYTE *x);
 export void Files_ReadBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN *x);
-export void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x, LONGINT x__len, LONGINT n);
+export void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n);
 export void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x);
 export void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x);
 export void Files_ReadLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL *x);
@@ -90,9 +90,9 @@ export void Files_Register (Files_File f);
 export void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res);
 static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len);
 export void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos);
-export void Files_Write (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE x);
+export void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x);
 export void Files_WriteBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN x);
-export void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x, LONGINT x__len, LONGINT n);
+export void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n);
 export void Files_WriteInt (Files_Rider *R, LONGINT *R__typ, INTEGER x);
 export void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x);
 export void Files_WriteLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL x);
@@ -594,7 +594,7 @@ void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos)
 	(*r).res = 0;
 }
 
-void Files_Read (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x)
+void Files_Read (Files_Rider *r, LONGINT *r__typ, BYTE *x)
 {
 	LONGINT offset;
 	Files_Buffer buf = NIL;
@@ -618,7 +618,7 @@ void Files_Read (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x)
 	}
 }
 
-void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x, LONGINT x__len, LONGINT n)
+void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n)
 {
 	LONGINT xpos, min, restInBuf, offset;
 	Files_Buffer buf = NIL;
@@ -659,7 +659,7 @@ Files_File Files_Base (Files_Rider *r, LONGINT *r__typ)
 	return (*r).buf->f;
 }
 
-void Files_Write (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE x)
+void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x)
 {
 	Files_Buffer buf = NIL;
 	LONGINT offset;
@@ -680,7 +680,7 @@ void Files_Write (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE x)
 	(*r).res = 0;
 }
 
-void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, SYSTEM_BYTE *x, LONGINT x__len, LONGINT n)
+void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n)
 {
 	LONGINT xpos, min, restInBuf, offset;
 	Files_Buffer buf = NIL;
@@ -819,7 +819,7 @@ void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res)
 	__DEL(path);
 }
 
-static void Files_FlipBytes (SYSTEM_BYTE *src, LONGINT src__len, SYSTEM_BYTE *dest, LONGINT dest__len)
+static void Files_FlipBytes (BYTE *src, LONGINT src__len, BYTE *dest, LONGINT dest__len)
 {
 	LONGINT i, j;
 	if (!Kernel_littleEndian) {

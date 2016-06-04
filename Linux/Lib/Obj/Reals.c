@@ -14,7 +14,7 @@ export void Reals_SetExpo (INTEGER e, REAL *x);
 export void Reals_SetExpoL (INTEGER e, LONGREAL *x);
 export REAL Reals_Ten (INTEGER e);
 export LONGREAL Reals_TenL (INTEGER e);
-static void Reals_Unpack (SYSTEM_BYTE *b, LONGINT b__len, SYSTEM_BYTE *d, LONGINT d__len);
+static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len);
 
 #define Reals_ecvt(x, ndigit, decpt, sign)	ecvt (x, ndigit, decpt, sign)
 
@@ -104,7 +104,7 @@ void Reals_ConvertL (LONGREAL x, INTEGER n, CHAR *d, LONGINT d__len)
 	}
 }
 
-static void Reals_Unpack (SYSTEM_BYTE *b, LONGINT b__len, SYSTEM_BYTE *d, LONGINT d__len)
+static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
 {
 	SHORTINT i, k;
 	LONGINT len;
