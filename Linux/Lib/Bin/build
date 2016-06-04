@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../Obj
 
-Lib=../Ofront.a
+Lib=../libOfront.a
 if [ -f $Lib ]; then rm $Lib; fi
 rm ../Sym/*.sym
 
