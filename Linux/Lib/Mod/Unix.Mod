@@ -261,13 +261,13 @@ TYPE
   PROCEDURE -Read* (fd, buf, nbyte: LONGINT): LONGINT
     "read(fd, buf, nbyte)";
 
-  PROCEDURE -ReadBlk* (fd: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE): LONGINT
+  PROCEDURE -ReadBlk* (fd: LONGINT; VAR buf: ARRAY OF BYTE): LONGINT
     "read(fd, buf, buf__len)";
 
   PROCEDURE -Write* (fd, buf, nbyte: LONGINT): LONGINT
     "write(fd, buf, nbyte)";
 
-  PROCEDURE -WriteBlk* (fd: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE): LONGINT
+  PROCEDURE -WriteBlk* (fd: LONGINT; VAR buf: ARRAY OF BYTE): LONGINT
     "write(fd, buf, buf__len)";
 
   PROCEDURE -Dup*(fd: LONGINT): LONGINT
@@ -347,7 +347,7 @@ TYPE
   PROCEDURE -Ftruncate*(fd, length: LONGINT): LONGINT
     "ftruncate(fd, length)";
 
-  PROCEDURE -Readblk*(fd: LONGINT; VAR buf: ARRAY OF SYSTEM.BYTE; len: LONGINT): LONGINT
+  PROCEDURE -Readblk*(fd: LONGINT; VAR buf: ARRAY OF BYTE; len: LONGINT): LONGINT
     "read(fd, buf, len)";
 
   PROCEDURE -Rename*(old, new: Name): LONGINT
