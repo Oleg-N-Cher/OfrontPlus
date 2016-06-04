@@ -1,4 +1,5 @@
 Lib/Obj/*.sym
+Linux/Obj/*.o
 Obj/*.o
 Work/*.c
 Work/*.exe
