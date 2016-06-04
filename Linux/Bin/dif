@@ -1,0 +1,5 @@
+#!/bin/bash
+
+diff ocat ../ocat
+diff ofront ../ofront
+diff showdef ../showdef
