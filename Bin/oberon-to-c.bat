@@ -1,21 +1,25 @@
 @SET PATH=%CD%;%PATH%
-@CD ..\Lib\Obj
-ofront SYSTEM.Mod
+@CD ..\Obj
+@SET OBERON=%CD%;%CD%\..\Lib\Sym
+
+ofront+ -se ..\Mod\OfrontOPM.cmdln.Mod
 @IF errorlevel 1 PAUSE
-ofront Args.Mod
+ofront+ -se ..\Mod\OfrontOPS.Mod
 @IF errorlevel 1 PAUSE
-ofront Console.Mod
+ofront+ -se..\Mod\OfrontOPT.Mod
 @IF errorlevel 1 PAUSE
-ofront Unix.msvcrt.Mod
+ofront+ -se ..\Mod\OfrontOPB.Mod
 @IF errorlevel 1 PAUSE
-ofront Kernel.Mod
+ofront+ -se ..\Mod\OfrontOPP.Mod
 @IF errorlevel 1 PAUSE
-ofront Files.Mod
+ofront+ -se ..\Mod\OfrontOPC.Mod
 @IF errorlevel 1 PAUSE
-ofront Reals.Mod
+ofront+ -se ..\Mod\OfrontOPV.Mod
 @IF errorlevel 1 PAUSE
-ofront Modules.Mod
+ofront+ -mse ..\Mod\OCatCmd.Mod
 @IF errorlevel 1 PAUSE
-ofront CmdlnTexts.Mod
+ofront+ -mse ..\Mod\OfrontCmd.Mod
 @IF errorlevel 1 PAUSE
-pause
+ofront+ -mse ..\Mod\BrowserCmd.Mod
+@IF errorlevel 1 PAUSE
+@PAUSE
