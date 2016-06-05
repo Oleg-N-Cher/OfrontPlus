@@ -385,13 +385,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			GetProperty(S, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
 		ELSE Mark(-156, -1)
 		END ;
-		IF RealSize = 4 THEN MaxReal := 3.40282346D38
-		ELSIF RealSize = 8 THEN MaxReal := 1.7976931348623157D307 * 9.999999
-			(*should be 1.7976931348623157D308 *)
+		IF RealSize = 4 THEN MaxReal := 3.402823466D38
+		ELSIF RealSize = 8 THEN MaxReal := 1.7976931348623158D307 * 9.999999
+			(*should be 1.7976931348623158D308 *)
 		END ;
-		IF LRealSize = 4 THEN MaxLReal := 3.40282346D38
-		ELSIF LRealSize = 8 THEN MaxLReal := 1.7976931348623157D307 * 9.999999
-			(*should be 1.7976931348623157D308 *)
+		IF LRealSize = 4 THEN MaxLReal := 3.402823466D38
+		ELSIF LRealSize = 8 THEN MaxLReal := 1.7976931348623158D307 * 9.999999
+			(*should be 1.7976931348623158D308 *)
 		END ;
 		MinReal := -MaxReal;
 		MinLReal := -MaxLReal;

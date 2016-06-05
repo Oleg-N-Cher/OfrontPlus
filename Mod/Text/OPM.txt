@@ -536,13 +536,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			IF (ForN >= 0) & (ForN <= 2) THEN (* Ok *) ELSE ForN := 0; Mark(-157, -1) END
 		ELSE Mark(-156, -1)
 		END ;
-		IF RealSize = 4 THEN MaxReal := 3.40282346E38
-		ELSIF RealSize = 8 THEN MaxReal := 1.7976931348623157E307 * 9.999999
-			(*should be 1.7976931348623157D308 *)
+		IF RealSize = 4 THEN MaxReal := 3.402823466E38
+		ELSIF RealSize = 8 THEN MaxReal := 1.7976931348623158E308
 		END ;
-		IF LRealSize = 4 THEN MaxLReal := 3.40282346E38
-		ELSIF LRealSize = 8 THEN MaxLReal := 1.7976931348623157E307 * 9.999999
-			(*should be 1.7976931348623157D308 *)
+		IF LRealSize = 4 THEN MaxLReal := 3.402823466E38
+		ELSIF LRealSize = 8 THEN MaxLReal := 1.7976931348623158E308
 		END ;
 		MinReal := -MaxReal;
 		MinLReal := -MaxLReal;
