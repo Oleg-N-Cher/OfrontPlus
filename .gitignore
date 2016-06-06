@@ -1,5 +1,8 @@
 Lib/Obj/*.sym
 Linux/Obj/*.o
+Linux/ocat
+Linux/ofront+
+Linux/showdef
 Obj/*.o
 Work/*.c
 Work/*.exe
