@@ -11,7 +11,7 @@ rm ../Sym/*.sym
 ../Bin/compile OfrontOPC
 ../Bin/compile OfrontOPV
 ../Bin/compile OCatCmd -o ../ocat
-../Bin/compile OfrontCmd OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o../ofront
+../Bin/compile OfrontCmd OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o../ofront+
 ../Bin/compile BrowserCmd OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -o../showdef
 
 #../Bin/clear
