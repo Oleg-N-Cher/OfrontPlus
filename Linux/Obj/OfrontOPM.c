@@ -159,16 +159,14 @@ void OfrontOPM_OpenPar (void)
 	if (Args_argc == 1) {
 		OfrontOPM_stop = 1;
 		Console_Ln();
-		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0", (LONGINT)43);
+		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0 #1", (LONGINT)46);
 		Console_Ln();
-		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007", (LONGINT)44);
-		Console_Ln();
-		Console_String((CHAR*)"              VEDAsoft Oberon Club, 2012-2016", (LONGINT)46);
+		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016", (LONGINT)78);
 		Console_Ln();
 		Console_Ln();
 		Console_String((CHAR*)"SYNOPSIS", (LONGINT)9);
 		Console_Ln();
-		Console_String((CHAR*)"  command = \"ofront\" options {file options}.", (LONGINT)45);
+		Console_String((CHAR*)"  command = \"ofront+\" options {file options}.", (LONGINT)46);
 		Console_Ln();
 		Console_String((CHAR*)"  options = [\"-\" {option} ].", (LONGINT)29);
 		Console_Ln();
@@ -533,12 +531,12 @@ static void OfrontOPM_GetProperties (void)
 		OfrontOPM_Mark(-156, -1);
 	}
 	if (OfrontOPM_RealSize == 4) {
-		OfrontOPM_MaxReal =   3.40282346000000e+038;
+		OfrontOPM_MaxReal =   3.40282346600000e+038;
 	} else if (OfrontOPM_RealSize == 8) {
 		OfrontOPM_MaxReal =   1.79769296342094e+308;
 	}
 	if (OfrontOPM_LRealSize == 4) {
-		OfrontOPM_MaxLReal =   3.40282346000000e+038;
+		OfrontOPM_MaxLReal =   3.40282346600000e+038;
 	} else if (OfrontOPM_LRealSize == 8) {
 		OfrontOPM_MaxLReal =   1.79769296342094e+308;
 	}
