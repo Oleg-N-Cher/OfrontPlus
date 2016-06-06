@@ -2,7 +2,11 @@
 
 cd ../Lib/Bin
 ./build
+if [ $? != 0 ]; then exit 1; fi
 echo
+
 cd ../../Bin
 ./build
+if [ $? != 0 ]; then exit 1; fi
+
 ./dif
