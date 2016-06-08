@@ -1,6 +1,6 @@
 MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *)
 
-	IMPORT SYSTEM, Unix, Kernel, Args, Console;
+	IMPORT SYSTEM, Unix, WinApi, Kernel, Args, Console;
 
 	(* standard data type I/O 
 
@@ -166,7 +166,8 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 			Create(f); i := 0;
 			WHILE (i < nofbufs) & (f.bufs[i] # NIL) DO Flush(f.bufs[i]); INC(i) END ;
 			res := Unix.Fsync(f.fd);
-			IF res < 0 THEN Err("error in writing file", f, Unix.errno()) END
+			IF res < 0 THEN Err("error in writing file", f, Unix.errno()) END;
+			res := Unix.Close(f.fd)
 		END
 	END Close;
 
@@ -459,10 +460,44 @@ Especially Length would become fairly complex.
 		res := SHORT(Unix.errno())
 	END Delete;
 
-	PROCEDURE IsTheSameFile (old, new: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE SameFile (VAR fileName1, fileName2: ARRAY OF CHAR): BOOLEAN;
+	(*
+		dwVolumeSerialNumber
+				Serial number of the volume that contains the file.
+		nFileIndexHigh
+				High-order word of a unique identifier associated with the file.
+		nFileIndexLow
+				Low-order word of a unique identifier associated with the file. This identifier and the volume serial number uniquely identify a file. This number may change when the system is restarted or when the file is opened. After a process opens a file, the identifier is constant until the file is closed. An application can use this identifier and the volume serial number to determine whether two handles refer to the same file.
+					Note that this value is useful only while the file is open by at least one process. If no processes have it open, the index may change the next time the file is opened.
+					The identifier (low and high parts) and the volume serial number uniquely identify a file on a single computer. To determine whether two open handles represent the same file, combine this identifier and the volume serial number for each file and compare them.
+		*)
+	VAR
+		fileInfo1, fileInfo2: WinApi.BY_HANDLE_FILE_INFORMATION;
+		handle1, handle2: WinApi.HANDLE; same: BOOLEAN; res: WinApi.BOOL;
 	BEGIN
-		RETURN old = new
-	END IsTheSameFile;
+		same := FALSE;
+		(* File 1 *) 
+		handle1 := WinApi.CreateFileA(
+			SYSTEM.VAL(WinApi.PtrSTR, SYSTEM.ADR(fileName1)), WinApi.GENERIC_READ,
+			WinApi.FILE_SHARE_READ, NIL, WinApi.OPEN_EXISTING, {}, NIL);
+		IF handle1 # SYSTEM.VAL(WinApi.HANDLE, WinApi.INVALID_HANDLE_VALUE) THEN
+			(* File 2 *)
+			handle2 := WinApi.CreateFileA(
+				SYSTEM.VAL(WinApi.PtrSTR, SYSTEM.ADR(fileName2)), WinApi.GENERIC_READ,
+				WinApi.FILE_SHARE_READ, NIL, WinApi.OPEN_EXISTING, {}, NIL);
+			IF handle2 # SYSTEM.VAL(WinApi.HANDLE, WinApi.INVALID_HANDLE_VALUE) THEN
+				same :=
+					(WinApi.GetFileInformationByHandle(handle1, fileInfo1) # 0) &
+					(WinApi.GetFileInformationByHandle(handle2, fileInfo2) # 0) &
+					(fileInfo1.nFileIndexLow = fileInfo2.nFileIndexLow) &
+					(fileInfo1.nFileIndexHigh = fileInfo2.nFileIndexHigh) &
+					(fileInfo1.dwVolumeSerialNumber = fileInfo2.dwVolumeSerialNumber);
+				res := WinApi.CloseHandle(handle2);
+			END;
+			res := WinApi.CloseHandle(handle1);
+		END;
+		RETURN same
+	END SameFile;
 
 	PROCEDURE Rename* (old, new: ARRAY OF CHAR; VAR res: INTEGER);
 		VAR fdold, fdnew, n, errno, r: LONGINT;
@@ -472,7 +507,7 @@ Especially Length would become fairly complex.
 		r := Unix.Stat(old, ostat);
 		IF r >= 0 THEN
 			r := Unix.Stat(new, nstat);
-			IF (r >= 0) & (~IsTheSameFile(old, new)) THEN (* stat.dev/ino file attributes describe the device and inode - information to indicate whether these two paths at the same file. Attributes are specific to Unix systems. They are not defined in the Windows and Macintosh. *)
+			IF (r >= 0) & (~SameFile(old, new)) THEN (* stat.dev/ino file attributes describe the device and inode - information to indicate whether these two paths at the same file. Attributes are specific to Unix systems. They are not defined in the Windows and Macintosh. *)
 				Delete(new, res);	(* work around stale nfs handles *)
 			END ;
 			r := Unix.Rename(old, new);
@@ -504,10 +539,10 @@ Especially Length would become fairly complex.
 	END Rename;
 
 	PROCEDURE Register* (f: File);
-		VAR idx, errno: INTEGER; f1: File; file: ARRAY 104 OF CHAR; res: LONGINT;
+		VAR idx, errno: INTEGER; f1: File; file: ARRAY 104 OF CHAR;
 	BEGIN
 		IF (f.state = create) & (f.registerName # "") THEN f.state := close (* shortcut renaming *) END ;
-		Close(f); res := Unix.Close(f.fd);
+		Close(f);
 		IF f.registerName # "" THEN
 			Rename(f.workName, f.registerName, errno);
 			IF errno # 0 THEN COPY(f.registerName, file); HALT(99) END ;
