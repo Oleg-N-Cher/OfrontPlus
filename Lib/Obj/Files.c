@@ -4,6 +4,7 @@
 #include "Console.h"
 #include "Kernel.h"
 #include "Unix.h"
+#include "WinApi.h"
 
 typedef
 	struct Files_Handle *Files_File;
@@ -70,7 +71,6 @@ export void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d);
 static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *name, LONGINT name__len);
 static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len);
 static void Files_Init (void);
-static BOOLEAN Files_IsTheSameFile (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len);
 export LONGINT Files_Length (Files_File f);
 static void Files_MakeFileName (CHAR *dir, LONGINT dir__len, CHAR *name, LONGINT name__len, CHAR *dest, LONGINT dest__len);
 export Files_File Files_New (CHAR *name, LONGINT name__len);
@@ -89,6 +89,7 @@ export void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x);
 export void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len);
 export void Files_Register (Files_File f);
 export void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res);
+static BOOLEAN Files_SameFile (CHAR *fileName1, LONGINT fileName1__len, CHAR *fileName2, LONGINT fileName2__len);
 static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len);
 export void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos);
 export void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x);
@@ -298,6 +299,7 @@ void Files_Close (Files_File f)
 		if (res < 0) {
 			Files_Err((CHAR*)"error in writing file", (LONGINT)22, f, Unix_errno());
 		}
+		res = Unix_Close(f->fd);
 	}
 }
 
@@ -715,13 +717,23 @@ void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res)
 }
 
 /*----------------------------------------------------------------------------*/
-static BOOLEAN Files_IsTheSameFile (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len)
+static BOOLEAN Files_SameFile (CHAR *fileName1, LONGINT fileName1__len, CHAR *fileName2, LONGINT fileName2__len)
 {
-	__DUP(old, old__len, CHAR);
-	__DUP(new, new__len, CHAR);
-	__DEL(old);
-	__DEL(new);
-	return __STRCMP(old, new) == 0;
+	WinApi_BY_HANDLE_FILE_INFORMATION fileInfo1, fileInfo2;
+	SYSTEM_PTR handle1 = NIL, handle2 = NIL;
+	BOOLEAN same;
+	LONGINT res;
+	same = 0;
+	handle1 = WinApi_CreateFileA((SYSTEM_PTR)((LONGINT)fileName1), 0x80000000, 0x01, NIL, NIL, 3, 0x0, NIL);
+	if (handle1 != (SYSTEM_PTR)-1) {
+		handle2 = WinApi_CreateFileA((SYSTEM_PTR)((LONGINT)fileName2), 0x80000000, 0x01, NIL, NIL, 3, 0x0, NIL);
+		if (handle2 != (SYSTEM_PTR)-1) {
+			same = (((WinApi_GetFileInformationByHandle(handle1, &fileInfo1, WinApi_BY_HANDLE_FILE_INFORMATION__typ) != 0 && WinApi_GetFileInformationByHandle(handle2, &fileInfo2, WinApi_BY_HANDLE_FILE_INFORMATION__typ) != 0) && fileInfo1.nFileIndexLow == fileInfo2.nFileIndexLow) && fileInfo1.nFileIndexHigh == fileInfo2.nFileIndexHigh) && fileInfo1.dwVolumeSerialNumber == fileInfo2.dwVolumeSerialNumber;
+			res = WinApi_CloseHandle(handle2);
+		}
+		res = WinApi_CloseHandle(handle1);
+	}
+	return same;
 }
 
 void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res)
@@ -734,7 +746,7 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 	r = Unix_Stat(old, old__len, &ostat, Unix_Status__typ);
 	if (r >= 0) {
 		r = Unix_Stat(new, new__len, &nstat, Unix_Status__typ);
-		if (r >= 0 && !Files_IsTheSameFile(old, old__len, new, new__len)) {
+		if (r >= 0 && !Files_SameFile((void*)old, old__len, (void*)new, new__len)) {
 			Files_Delete(new, new__len, &*res);
 		}
 		r = Unix_Rename(old, old__len, new, new__len);
@@ -796,12 +808,10 @@ void Files_Register (Files_File f)
 	INTEGER idx, errno;
 	Files_File f1 = NIL;
 	CHAR file[104];
-	LONGINT res;
 	if (f->state == 1 && f->registerName[0] != 0x00) {
 		f->state = 2;
 	}
 	Files_Close(f);
-	res = Unix_Close(f->fd);
 	if (f->registerName[0] != 0x00) {
 		Files_Rename(f->workName, 101, f->registerName, 101, &errno);
 		if (errno != 0) {
@@ -1033,6 +1043,7 @@ export void *Files__init(void)
 	__IMPORT(Console__init);
 	__IMPORT(Kernel__init);
 	__IMPORT(Unix__init);
+	__IMPORT(WinApi__init);
 	__REGMOD("Files", 0);
 	__INITYP(Files_Handle, Files_Handle, 0);
 	__INITYP(Files_BufDesc, Files_BufDesc, 0);
