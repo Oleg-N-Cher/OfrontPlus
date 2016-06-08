@@ -1,5 +1,7 @@
 @IF /%XDev%==/ GOTO NoXDev
 
+@IF %1==WinApi DEL WinApi.c
+
 :MinGW
 
 @SET Lib=..\Ofront.a
