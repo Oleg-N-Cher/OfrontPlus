@@ -70,6 +70,7 @@ export void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d);
 static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *name, LONGINT name__len);
 static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len);
 static void Files_Init (void);
+static BOOLEAN Files_IsTheSameFile (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len);
 export LONGINT Files_Length (Files_File f);
 static void Files_MakeFileName (CHAR *dir, LONGINT dir__len, CHAR *name, LONGINT name__len, CHAR *dest, LONGINT dest__len);
 export Files_File Files_New (CHAR *name, LONGINT name__len);
@@ -714,6 +715,15 @@ void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res)
 }
 
 /*----------------------------------------------------------------------------*/
+static BOOLEAN Files_IsTheSameFile (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len)
+{
+	__DUP(old, old__len, CHAR);
+	__DUP(new, new__len, CHAR);
+	__DEL(old);
+	__DEL(new);
+	return __STRCMP(old, new) == 0;
+}
+
 void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res)
 {
 	LONGINT fdold, fdnew, n, errno, r;
@@ -724,7 +734,7 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 	r = Unix_Stat(old, old__len, &ostat, Unix_Status__typ);
 	if (r >= 0) {
 		r = Unix_Stat(new, new__len, &nstat, Unix_Status__typ);
-		if (r >= 0 && (ostat.dev != nstat.dev || ostat.ino != nstat.ino)) {
+		if (r >= 0 && !Files_IsTheSameFile(old, old__len, new, new__len)) {
 			Files_Delete(new, new__len, &*res);
 		}
 		r = Unix_Rename(old, old__len, new, new__len);
@@ -786,10 +796,12 @@ void Files_Register (Files_File f)
 	INTEGER idx, errno;
 	Files_File f1 = NIL;
 	CHAR file[104];
+	LONGINT res;
 	if (f->state == 1 && f->registerName[0] != 0x00) {
 		f->state = 2;
 	}
 	Files_Close(f);
+	res = Unix_Close(f->fd);
 	if (f->registerName[0] != 0x00) {
 		Files_Rename(f->workName, 101, f->registerName, 101, &errno);
 		if (errno != 0) {
