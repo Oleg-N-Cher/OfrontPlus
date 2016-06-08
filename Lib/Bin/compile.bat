@@ -6,6 +6,11 @@
 
 @SET Mod=%1
 @IF %Mod%==Unix.msvcrt SET Mod=Unix
+@IF NOT %Mod%==WinApi GOTO MinGW
+@DEL WinApi.c
+@EXIT
+
+MinGW:
 
 %gcc% -c %Mod%.c -I "."
 @IF errorlevel 1 PAUSE
