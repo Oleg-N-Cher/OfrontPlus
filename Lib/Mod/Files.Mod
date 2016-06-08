@@ -459,6 +459,11 @@ Especially Length would become fairly complex.
 		res := SHORT(Unix.errno())
 	END Delete;
 
+	PROCEDURE IsTheSameFile (old, new: ARRAY OF CHAR): BOOLEAN;
+	BEGIN
+		RETURN old = new
+	END IsTheSameFile;
+
 	PROCEDURE Rename* (old, new: ARRAY OF CHAR; VAR res: INTEGER);
 		VAR fdold, fdnew, n, errno, r: LONGINT;
 			ostat, nstat: Unix.Status;
@@ -467,7 +472,7 @@ Especially Length would become fairly complex.
 		r := Unix.Stat(old, ostat);
 		IF r >= 0 THEN
 			r := Unix.Stat(new, nstat);
-			IF (r >= 0) & ((ostat.dev # nstat.dev) OR (ostat.ino # nstat.ino)) THEN
+			IF (r >= 0) & (~IsTheSameFile(old, new)) THEN (* stat.dev/ino file attributes describe the device and inode - information to indicate whether these two paths at the same file. Attributes are specific to Unix systems. They are not defined in the Windows and Macintosh. *)
 				Delete(new, res);	(* work around stale nfs handles *)
 			END ;
 			r := Unix.Rename(old, new);
@@ -499,10 +504,10 @@ Especially Length would become fairly complex.
 	END Rename;
 
 	PROCEDURE Register* (f: File);
-		VAR idx, errno: INTEGER; f1: File; file: ARRAY 104 OF CHAR;
+		VAR idx, errno: INTEGER; f1: File; file: ARRAY 104 OF CHAR; res: LONGINT;
 	BEGIN
 		IF (f.state = create) & (f.registerName # "") THEN f.state := close (* shortcut renaming *) END ;
-		Close(f);
+		Close(f); res := Unix.Close(f.fd);
 		IF f.registerName # "" THEN
 			Rename(f.workName, f.registerName, errno);
 			IF errno # 0 THEN COPY(f.registerName, file); HALT(99) END ;
