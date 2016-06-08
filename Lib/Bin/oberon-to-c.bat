@@ -1,23 +1,21 @@
 @SET PATH=%CD%\..\..\Bin;%PATH%
 @CD ..\Obj
 
-ofront+ -iapxe ..\Mod\SYSTEM.Mod
+ofront+ -liapxe ..\Mod\SYSTEM.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Args.Mod
+ofront+ -lse ..\Mod\Args.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Console.Mod
+ofront+ -lse ..\Mod\Console.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Unix.msvcrt.Mod
+ofront+ -lse ..\Mod\Unix.msvcrt.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Kernel.Mod
+ofront+ -lse ..\Mod\Kernel.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Files.Mod
-ECHO %errorlevel%
+ofront+ -lse ..\Mod\Files.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Reals.Mod
+ofront+ -lse ..\Mod\Reals.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Modules.Mod
+ofront+ -lse ..\Mod\Modules.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\CmdlnTexts.Mod
+ofront+ -lse ..\Mod\CmdlnTexts.Mod
 @IF errorlevel 1 PAUSE
-@PAUSE
