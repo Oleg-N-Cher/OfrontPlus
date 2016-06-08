@@ -77,6 +77,9 @@ extern void SYSTEM_ENUMR();
 #define __IMPORT(name__init)	SYSTEM_INCREF(name__init())
 #define __REGCMD(name, cmd)	SYSTEM_REGCMD(m, name, cmd)
 
+#define __EXTERN __attribute__((dllimport))
+#define __CALL_1 __attribute__((__stdcall__))
+
 /* SYSTEM ops */
 #define __SYSNEW(p, len)	p=SYSTEM_NEWBLK((long)(len))
 #define __VAL(t, x)	(*(t*)&(x))
