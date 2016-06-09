@@ -2,23 +2,23 @@
 @CD ..\Obj
 @SET OBERON=%CD%;%CD%\..\Lib\Sym
 
-ofront+ -lse ..\Mod\OfrontOPM.cmdln.Mod
+ofront+ -se ..\Mod\OfrontOPM.cmdln.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\OfrontOPS.Mod
+ofront+ -se ..\Mod\OfrontOPS.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse..\Mod\OfrontOPT.Mod
+ofront+ -se..\Mod\OfrontOPT.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\OfrontOPB.Mod
+ofront+ -se ..\Mod\OfrontOPB.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\OfrontOPP.Mod
+ofront+ -se ..\Mod\OfrontOPP.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\OfrontOPC.Mod
+ofront+ -se ..\Mod\OfrontOPC.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\OfrontOPV.Mod
+ofront+ -se ..\Mod\OfrontOPV.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lmse ..\Mod\OCatCmd.Mod
+ofront+ -mse ..\Mod\OCatCmd.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lmse ..\Mod\OfrontCmd.Mod
+ofront+ -mse ..\Mod\OfrontCmd.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lmse ..\Mod\BrowserCmd.Mod
+ofront+ -mse ..\Mod\BrowserCmd.Mod
 @IF errorlevel 1 PAUSE
