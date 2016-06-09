@@ -22,7 +22,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
-		defopt* = {inxchk, typchk, ptrinit, ansi, assert};	(* default options *)
+		defopt* = {inxchk, typchk, ptrinit, ansi, assert, lineno};	(* default options *)
 
 		nilval* = 0;
 (*

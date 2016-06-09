@@ -9,6 +9,6 @@
 @IF errorlevel 1 PAUSE
 @CALL gcc.bat SameFile.c
 
-@ofront+ -ml Test.Mod
+@ofront+ -m Test.Mod
 @IF errorlevel 1 PAUSE
 @CALL gcc.bat Test.c
