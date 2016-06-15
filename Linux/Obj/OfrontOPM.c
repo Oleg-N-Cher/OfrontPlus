@@ -175,7 +175,7 @@ void OfrontOPM_OpenPar (void)
 		Console_Ln();
 	} else {
 		OfrontOPM_GetProperties();
-		OfrontOPM_glbopt = 0xe9;
+		OfrontOPM_glbopt = 0x08e9;
 		OfrontOPM_S = 1;
 		s[0] = 0x00;
 		Args_Get(1, (void*)s, 256);
