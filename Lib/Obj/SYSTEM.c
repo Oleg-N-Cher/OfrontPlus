@@ -563,7 +563,7 @@ static void SYSTEM_MarkStack (LONGINT n, LONGINT *cand, LONGINT cand__len)
 	if (n == 0) {
 		nofcand = 0;
 		sp = (LONGINT)&frame;
-		stack0 = SYSTEM_Mainfrm();
+		stack0 = (LONGINT)SYSTEM_Mainfrm();
 		inc = (LONGINT)&align.p - (LONGINT)&align;
 		if (sp > stack0) {
 			inc = -inc;

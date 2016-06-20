@@ -443,7 +443,7 @@ MODULE SYSTEM;	(* J. Templ, 31.5.95 *)
 		END ;
 		IF n = 0 THEN 
 			nofcand := 0; sp := SYSTEM.ADR(frame);
-			stack0 := Mainfrm();
+			stack0 := SYSTEM.VAL(LONGINT, Mainfrm());
 			(* check for minimum alignment of pointers *)
 			inc := SYSTEM.ADR(align.p) - SYSTEM.ADR(align);
 			IF sp > stack0 THEN inc := -inc END ;

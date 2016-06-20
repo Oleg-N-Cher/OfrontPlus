@@ -71,7 +71,7 @@ extern void SYSTEM_ENUMR();
 #define __DEFMOD	static void *m; if(m!=0)return m
 #define __REGMOD(name, enum)	if(m==0)m=SYSTEM_REGMOD((CHAR*)name,enum); else return m
 #define __ENDMOD	return m
-#define __INIT(argc, argv)	static void *m; SYSTEM_INIT(argc, (long)&argv);
+#define __INIT(argc, argv)	static void *m; SYSTEM_INIT(argc, (void*)&argv);
 #define __REGMAIN(name, enum)	m=SYSTEM_REGMOD(name,enum)
 #define __FINI	SYSTEM_FINI(); return 0
 #define __IMPORT(name__init)	SYSTEM_INCREF(name__init())
@@ -184,8 +184,8 @@ static int __STRCMP(x, y)
 #define __SEND(typ, num, funtyp, parlist)	((funtyp)(*(typ-(__TPROC0OFF+num))))parlist
 
 /* runtime system variables */
-extern LONGINT SYSTEM_argc;
-extern LONGINT SYSTEM_argv;
+extern INTEGER SYSTEM_argc;
+extern SYSTEM_PTR SYSTEM_argv;
 extern void (*SYSTEM_Halt)();
 extern LONGINT SYSTEM_halt;
 extern LONGINT SYSTEM_assert;
@@ -198,7 +198,7 @@ extern BOOLEAN SYSTEM_interrupted;
 
 /* ANSI prototypes; not used so far
 static int __STRCMP(CHAR *x, CHAR *y);
-void SYSTEM_INIT(int argc, long argvadr);
+void SYSTEM_INIT(int argc, void *argvadr);
 void SYSTEM_FINI(void);
 long SYSTEM_XCHK(long i, long ub);
 long SYSTEM_RCHK(long i, long ub);
