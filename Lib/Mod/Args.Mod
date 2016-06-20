@@ -8,11 +8,12 @@ MODULE Args;	(* jt, 8.12.94 *)
 	TYPE
 		ArgPtr = POINTER TO ARRAY 1024 OF CHAR;
 		ArgVec = POINTER TO ARRAY 1024 OF ArgPtr;
+		ANYPTR = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR;
 
-	VAR argc-, argv-: LONGINT;
+	VAR argc-: INTEGER; argv-: ANYPTR;
 
 	PROCEDURE -Argc(): INTEGER "SYSTEM_argc";
-	PROCEDURE -Argv(): LONGINT "(long)SYSTEM_argv";
+	PROCEDURE -Argv(): ANYPTR "(Args_ANYPTR)SYSTEM_argv";
 	PROCEDURE -getenv(var: ARRAY OF CHAR): ArgPtr
 		"(Args_ArgPtr)getenv(var)";
 
@@ -22,8 +23,8 @@ MODULE Args;	(* jt, 8.12.94 *)
 		IF n < argc THEN av := SYSTEM.VAL(ArgVec, argv); COPY(av[n]^, val) END
 	END Get;
 
-	PROCEDURE GetInt*(n: INTEGER; VAR val: LONGINT);
-		VAR s: ARRAY 64 OF CHAR; k, d, i: LONGINT;
+	PROCEDURE GetInt*(n: INTEGER; VAR val: INTEGER);
+		VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
 	BEGIN
 		s := ""; Get(n, s); i := 0;
 		IF s[0] = "-" THEN i := 1 END ;
@@ -32,6 +33,17 @@ MODULE Args;	(* jt, 8.12.94 *)
 		IF s[0] = "-" THEN d := -d; DEC(i) END ;
 		IF i > 0 THEN val := k END
 	END GetInt;
+
+	PROCEDURE GetLInt*(n: INTEGER; VAR val: LONGINT);
+		VAR s: ARRAY 64 OF CHAR; k: LONGINT; d, i: INTEGER;
+	BEGIN
+		s := ""; Get(n, s); i := 0;
+		IF s[0] = "-" THEN i := 1 END ;
+		k := 0; d := ORD(s[i]) - ORD("0");
+		WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
+		IF s[0] = "-" THEN d := -d; DEC(i) END ;
+		IF i > 0 THEN val := k END
+	END GetLInt;
 
 	PROCEDURE Pos*(s: ARRAY OF CHAR): INTEGER;
 		VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
