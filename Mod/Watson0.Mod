@@ -3,7 +3,9 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 
 MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
-	IMPORT Modules, OPT, OPS, OPM, OPV, Files, Objects, Texts, Oberon, Gadgets, Out;
+	IMPORT
+		OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM, OPV := OfrontOPV,
+		Modules, Files, Texts := CmdlnTexts, Out := Console;
 
 	CONST
 	(* CONST used to read symbol file *)
@@ -32,9 +34,6 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		VarEntryId = 08CX;
 
 		HeaderSize = 34;
-
-		(* obj-file version *)
-		Version	=	OPM.OFnative;
 
 
 	(* other CONST *)
@@ -114,6 +113,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	END Indent;
 
 	PROCEDURE Control(name, cmd, par: ARRAY OF CHAR);
+(*
 	(* writes a control object to W. Name will be set to name and command cmd+options+par *)
 		VAR obj: Objects.Object; oldLib: Objects.Library; A: Objects.AttrMsg;
 	BEGIN
@@ -129,6 +129,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			IF name # "" THEN Gadgets.NameObj(obj, name) END;
 			Texts.WriteObj(W, obj);
 		END
+*)
 	END Control;
 
 	PROCEDURE Identifier(name: ARRAY OF CHAR);	(* writes a string name and a control to W *)
@@ -185,7 +186,9 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	BEGIN
 		base := typ.BaseTyp;
 		IF base # NIL THEN
+(*
 			IF base.ptr # NIL THEN base := base.ptr END;
+*)
 			Str(" ( "); WriteType(base, 0);
 			IF expandTypes THEN WriteBase(base) END;
 			Str(" )");
@@ -249,7 +252,9 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 					Ch("["); Num(obj.adr MOD 10000H); Str(", "); Num(obj.adr DIV 10000H); Str("] ")
 				END;
 				Str("PROCEDURE "); firstpar := obj.link;
+(*
 				IF firstpar.typ.strobj.link2 = obj THEN Str("& ")  END;
+*)
 				Str(obj.name);
 				WriteParams(firstpar^.link, obj.typ);
 				Ch(";"); Ln;
@@ -272,7 +277,11 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		IF typ # NIL THEN
 			IF expandTypes & (extlev > 0) THEN
 				WriteInstVars(typ.BaseTyp, i, extlev);
-				Indent(i); Str("(* "); Str(OPT.modules[typ.mno-1].name); Ch("."); Str(typ.strobj.name); Str(" *)"); Ln
+				Indent(i); Str("(* ");
+(*
+				Str(OPT.modules[typ.mno-1].name);
+*)
+				Ch("."); Str(typ.strobj.name); Str(" *)"); Ln
 			END;
 			WriteFieldList(typ.link, i);
 			WriteTProcs(typ.link, i)
@@ -294,7 +303,9 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			Str("ARRAY * OF "); WriteType(typ.BaseTyp, i)
 		ELSIF typ.form = Pointer THEN
 			Str("POINTER TO ");
+(*
 			IF typ.BaseTyp.ptr = typ THEN  WriteForm(typ.BaseTyp, i)  ELSE  WriteType(typ.BaseTyp, i)  END
+*)
 		ELSIF typ.form = ProcTyp THEN
 			Str("PROCEDURE");
 			WriteParams(typ.link, typ.BaseTyp)
@@ -314,21 +325,27 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 				Texts.SetColor(W, LinkCol);
 				IF (typ.mno >= 1) OR showObj THEN
 					(* write module qualifier because object is not in cur. module or showObj option is on *)
+(*
 					Str(OPT.modules[typ.mno].name); Ch(".")
+*)
 				END 
 			END;
 			Str(typ.strobj.name);
 			IF makeLink THEN
 				IF (typ.mno >= 1) THEN	(* definition is in an other module *)
 					cmd:= ObjCmd;
+(*
 					COPY(OPT.modules[typ.mno].name, par); AppendCh(par, "."); Append(par, typ.strobj.name)
+*)
 				ELSE
 					IF ~showObj OR (curObj.link = typ.strobj) OR (curObj = typ.strobj) THEN
 						(* type def. is in the same text *)
 						cmd:= GotoCmd; par:= ""
 					ELSE
 						cmd:= ObjCmd;
+(*
 						COPY(OPT.modules[typ.mno].name, par); AppendCh(par, ".")
+*)
 					END;
 					Append(par, typ.strobj.name)
 				END;
@@ -359,9 +376,11 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		ELSIF (mode = Typ) & (obj.vis > internal) THEN	(* write a type object just if it is vivible *)
 			IF first THEN Indent(1); Str("TYPE"); Ln; first := FALSE END;
 			Indent(2);
+(*
 			IF showObj THEN COPY(OPT.modules[obj.typ.mno].name, name); AppendCh(name, ".") 
 			ELSE name:= ""
 			END;
+*)
 			Append(name, obj.name);
 			Identifier(name);
 			Str(" = ");
@@ -373,9 +392,11 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 				h:= obj.link;
 				IF ABS(h^.vis) > internal THEN
 					Indent(2);
+(*
 					IF showObj THEN COPY(OPT.modules[h.typ.mno].name, name); AppendCh(name, ".") 
 					ELSE name:= ""
 					END;
+*)
 					Append(name, h.name);
 					Identifier(name);
 					Str(" = "); WriteForm(h.typ, 3); Ch(";"); Ln
@@ -390,6 +411,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	BEGIN
 		i:= 1; (* assume that OPT.modules[0] is "self" *)
 		first := TRUE;
+(*
 		WHILE i < OPT.nofmod DO
 			IF first THEN Indent(1); Str("IMPORT "); first := FALSE; syspos := W.buf.len ELSE Str(", ") END;
 			IF i MOD 11 = 0 THEN Ln; Indent(2) END;
@@ -400,6 +422,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			IF showAdr THEN Str(" ["); Texts.WriteHex(W, OPT.modules[i]^.adr); Ch("]"); END;
 			INC(i)
 		END;
+*)
 		IF ~first THEN Ch(";"); Ln; Ln END;
 	END WriteImports;
 	
@@ -435,7 +458,9 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	BEGIN
 		Texts.Append(T, W.buf);
 		IF sysImported & ~showObj THEN
+(*
 			IF OPT.nofmod > 1 THEN Str("SYSTEM, ") ELSE Ch(09X); Str("IMPORT SYSTEM;"); Ln; Ln END;
+*)
 			Texts.Insert(T, syspos, W.buf);
 		END
 	END MakeText;
@@ -504,14 +529,19 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			END;
 			IF ch = symFileId THEN
 				NEW(T); Texts.Open(T, ""); Texts.OpenReader(RR, T, 0);
-				COPY(mod, selfname); file := "$$"; OPM.outputPath := "";
+				COPY(mod, selfname); file := "$$";
+(*
+				OPM.outputPath := "";
 				OPM.Init({}, {}, RR, Oberon.Log); OPS.Init; OPT.Init(file);
+*)
 				OPT.OpenScope(0, NIL);
+(*
 				OPT.Import(selfname, selfname, file); OPT.CloseScope;
 				root := OPT.modules[1].publics;
 				OPV.AssignEntries(OPT.modules[1].publics, TRUE);
 				root := OPT.modules[1].right;
 				OPM.outputPath := "!";
+*)
 				GroupTypes(root, root.scope);
 				RETURN root
 			ELSE
@@ -538,7 +568,9 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
 		(* check if it has right version *)
 		Files.Read(R, ch);
+(*
 		IF ch # Version THEN Out.String("object file has wrong version"); RETURN END;
+*)
 
 		Files.ReadNum(R, symSize); Files.Set(R, F, Files.Pos(R) + symSize); (* skip symbol file *)
 		
@@ -588,8 +620,13 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE ShowDef*(VAR mod: ARRAY OF CHAR; T: Texts.Text);
 		VAR file: ARRAY 64 OF CHAR; root: OPT.Object;
 	BEGIN
+(*
 		COPY(Modules.extension, OPM.extension);
-		SetOptions; COPY(mod, file); Append(file, Modules.extension);
+*)
+		SetOptions; COPY(mod, file);
+(*
+		Append(file, Modules.extension);
+*)
 		Out.String("reading "); Out.String(file); Out.Ln;
 		root := ReadSym(mod, file);
 		IF root # NIL THEN COPY(mod, file);
@@ -602,8 +639,13 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE ShowObj*(VAR mod, objName: ARRAY OF CHAR; T: Texts.Text);
 		VAR root, obj, pObj: OPT.Object; file: ARRAY 64 OF CHAR;
 	BEGIN
+(*
 		COPY(Modules.extension, OPM.extension);
-		SetOptions; COPY(mod, file); Append(file, Modules.extension);
+*)
+		SetOptions; COPY(mod, file);
+(*
+		Append(file, Modules.extension);
+*)
 		Out.String("reading "); Out.String(file); Out.Ln;
 		root := ReadSym(mod, file);
 		IF root # NIL THEN
@@ -624,8 +666,13 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE ShowCmd*(VAR file: ARRAY OF CHAR;  T: Texts.Text);
 		VAR F: Files.File; fileName: ARRAY 64 OF CHAR;
 	BEGIN
+(*
 		COPY(Modules.extension, OPM.extension);
-		SetOptions; COPY(file, fileName); Append(fileName, Modules.extension);
+*)
+		SetOptions; COPY(file, fileName);
+(*
+		Append(fileName, Modules.extension);
+*)
 		F:= Files.Old(fileName);
 		IF F # NIL THEN
 			Out.String("reading "); Out.String(fileName); Out.Ln;
