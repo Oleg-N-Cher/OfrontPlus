@@ -32,7 +32,9 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 		Handle = RECORD
 			workName, registerName: FileName;
 			tempFile: BOOLEAN;
-			dev, ino, mtime: LONGINT;
+			dev: Unix.DevT;
+			ino: Unix.InoT;
+			mtime: Unix.TimeT;
 			fd-, len, pos: LONGINT;
 			bufs: ARRAY nofbufs OF Buffer;
 			swapper, state: INTEGER
@@ -62,7 +64,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 		tempno: INTEGER;
 
 
-	PROCEDURE -localtime(VAR clock: LONGINT): Time
+	PROCEDURE -localtime(VAR clock: Unix.TimeT): Time
 		"(Files_Time) localtime(clock)";
 
 	PROCEDURE -getcwd(VAR cwd: Unix.Name)
@@ -133,7 +135,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 				IF f.fd >= fileTabSize THEN errno := Unix.Close(f.fd); Err("too many files open", f, 0)
 				ELSE fileTab[f.fd] := SYSTEM.VAL(LONGINT, f); INC(Kernel.nofiles); Kernel.RegisterObject(f, Finalize);
 					f.state := open; f.pos := 0; errno := Unix.Fstat(f.fd, stat);
-					f.dev := stat.dev; f.ino := stat.ino; f.mtime := stat.mtime
+					f.dev := stat.dev; (*f.ino := stat.ino;*) f.mtime := stat.mtime
 				END
 			ELSE errno := Unix.errno();
 				IF errno = Unix.ENOENT THEN err := "no such directory"
@@ -223,7 +225,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 
   (* p.s. in Windows the field stat.st_ino is always zero. onc, 2014. *)
 
-	PROCEDURE CacheEntry(dev, ino: LONGINT; mtime: LONGINT): File;
+	PROCEDURE CacheEntry(dev: Unix.DevT; ino: Unix.InoT; mtime: Unix.TimeT): File;
 		(*VAR f: File; i: INTEGER; stat: Unix.Status; res: LONGINT;*)
 	BEGIN (* i := 0;
 		WHILE i < fileTabSize DO
@@ -273,13 +275,13 @@ IF (~done) & (errno # Unix.ENOENT) THEN
 END ;
 				IF done THEN
 					res := Unix.Fstat(fd, stat);
-					f := CacheEntry(stat.dev, stat.ino, stat.mtime);
+					f := CacheEntry(stat.dev, (*stat.ino*)0, stat.mtime);
 					IF f # NIL THEN res := Unix.Close(fd); RETURN f
 					ELSIF fd >= fileTabSize THEN res := Unix.Close(fd); Err("too many files open", f, 0)
 					ELSE NEW(f); fileTab[fd] := SYSTEM.VAL(LONGINT, f); INC(Kernel.nofiles); Kernel.RegisterObject(f, Finalize);
 						f.fd := fd; f.state := open; f.len := stat.size; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
 						COPY(name, f.workName); f.registerName := ""; f.tempFile := FALSE;
-						f.dev := stat.dev; f.ino := stat.ino; f.mtime := stat.mtime;
+						f.dev := stat.dev; (*f.ino := stat.ino;*) f.mtime := stat.mtime;
 						RETURN f
 					END
 				ELSIF dir = "" THEN RETURN NIL
