@@ -298,7 +298,7 @@ SYSTEM_PTR SYSTEM_NEWBLK (LONGINT size)
 	SYSTEM_PTR new = NIL;
 	SYSTEM_Lock();
 	blksz = __ASHL(__ASHR(size + 31, 4), 4);
-	new = SYSTEM_NEWREC((LONGINT)&blksz);
+	new = SYSTEM_NEWREC((INTEGER)&blksz);
 	tag = ((LONGINT)new + blksz) - 12;
 	__PUT(tag - 4, 0, LONGINT);
 	__PUT(tag, blksz, LONGINT);
@@ -562,9 +562,9 @@ static void SYSTEM_MarkStack (LONGINT n, LONGINT *cand, LONGINT cand__len)
 	}
 	if (n == 0) {
 		nofcand = 0;
-		sp = (LONGINT)&frame;
+		sp = (INTEGER)&frame;
 		stack0 = (LONGINT)SYSTEM_Mainfrm();
-		inc = (LONGINT)&align.p - (LONGINT)&align;
+		inc = (INTEGER)&align.p - (INTEGER)&align;
 		if (sp > stack0) {
 			inc = -inc;
 		}

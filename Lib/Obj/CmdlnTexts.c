@@ -1815,7 +1815,7 @@ __TDESC(CmdlnTexts_IdentifyMsg__desc, 1, 0) = {__TDFLDS("IdentifyMsg", 64), {-4}
 __TDESC(CmdlnTexts_BufDesc__desc, 1, 1) = {__TDFLDS("BufDesc", 8), {4, -8}};
 __TDESC(CmdlnTexts_TextDesc__desc, 1, 2) = {__TDFLDS("TextDesc", 16), {4, 8, -12}};
 __TDESC(CmdlnTexts_Reader__desc, 1, 4) = {__TDFLDS("Reader", 48), {4, 12, 24, 36, -20}};
-__TDESC(CmdlnTexts_Scanner__desc, 1, 4) = {__TDFLDS("Scanner", 144), {4, 12, 24, 36, -20}};
+__TDESC(CmdlnTexts_Scanner__desc, 1, 4) = {__TDFLDS("Scanner", 152), {4, 12, 24, 36, -20}};
 __TDESC(CmdlnTexts_Writer__desc, 1, 4) = {__TDFLDS("Writer", 36), {0, 4, 20, 32, -20}};
 __TDESC(CmdlnTexts__1__desc, 1, 5) = {__TDFLDS("", 112), {0, 4, 12, 32, 36, -24}};
 

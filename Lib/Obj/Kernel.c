@@ -105,7 +105,7 @@ static void Kernel_EndianTest (void)
 	LONGINT i;
 	INTEGER dmy;
 	dmy = 1;
-	i = (LONGINT)&dmy;
+	i = (INTEGER)&dmy;
 	__GET(i, Kernel_littleEndian, BOOLEAN);
 }
 

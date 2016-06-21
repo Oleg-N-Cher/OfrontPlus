@@ -64,7 +64,7 @@ INTEGER Reals_Expo (REAL x)
 INTEGER Reals_ExpoL (LONGREAL x)
 {
 	LONGINT h;
-	__GET((LONGINT)&x + 4, h, LONGINT);
+	__GET((INTEGER)&x + 4, h, LONGINT);
 	return (int)__MASK(__ASHR(h, 20), -2048);
 }
 
@@ -78,9 +78,9 @@ void Reals_SetExpo (INTEGER e, REAL *x)
 void Reals_SetExpoL (INTEGER e, LONGREAL *x)
 {
 	SET h;
-	__GET((LONGINT)x + 4, h, SET);
+	__GET((INTEGER)x + 4, h, SET);
 	h = h & ~0x0ffe | (SET)__ASHL((LONGINT)e, 20);
-	__PUT((LONGINT)x + 4, h, SET);
+	__PUT((INTEGER)x + 4, h, SET);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -100,7 +100,7 @@ void Reals_Convert (REAL x, INTEGER n, CHAR *d, LONGINT d__len)
 void Reals_ConvertL (LONGREAL x, INTEGER n, CHAR *d, LONGINT d__len)
 {
 	LONGINT decpt, sign, i, buf;
-	buf = Reals_ecvt(x, n + 2, (LONGINT)&decpt, (LONGINT)&sign);
+	buf = Reals_ecvt(x, n + 2, (INTEGER)&decpt, (INTEGER)&sign);
 	i = 0;
 	while (i < decpt) {
 		__GET(buf + i, d[__X(((LONGINT)n - i) - 1, d__len)], CHAR);

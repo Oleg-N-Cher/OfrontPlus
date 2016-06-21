@@ -90,7 +90,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	VAR
 		assert, inxchk, mainprog, ansi: BOOLEAN;
 		stamp: INTEGER;	(* unique number for nested objects *)
-		recno: INTEGER;	(* number of anonymous record types *)
+		recno: LONGINT;	(* number of anonymous record types *)
 
 		exit: ExitInfo;	(* to check if EXIT is simply a break *)
 		nofExitLabels: INTEGER;

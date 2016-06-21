@@ -12,7 +12,7 @@ typedef
 	struct Files_Handle {
 		char _prvt0[216];
 		LONGINT fd;
-		char _prvt1[28];
+		char _prvt1[32];
 	} Files_Handle;
 
 typedef

@@ -200,17 +200,17 @@ LONGINT Unix_Fstat (LONGINT fd, Unix_Status *statbuf, LONGINT *statbuf__typ)
 
 /*----------------------------------------------------------------------------*/
 __TDESC(Unix_JmpBuf__desc, 1, 0) = {__TDFLDS("JmpBuf", 32), {-4}};
-__TDESC(Unix_Status__desc, 1, 0) = {__TDFLDS("Status", 36), {-4}};
+__TDESC(Unix_Status__desc, 1, 0) = {__TDFLDS("Status", 44), {-4}};
 __TDESC(Unix_Timeval__desc, 1, 0) = {__TDFLDS("Timeval", 8), {-4}};
 __TDESC(Unix_Timezone__desc, 1, 0) = {__TDFLDS("Timezone", 8), {-4}};
-__TDESC(Unix_Timeb__desc, 1, 0) = {__TDFLDS("Timeb", 12), {-4}};
+__TDESC(Unix_Timeb__desc, 1, 0) = {__TDFLDS("Timeb", 16), {-4}};
 __TDESC(Unix_Itimerval__desc, 1, 0) = {__TDFLDS("Itimerval", 16), {-4}};
 __TDESC(Unix_SigContext__desc, 1, 0) = {__TDFLDS("SigContext", 1), {-4}};
 __TDESC(Unix_Dirent__desc, 1, 0) = {__TDFLDS("Dirent", 268), {-4}};
 __TDESC(Unix_Rusage__desc, 1, 0) = {__TDFLDS("Rusage", 72), {-4}};
 __TDESC(Unix_Iovec__desc, 1, 0) = {__TDFLDS("Iovec", 8), {-4}};
-__TDESC(Unix_Pollfd__desc, 1, 0) = {__TDFLDS("Pollfd", 8), {-4}};
-__TDESC(Unix_Sockaddr__desc, 1, 0) = {__TDFLDS("Sockaddr", 16), {-4}};
+__TDESC(Unix_Pollfd__desc, 1, 0) = {__TDFLDS("Pollfd", 12), {-4}};
+__TDESC(Unix_Sockaddr__desc, 1, 0) = {__TDFLDS("Sockaddr", 20), {-4}};
 __TDESC(Unix_Hostent__desc, 1, 0) = {__TDFLDS("Hostent", 20), {-4}};
 
 export void *Unix__init(void)

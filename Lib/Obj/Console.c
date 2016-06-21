@@ -23,7 +23,7 @@ export void Console_String (CHAR *s, LONGINT s__len);
 
 void Console_Flush (void)
 {
-	Console_Write((LONGINT)Console_line, Console_pos);
+	Console_Write((INTEGER)Console_line, Console_pos);
 	Console_pos = 0;
 }
 

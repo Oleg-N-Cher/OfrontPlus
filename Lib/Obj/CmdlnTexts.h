@@ -30,7 +30,7 @@ typedef
 
 typedef
 	struct CmdlnTexts_RunDesc {
-		LONGINT _prvt0;
+		INTEGER _prvt0;
 		char _prvt1[15];
 	} CmdlnTexts_RunDesc;
 

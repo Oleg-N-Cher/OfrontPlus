@@ -30,7 +30,7 @@ extern void exit(int status);
 typedef char BOOLEAN;
 typedef unsigned char CHAR;
 typedef signed char SHORTINT;
-typedef short int INTEGER;
+typedef int INTEGER;
 typedef long LONGINT;
 typedef float REAL;
 typedef double LONGREAL;

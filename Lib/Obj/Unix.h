@@ -7,8 +7,8 @@
 
 typedef
 	struct Unix_Dirent {
-		LONGINT _prvt0;
-		char _prvt1[262];
+		INTEGER _prvt0;
+		char _prvt1[264];
 	} Unix_Dirent;
 
 typedef
@@ -87,8 +87,8 @@ typedef
 
 typedef
 	struct Unix_Timeb {
-		LONGINT _prvt0;
-		char _prvt1[6];
+		INTEGER _prvt0;
+		char _prvt1[12];
 	} Unix_Timeb;
 
 typedef
