@@ -61,7 +61,7 @@ MODULE Kernel;
 	PROCEDURE -allocated*(): LONGINT
 			"SYSTEM_allocated";
 
-	PROCEDURE -localtime(VAR clock: LONGINT): RealTime
+	PROCEDURE -localtime(VAR clock: Unix.TimeT): RealTime
 			"(Kernel_RealTime)localtime(clock)";
 
 	PROCEDURE -malloc*(size: LONGINT): LONGINT
@@ -78,7 +78,7 @@ MODULE Kernel;
 		VAR tv: Unix.Timeval; tz: Unix.Timezone; time: RealTime;
 	BEGIN
 		Unix.Gettimeofday(tv, tz);
-		time := localtime(tv.sec);
+		time := localtime(SYSTEM.VAL(Unix.TimeT, tv.sec));
 		t := time.sec + ASH(time.min, 6) + ASH(time.hour, 12);
 		d := time.mday + ASH(time.mon+1, 5) + ASH(time.year MOD 100, 9); 
 	END GetClock;

@@ -1,5 +1,7 @@
 MODULE Unix;  (* Josef Templ, 5.3.90  Linux system calls *)
 
+(* Adapted for Windows (msvcrt.dll) & 32/64 bit by Oleg N. Cher, 2016 *)
+
 (* Module Unix provides a system call interface to Linux.
   Naming conventions:
     Procedure and Type-names always start with a capital letter.
@@ -152,33 +154,44 @@ CONST
 
 
 TYPE
+  Int16 = SHORTINT;
+  Int32 = INTEGER;
+  ANYPTR = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR; (* 32 or 64 bit *)
+  SizeT = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR; (* 32 or 64 bit *)
+
   JmpBuf* = RECORD
     bx*, si*, di*, bp*, sp*, pc*: LONGINT;
     maskWasSaved*, savedMask*: LONGINT;
   END ;
 
+  DevT* = Int32; (* typedef unsigned int dev_t; *)
+  InoT* = Int16; (* typedef unsigned short ino_t; *)
+  TimeT* = SizeT; (* 32 or 64 bit *)
+
+  (* /usr/include/sys/stat.h *)
   Status* = RECORD (* struct stat *)
-    dev* (*, devX* *) : LONGINT; (* unsigned int in msvcrt *)
-    (*pad1: INTEGER;*)
-    ino*, mode*, nlink*, uid*, gid*: INTEGER;
-    rdev* (*, rdevX* *): LONGINT; (* unsigned int in msvcrt *)
-    (*pad2: INTEGER;*)
-    size*, (* blksize*, blocks*, *) atime*, (* unused1*, *) mtime*,
-    (* unused2*, *) ctime* (*, unused3*, unused4*, unused5* *): LONGINT;
-  END ;
-  
-  Timeval* = RECORD
-    sec*, usec*: LONGINT
+    dev* : DevT; (* _dev_t st_dev; *)
+    ino: InoT; (* _ino_t st_ino; is always 0 in msvcrt *)
+    mode*, nlink*, uid*, gid*: Int16; (* short st_mode,st_nlink,st_uid,st_gid *)
+    rdev*: DevT; (* _dev_t st_rdev; *)
+    size*: Int32; (* _off_t st_size; *)
+    atime*, mtime*, ctime*: TimeT; (* time_t st_atime, st_mtime, st_ctime; *)
   END ;
 
-  Timezone* = RECORD
-    minuteswest*, dsttime*: LONGINT
+  (* /usr/include/sys/time.h *)
+  Timeval* = RECORD (* struct timeval *)
+    sec*, usec*: Int32 (* long tv_sec; long tv_usec; *)
+  END ;
+
+  (* /usr/include/sys/time.h *)
+  Timezone* = RECORD (* struct timezone *)
+    minuteswest*, dsttime*: Int32 (* int tz_minuteswest; int tz_dsttime; *)
   END ;
 
   (* /usr/include/sys/timeb.h *)
-  Timeb = RECORD
-    time: LONGINT;
-    millitm, timezone, dstflag: INTEGER
+  Timeb = RECORD (* struct timeb *)
+    time: TimeT; (* time_t time; *)
+    millitm, timezone, dstflag: Int16 (* short millitm, timezone, dstflag; *)
   END ;
 
   Itimerval* = RECORD
@@ -213,23 +226,24 @@ TYPE
 
   SocketPair* = ARRAY 2 OF LONGINT;
 
-  Pollfd* = RECORD
-    fd*: LONGINT;
-    events*, revents*: INTEGER
+  (* /usr/include/sys/poll.h *)
+  Pollfd* = RECORD (* struct pollfd *)
+    fd*: SizeT; (* SOCKET fd; *)
+    events*, revents*: Int16 (* short events, revents; *)
   END ;
 
   Sockaddr* = RECORD
-    family*: INTEGER;
-    port*: INTEGER;
-    internetAddr*: LONGINT;
-    pad*: ARRAY 8 OF CHAR;
+    family*: Int16; (* short sin_family; *)
+    port*: Int16; (* u_short	sin_port; *)
+    internetAddr*: Int32; (* struct in_addr	sin_addr; *)
+    pad: ARRAY 8 OF BYTE; (* char	sin_zero[8]; *)
   END ;
-  
+
   HostEntry* = POINTER [1] TO Hostent;
   Hostent* = RECORD
-    name*, aliases*: LONGINT;
-    addrtype*, length*: LONGINT;
-    addrlist*: LONGINT; (*POINTER TO POINTER TO LONGINT, network byte order*)
+    name*, aliases*: ANYPTR; (* char *h_name; char **h_aliases; *)
+    addrtype*, length*: Int16; (* short h_addrtype; short h_length; *)
+    addrlist*: ANYPTR; (*POINTER TO POINTER TO LONGINT, network byte order*)
   END;
 
   Name* = ARRAY OF CHAR;
@@ -278,7 +292,7 @@ TYPE
     VAR timebuf: Timeb;
   BEGIN
     Ftime(timebuf);
-    tv.sec := timebuf.time;
+    tv.sec := SYSTEM.VAL(Int32, timebuf.time);
     tv.usec := timebuf.millitm * 1000;
   END Gettimeofday;
 
@@ -351,7 +365,7 @@ TYPE
     RETURN res;
   END Stat;
 
-  PROCEDURE -fstat(fd: LONGINT; VAR statbuf: Status): LONGINT   
+  PROCEDURE -fstat(fd: LONGINT; VAR statbuf: Status): LONGINT
     "fstat(fd, (struct stat*)statbuf)";
 
   PROCEDURE Fstat*(fd: LONGINT; VAR statbuf: Status): LONGINT;
