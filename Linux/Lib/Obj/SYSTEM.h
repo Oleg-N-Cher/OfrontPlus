@@ -28,8 +28,8 @@ extern void exit(int status);
 /* basic types */
 typedef char BOOLEAN;
 typedef unsigned char CHAR;
-typedef signed char SHORTINT;
-typedef short int INTEGER;
+typedef short int SHORTINT;
+typedef int INTEGER;
 typedef long LONGINT;
 typedef float REAL;
 typedef double LONGREAL;
