@@ -1,24 +1,29 @@
 #!/bin/bash
 export OBERON=.:../Sym
 
+mod=$2
+if [ "$2" == "Files.Unix" ]; then mod="Files"; fi
+if [ "$2" == "Kernel.Unix" ]; then mod="Kernel"; fi
+if [ "$2" == "Modules.Unix" ]; then mod="Modules"; fi
+
 if [ "$2" == "SYSTEM" ]; then
 
-  ../../Bin/ofront+ -iapxe ../Mod/$2.Mod
+  ../../Bin/ofront+ -iapxe ../../../Lib/Mod/$2.Mod
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
 else
 
-  ../../Bin/ofront+ -se ../Mod/$2.Mod
+  ../../Bin/ofront+ -se ../../../Lib/Mod/$2.Mod
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
-  mv -f $2.sym ../Sym
+  mv -f $mod.sym ../Sym
 
 fi
 
-gcc -c $2.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
+gcc -c $mod.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
 errCode=$?
 if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
-ar -rc $1 $2.o
-rm $2.o
+ar -rc $1 $mod.o
+rm $mod.o
