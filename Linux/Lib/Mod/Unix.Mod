@@ -152,20 +152,32 @@ CONST
 
 
 TYPE
+  Int32 = INTEGER;
+  SizeT = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR; (* 32 or 64 bit *)
+
   JmpBuf* = RECORD
     bx*, si*, di*, bp*, sp*, pc*: LONGINT;
     maskWasSaved*: LONGINT;
     savedMask*: ARRAY 32 OF LONGINT;
   END ;
 
+  DevT* = LONGINT; (* 64 bit in Linux 2.2 *)
+  InoT* = SizeT; (* 32 or 64 bit *)
+  TimeT* = SizeT; (* 32 or 64 bit *)
+  
+  (* /usr/include/sys/stat.h *)
   Status* = RECORD (* struct stat *)
-    dev*, devX*: LONGINT; (* 64 bit in Linux 2.2 *)
-    pad1: INTEGER;
-    ino*, mode*, nlink*, uid*, gid*: LONGINT;
-    rdev*, rdevX*: LONGINT; (* 64 bit in Linux 2.2 *)
-    pad2: INTEGER;
-    size*, blksize*, blocks*, atime*, unused1*, mtime*, unused2*, ctime*, 
-    unused3*, unused4*, unused5*: LONGINT;
+    dev*, devX*: Int32; (* 64 bit in Linux 2.2 *)
+    pad1: Int32; (* unsigned char __pad0[4]; *)
+    ino*: InoT; (* unsigned long __st_ino; *)
+    mode*, nlink*: Int32; (* unsigned int st_mode, st_nlink; *)
+    uid*, gid*: Int32; (* unsigned long st_uid, st_gid; *)
+    rdev*, rdevX*: Int32; (* 64 bit in Linux 2.2 *)
+    pad2: Int32; (* unsigned char	__pad3[4]; *)
+    size*, blksize*, blocks*: SizeT; (* unsigned long *)
+    atime*: TimeT; unused1*: SizeT;
+    mtime*: TimeT; unused2*: SizeT;
+    ctime*: TimeT; unused3*, unused4*, unused5*: SizeT;
   END ;
   
   Timeval* = RECORD
