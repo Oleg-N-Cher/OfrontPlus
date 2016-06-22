@@ -8,11 +8,11 @@ rm ../Sym/*.sym
 ../Bin/compile $Lib SYSTEM
 ../Bin/compile $Lib Args
 ../Bin/compile $Lib Console
-../Bin/compile $Lib Unix -noinit
-../Bin/compile $Lib Kernel
-../Bin/compile $Lib Files
-../Bin/compile $Lib Reals -noinit
-../Bin/compile $Lib Modules -noinit
+../Bin/compile $Lib Unix
+../Bin/compile $Lib Kernel.Unix
+../Bin/compile $Lib Files.Unix
+../Bin/compile $Lib Reals
+../Bin/compile $Lib Modules.Unix
 ../Bin/compile $Lib CmdlnTexts
 #../Bin/clear
 
