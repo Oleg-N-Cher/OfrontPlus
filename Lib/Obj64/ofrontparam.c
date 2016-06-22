@@ -6,6 +6,7 @@ The output of this program is accepted by Ofront as file Ofront.par.
 */
 
 #include <stdio.h>
+#include <string.h>
 #include "SYSTEM.h"
 
 struct {CHAR ch; CHAR x;} c;
