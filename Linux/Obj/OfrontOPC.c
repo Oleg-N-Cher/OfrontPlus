@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPT.h"

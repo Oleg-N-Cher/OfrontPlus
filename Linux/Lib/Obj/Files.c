@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -26,7 +26,9 @@ typedef
 	struct Files_Handle {
 		Files_FileName workName, registerName;
 		BOOLEAN tempFile;
-		LONGINT dev, ino, mtime, fd, len, pos;
+		LONGINT dev;
+		Unix_SizeT ino, mtime;
+		LONGINT fd, len, pos;
 		Files_Buffer bufs[4];
 		INTEGER swapper, state;
 	} Files_Handle;
@@ -57,7 +59,7 @@ export LONGINT *Files_Rider__typ;
 export LONGINT *Files_TimeDesc__typ;
 
 export Files_File Files_Base (Files_Rider *r, LONGINT *r__typ);
-static Files_File Files_CacheEntry (LONGINT dev, LONGINT ino, LONGINT mtime);
+static Files_File Files_CacheEntry (LONGINT dev, Unix_SizeT ino, Unix_SizeT mtime);
 export void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res);
 export void Files_Close (Files_File f);
 static void Files_Create (Files_File f);
@@ -370,7 +372,7 @@ static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len)
 	return ch == '/';
 }
 
-static Files_File Files_CacheEntry (LONGINT dev, LONGINT ino, LONGINT mtime)
+static Files_File Files_CacheEntry (LONGINT dev, Unix_SizeT ino, Unix_SizeT mtime)
 {
 	Files_File f = NIL;
 	INTEGER i;
@@ -392,7 +394,7 @@ static Files_File Files_CacheEntry (LONGINT dev, LONGINT ino, LONGINT mtime)
 				f->swapper = -1;
 				f->mtime = mtime;
 				res = Unix_Fstat(f->fd, &stat, Unix_Status__typ);
-				f->len = stat.size;
+				f->len = (LONGINT)stat.size;
 			}
 			return f;
 		}
@@ -465,7 +467,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 					Kernel_RegisterObject((void*)f, Files_Finalize);
 					f->fd = fd;
 					f->state = 0;
-					f->len = stat.size;
+					f->len = (LONGINT)stat.size;
 					f->pos = 0;
 					f->swapper = -1;
 					__COPY(name, f->workName, 101);
@@ -851,14 +853,14 @@ void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = ((LONGINT)((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((LONGINT)b[2], 16)) + __ASHL((LONGINT)b[3], 24);
+	*x = (((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((int)b[2], 16)) + __ASHL((int)b[3], 24);
 }
 
 void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (SET)(((LONGINT)((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((LONGINT)b[2], 16)) + __ASHL((LONGINT)b[3], 24));
+	*x = (SET)((((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((int)b[2], 16)) + __ASHL((int)b[3], 24));
 }
 
 void Files_ReadReal (Files_Rider *R, LONGINT *R__typ, REAL *x)
@@ -1000,7 +1002,7 @@ static void Files_Init (void)
 	Kernel_nofiles = 0;
 }
 
-__TDESC(Files_Handle__desc, 1, 4) = {__TDFLDS("Handle", 248), {228, 232, 236, 240, -20}};
+__TDESC(Files_Handle__desc, 1, 4) = {__TDFLDS("Handle", 252), {228, 232, 236, 240, -20}};
 __TDESC(Files_BufDesc__desc, 1, 1) = {__TDFLDS("BufDesc", 4112), {0, -8}};
 __TDESC(Files_Rider__desc, 1, 1) = {__TDFLDS("Rider", 20), {8, -8}};
 __TDESC(Files_TimeDesc__desc, 1, 0) = {__TDFLDS("TimeDesc", 40), {-4}};

@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 
 #ifndef Unix__h
 #define Unix__h
@@ -7,8 +7,8 @@
 
 typedef
 	struct Unix_Dirent {
-		LONGINT _prvt0;
-		char _prvt1[262];
+		INTEGER _prvt0;
+		char _prvt1[264];
 	} Unix_Dirent;
 
 typedef
@@ -21,6 +21,9 @@ typedef
 	struct Unix_Hostent {
 		LONGINT name, aliases, addrtype, length, addrlist;
 	} Unix_Hostent;
+
+typedef
+	SYSTEM_PTR (*Unix_SizeT)[1];
 
 typedef
 	struct Unix_Iovec {
@@ -81,11 +84,12 @@ typedef
 
 typedef
 	struct Unix_Status {
-		LONGINT dev, devX;
+		INTEGER dev, devX;
 		char _prvt0[4];
-		LONGINT ino, mode, nlink, uid, gid, rdev, rdevX;
+		Unix_SizeT ino;
+		INTEGER mode, nlink, uid, gid, rdev, rdevX;
 		char _prvt1[4];
-		LONGINT size, blksize, blocks, atime, unused1, mtime, unused2, ctime, unused3, unused4, unused5;
+		Unix_SizeT size, blksize, blocks, atime, unused1, mtime, unused2, ctime, unused3, unused4, unused5;
 	} Unix_Status;
 
 typedef

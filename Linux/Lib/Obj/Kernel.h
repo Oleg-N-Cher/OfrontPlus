@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 
 #ifndef Kernel__h
 #define Kernel__h

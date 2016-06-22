@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -218,7 +218,7 @@ void OfrontOPM_Init (BOOLEAN *done)
 	CHAR s[256];
 	*done = 0;
 	OfrontOPM_curpos = 0;
-	if (OfrontOPM_stop || (LONGINT)OfrontOPM_S >= Args_argc) {
+	if (OfrontOPM_stop || OfrontOPM_S >= Args_argc) {
 		return;
 	}
 	s[0] = 0x00;

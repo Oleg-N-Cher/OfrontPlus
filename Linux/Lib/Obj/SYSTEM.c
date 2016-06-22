@@ -203,7 +203,7 @@ SYSTEM_PTR SYSTEM_NEWARR(typ, elemsz, elemalgn, nofdim, nofdyn, va_alist)
 
 /* ----------- end of SYSTEM.co ------------- */
 
-/* Ofront 1.2 -tkie */
+/* Ofront 1.2 -tkiel */
 #include "SYSTEM.h"
 
 struct SYSTEM__1 {
@@ -759,7 +759,7 @@ static void SYSTEM_MarkStack (LONGINT n, LONGINT *cand, LONGINT cand__len)
 	if (n == 0) {
 		nofcand = 0;
 		sp = (LONGINT)&frame;
-		stack0 = SYSTEM_Mainfrm();
+		stack0 = (LONGINT)SYSTEM_Mainfrm();
 		inc = (LONGINT)&align.p - (LONGINT)&align;
 		if (sp > stack0) {
 			inc = -inc;

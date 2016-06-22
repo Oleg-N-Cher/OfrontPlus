@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 
@@ -192,7 +192,7 @@ static void OfrontOPS_Number (void)
 				while (i < n) {
 					d = Ord__7(dig[__X(i, 24)], 0);
 					i += 1;
-					if (OfrontOPS_intval <= __DIV(2147483647 - (LONGINT)d, 10)) {
+					if (OfrontOPS_intval <= (LONGINT)__DIV(2147483647 - d, 10)) {
 						OfrontOPS_intval = OfrontOPS_intval * 10 + (LONGINT)d;
 					} else {
 						OfrontOPS_err(203);
@@ -224,7 +224,7 @@ static void OfrontOPS_Number (void)
 				do {
 					n = Ord__7(OfrontOPS_ch, 0);
 					OfrontOPM_Get(&OfrontOPS_ch);
-					if (e <= __DIV(32767 - n, 10)) {
+					if (e <= __DIV(2147483647 - n, 10)) {
 						e = e * 10 + n;
 					} else {
 						OfrontOPS_err(203);

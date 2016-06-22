@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkaem */
+/* Ofront 1.2 -xtspkaeml */
 #include "SYSTEM.h"
 #include "Kernel.h"
 #include "OfrontOPB.h"

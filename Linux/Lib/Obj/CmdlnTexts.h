@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 
 #ifndef CmdlnTexts__h
 #define CmdlnTexts__h
@@ -30,8 +30,8 @@ typedef
 
 typedef
 	struct CmdlnTexts_RunDesc {
-		LONGINT _prvt0;
-		char _prvt1[15];
+		INTEGER _prvt0;
+		char _prvt1[17];
 	} CmdlnTexts_RunDesc;
 
 typedef
@@ -39,7 +39,7 @@ typedef
 
 typedef
 	struct CmdlnTexts_ElemDesc {
-		char _prvt0[20];
+		char _prvt0[24];
 		LONGINT W, H;
 		CmdlnTexts_Handler handle;
 		char _prvt1[4];
@@ -105,7 +105,7 @@ typedef
 		CmdlnTexts_Buffer buf;
 		CmdlnTexts_FontsFont fnt;
 		SHORTINT col, voff;
-		char _prvt0[26];
+		char _prvt0[24];
 	} CmdlnTexts_Writer;
 
 

@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkae */
+/* Ofront 1.2 -xtspkael */
 #include "SYSTEM.h"
 
 typedef
@@ -18,6 +18,9 @@ typedef
 	struct Unix_Hostent {
 		LONGINT name, aliases, addrtype, length, addrlist;
 	} Unix_Hostent;
+
+typedef
+	SYSTEM_PTR (*Unix_SizeT)[1];
 
 typedef
 	struct Unix_Iovec {
@@ -78,11 +81,10 @@ typedef
 
 typedef
 	struct Unix_Status {
-		LONGINT dev, devX;
-		INTEGER pad1;
-		LONGINT ino, mode, nlink, uid, gid, rdev, rdevX;
-		INTEGER pad2;
-		LONGINT size, blksize, blocks, atime, unused1, mtime, unused2, ctime, unused3, unused4, unused5;
+		INTEGER dev, devX, pad1;
+		Unix_SizeT ino;
+		INTEGER mode, nlink, uid, gid, rdev, rdevX, pad2;
+		Unix_SizeT size, blksize, blocks, atime, unused1, mtime, unused2, ctime, unused3, unused4, unused5;
 	} Unix_Status;
 
 typedef
@@ -191,8 +193,8 @@ __TDESC(Unix_SigContext__desc, 1, 0) = {__TDFLDS("SigContext", 1), {-4}};
 __TDESC(Unix_Dirent__desc, 1, 0) = {__TDFLDS("Dirent", 268), {-4}};
 __TDESC(Unix_Rusage__desc, 1, 0) = {__TDFLDS("Rusage", 72), {-4}};
 __TDESC(Unix_Iovec__desc, 1, 0) = {__TDFLDS("Iovec", 8), {-4}};
-__TDESC(Unix_Pollfd__desc, 1, 0) = {__TDFLDS("Pollfd", 8), {-4}};
-__TDESC(Unix_Sockaddr__desc, 1, 0) = {__TDFLDS("Sockaddr", 16), {-4}};
+__TDESC(Unix_Pollfd__desc, 1, 0) = {__TDFLDS("Pollfd", 12), {-4}};
+__TDESC(Unix_Sockaddr__desc, 1, 0) = {__TDFLDS("Sockaddr", 20), {-4}};
 __TDESC(Unix_Hostent__desc, 1, 0) = {__TDFLDS("Hostent", 20), {-4}};
 
 export void *Unix__init(void)
