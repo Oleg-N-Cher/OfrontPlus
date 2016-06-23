@@ -42,7 +42,7 @@ int main()
 
 	if (sizeof(CHAR)!=1) printf("error: CHAR should have size 1\n");
 	if (sizeof(BOOLEAN)!=1) printf("error: BOOLEAN should have size 1\n");
-	if (sizeof(SHORTINT)!=1) printf("error: SHORTINT should have size 1\n");
+	if (sizeof(SHORTINT)!=1 && sizeof(SHORTINT)!=2) printf("error: SHORTINT should have size 1 or 2\n");
 	if (sizeof(LONGINT)!=sizeof p.x) printf("error: LONGINT should have the same size as pointers\n");
 	if (sizeof(LONGINT)!=sizeof f.x) printf("error: LONGINT should have the same size as function pointers\n");
 	if (((sizeof rec2 == 65) == (sizeof rec0 == 1)) && ((sizeof rec2 - 64) != sizeof rec0))
