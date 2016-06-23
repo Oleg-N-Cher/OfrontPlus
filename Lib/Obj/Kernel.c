@@ -61,7 +61,7 @@ void Kernel_GetClock (LONGINT *t, LONGINT *d)
 	Unix_Timezone tz;
 	Kernel_RealTime time = NIL;
 	Unix_Gettimeofday(&tv, Unix_Timeval__typ, &tz, Unix_Timezone__typ);
-	time = Kernel_localtime(&tv.sec);
+	time = Kernel_localtime((Unix_SizeT*)&tv.sec);
 	*t = (time->sec + __ASHL(time->min, 6)) + __ASHL(time->hour, 12);
 	*d = (time->mday + __ASHL(time->mon + 1, 5)) + __ASHL(__MOD(time->year, 100), 9);
 }
@@ -80,7 +80,7 @@ LONGINT Kernel_Time (void)
 	Unix_Timeval timeval;
 	Unix_Timezone timezone;
 	Unix_Gettimeofday(&timeval, Unix_Timeval__typ, &timezone, Unix_Timezone__typ);
-	return __MOD((__DIV(timeval.usec, 1000) + timeval.sec * 1000) - Kernel_timeStart, 2147483647);
+	return __MOD((LONGINT)(__DIV(timeval.usec, 1000) + timeval.sec * 1000) - Kernel_timeStart, 2147483647);
 }
 
 /*----------------------------------------------------------------------------*/

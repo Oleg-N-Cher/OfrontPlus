@@ -6,6 +6,9 @@
 #include "SYSTEM.h"
 
 typedef
+	SYSTEM_PTR (*Unix_ANYPTR)[1];
+
+typedef
 	struct Unix_Dirent {
 		INTEGER _prvt0;
 		char _prvt1[264];
@@ -19,7 +22,9 @@ typedef
 
 typedef
 	struct Unix_Hostent {
-		LONGINT name, aliases, addrtype, length, addrlist;
+		Unix_ANYPTR name, aliases;
+		SHORTINT addrtype, length;
+		Unix_ANYPTR addrlist;
 	} Unix_Hostent;
 
 typedef
@@ -29,7 +34,7 @@ typedef
 
 typedef
 	struct Unix_Timeval {
-		LONGINT sec, usec;
+		INTEGER sec, usec;
 	} Unix_Timeval;
 
 typedef
@@ -46,9 +51,12 @@ typedef
 	CHAR *Unix_Name;
 
 typedef
+	SYSTEM_PTR (*Unix_SizeT)[1];
+
+typedef
 	struct Unix_Pollfd {
-		LONGINT fd;
-		INTEGER events, revents;
+		Unix_SizeT fd;
+		SHORTINT events, revents;
 	} Unix_Pollfd;
 
 typedef
@@ -70,9 +78,9 @@ typedef
 
 typedef
 	struct Unix_Sockaddr {
-		INTEGER family, port;
-		LONGINT internetAddr;
-		CHAR pad[8];
+		SHORTINT family, port;
+		INTEGER internetAddr;
+		char _prvt0[8];
 	} Unix_Sockaddr;
 
 typedef
@@ -80,20 +88,22 @@ typedef
 
 typedef
 	struct Unix_Status {
-		LONGINT dev;
-		INTEGER ino, mode, nlink, uid, gid;
-		LONGINT rdev, size, atime, mtime, ctime;
+		INTEGER dev;
+		char _prvt0[2];
+		SHORTINT mode, nlink, uid, gid;
+		INTEGER rdev, size;
+		Unix_SizeT atime, mtime, ctime;
 	} Unix_Status;
 
 typedef
 	struct Unix_Timeb {
 		INTEGER _prvt0;
-		char _prvt1[12];
+		char _prvt1[6];
 	} Unix_Timeb;
 
 typedef
 	struct Unix_Timezone {
-		LONGINT minuteswest, dsttime;
+		INTEGER minuteswest, dsttime;
 	} Unix_Timezone;
 
 

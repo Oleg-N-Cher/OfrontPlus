@@ -27,7 +27,10 @@ typedef
 	struct Files_Handle {
 		Files_FileName workName, registerName;
 		BOOLEAN tempFile;
-		LONGINT dev, ino, mtime, fd, len, pos;
+		INTEGER dev;
+		SHORTINT ino;
+		Unix_SizeT mtime;
+		LONGINT fd, len, pos;
 		Files_Buffer bufs[4];
 		INTEGER swapper, state;
 	} Files_Handle;
@@ -58,7 +61,7 @@ export LONGINT *Files_Rider__typ;
 export LONGINT *Files_TimeDesc__typ;
 
 export Files_File Files_Base (Files_Rider *r, LONGINT *r__typ);
-static Files_File Files_CacheEntry (LONGINT dev, LONGINT ino, LONGINT mtime);
+static Files_File Files_CacheEntry (INTEGER dev, SHORTINT ino, Unix_SizeT mtime);
 export void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res);
 export void Files_Close (Files_File f);
 static void Files_Create (Files_File f);
@@ -246,7 +249,6 @@ static void Files_Create (Files_File f)
 				f->pos = 0;
 				errno = Unix_Fstat(f->fd, &stat, Unix_Status__typ);
 				f->dev = stat.dev;
-				f->ino = stat.ino;
 				f->mtime = stat.mtime;
 			}
 		} else {
@@ -378,7 +380,7 @@ static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len)
 	return ch == '/';
 }
 
-static Files_File Files_CacheEntry (LONGINT dev, LONGINT ino, LONGINT mtime)
+static Files_File Files_CacheEntry (INTEGER dev, SHORTINT ino, Unix_SizeT mtime)
 {
 	return NIL;
 }
@@ -432,7 +434,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 			}
 			if (done) {
 				res = Unix_Fstat(fd, &stat, Unix_Status__typ);
-				f = Files_CacheEntry(stat.dev, stat.ino, stat.mtime);
+				f = Files_CacheEntry(stat.dev, 0, stat.mtime);
 				if (f != NIL) {
 					res = Unix_Close(fd);
 					__DEL(name);
@@ -454,7 +456,6 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 					f->registerName[0] = 0x00;
 					f->tempFile = 0;
 					f->dev = stat.dev;
-					f->ino = stat.ino;
 					f->mtime = stat.mtime;
 					__DEL(name);
 					return f;

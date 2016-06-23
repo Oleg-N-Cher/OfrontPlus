@@ -1805,10 +1805,10 @@ static void EnumPtrs(void (*P)(void*))
 }
 
 __TDESC(CmdlnTexts_FontDesc__desc, 1, 0) = {__TDFLDS("FontDesc", 32), {-4}};
-__TDESC(CmdlnTexts_RunDesc__desc, 1, 3) = {__TDFLDS("RunDesc", 20), {0, 4, 12, -16}};
-__TDESC(CmdlnTexts_PieceDesc__desc, 1, 4) = {__TDFLDS("PieceDesc", 28), {0, 4, 12, 20, -20}};
+__TDESC(CmdlnTexts_RunDesc__desc, 1, 3) = {__TDFLDS("RunDesc", 24), {0, 4, 12, -16}};
+__TDESC(CmdlnTexts_PieceDesc__desc, 1, 4) = {__TDFLDS("PieceDesc", 32), {0, 4, 12, 24, -20}};
 __TDESC(CmdlnTexts_ElemMsg__desc, 1, 0) = {__TDFLDS("ElemMsg", 1), {-4}};
-__TDESC(CmdlnTexts_ElemDesc__desc, 1, 4) = {__TDFLDS("ElemDesc", 36), {0, 4, 12, 32, -20}};
+__TDESC(CmdlnTexts_ElemDesc__desc, 1, 4) = {__TDFLDS("ElemDesc", 40), {0, 4, 12, 36, -20}};
 __TDESC(CmdlnTexts_FileMsg__desc, 1, 1) = {__TDFLDS("FileMsg", 28), {16, -8}};
 __TDESC(CmdlnTexts_CopyMsg__desc, 1, 1) = {__TDFLDS("CopyMsg", 4), {0, -8}};
 __TDESC(CmdlnTexts_IdentifyMsg__desc, 1, 0) = {__TDFLDS("IdentifyMsg", 64), {-4}};
@@ -1817,7 +1817,7 @@ __TDESC(CmdlnTexts_TextDesc__desc, 1, 2) = {__TDFLDS("TextDesc", 16), {4, 8, -12
 __TDESC(CmdlnTexts_Reader__desc, 1, 4) = {__TDFLDS("Reader", 48), {4, 12, 24, 36, -20}};
 __TDESC(CmdlnTexts_Scanner__desc, 1, 4) = {__TDFLDS("Scanner", 152), {4, 12, 24, 36, -20}};
 __TDESC(CmdlnTexts_Writer__desc, 1, 4) = {__TDFLDS("Writer", 36), {0, 4, 20, 32, -20}};
-__TDESC(CmdlnTexts__1__desc, 1, 5) = {__TDFLDS("", 112), {0, 4, 12, 32, 36, -24}};
+__TDESC(CmdlnTexts__1__desc, 1, 5) = {__TDFLDS("", 116), {0, 4, 12, 36, 40, -24}};
 
 export void *CmdlnTexts__init(void)
 {
