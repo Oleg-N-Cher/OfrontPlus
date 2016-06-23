@@ -19,6 +19,7 @@
 #else
 #include "varargs.h"
 #endif
+#include <string.h>
 
 extern void *malloc(unsigned long size);
 extern void exit(int status);
@@ -35,6 +36,11 @@ static SYSTEM_PTR SYSTEM_mainfrm;	/* adr of main proc stack frame, used for stac
 #define Lock	SYSTEM_lock++
 #define Unlock	SYSTEM_lock--; if (SYSTEM_interrupted && (SYSTEM_lock == 0)) __HALT(-9)
 
+
+void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n)
+{
+	return memcpy(dest, (const void*)src, n);
+}
 
 static void SYSTEM_InitHeap();
 void *SYSTEM__init();

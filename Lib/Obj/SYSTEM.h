@@ -11,13 +11,6 @@ uses double # as concatenation operator
 
 */
 
-#include <alloca.h>
-
-extern void *memcpy(void *dest, const void *src, unsigned long n);
-//extern void *memcpy(void *dest, const void *src, size_t n);
-//extern void *malloc(int size);
-extern void exit(int status);
-
 #define export
 #define import extern
 
@@ -29,16 +22,26 @@ extern void exit(int status);
 /* basic types */
 typedef char BOOLEAN;
 typedef unsigned char CHAR;
-typedef signed char SHORTINT;
+typedef short int SHORTINT;
 typedef int INTEGER;
-typedef long LONGINT;
+#if _WIN64 || __amd64__
+  typedef long long LONGINT;
+#else
+  typedef long LONGINT;
+#endif
 typedef float REAL;
 typedef double LONGREAL;
 typedef unsigned long SET;
 typedef void *SYSTEM_PTR;
 typedef unsigned char BYTE;
+#if _WIN64 || __amd64__
+  typedef unsigned long long SYSTEM_ADR;
+#else
+  typedef unsigned long SYSTEM_ADR;
+#endif
 
 /* runtime system routines */
+extern void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n);
 extern long SYSTEM_DIV();
 extern long SYSTEM_MOD();
 extern long SYSTEM_ENTIER();
@@ -92,7 +95,8 @@ extern void SYSTEM_ENUMR();
 #define __ROTR(x, n, t)	((t)((unsigned)(x)>>(n)|(unsigned)(x)<<(8*sizeof(t)-(n))))
 #define __ROT(x, n, t)	((n)>=0? __ROTL(x, n, t): __ROTR(x, -(n), t))
 #define __BIT(x, n)	(*(unsigned long*)(x)>>(n)&1)
-#define __MOVE(s, d, n)	memcpy((char*)(d),(char*)(s),n)
+#define __MEMCPY SYSTEM_MEMCPY
+#define __MOVE(s, d, n)	__MEMCPY((char*)(d),(char*)(s),n)
 
 /* std procs and operator mappings */
 #define __SHORT(x, y)	((int)((unsigned long)(x)+(y)<(y)+(y)?(x):(__HALT(-8),0)))
@@ -130,8 +134,8 @@ static int __STRCMP(x, y)
 #define __ASHL(x, n)	((long)(x)<<(n))
 #define __ASHR(x, n)	((long)(x)>>(n))
 #define __ASHF(x, n)	SYSTEM_ASH((long)(x), (long)(n))
-#define __DUP(x, l, t)	x=(void*)memcpy(alloca(l*sizeof(t)),x,l*sizeof(t))
-#define __DUPARR(v, t)	v=(void*)memcpy(v##__copy,v,sizeof(t))
+#define __DUP(x, l, t)	x=(void*)__MEMCPY(alloca(l*sizeof(t)),x,l*sizeof(t))
+#define __DUPARR(v, t)	v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
 #define __DEL(x)	/* DUP with alloca frees storage automatically */
 #define __IS(tag, typ, level)	(*(tag-(__BASEOFF-level))==(long)typ##__typ)
 #define __TYPEOF(p)	(*(((long**)(p))-1))
@@ -171,7 +175,7 @@ static int __STRCMP(x, y)
 
 #define __INITYP(t, t0, level) \
 	t##__typ= &t##__desc.blksz; \
-	memcpy(t##__desc.base, t0##__typ - __BASEOFF, level*sizeof(long)); \
+	__MEMCPY(t##__desc.base, t0##__typ - __BASEOFF, level*sizeof(long)); \
 	t##__desc.base[level]=t##__typ; \
 	t##__desc.module=(long)m; \
 	if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15); \
