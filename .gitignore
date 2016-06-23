@@ -1,4 +1,5 @@
 Lib/Obj/*.sym
+Lib/Obj/ofrontparam.exe
 Linux/Obj/*.o
 Linux/ocat
 Linux/ofront+
@@ -6,4 +7,5 @@ Linux/showdef
 Obj/*.o
 Work/*.c
 Work/*.exe
+*.sbm
 +Git.bat
