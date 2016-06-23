@@ -226,7 +226,7 @@ void OfrontOPM_Init (BOOLEAN *done)
 	CHAR s[256];
 	*done = 0;
 	OfrontOPM_curpos = 0;
-	if (OfrontOPM_stop || (LONGINT)OfrontOPM_S >= Args_argc) {
+	if (OfrontOPM_stop || OfrontOPM_S >= Args_argc) {
 		return;
 	}
 	s[0] = 0x00;
@@ -462,8 +462,8 @@ void OfrontOPM_FPrintReal (LONGINT *fp, REAL real)
 void OfrontOPM_FPrintLReal (LONGINT *fp, LONGREAL lr)
 {
 	LONGINT l, h;
-	__GET((LONGINT)&lr, l, LONGINT);
-	__GET((LONGINT)&lr + 4, h, LONGINT);
+	__GET((INTEGER)&lr, l, LONGINT);
+	__GET((INTEGER)&lr + 4, h, LONGINT);
 	OfrontOPM_FPrint(&*fp, l);
 	OfrontOPM_FPrint(&*fp, h);
 }

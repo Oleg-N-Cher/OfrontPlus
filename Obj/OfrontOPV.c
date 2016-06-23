@@ -12,7 +12,8 @@ typedef
 
 
 static BOOLEAN OfrontOPV_assert, OfrontOPV_inxchk, OfrontOPV_mainprog, OfrontOPV_ansi;
-static INTEGER OfrontOPV_stamp, OfrontOPV_recno;
+static INTEGER OfrontOPV_stamp;
+static LONGINT OfrontOPV_recno;
 static OfrontOPV_ExitInfo OfrontOPV_exit;
 static INTEGER OfrontOPV_nofExitLabels;
 static BOOLEAN OfrontOPV_naturalAlignment;
@@ -110,7 +111,7 @@ void OfrontOPV_TypSize (OfrontOPT_Struct typ)
 			OfrontOPC_Align(&offset, base);
 			if (typ->strobj == NIL && __MASK(typ->align, -65536) == 0) {
 				OfrontOPV_recno += 1;
-				base += __ASHL((LONGINT)OfrontOPV_recno, 16);
+				base += __ASHL(OfrontOPV_recno, 16);
 			}
 			typ->size = offset;
 			typ->align = base;
@@ -1586,7 +1587,7 @@ void OfrontOPV_Module (OfrontOPT_Node prog)
 }
 
 /*----------------------------------------------------------------------------*/
-__TDESC(OfrontOPV_ExitInfo__desc, 1, 0) = {__TDFLDS("ExitInfo", 4), {-4}};
+__TDESC(OfrontOPV_ExitInfo__desc, 1, 0) = {__TDFLDS("ExitInfo", 8), {-4}};
 
 export void *OfrontOPV__init(void)
 {
