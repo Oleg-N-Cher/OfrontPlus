@@ -33,7 +33,7 @@
 @IF errorlevel 1 PAUSE
 @EXIT
 
-BuildAll:
+:BuildAll
 %gcc% OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPC.c OfrontOPV.c BrowserCmd.c %lib% -o ..\Bin\showdef.exe
 @IF errorlevel 1 PAUSE
 %gcc% OCatCmd.c %lib% -o ..\Bin\ocat.exe
