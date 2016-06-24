@@ -14,7 +14,6 @@
 @DEL WinApi.c
 @EXIT
 
-MinGW:
-
-%gcc% -c %Mod%.c -I "."
+:MinGW
+%gcc% -c %Mod%.c -I "." -I ..\C
 @IF errorlevel 1 PAUSE
