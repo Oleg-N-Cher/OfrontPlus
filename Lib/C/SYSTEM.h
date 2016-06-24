@@ -11,6 +11,8 @@ uses double # as concatenation operator
 
 */
 
+#include <malloc.h>
+
 #define export
 #define import extern
 
