@@ -13,18 +13,18 @@ MODULE WinApi (*KERNEL32.dll*);
 		OPEN_EXISTING* = 3 (* {0, 1} *);
 
 	TYPE
-		BOOL* = LONGINT;
+		BOOL* = INTEGER;
 		HANDLE* = PtrVoid;
 
 		SECURITY_ATTRIBUTES* = RECORD [1]
-			nLength*: LONGINT;
+			nLength*: INTEGER;
 			lpSecurityDescriptor*: PtrVoid;
 			bInheritHandle*: BOOL;
 		END;
 
 		FILETIME* = RECORD [1]
-			dwLowDateTime*: LONGINT;
-			dwHighDateTime*: LONGINT;
+			dwLowDateTime*: INTEGER;
+			dwHighDateTime*: INTEGER;
 		END;
 
 		BY_HANDLE_FILE_INFORMATION* = RECORD [1](*align8*)
@@ -32,18 +32,18 @@ MODULE WinApi (*KERNEL32.dll*);
 			ftCreationTime*: FILETIME;
 			ftLastAccessTime*: FILETIME;
 			ftLastWriteTime*: FILETIME;
-			dwVolumeSerialNumber*: LONGINT;
-			nFileSizeHigh*: LONGINT;
-			nFileSizeLow*: LONGINT;
-			nNumberOfLinks*: LONGINT;
-			nFileIndexHigh*: LONGINT;
-			nFileIndexLow*: LONGINT;
+			dwVolumeSerialNumber*: INTEGER;
+			nFileSizeHigh*: INTEGER;
+			nFileSizeLow*: INTEGER;
+			nNumberOfLinks*: INTEGER;
+			nFileIndexHigh*: INTEGER;
+			nFileIndexLow*: INTEGER;
 		END;
 
 	PROCEDURE [1] -CloseHandle* (hObject: HANDLE): BOOL;
 	(*END CloseHandle;*)
 
-	PROCEDURE [1] -CreateFileA* (lpFileName: PtrSTR; dwDesiredAccess: SET; dwShareMode: SET; VAR [nil] lpSecurityAttributes: SECURITY_ATTRIBUTES; dwCreationDisposition: LONGINT; dwFlagsAndAttributes: SET; hTemplateFile: HANDLE): HANDLE;
+	PROCEDURE [1] -CreateFileA* (lpFileName: PtrSTR; dwDesiredAccess: SET; dwShareMode: SET; VAR [nil] lpSecurityAttributes: SECURITY_ATTRIBUTES; dwCreationDisposition: INTEGER; dwFlagsAndAttributes: SET; hTemplateFile: HANDLE): HANDLE;
 	(*END CreateFileA;*)
 
 	PROCEDURE [1] -GetFileInformationByHandle* (hFile: HANDLE; VAR [nil] lpFileInformation: BY_HANDLE_FILE_INFORMATION): BOOL;
