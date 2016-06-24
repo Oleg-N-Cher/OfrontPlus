@@ -6,7 +6,7 @@
 
 @SET WinDev=%XDev%\WinDev
 @SET PATH=%WinDev%\Bin\MinGW\bin;%PATH%
-@SET lib=-I ..\Lib\Obj
+@SET lib=-I ..\Lib\Obj -I ..\Lib\C
 @SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -Wl,--gc-sections -Wl,--file-alignment,512 %lib%
 
 %gcc% %1 ..\Lib\Ofront.a -o %1.exe
