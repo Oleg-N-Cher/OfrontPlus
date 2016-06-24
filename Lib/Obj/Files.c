@@ -723,7 +723,7 @@ static BOOLEAN Files_SameFile (CHAR *fileName1, LONGINT fileName1__len, CHAR *fi
 	WinApi_BY_HANDLE_FILE_INFORMATION fileInfo1, fileInfo2;
 	SYSTEM_PTR handle1 = NIL, handle2 = NIL;
 	BOOLEAN same;
-	LONGINT res;
+	INTEGER res;
 	same = 0;
 	handle1 = WinApi_CreateFileA((SYSTEM_PTR)((INTEGER)fileName1), 0x80000000, 0x01, NIL, NIL, 3, 0x0, NIL);
 	if (handle1 != (SYSTEM_PTR)-1) {
