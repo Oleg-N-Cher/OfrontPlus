@@ -4,23 +4,22 @@ MODULE Args;	(* jt, 8.12.94 *)
 
 
 	IMPORT SYSTEM;
-	
+
 	TYPE
-		ArgPtr = POINTER TO ARRAY 1024 OF CHAR;
-		ArgVec = POINTER TO ARRAY 1024 OF ArgPtr;
-		ANYPTR = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR;
+		ArgPtr = POINTER [1] TO ARRAY 1024 OF CHAR;
+		ArgVec = POINTER [1] TO ARRAY 1024 OF ArgPtr;
 
-	VAR argc-: INTEGER; argv-: ANYPTR;
+	VAR argc-: INTEGER; argv-: ArgVec;
 
+	PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* getenv() *)
 	PROCEDURE -Argc(): INTEGER "SYSTEM_argc";
-	PROCEDURE -Argv(): ANYPTR "(Args_ANYPTR)SYSTEM_argv";
+	PROCEDURE -Argv(): ArgVec "(Args_ArgVec)SYSTEM_argv";
 	PROCEDURE -getenv(var: ARRAY OF CHAR): ArgPtr
 		"(Args_ArgPtr)getenv(var)";
 
 	PROCEDURE Get*(n: INTEGER; VAR val: ARRAY OF CHAR);
-		VAR av: ArgVec;
 	BEGIN
-		IF n < argc THEN av := SYSTEM.VAL(ArgVec, argv); COPY(av[n]^, val) END
+		IF n < argc THEN COPY(argv[n]^, val) END
 	END Get;
 
 	PROCEDURE GetInt*(n: INTEGER; VAR val: INTEGER);
