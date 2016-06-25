@@ -11,7 +11,11 @@ uses double # as concatenation operator
 
 */
 
-#include <malloc.h>
+#if defined __linux__ || defined __unix__
+#  include <alloca.h>
+#else
+#  include <malloc.h>
+#endif
 
 #define export
 #define import extern
@@ -26,7 +30,7 @@ typedef char BOOLEAN;
 typedef unsigned char CHAR;
 typedef short int SHORTINT;
 typedef int INTEGER;
-#if _WIN64 || __amd64__
+#if defined __amd64__ || defined __x86_64__
   typedef long long LONGINT;
 #else
   typedef long LONGINT;
@@ -36,7 +40,7 @@ typedef double LONGREAL;
 typedef unsigned long SET;
 typedef void *SYSTEM_PTR;
 typedef unsigned char BYTE;
-#if _WIN64 || __amd64__
+#if defined __amd64__ || defined __x86_64__
   typedef unsigned long long SYSTEM_ADR;
 #else
   typedef unsigned long SYSTEM_ADR;
