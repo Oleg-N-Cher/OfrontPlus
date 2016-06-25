@@ -10,6 +10,7 @@
 
 @SET Mod=%1
 @IF %Mod%==Unix.msvcrt SET Mod=Unix
+@IF %Mod%==SYSTEM SET Mod=..\C\SYSTEM0
 @IF NOT %Mod%==WinApi GOTO MinGW
 @DEL WinApi.c
 @EXIT
