@@ -1,9 +1,9 @@
-MODULE Kernel; 
+MODULE Kernel;
 (*
-  J. Templ, 16.4.95 
+  J. Templ, 16.4.95
   communication with C-runtime and storage management
 *)
-  
+
   IMPORT SYSTEM, Unix, Args;
 
   TYPE
@@ -20,7 +20,7 @@ MODULE Kernel;
   VAR
     (* trap handling *)
     trapEnv*: Unix.JmpBuf;  (* saved stack environment for trap handling *)
-    
+
     (* oberon heap management *)
     nofiles*: LONGINT;
 
@@ -43,21 +43,15 @@ MODULE Kernel;
   PROCEDURE -include()
     "#include <setjmp.h>";
 
-  PROCEDURE -AAincludeStdlib() (* extern void exit(int status); *)
-    "#include <stdlib.h>";
-
   PROCEDURE -Lock*()
     "SYSTEM_lock++";
 
   PROCEDURE -Unlock*()
     "SYSTEM_lock--; if (SYSTEM_interrupted && SYSTEM_lock == 0) __HALT(-9)";
 
-  PROCEDURE -exit(n: INTEGER)
-    "exit(n)";
-    
   PROCEDURE Exit*(n: INTEGER);
   BEGIN
-    exit(n)
+    Unix.Exit(n)
   END Exit;
 
   PROCEDURE -sigsetjmp*(VAR env: Unix.JmpBuf; savemask: LONGINT): LONGINT
@@ -91,7 +85,7 @@ MODULE Kernel;
     Unix.Gettimeofday(tv, tz);
     time := localtime(tv.sec);
     t := time.sec + ASH(time.min, 6) + ASH(time.hour, 12);
-    d := time.mday + ASH(time.mon+1, 5) + ASH(time.year MOD 100, 9); 
+    d := time.mday + ASH(time.mon+1, 5) + ASH(time.year MOD 100, 9);
   END GetClock;
 
   PROCEDURE SetClock* (t, d: LONGINT);
