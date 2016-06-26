@@ -247,6 +247,9 @@ TYPE
   PROCEDURE -includeErrno()
     "#include <errno.h>";
 
+  PROCEDURE -AAincludeStdlib() (* extern void exit(int status); *)
+    "#include <stdlib.h>";
+
   PROCEDURE -err(): LONGINT
     "errno";
 
@@ -255,8 +258,13 @@ TYPE
     RETURN err()
   END errno;
 
-  PROCEDURE -Exit*(n: LONGINT)
+  PROCEDURE -exit(n: INTEGER)
     "exit(n)";
+
+  PROCEDURE Exit*(n: INTEGER);
+  BEGIN
+    exit(n)
+  END Exit;
 
   PROCEDURE -Fork*(): LONGINT
     "fork()";
