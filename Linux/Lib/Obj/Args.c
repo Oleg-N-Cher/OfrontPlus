@@ -2,9 +2,6 @@
 #include "SYSTEM.h"
 
 typedef
-	SYSTEM_PTR (*Args_ANYPTR)[1];
-
-typedef
 	CHAR (*Args_ArgPtr)[1024];
 
 typedef
@@ -12,7 +9,7 @@ typedef
 
 
 export INTEGER Args_argc;
-export Args_ANYPTR Args_argv;
+export Args_ArgVec Args_argv;
 
 
 export void Args_Get (INTEGER n, CHAR *val, LONGINT val__len);
@@ -21,16 +18,15 @@ export void Args_GetInt (INTEGER n, INTEGER *val);
 export void Args_GetLInt (INTEGER n, LONGINT *val);
 export INTEGER Args_Pos (CHAR *s, LONGINT s__len);
 
+#include <stdlib.h>
 #define Args_Argc()	SYSTEM_argc
-#define Args_Argv()	(Args_ANYPTR)SYSTEM_argv
+#define Args_Argv()	(Args_ArgVec)SYSTEM_argv
 #define Args_getenv(var, var__len)	(Args_ArgPtr)getenv(var)
 
 void Args_Get (INTEGER n, CHAR *val, LONGINT val__len)
 {
-	Args_ArgVec av = NIL;
 	if (n < Args_argc) {
-		av = (Args_ArgVec)Args_argv;
-		__COPY(*(*av)[__X(n, 1024)], val, val__len);
+		__COPY(*(*Args_argv)[__X(n, 1024)], val, val__len);
 	}
 }
 

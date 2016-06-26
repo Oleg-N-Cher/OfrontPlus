@@ -31,6 +31,7 @@ static LONGINT Kernel_timeStart;
 export LONGINT *Kernel_TimeDesc__typ;
 
 static void Kernel_EndianTest (void);
+export void Kernel_Exit (INTEGER n);
 export void Kernel_GetClock (LONGINT *t, LONGINT *d);
 static void Kernel_Halt (LONGINT n);
 export void Kernel_InstallTermHandler (void (*p)(void));
@@ -41,7 +42,6 @@ export void Kernel_SetClock (LONGINT t, LONGINT d);
 export LONGINT Kernel_Time (void);
 
 #define Kernel_Error(msg, msg__len, len)	write(1/*stdout*/, msg, len); char ch = 0xa; write(1, &ch, 1)
-#define Kernel_Exit(n)	exit(n)
 #define Kernel_GC(markStack)	SYSTEM_GC(markStack)
 #define Kernel_Lock()	SYSTEM_lock++
 #define Kernel_RegisterObject(obj, finalize)	SYSTEM_REGFIN(obj, finalize)
@@ -58,6 +58,11 @@ export LONGINT Kernel_Time (void);
 #define Kernel_malloc(size)	(LONGINT)malloc(size)
 #define Kernel_siglongjmp(env, env__typ, val)	siglongjmp(env, val)
 #define Kernel_sigsetjmp(env, env__typ, savemask)	__sigsetjmp(env, savemask)
+
+void Kernel_Exit (INTEGER n)
+{
+	Unix_Exit(n);
+}
 
 void Kernel_GetClock (LONGINT *t, LONGINT *d)
 {

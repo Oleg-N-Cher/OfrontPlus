@@ -5,6 +5,7 @@ Lib=../libOfront.a
 if [ -f $Lib ]; then rm $Lib; fi
 rm ../Sym/*.sym
 
+## Ofront+
 ../Bin/compile $Lib SYSTEM
 ../Bin/compile $Lib Args
 ../Bin/compile $Lib Console
@@ -14,5 +15,9 @@ rm ../Sym/*.sym
 ../Bin/compile $Lib Reals
 ../Bin/compile $Lib Modules.Unix
 ../Bin/compile $Lib CmdlnTexts
+
+## OOC2
+../Bin/compile $Lib ooc2RandomNumbers
+
 #../Bin/clear
 

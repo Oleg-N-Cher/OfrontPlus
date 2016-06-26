@@ -107,10 +107,12 @@ export LONGINT *Unix_Pollfd__typ;
 export LONGINT *Unix_Sockaddr__typ;
 export LONGINT *Unix_Hostent__typ;
 
+export void Unix_Exit (INTEGER n);
 export LONGINT Unix_Fstat (LONGINT fd, Unix_Status *statbuf, LONGINT *statbuf__typ);
 export LONGINT Unix_Stat (CHAR *name, LONGINT name__len, Unix_Status *statbuf, LONGINT *statbuf__typ);
 export LONGINT Unix_errno (void);
 
+#include <stdlib.h>
 #define Unix_Accept(socket, addr, addr__typ, addrlen)	accept(socket, addr, addrlen)
 #define Unix_Bind(socket, name, namelen)	bind(socket, &(name), namelen)
 #define Unix_Chdir(path, path__len)	chdir(path)
@@ -119,7 +121,6 @@ export LONGINT Unix_errno (void);
 #define Unix_Connect(socket, name, namelen)	connect(socket, &(name), namelen)
 #define Unix_Dup(fd)	dup(fd)
 #define Unix_Dup2(fd1, fd2)	dup(fd1, fd2)
-#define Unix_Exit(n)	exit(n)
 #define Unix_Fchmod(fd, mode)	fchmod(fd, mode)
 #define Unix_Fcntl(fd, cmd, arg)	fcntl(fd, cmd, arg)
 #define Unix_Flock(fd, operation)	flock(fd, operation)
@@ -154,6 +155,7 @@ export LONGINT Unix_errno (void);
 #define Unix_Write(fd, buf, nbyte)	write(fd, buf, nbyte)
 #define Unix_WriteBlk(fd, buf, buf__len)	write(fd, buf, buf__len)
 #define Unix_err()	errno
+#define Unix_exit(n)	exit(n)
 #define Unix_fstat(fd, statbuf, statbuf__typ)	fstat(fd, (struct stat*)statbuf)
 #include <errno.h>
 #include <sys/stat.h>
@@ -162,6 +164,11 @@ export LONGINT Unix_errno (void);
 LONGINT Unix_errno (void)
 {
 	return Unix_err();
+}
+
+void Unix_Exit (INTEGER n)
+{
+	Unix_exit(n);
 }
 
 LONGINT Unix_Stat (CHAR *name, LONGINT name__len, Unix_Status *statbuf, LONGINT *statbuf__typ)
