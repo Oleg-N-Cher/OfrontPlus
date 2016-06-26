@@ -31,10 +31,10 @@ void (*SYSTEM_Halt)();
 LONGINT SYSTEM_halt;	/* x in HALT(x) */
 LONGINT SYSTEM_assert;	/* x in ASSERT(cond, x) */
 INTEGER SYSTEM_argc;
-SYSTEM_PTR SYSTEM_argv;
+SYSTEM_ADR SYSTEM_argv;
 LONGINT SYSTEM_lock;
 BOOLEAN SYSTEM_interrupted;
-static SYSTEM_PTR SYSTEM_mainfrm;	/* adr of main proc stack frame, used for stack collection */
+static SYSTEM_ADR SYSTEM_mainfrm;	/* adr of main proc stack frame, used for stack collection */
 
 #define Lock	SYSTEM_lock++
 #define Unlock	SYSTEM_lock--; if (SYSTEM_interrupted && (SYSTEM_lock == 0)) __HALT(-9)
@@ -53,7 +53,7 @@ void SYSTEM_INIT(argc, argvadr)
 {
 	SYSTEM_mainfrm = argvadr;
 	SYSTEM_argc = argc;
-	SYSTEM_argv = (void*)argvadr;
+	SYSTEM_argv = *(SYSTEM_ADR*)argvadr;
 	SYSTEM_InitHeap();
 	SYSTEM_halt = -128;
 	SYSTEM__init();
