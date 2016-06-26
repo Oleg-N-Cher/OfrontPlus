@@ -31,6 +31,7 @@ static LONGINT Kernel_timeStart;
 export LONGINT *Kernel_TimeDesc__typ;
 
 static void Kernel_EndianTest (void);
+export void Kernel_Exit (INTEGER n);
 export void Kernel_GetClock (LONGINT *t, LONGINT *d);
 static void Kernel_Halt (LONGINT n);
 export void Kernel_InstallTermHandler (void (*p)(void));
@@ -38,13 +39,14 @@ export LONGINT Kernel_LargestAvailable (void);
 export void Kernel_SetClock (LONGINT t, LONGINT d);
 export LONGINT Kernel_Time (void);
 
-#define Kernel_Exit(n)	exit(n)
+#include <stdlib.h>
 #define Kernel_GC(markStack)	SYSTEM_GC(markStack)
 #define Kernel_Lock()	SYSTEM_lock++
 #define Kernel_RegisterObject(obj, finalize)	SYSTEM_REGFIN(obj, finalize)
 #define Kernel_SetHalt(p)	SYSTEM_Halt = p
 #define Kernel_Unlock()	SYSTEM_lock--; if (SYSTEM_interrupted && SYSTEM_lock == 0) __HALT(-9)
 #define Kernel_allocated()	SYSTEM_allocated
+#define Kernel_exit(n)	exit(n)
 #define Kernel_free(adr)	(void)free(adr)
 #define Kernel_getcwd(cwd, cwd__len)	getcwd(cwd, cwd__len)
 #define Kernel_heapsize()	SYSTEM_heapsize
@@ -55,6 +57,12 @@ export LONGINT Kernel_Time (void);
 
 /*============================================================================*/
 
+void Kernel_Exit (INTEGER n)
+{
+	Kernel_exit(n);
+}
+
+/*----------------------------------------------------------------------------*/
 void Kernel_GetClock (LONGINT *t, LONGINT *d)
 {
 	Unix_Timeval tv;

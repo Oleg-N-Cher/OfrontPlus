@@ -6,11 +6,14 @@
 #include "SYSTEM.h"
 
 typedef
-	SYSTEM_PTR (*Args_ANYPTR)[1];
+	CHAR (*Args_ArgPtr)[1024];
+
+typedef
+	Args_ArgPtr (*Args_ArgVec)[1024];
 
 
 import INTEGER Args_argc;
-import Args_ANYPTR Args_argv;
+import Args_ArgVec Args_argv;
 
 
 import void Args_Get (INTEGER n, CHAR *val, LONGINT val__len);

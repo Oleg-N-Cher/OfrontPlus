@@ -112,6 +112,7 @@ import LONGINT *Unix_Pollfd__typ;
 import LONGINT *Unix_Sockaddr__typ;
 import LONGINT *Unix_Hostent__typ;
 
+import void Unix_Exit (INTEGER n);
 import LONGINT Unix_Fstat (LONGINT fd, Unix_Status *statbuf, LONGINT *statbuf__typ);
 import LONGINT Unix_Stat (CHAR *name, LONGINT name__len, Unix_Status *statbuf, LONGINT *statbuf__typ);
 import LONGINT Unix_errno (void);
@@ -125,7 +126,6 @@ import void *Unix__init(void);
 #define Unix_Connect(socket, name, namelen)	connect(socket, &(name), namelen)
 #define Unix_Dup(fd)	dup(fd)
 #define Unix_Dup2(fd1, fd2)	dup(fd1, fd2)
-#define Unix_Exit(n)	exit(n)
 #define Unix_Fchmod(fd, mode)	fchmod(fd, mode)
 #define Unix_Fcntl(fd, cmd, arg)	fcntl(fd, cmd, arg)
 #define Unix_Flock(fd, operation)	flock(fd, operation)

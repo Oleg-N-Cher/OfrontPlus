@@ -23,6 +23,7 @@ import CHAR Kernel_LIB[256], Kernel_CWD[256];
 import CHAR Kernel_OBERON[1024];
 
 
+import void Kernel_Exit (INTEGER n);
 import void Kernel_GetClock (LONGINT *t, LONGINT *d);
 import void Kernel_InstallTermHandler (void (*p)(void));
 import LONGINT Kernel_LargestAvailable (void);
@@ -31,7 +32,6 @@ import void Kernel_SetClock (LONGINT t, LONGINT d);
 import LONGINT Kernel_Time (void);
 import void *Kernel__init(void);
 
-#define Kernel_Exit(n)	exit(n)
 #define Kernel_GC(markStack)	SYSTEM_GC(markStack)
 #define Kernel_Lock()	SYSTEM_lock++
 #define Kernel_RegisterObject(obj, finalize)	SYSTEM_REGFIN(obj, finalize)
