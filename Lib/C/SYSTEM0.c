@@ -49,7 +49,7 @@ static void SYSTEM_InitHeap();
 void *SYSTEM__init();
 
 void SYSTEM_INIT(argc, argvadr)
-	int argc; void *argvadr;
+	int argc; SYSTEM_ADR argvadr;
 {
 	SYSTEM_mainfrm = argvadr;
 	SYSTEM_argc = argc;
