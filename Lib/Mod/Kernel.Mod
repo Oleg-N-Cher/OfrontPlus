@@ -40,14 +40,22 @@ MODULE Kernel;
 		timeStart: LONGINT; (* milliseconds *)
 
 
+	PROCEDURE -AAincludeStdlib() (* extern void exit(int status); *)
+		"#include <stdlib.h>";
+
 	PROCEDURE -Lock*()
 		"SYSTEM_lock++";
 
 	PROCEDURE -Unlock*()
 		"SYSTEM_lock--; if (SYSTEM_interrupted && SYSTEM_lock == 0) __HALT(-9)";
 
-	PROCEDURE -Exit*(n: LONGINT)
+	PROCEDURE -exit(n: INTEGER)
 		"exit(n)";
+
+	PROCEDURE Exit*(n: INTEGER);
+	BEGIN
+		exit(n)
+	END Exit;
 
 	PROCEDURE -sigsetjmp*(VAR env: Unix.JmpBuf; savemask: LONGINT): LONGINT
 			"sigsetjmp(env, savemask)";

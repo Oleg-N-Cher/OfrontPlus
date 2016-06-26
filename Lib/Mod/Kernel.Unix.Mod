@@ -49,8 +49,10 @@ MODULE Kernel;
   PROCEDURE -Unlock*()
     "SYSTEM_lock--; if (SYSTEM_interrupted && SYSTEM_lock == 0) __HALT(-9)";
 
-  PROCEDURE -Exit*(n: LONGINT)
-    "exit(n)";
+  PROCEDURE Exit*(n: INTEGER);
+  BEGIN
+    Unix.Exit(n)
+  END Exit;
 
   PROCEDURE -sigsetjmp*(VAR env: Unix.JmpBuf; savemask: LONGINT): LONGINT
     "__sigsetjmp(env, savemask)";
