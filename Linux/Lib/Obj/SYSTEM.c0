@@ -15,14 +15,17 @@
 
 #include "SYSTEM.h"
 #ifdef __STDC__
-#include "stdarg.h"
+#  include "stdarg.h"
 #else
-#include "varargs.h"
+#  include "varargs.h"
 #endif
-#include <string.h>
 
-extern void *malloc(unsigned long size);
-extern void exit(int status);
+// extern void *malloc(long size);
+#include <malloc.h>
+// extern void exit(int status);
+#include <stdlib.h>
+// extern void *memcpy(void *dest, const void *src, long n);
+#include <string.h>
 
 void (*SYSTEM_Halt)();
 LONGINT SYSTEM_halt;	/* x in HALT(x) */
