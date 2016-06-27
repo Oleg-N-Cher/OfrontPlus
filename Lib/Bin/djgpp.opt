@@ -1,1 +1,0 @@
--D_WIN32 -O2 -s -I "..\..\..\WinDev\Bin\DJGPP\include\win32"
