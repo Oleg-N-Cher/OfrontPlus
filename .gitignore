@@ -1,5 +1,7 @@
 Lib/Obj/*.sym
 Lib/Obj/ofrontparam.exe
+Lib/Test/*.exe
+Lib/Test64/*.exe
 Linux/Obj/*.o
 Linux/ocat
 Linux/ofront+
