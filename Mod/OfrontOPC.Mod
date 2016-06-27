@@ -960,7 +960,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.WriteLn; OPM.WriteString(Export);
 		IF mainprog THEN
 			IF ansi THEN
-				OPM.WriteString("main(int argc, char **argv)"); OPM.WriteLn;
+				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn;
 			ELSE
 				OPM.WriteString("main(argc, argv)"); OPM.WriteLn;
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
