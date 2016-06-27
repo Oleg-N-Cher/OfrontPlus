@@ -23,7 +23,7 @@
 
 :Ofront
 @IF NOT %1==OfrontCmd GOTO Watson
-%gcc% OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c OfrontCmd.c %lib% -o ..\Bin\ofront64+.exe
+%gcc% OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c OfrontCmd.c %lib% -o ..\Bin\ofront+64.exe
 @IF errorlevel 1 PAUSE
 @EXIT
 
@@ -38,7 +38,7 @@
 @IF errorlevel 1 PAUSE
 %gcc% OCatCmd.c %lib% -o ..\Bin\ocat64.exe
 @IF errorlevel 1 PAUSE
-%gcc% OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c OfrontCmd.c %lib% -o ..\Bin\ofront64+.exe
+%gcc% OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c OfrontCmd.c %lib% -o ..\Bin\ofront+64.exe
 @IF errorlevel 1 PAUSE
 %gcc% OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPC.c OfrontOPV.c Watson0.c WatsonCmd.c %lib% -o ..\Bin\watson64.exe
 @IF errorlevel 1 PAUSE
