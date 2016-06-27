@@ -1,0 +1,5 @@
+Vishap Oberon - Cross-platform Oberon language compiler
+https://github.com/vishaps/voc/blob/master/triage/V2CHANGES.md
+
+software therapy. story about left shift
+http://norayr.am/log/?p=95
