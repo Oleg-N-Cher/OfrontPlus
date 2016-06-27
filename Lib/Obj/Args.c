@@ -15,7 +15,7 @@ export Args_ArgVec Args_argv;
 export void Args_Get (INTEGER n, CHAR *val, LONGINT val__len);
 export void Args_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len);
 export void Args_GetInt (INTEGER n, INTEGER *val);
-export void Args_GetLInt (INTEGER n, LONGINT *val);
+export void Args_GetLongInt (INTEGER n, LONGINT *val);
 export INTEGER Args_Pos (CHAR *s, LONGINT s__len);
 
 #include <stdlib.h>
@@ -60,7 +60,7 @@ void Args_GetInt (INTEGER n, INTEGER *val)
 }
 
 /*----------------------------------------------------------------------------*/
-void Args_GetLInt (INTEGER n, LONGINT *val)
+void Args_GetLongInt (INTEGER n, LONGINT *val)
 {
 	CHAR s[64];
 	LONGINT k;

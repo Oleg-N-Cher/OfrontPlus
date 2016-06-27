@@ -33,7 +33,7 @@ MODULE Args;	(* jt, 8.12.94 *)
 		IF i > 0 THEN val := k END
 	END GetInt;
 
-	PROCEDURE GetLInt*(n: INTEGER; VAR val: LONGINT);
+	PROCEDURE GetLongInt*(n: INTEGER; VAR val: LONGINT);
 		VAR s: ARRAY 64 OF CHAR; k: LONGINT; d, i: INTEGER;
 	BEGIN
 		s := ""; Get(n, s); i := 0;
@@ -42,7 +42,7 @@ MODULE Args;	(* jt, 8.12.94 *)
 		WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
 		IF s[0] = "-" THEN d := -d; DEC(i) END ;
 		IF i > 0 THEN val := k END
-	END GetLInt;
+	END GetLongInt;
 
 	PROCEDURE Pos*(s: ARRAY OF CHAR): INTEGER;
 		VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
