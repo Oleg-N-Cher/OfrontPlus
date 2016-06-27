@@ -1028,7 +1028,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		OPM.WriteLn; OPM.WriteString(Export);
 		IF mainprog THEN
 			IF ansi THEN
-				OPM.WriteString("main(int argc, char **argv)"); OPM.WriteLn;
+				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn;
 			ELSE
 				OPM.WriteString("main(argc, argv)"); OPM.WriteLn;
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
