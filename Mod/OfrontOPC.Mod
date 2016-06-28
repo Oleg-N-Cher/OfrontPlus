@@ -957,7 +957,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	PROCEDURE EnterBody*;
 	BEGIN
-		OPM.WriteLn; OPM.WriteString(Export);
+		OPM.WriteLn;
 		IF mainprog THEN
 			IF ansi THEN
 				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn;
@@ -966,7 +966,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
 			END
 		ELSE
-			OPM.WriteString("void *");
+			OPM.WriteString(Export); OPM.WriteString("void *");
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt); OPM.WriteLn;
 		END ;
 		BegBlk; BegStat;
