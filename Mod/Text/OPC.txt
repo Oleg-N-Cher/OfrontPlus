@@ -1025,7 +1025,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 
 	PROCEDURE EnterBody*;
 	BEGIN
-		OPM.WriteLn; OPM.WriteString(Export);
+		OPM.WriteLn;
 		IF mainprog THEN
 			IF ansi THEN
 				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn;
@@ -1034,7 +1034,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
 			END
 		ELSE
-			OPM.WriteString("void *");
+			OPM.WriteString(Export); OPM.WriteString("void *");
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt); OPM.WriteLn;
 		END ;
 		BegBlk; BegStat;
