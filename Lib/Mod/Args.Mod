@@ -15,7 +15,7 @@ MODULE Args;	(* jt, 8.12.94 *)
 	PROCEDURE -Argc(): INTEGER "SYSTEM_argc";
 	PROCEDURE -Argv(): ArgVec "(Args_ArgVec)SYSTEM_argv";
 	PROCEDURE -getenv(var: ARRAY OF CHAR): ArgPtr
-		"(Args_ArgPtr)getenv(var)";
+		"(Args_ArgPtr)getenv((char*)var)";
 
 	PROCEDURE Get*(n: INTEGER; VAR val: ARRAY OF CHAR);
 	BEGIN
