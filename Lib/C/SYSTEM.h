@@ -37,9 +37,9 @@ typedef int INTEGER;
 #endif
 typedef float REAL;
 typedef double LONGREAL;
-typedef unsigned long SET;
+typedef unsigned int SET;
 typedef void *SYSTEM_PTR;
-typedef unsigned char BYTE;
+typedef signed char BYTE;
 #if defined __amd64__ || defined __x86_64__
   typedef unsigned long long SYSTEM_ADR;
 #else
