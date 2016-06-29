@@ -21,7 +21,7 @@ export INTEGER Args_Pos (CHAR *s, LONGINT s__len);
 #include <stdlib.h>
 #define Args_Argc()	SYSTEM_argc
 #define Args_Argv()	(Args_ArgVec)SYSTEM_argv
-#define Args_getenv(var, var__len)	(Args_ArgPtr)getenv(var)
+#define Args_getenv(var, var__len)	(Args_ArgPtr)getenv((char*)var)
 
 /*============================================================================*/
 
