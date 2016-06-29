@@ -1,0 +1,22 @@
+#!/bin/bash
+cd ../Obj64
+
+Lib=../libOfront64.a
+if [ -f $Lib ]; then rm $Lib; fi
+rm ../Sym64/*.sym
+
+## Ofront+
+../Bin/compileC $Lib SYSTEM
+../Bin/compileC $Lib Args
+../Bin/compileC $Lib Console
+../Bin/compileC $Lib Unix
+../Bin/compileC $Lib Kernel.Unix
+../Bin/compileC $Lib Files.Unix
+../Bin/compileC $Lib Reals
+../Bin/compileC $Lib Modules.Unix
+../Bin/compileC $Lib CmdlnTexts
+
+## OOC2
+../Bin/compileC $Lib ooc2RandomNumbers
+
+#../Bin/clear
