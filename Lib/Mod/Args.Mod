@@ -44,7 +44,7 @@ MODULE Args;	(* jt, 8.12.94 *)
 		IF i > 0 THEN val := k END
 	END GetLongInt;
 
-	PROCEDURE Pos*(s: ARRAY OF CHAR): INTEGER;
+	PROCEDURE Pos*(s: ARRAY [1] OF CHAR): INTEGER;
 		VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 	BEGIN
 		i := 0; Get(i, arg);
@@ -52,7 +52,7 @@ MODULE Args;	(* jt, 8.12.94 *)
 		RETURN i
 	END Pos;
 
-	PROCEDURE GetEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+	PROCEDURE GetEnv*(var: ARRAY [1] OF CHAR; VAR val: ARRAY OF CHAR);
 		VAR p: ArgPtr;
 	BEGIN
 		p := getenv(var);
