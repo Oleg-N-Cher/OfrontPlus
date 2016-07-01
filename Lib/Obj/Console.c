@@ -9,14 +9,17 @@ static INTEGER Console_pos;
 export void Console_Bool (BOOLEAN b);
 export void Console_Char (CHAR ch);
 export void Console_Flush (void);
-export void Console_Hex (LONGINT i);
-export void Console_Int (LONGINT i, LONGINT n);
+export void Console_Hex (INTEGER i);
+export void Console_Int (INTEGER i, INTEGER n);
 export void Console_Ln (void);
+export void Console_LongHex (LONGINT i);
+export void Console_LongInt (LONGINT i, INTEGER n);
 export void Console_Read (CHAR *ch);
 export void Console_ReadLine (CHAR *line, LONGINT line__len);
 export void Console_String (CHAR *s, LONGINT s__len);
 
-#define Console_Write(adr, n)	write(1/*stdout*/, adr, n)
+#include <unistd.h>
+#define Console_Write(adr, n)	write(1/*stdout*/, (void*)adr, n)
 #define Console_read(ch)	read(0/*stdin*/, ch, 1)
 
 /*============================================================================*/
@@ -54,10 +57,44 @@ void Console_String (CHAR *s, LONGINT s__len)
 }
 
 /*----------------------------------------------------------------------------*/
-void Console_Int (LONGINT i, LONGINT n)
+void Console_Int (INTEGER i, INTEGER n)
 {
-	CHAR s[32];
-	LONGINT i1, k;
+	CHAR s[16];
+	INTEGER i1, k;
+	if ((LONGINT)i == __LSHL(1, 31, LONGINT)) {
+		__MOVE("8463847412", s, 11);
+		k = 10;
+	} else {
+		i1 = __ABS(i);
+		s[0] = (CHAR)((int)__MOD(i1, 10) + 48);
+		i1 = __DIV(i1, 10);
+		k = 1;
+		while (i1 > 0) {
+			s[__X(k, 16)] = (CHAR)((int)__MOD(i1, 10) + 48);
+			i1 = __DIV(i1, 10);
+			k += 1;
+		}
+	}
+	if (i < 0) {
+		s[__X(k, 16)] = '-';
+		k += 1;
+	}
+	while (n > k) {
+		Console_Char(' ');
+		n -= 1;
+	}
+	while (k > 0) {
+		k -= 1;
+		Console_Char(s[__X(k, 16)]);
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void Console_LongInt (LONGINT i, INTEGER n)
+{
+	CHAR s[24];
+	LONGINT i1;
+	INTEGER k;
 	if (i == __LSHL(1, 31, LONGINT)) {
 		__MOVE("8463847412", s, 11);
 		k = 10;
@@ -67,13 +104,13 @@ void Console_Int (LONGINT i, LONGINT n)
 		i1 = __DIV(i1, 10);
 		k = 1;
 		while (i1 > 0) {
-			s[__X(k, 32)] = (CHAR)(__MOD(i1, 10) + 48);
+			s[__X(k, 24)] = (CHAR)(__MOD(i1, 10) + 48);
 			i1 = __DIV(i1, 10);
 			k += 1;
 		}
 	}
 	if (i < 0) {
-		s[__X(k, 32)] = '-';
+		s[__X(k, 24)] = '-';
 		k += 1;
 	}
 	while (n > k) {
@@ -82,7 +119,7 @@ void Console_Int (LONGINT i, LONGINT n)
 	}
 	while (k > 0) {
 		k -= 1;
-		Console_Char(s[__X(k, 32)]);
+		Console_Char(s[__X(k, 24)]);
 	}
 }
 
@@ -103,12 +140,28 @@ void Console_Bool (BOOLEAN b)
 }
 
 /*----------------------------------------------------------------------------*/
-void Console_Hex (LONGINT i)
+void Console_Hex (INTEGER i)
 {
-	LONGINT k, n;
+	INTEGER k, n;
 	k = -28;
 	while (k <= 0) {
-		n = __MASK(__ASH(i, k), -16);
+		n = (int)__MASK(__ASH((LONGINT)i, k), -16);
+		if (n <= 9) {
+			Console_Char((CHAR)(48 + n));
+		} else {
+			Console_Char((CHAR)(55 + n));
+		}
+		k += 4;
+	}
+}
+
+/*----------------------------------------------------------------------------*/
+void Console_LongHex (LONGINT i)
+{
+	INTEGER k, n;
+	k = -28;
+	while (k <= 0) {
+		n = (int)__MASK(__ASH(i, k), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {
@@ -121,10 +174,8 @@ void Console_Hex (LONGINT i)
 /*----------------------------------------------------------------------------*/
 void Console_Read (CHAR *ch)
 {
-	LONGINT n;
 	Console_Flush();
-	n = Console_read(&*ch);
-	if (n != 1) {
+	if (Console_read(&*ch) != 1) {
 		*ch = 0x00;
 	}
 }
@@ -132,12 +183,12 @@ void Console_Read (CHAR *ch)
 /*----------------------------------------------------------------------------*/
 void Console_ReadLine (CHAR *line, LONGINT line__len)
 {
-	LONGINT i;
+	INTEGER i;
 	CHAR ch;
 	Console_Flush();
 	i = 0;
 	Console_Read(&ch);
-	while ((i < line__len - 1 && ch != 0x0a) && ch != 0x00) {
+	while (((LONGINT)i < line__len - 1 && ch != 0x0a) && ch != 0x00) {
 		line[__X(i, line__len)] = ch;
 		i += 1;
 		Console_Read(&ch);
