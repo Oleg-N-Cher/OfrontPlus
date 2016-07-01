@@ -94,8 +94,8 @@ extern void SYSTEM_ENUMR();
 #define __VAL(t, x)	(*(t*)&(x))
 #define __GET(a, x, t)	x= *(t*)(a)
 #define __PUT(a, x, t)	*(t*)(a)=x
-#define __LSHL(x, n, t)	((t)((unsigned)(x)<<(n)))
-#define __LSHR(x, n, t)	((t)((unsigned)(x)>>(n)))
+#define __LSHL(x, n, t)	(sizeof(t)==sizeof(long long)? (t)((unsigned long long)(x)<<(n)): (t)((unsigned)(x)<<(n)))
+#define __LSHR(x, n, t)	(sizeof(t)==sizeof(long long)? (t)((unsigned long long)(x)>>(n)): (t)((unsigned)(x)>>(n)))
 #define __LSH(x, n, t)	((n)>=0? __LSHL(x, n, t): __LSHR(x, -(n), t))
 #define __ROTL(x, n, t)	((t)((unsigned)(x)<<(n)|(unsigned)(x)>>(8*sizeof(t)-(n))))
 #define __ROTR(x, n, t)	((t)((unsigned)(x)>>(n)|(unsigned)(x)<<(8*sizeof(t)-(n))))
