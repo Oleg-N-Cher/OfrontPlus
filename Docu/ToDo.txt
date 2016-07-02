@@ -3,3 +3,6 @@
 - Оптимизировать параметры ARRAY OF CHAR, снабдив префиксом IN.
 
 - Убрать сортировку, чтобы избежать PROCEDURE -AAincludeStdlib "#include <stdlib.h>";
+
+- Тип long имеет размер 4 байта в MinGW64 и 8 в GCC64.
+  Избавиться от использования long, заменив его на long long, SYSTEM_ADR или void*
