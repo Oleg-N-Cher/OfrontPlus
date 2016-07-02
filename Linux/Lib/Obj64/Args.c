@@ -87,26 +87,22 @@ INTEGER Args_Pos (CHAR *s, LONGINT s__len)
 {
 	INTEGER i;
 	CHAR arg[256];
-	__DUP(s, s__len, CHAR);
 	i = 0;
 	Args_Get(i, (void*)arg, 256);
 	while (i < Args_argc && __STRCMP(s, arg) != 0) {
 		i += 1;
 		Args_Get(i, (void*)arg, 256);
 	}
-	__DEL(s);
 	return i;
 }
 
 void Args_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len)
 {
 	Args_ArgPtr p = NIL;
-	__DUP(var, var__len, CHAR);
 	p = Args_getenv(var, var__len);
 	if (p != NIL) {
 		__COPY(*p, val, val__len);
 	}
-	__DEL(var);
 }
 
 
