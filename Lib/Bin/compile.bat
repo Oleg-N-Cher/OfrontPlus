@@ -9,7 +9,10 @@
 @SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
 
 @SET Mod=%1
-@IF %Mod%==Unix.msvcrt SET Mod=Unix
+@IF %Mod%==Args2 SET Mod=Args
+@IF %Mod%==Files.WinApi SET Mod=Files
+@IF %Mod%==Kernel.WinApi SET Mod=Kernel
+@IF %Mod%==Unix.WinApi SET Mod=Unix
 @IF %Mod%==SYSTEM SET Mod=..\C\SYSTEM0
 @IF NOT %Mod%==WinApi GOTO MinGW
 @DEL WinApi.c

@@ -1,5 +1,5 @@
 #!/bin/bash
-export OBERON=.:../Sym64
+export OBERON=.:../C:../Sym64
 
 mod=$2
 if [ "$2" == "Files.Unix" ]; then mod="Files"; fi
@@ -21,7 +21,7 @@ else
 
 fi
 
-gcc -c $mod.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
+gcc -c $mod.c -I ../C -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
 errCode=$?
 if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
