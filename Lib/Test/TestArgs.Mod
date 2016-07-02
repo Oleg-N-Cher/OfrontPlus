@@ -31,8 +31,8 @@ BEGIN
   Args.GetEnv("PATH", var); Write.Ln;
   IF var # "" THEN Write.String("PATH="); Write.String(var); Write.Ln END;
   var := "";
-  Args.GetEnv("home", var); Write.Ln;
-  IF var # "" THEN Write.String("home="); Write.String(var); Write.Ln END;
+  Args.GetEnv("HOME", var); Write.Ln;
+  IF var # "" THEN Write.String("HOME="); Write.String(var); Write.Ln END;
   var := "";
 
 END TestArgs.

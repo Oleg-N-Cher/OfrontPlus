@@ -19,6 +19,9 @@ export main(int argc, char **argv)
 	__IMPORT(Console__init);
 	__REGMAIN("TestOoc2RandomNumbers", 0);
 /* BEGIN */
+	Console_Int((int)Kernel_Time(), 10);
+	Console_Int((int)Kernel_Time(), 10);
+	Console_Int((int)Kernel_Time(), 10);
 	ooc2RandomNumbers_PutSeed((int)Kernel_Time());
 	TestOoc2RandomNumbers_i = 1;
 	while (TestOoc2RandomNumbers_i <= 100) {

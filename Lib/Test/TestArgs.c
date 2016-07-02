@@ -70,10 +70,10 @@ export main(int argc, char **argv)
 		Console_Ln();
 	}
 	TestArgs_var[0] = 0x00;
-	Args_GetEnv((CHAR*)"home", (LONGINT)5, (void*)TestArgs_var, 1024);
+	Args_GetEnv((CHAR*)"HOME", (LONGINT)5, (void*)TestArgs_var, 1024);
 	Console_Ln();
 	if (TestArgs_var[0] != 0x00) {
-		Console_String((CHAR*)"home=", (LONGINT)6);
+		Console_String((CHAR*)"HOME=", (LONGINT)6);
 		Console_String(TestArgs_var, 1024);
 		Console_Ln();
 	}
