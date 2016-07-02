@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export OBERON=.:../Sym
+export OBERON=.:../Sym64
 
 #../../Bin/ofront+ -m ../Test/TestOoc2RandomNumbers.Mod
 #errCode=$?
