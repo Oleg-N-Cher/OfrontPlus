@@ -78,7 +78,7 @@ MODULE Console;	(* J. Templ, 29-June-96 *)
 	PROCEDURE Hex*(i: INTEGER);
 		VAR k, n: INTEGER;
 	BEGIN
-		k := -28;
+		IF SIZE(INTEGER) = 4 THEN k := -28 ELSE k := -12 END;
 		WHILE k <= 0 DO
 			n := SHORT(ASH(i, k) MOD 16);
 			IF n <= 9 THEN Char(CHR(ORD("0") + n)) ELSE Char(CHR(ORD("A") - 10 + n)) END ;
@@ -89,7 +89,7 @@ MODULE Console;	(* J. Templ, 29-June-96 *)
 	PROCEDURE LongHex*(i: LONGINT);
 		VAR k, n: INTEGER;
 	BEGIN
-		k := -28;
+		IF SIZE(LONGINT) = 8 THEN k := -60 ELSE k := -28 END;
 		WHILE k <= 0 DO
 			n := SHORT(ASH(i, k) MOD 16);
 			IF n <= 9 THEN Char(CHR(ORD("0") + n)) ELSE Char(CHR(ORD("A") - 10 + n)) END ;
