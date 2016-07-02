@@ -15,13 +15,13 @@ export Args_ArgVec Args_argv;
 export void Args_Get (INTEGER n, CHAR *val, LONGINT val__len);
 export void Args_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len);
 export void Args_GetInt (INTEGER n, INTEGER *val);
-export void Args_GetLInt (INTEGER n, LONGINT *val);
+export void Args_GetLongInt (INTEGER n, LONGINT *val);
 export INTEGER Args_Pos (CHAR *s, LONGINT s__len);
 
 #include <stdlib.h>
 #define Args_Argc()	SYSTEM_argc
 #define Args_Argv()	(Args_ArgVec)SYSTEM_argv
-#define Args_getenv(var, var__len)	(Args_ArgPtr)getenv(var)
+#define Args_getenv(var, var__len)	(Args_ArgPtr)getenv((char*)var)
 
 void Args_Get (INTEGER n, CHAR *val, LONGINT val__len)
 {
@@ -56,7 +56,7 @@ void Args_GetInt (INTEGER n, INTEGER *val)
 	}
 }
 
-void Args_GetLInt (INTEGER n, LONGINT *val)
+void Args_GetLongInt (INTEGER n, LONGINT *val)
 {
 	CHAR s[64];
 	LONGINT k;
@@ -87,26 +87,22 @@ INTEGER Args_Pos (CHAR *s, LONGINT s__len)
 {
 	INTEGER i;
 	CHAR arg[256];
-	__DUP(s, s__len, CHAR);
 	i = 0;
 	Args_Get(i, (void*)arg, 256);
 	while (i < Args_argc && __STRCMP(s, arg) != 0) {
 		i += 1;
 		Args_Get(i, (void*)arg, 256);
 	}
-	__DEL(s);
 	return i;
 }
 
 void Args_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len)
 {
 	Args_ArgPtr p = NIL;
-	__DUP(var, var__len, CHAR);
 	p = Args_getenv(var, var__len);
 	if (p != NIL) {
 		__COPY(*p, val, val__len);
 	}
-	__DEL(var);
 }
 
 

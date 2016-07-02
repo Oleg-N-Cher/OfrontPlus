@@ -123,7 +123,7 @@ static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, LONGINT errno)
 	}
 	if (errno != 0) {
 		Console_String((CHAR*)" errno = ", (LONGINT)10);
-		Console_Int(errno, 1);
+		Console_LongInt(errno, 1);
 	}
 	Console_Ln();
 	__HALT(99);
@@ -447,7 +447,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 				Console_String((CHAR*)"warning Files.Old ", (LONGINT)19);
 				Console_String(name, name__len);
 				Console_String((CHAR*)" errno = ", (LONGINT)10);
-				Console_Int(errno, 0);
+				Console_LongInt(errno, 0);
 				Console_Ln();
 			}
 			if (done) {
