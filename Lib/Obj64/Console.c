@@ -159,7 +159,7 @@ void Console_Hex (INTEGER i)
 void Console_LongHex (LONGINT i)
 {
 	INTEGER k, n;
-	k = -28;
+	k = -60;
 	while (k <= 0) {
 		n = (int)__MASK(__ASH(i, k), -16);
 		if (n <= 9) {
