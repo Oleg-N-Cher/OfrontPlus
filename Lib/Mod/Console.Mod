@@ -36,7 +36,7 @@ MODULE Console;	(* J. Templ, 29-June-96 *)
 	PROCEDURE Int*(i, n: INTEGER);
 		VAR s: ARRAY 16 OF CHAR; i1, k: INTEGER;
 	BEGIN
-		IF i = SYSTEM.LSH(LONG(LONG(1)), SIZE(INTEGER)*8 - 1) THEN
+		IF i = SYSTEM.LSH(LONG(1), SIZE(INTEGER)*8 - 1) THEN
 			IF SIZE(INTEGER) = 4 THEN s := "8463847412"; k := 10
 			ELSE s := "86723"; k := 5
 			END

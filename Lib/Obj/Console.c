@@ -61,7 +61,7 @@ void Console_Int (INTEGER i, INTEGER n)
 {
 	CHAR s[16];
 	INTEGER i1, k;
-	if ((LONGINT)i == __LSHL(1, 31, LONGINT)) {
+	if (i == __LSHL(1, 31, INTEGER)) {
 		__MOVE("8463847412", s, 11);
 		k = 10;
 	} else {
