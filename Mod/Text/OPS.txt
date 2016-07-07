@@ -19,7 +19,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		name*: Name;
 		str*: String;
 		numtyp*: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
-		intval*: INTEGER;	(* integer value or string length *)
+		intval*: LONGINT;	(* integer value or string length (incl. 0X) *)
 		realval*: SHORTREAL;
 		lrlval*: REAL;
 
@@ -147,7 +147,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 					END
 				ELSE (* decimal *) numtyp := integer;
 					WHILE i < n DO d := Ord(dig[i], FALSE); INC(i);
-						IF intval <= (MAX(INTEGER) - d) DIV 10 THEN intval := intval*10 + d
+						IF intval <= (MAX(LONGINT) - d) DIV 10 THEN intval := intval*10 + d
 						ELSE err(203)
 						END
 					END
