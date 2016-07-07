@@ -97,7 +97,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		CharAlign*, BoolAlign*, SIntAlign*, IntAlign*,
 		LIntAlign*, SetAlign*, RealAlign*, LRealAlign*, PointerAlign*, ProcAlign*, RecAlign*,
 		ByteOrder*, BitOrder*, ForN-, MaxSet*: INTEGER;
-		MinSInt*, MinInt*, MinLInt*, MaxSInt*, MaxInt*, MaxLInt*, MaxIndex*: INTEGER;
+		MinSInt*, MinInt*, MaxSInt*, MaxInt*, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
 		MinReal*, MaxReal*, MinLReal*, MaxLReal*: REAL;
 
 		noerr*: BOOLEAN;
@@ -544,10 +544,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END ;
 		MinReal := -MaxReal;
 		MinLReal := -MaxLReal;
-		IF IntSize = 4 THEN MinInt := MinLInt; MaxInt := MaxLInt END ;
 		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
+		IF IntSize = 4 THEN MinInt := 80000000H (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
+		IF LIntSize = 8 THEN
+			MinLInt :=  8000000000000000L;	(*-9223372036854775808*)
+			MaxLInt := 7FFFFFFFFFFFFFFFL	(*9223372036854775807*)
+		END ;
 		MaxSet := SetSize * 8 - 1;
-		MaxIndex := MaxLInt
+		MaxIndex := 7FFFFFFFH	(*2147483647*)
 	END GetProperties;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
@@ -556,20 +560,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	BEGIN
 		oldSF.ReadSChar(ch) 
 	END SymRCh;
-	
-	PROCEDURE SymRInt* (): INTEGER;
-		VAR s, byte: BYTE; ch: CHAR; n, x: INTEGER;
+
+	PROCEDURE SymRInt* (): LONGINT;
+		VAR s, byte: BYTE; ch: SHORTCHAR; n: LONGINT;
 	BEGIN s := 0; n := 0; oldSF.ReadByte(byte); ch := SHORT(CHR(byte));
-		WHILE ORD(ch) >= 128 DO INC(n, ASH(ORD(ch) - 128, s) ); INC(s, 7); 
+		WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); 
 			oldSF.ReadByte(byte); ch := SHORT(CHR(byte))
 		END;
-		INC(n, ASH(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64, s) );
+		INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
 		RETURN n
 	END SymRInt;
 
 	PROCEDURE SymRSet*(VAR s: SET);
 	BEGIN
-		s := SYSTEM.VAL(SET, SymRInt())
+		s := SYSTEM.VAL(SET, SHORT(SymRInt()))
 	END SymRSet;
 	
 	PROCEDURE SymRReal*(VAR r: SHORTREAL);
@@ -610,10 +614,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		newSF.WriteSChar(ch)
 	END SymWCh;
 
-	PROCEDURE SymWInt* (x: INTEGER);
+	PROCEDURE SymWInt* (x: LONGINT);
 	BEGIN
-		WHILE (x < - 64) OR (x > 63) DO newSF.WriteByte(SHORT(SHORT(x MOD 128 + 128))); x := x DIV 128 END;
-		newSF.WriteByte(SHORT(SHORT(x MOD 128)))
+		WHILE (x < - 64) OR (x > 63) DO newSF.WriteByte(SHORT(SHORT(SHORT(x) MOD 128 + 128))); x := x DIV 128 END;
+		newSF.WriteByte(SHORT(SHORT(SHORT(x) MOD 128)))
 	END SymWInt;
 
 	PROCEDURE SymWSet*(s: SET);
@@ -691,16 +695,22 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		s[2] := 0X;
 		WriteString(s)
 	END WriteHex;
-	
-	PROCEDURE WriteInt* (i: INTEGER);
-		VAR s: ARRAY 20 OF CHAR; i1, k: INTEGER;
+
+	PROCEDURE WriteInt* (i: LONGINT);
+		VAR s: ARRAY 20 OF CHAR; i1: LONGINT; k: INTEGER;
 	BEGIN
-		IF i = MinLInt THEN Write("("); WriteInt(i+1); WriteString("-1)")	(* requires special bootstrap for 64 bit *)
+		IF (i = MIN(INTEGER)) OR (i = MIN(LONGINT)) THEN	(* requires special bootstrap for 64 bit *)
+			(* ABS(MIN(INTEGER)) is one more than MAX(INTEGER), causing problems representing the value
+				as a minus sign followed by absoute value. Therefore represent as -MaxInt - 1.
+				For INTEGER this avoids a compiler warning 'this decimal constant is unsigned only in ISO C90'.
+				For LONGINT it is the only way to represent MinLInt. *)
+			Write("("); WriteInt(i+1); WriteString("-1)")
 		ELSE i1 := ABS(i);
 			s[0] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; k := 1;
 			WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END ;
 			IF i < 0 THEN s[k] := "-"; INC(k) END ;
-			WHILE k > 0 DO  DEC(k); Write(SHORT(s[k])) END
+			WHILE k > 0 DO DEC(k); Write(SHORT(s[k])) END;
+			(* IF (i < MIN(INTEGER)) OR (i > MAX(INTEGER)) THEN WriteString("LL") END *)
 		END ;
 	END WriteInt;
 
