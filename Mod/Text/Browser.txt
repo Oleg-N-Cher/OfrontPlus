@@ -36,7 +36,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		
 	PROCEDURE Ws(s: ARRAY OF SHORTCHAR); BEGIN W.WriteSString(s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN W.WriteChar(ch) END Wch;
-	PROCEDURE Wi(i: INTEGER); BEGIN W.WriteInt(i) END Wi;
+	PROCEDURE Wi(i: LONGINT); BEGIN W.WriteInt(i) END Wi;
 	PROCEDURE Wln; BEGIN W.WriteLn() END Wln;
 
 	PROCEDURE Indent(i: SHORTINT);
@@ -82,9 +82,9 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 								IF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
 									Wch(22X); Wch(SHORT(CHR(obj^.conval^.intval))); Wch(22X)
 								ELSE
-									i := obj^.conval^.intval DIV 16;
+									i := SHORT(obj^.conval^.intval) DIV 16;
 									IF i > 9 THEN Wch(SHORT(CHR(55 + i))) ELSE Wch(SHORT(CHR(48 + i))) END ;
-									i := obj^.conval^.intval MOD 16;
+									i := SHORT(obj^.conval^.intval) MOD 16;
 									IF i > 9 THEN Wch(SHORT(CHR(55 + i))) ELSE Wch(SHORT(CHR(48 + i))) END ;
 									Wch("X")
 								END
