@@ -649,7 +649,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 		|	Ndop:
 					CASE subclass OF
 					  len:
-					  		Len(l, r^.conval^.intval)
+					  		Len(l, SHORT(r^.conval^.intval))
 					| in, ash, msk, bit, lsh, rot, div, mod:
 							CASE subclass OF
 							|	in:
@@ -809,7 +809,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 			label := switchCase^.left;
 			i := 0;
 			WHILE label # NIL DO (* label^.class = NConst *)
-				low := label^.conval^.intval;
+				low := SHORT(label^.conval^.intval);
 				high := label^.conval^.intval2;
 				WHILE low <= high DO
 					IF i = 0 THEN OPC.BegStat END ;
@@ -911,7 +911,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
-			OPM.errpos := n^.conval^.intval;
+			OPM.errpos := SHORT(n^.conval^.intval);
 			IF n^.class # Ninittd THEN OPC.BegStat; END;
 			CASE n^.class OF
 				Nenter:
@@ -1054,7 +1054,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 			|	Nwith:
 						IfStat(n, n^.subcl = 0, outerProc)
 			|	Ntrap:
-						OPC.Halt(n^.right^.conval^.intval)
+						OPC.Halt(SHORT(n^.right^.conval^.intval))
 			END ;
 			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop}) THEN OPC.EndStat END ;
 			n := n^.link
