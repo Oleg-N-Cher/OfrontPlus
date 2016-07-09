@@ -76,7 +76,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE^ Expression(VAR x: OPT.Node);
 	PROCEDURE^ Block(VAR procdec, statseq: OPT.Node);
 
-	PROCEDURE Sign(n: INTEGER): INTEGER;
+	PROCEDURE Sign(n: LONGINT): INTEGER;
 	BEGIN
 		IF n = 0 THEN RETURN 0 END;
 		IF n > 0 THEN RETURN 1 END;
@@ -132,7 +132,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	END CheckMark;
 
 	PROCEDURE CheckSysFlag(VAR sysflag: SHORTINT; default: SHORTINT);
-		VAR x: OPT.Node; sf: INTEGER;
+		VAR x: OPT.Node; sf: LONGINT;
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
 			ConstExpression(x);
@@ -140,7 +140,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				IF (sf < 0) OR (sf > OPM.MaxSysFlag) THEN err(220); sf := 0 END
 			ELSE err(51); sf := 0
 			END ;
-			sysflag := SHORT(sf); CheckSym(rbrak)
+			sysflag := SHORT(SHORT(sf)); CheckSym(rbrak)
 		ELSE sysflag := default
 		END
 	END CheckSysFlag;
@@ -215,7 +215,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	END RecordType;
 
 	PROCEDURE ArrayType(VAR typ, banned: OPT.Struct);
-		VAR x: OPT.Node; n: INTEGER; sysflag: SHORTINT;
+		VAR x: OPT.Node; n: LONGINT; sysflag: SHORTINT;
 	BEGIN CheckSysFlag(sysflag, 0);
 		IF sym = of THEN	(*dynamic array*)
 			typ := OPT.NewStr(Comp, DynArr); typ^.mno := 0; typ^.sysflag := sysflag;
@@ -230,7 +230,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				IF (n <= 0) OR (n > OPM.MaxIndex) THEN err(63); n := 1 END
 			ELSE err(51); n := 1
 			END ;
-			typ^.n := n;
+			typ^.n := SHORT(n);
 			IF sym = of THEN
 				OPS.Get(sym); Type(typ^.BaseTyp, banned);
 				typ^.BaseTyp^.pvused := TRUE
@@ -514,7 +514,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				INC(x^.conval^.intval,  typ^.n);
 			ELSIF  (apar^.typ^.comp=1)&(apar^.typ^.form  IN {Char,Byte}) THEN 
 				(* ?????????? ?????? *)
-					x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval] :=  SHORT(SHORT(apar^.conval^.intval)); 
+					x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval))); 
 					INC(x^.conval^.intval,  typ^.n);
 			ELSE
 				err(63);	
@@ -540,15 +540,15 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 							WITH 
 							| y : OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, BYTE (??? Ofront'?) *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval));
+										y.val[x^.conval^.intval+i] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
 									ELSE  err(64) END;
 							| y : OPT.ConstArrOfSInt DO (* ???? ? ???????? ? 2 ????? *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := SHORT(apar^.conval^.intval); 
+										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval)); 
 									ELSE  err(64) END;
 							| y : OPT.ConstArrOfInt DO (* ???? ? ???????? ? 4 ????? *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := apar^.conval^.intval;
+										y.val[x^.conval^.intval+i] := SHORT(apar^.conval^.intval);
 									ELSE  err(64) END;
 							END;
 						END;
@@ -626,7 +626,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			END ;
 			OPS.Get(sym)
 		ELSIF sym = string THEN
-			x := OPB.NewString(OPS.str, OPS.intval); OPS.Get(sym)
+			x := OPB.NewString(OPS.str, SHORT(OPS.intval)); OPS.Get(sym)
 		ELSIF sym = nil THEN
 			x := OPB.Nil(); OPS.Get(sym)
 		ELSIF sym = lparen THEN
@@ -722,7 +722,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			sys: SHORTINT;
 
 		PROCEDURE GetCode;
-			VAR ext: OPT.ConstExt; n: SHORTINT; c: INTEGER;
+			VAR ext: OPT.ConstExt; n: SHORTINT; c: LONGINT;
 		BEGIN
 			ext := OPT.NewExt(); proc^.conval^.ext := ext; n := 0;
 			IF sym = string THEN
@@ -864,12 +864,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		VAR x, y, lastlab: OPT.Node; i, f: SHORTINT; xval, yval: INTEGER;
 	BEGIN lab := NIL; lastlab := NIL;
 		LOOP ConstExpression(x); f := x^.typ^.form;
-			IF f IN intSet + {Char} THEN  xval := x^.conval^.intval
+			IF f IN intSet + {Char} THEN xval := SHORT(x^.conval^.intval)
 			ELSE err(61); xval := 1
 			END ;
 			IF (f IN intSet) # (LabelForm IN intSet) THEN err(60) END;
 			IF sym = upto THEN
-				OPS.Get(sym); ConstExpression(y); yval := y^.conval^.intval;
+				OPS.Get(sym); ConstExpression(y); yval := SHORT(y^.conval^.intval);
 				IF (y^.typ^.form # f) & ~((f IN intSet) & (y^.typ^.form IN intSet)) THEN err(60) END ;
 				IF yval < xval THEN err(63); yval := xval END
 			ELSE yval := xval
@@ -982,11 +982,11 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			END
 		END For0Original;
 
-		PROCEDURE CalcNumIters(A, B: OPT.Node; Step: INTEGER);
+		PROCEDURE CalcNumIters(A, B: OPT.Node; Step: LONGINT);
 		(* ????????? ?????????? ???????? ????? FOR. ?????????:
 		e=TRUE, ???? L = ?????? ?????????? ????????
 		e=FALSE, ???? L -??????? ??????? ???-?? ???????? (?????????? ???????? <=L) *)
-			VAR Nmin, Nmax: INTEGER;
+			VAR Nmin, Nmax: LONGINT;
 		BEGIN
 			IF Step>0 THEN
 				IF A^.class = Nconst THEN Nmin := A^.conval^.intval
@@ -995,7 +995,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF B^.class = Nconst THEN Nmax := B^.conval^.intval
 											ELSE Nmax := OPB.Max(id^.typ^.form)
 				END;
-				L := MC.Div (LONG(Nmax) - Nmin, Step ) + 1;
+				L := MC.Div(Nmax - Nmin, Step) + 1;
 			ELSE
 				IF A^.class = Nconst THEN Nmax := A^.conval^.intval
 											ELSE Nmax := OPB.Max(id^.typ^.form)
@@ -1003,29 +1003,29 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF B^.class = Nconst THEN Nmin:= B^.conval^.intval
 											ELSE Nmin:= OPB.Min(id^.typ^.form)
 				END;
-				L := MC.Div (LONG(Nmax) - Nmin, -LONG(Step)) + 1
+				L := MC.Div(Nmax - Nmin, -Step) + 1
 			END;
 			e := (A^.class = Nconst) & (B^.class = Nconst);
 			(* ???? ??? ?????????, ?? ????? ????????? ????? *)
 		END CalcNumIters;
 
-		PROCEDURE CalcNlast(A, B: OPT.Node; Step: INTEGER): INTEGER;
+		PROCEDURE CalcNlast(A, B: OPT.Node; Step: LONGINT): LONGINT;
 		(* ????????? ???????? ?????????? ????? ?? ????????? ???????? *)
 		BEGIN
 			ASSERT( (A^.class = Nconst) & (B^.class = Nconst) );
-			RETURN SHORT(A^.conval^.intval + (L-1) * Step); (* ???? ?? ????? 64 ??????????? ?????????? SHORT*)
+			RETURN A^.conval^.intval + (L-1) * Step
 		END CalcNlast;
 
-		PROCEDURE FindCond(A, B: OPT.Node; Step: INTEGER);
+		PROCEDURE FindCond(A, B: OPT.Node; Step: LONGINT);
 		(* ????? ??????????? ??????? id?0 ??? ?????? ????? FOR
 		?????? REPEAT UNTIL id?0 *)
-		VAR Nlast, sgnPostLast, sgnPredLast: INTEGER; cond: SHORTINT;
+		VAR Nlast: LONGINT; sgnPostLast, sgnPredLast: INTEGER; cond: SHORTINT;
 		BEGIN
 			cond := null; (* ???? ??????? ?? ????? *)
 			Nlast := CalcNlast(A, B, Step); (* ????????? ?? ??????? ???? ?? ?????? *)
 			(* ? ??????? ?? ???????????? ??? ??????????? *)
-			sgnPostLast := Sign(OPB.Short2Size(SHORT(LONG(Nlast) + Step), id^.typ^.size));
-			sgnPredLast := Sign(OPB.Short2Size(SHORT(LONG(Nlast) - Step), id^.typ^.size));
+			sgnPostLast := Sign(OPB.Short2Size(Nlast + Step, id^.typ^.size));
+			sgnPredLast := Sign(OPB.Short2Size(Nlast - Step, id^.typ^.size));
 			IF Nlast = 0 THEN cond := -eql
 			ELSIF ( Sign(Nlast) = -Sign(Step) ) & (Sign(Nlast) # sgnPostLast )THEN
 				CASE sgnPostLast OF
@@ -1166,7 +1166,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 
 						IF (t = id) & (idtyp = NIL) THEN	(* ? ??? ??? ???????? ????? ????????? ?? ??????? ????,
 						??????? ??????? ?? *)
-							x^.right := OPB.NewShortConst(LONG(x^.right^.conval^.intval) - z^.conval^.intval, id^.typ^.size);
+							x^.right := OPB.NewShortConst(x^.right^.conval^.intval - z^.conval^.intval, id^.typ^.size);
 						END;
 						OPB.Link(stat, last, x); x := NIL;	(* ??????? ? ?????? id := A ??? id := A -Step *)
 
@@ -1175,7 +1175,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 								s := OPB.NewShortConst(L, id^.typ^.size)
 							ELSE
 								IF (obj = NIL) & ( y^.class # Nconst) THEN (* ????? t := B*)
-									pos := y^.conval^.intval; (* ??????????? ??????? *)
+									pos := SHORT(y^.conval^.intval); (* ??????????? ??????? *)
 									x := OPB.NewLeaf(t); OPB.Assign(x, y); SetPos(x); (* t:=B *)
 									OPB.Link(stat, last, x); (* ??????? ? ?????? t:= B *)
 									y := x;
