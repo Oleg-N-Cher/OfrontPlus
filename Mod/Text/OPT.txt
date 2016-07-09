@@ -570,8 +570,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		WHILE tag # Send DO
 			new := NewObj(); new^.mnolev := SHORT(SHORT(-mno));
 			IF last = NIL THEN par := new ELSE last^.link := new END ;
-			IF tag = Ssys THEN
-				new^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt());
+			IF tag = Ssys THEN tag := SHORT(OPM.SymRInt()); (* To prevent BlackBox's "AX" compiler output *)
+				new^.sysflag := SHORT(SHORT(tag)); tag := SHORT(OPM.SymRInt());
 				IF ODD(new^.sysflag DIV inBit) THEN new^.vis := inPar
 				ELSIF ODD(new^.sysflag DIV outBit) THEN new^.vis := outPar
 				END
@@ -736,7 +736,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF ~impCtxt.self THEN obj^.vis := external END	(* type name visible now, obj^.fprint already done *)
 		ELSE
 			obj := NewObj(); obj^.mnolev := SHORT(SHORT(-mno)); obj^.vis := external;
-			IF tag = Ssys THEN obj^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt()) END;
+			IF tag = Ssys THEN tag := SHORT(OPM.SymRInt()); (* To prevent BlackBox's "AX" compiler output *)
+				obj^.sysflag := SHORT(SHORT(tag)); tag := SHORT(OPM.SymRInt())
+			END;
 			IF tag <= Pointer THEN	(* Constant *)
 				obj^.mode := Con; obj^.typ := impCtxt.ref[tag]; obj^.conval := NewConst(); InConstant(tag, obj^.conval)
 			ELSIF tag >= Sxpro THEN
