@@ -48,7 +48,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		ConstNotAlloc* = -1;	(* for allocation of string and real constants *)
 		TDAdrUndef* = -1;	(* no type desc allocated *)
 
-		MaxCases* = 128;
+		MaxCases* = 256;
 		MaxCaseRange* = 512;
 
 		MaxStruct* = 255;
