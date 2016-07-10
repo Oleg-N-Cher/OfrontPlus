@@ -4,7 +4,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	31.1.2007 jt synchronized with BlackBox version, in particular PromoteIntConstToLInt added
 *)
 
-	IMPORT SYSTEM, Texts := CmdlnTexts, Files, Args, Console;
+	IMPORT SYSTEM, Texts := CmdlnTexts, Files, Args, Console, OfrontErrors;
 
 	CONST
 		OptionChar* = "-";
@@ -244,22 +244,23 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END MakeFileName;
 
 	PROCEDURE LogErrMsg(n: INTEGER);
-		VAR S: Texts.Scanner; T: Texts.Text; ch: CHAR; i: INTEGER;
-			buf: ARRAY 1024 OF CHAR;
+		(*VAR S: Texts.Scanner; T: Texts.Text; ch: CHAR; i: INTEGER;
+			buf: ARRAY 1024 OF CHAR;*)
 	BEGIN
 		IF n >= 0 THEN LogWStr("  err ")
 		ELSE LogWStr("  warning "); n := -n
 		END ;
 		LogWNum(n, 1);
 		LogWStr("  ");
-		NEW(T); Texts.Open(T, "OfrontErrors.Text"); Texts.OpenScanner(S, T, 0);
+		(*NEW(T); Texts.Open(T, "OfrontErrors.Text"); Texts.OpenScanner(S, T, 0);
 		REPEAT S.line := 0;
 			REPEAT Texts.Scan(S) UNTIL S.eot OR (S.line # 0)
 		UNTIL S.eot OR (S.class = Texts.Int) & (S.i = n);
 		IF ~S.eot THEN Texts.Read(S, ch); i := 0;
 			WHILE ~S.eot & (ch # 0DX) DO buf[i] := ch; INC(i); Texts.Read(S, ch) END ;
 			buf[i] := 0X; LogWStr(buf);
-		END
+		END*)
+		OfrontErrors.LogErrMsg(n)
 	END LogErrMsg;
 
 	PROCEDURE Mark*(n: INTEGER; pos: LONGINT);
