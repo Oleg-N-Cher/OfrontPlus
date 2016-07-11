@@ -642,8 +642,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 											IF r^.conval^.intval >= 0 THEN OPM.WriteString("__ASHL(")
 											ELSE OPM.WriteString("__ASHR(")
 											END
-										ELSIF SideEffects(r) THEN OPM.WriteString("__ASHF(")
-										ELSE OPM.WriteString("__ASH(")
+										ELSIF ~SideEffects(r) THEN OPM.WriteString("__ASH(")
+										ELSIF form = LInt THEN OPM.WriteString("__ASHFL(")
+										ELSE OPM.WriteString("__ASHF(")
 										END
 							|	msk:
 										OPM.WriteString("__MASK(");

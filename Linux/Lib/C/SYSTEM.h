@@ -51,7 +51,8 @@ extern void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n);
 extern long SYSTEM_DIV();
 extern long SYSTEM_MOD();
 extern long SYSTEM_ENTIER();
-extern LONGINT SYSTEM_ASH();
+extern INTEGER SYSTEM_ASH(INTEGER x, INTEGER y);
+extern LONGINT SYSTEM_ASHL(LONGINT x, INTEGER y);
 extern long SYSTEM_ABS();
 extern long SYSTEM_XCHK();
 extern long SYSTEM_RCHK();
@@ -137,9 +138,10 @@ static int __STRCMP(x, y)
 	return (int)ch1 - (int)ch2;
 }
 #define __ASH(x, n)	((n)>=0?__ASHL(x,n):__ASHR(x,-(n)))
-#define __ASHL(x, n)	(sizeof(x)==sizeof(LONGINT)? (LONGINT)(x)<<(n): (int)(x)<<(n))
-#define __ASHR(x, n)	(sizeof(x)==sizeof(LONGINT)? (LONGINT)(x)>>(n): (int)(x)>>(n))
-#define __ASHF(x, n)	SYSTEM_ASH((LONGINT)(x), n)
+#define __ASHL(x, n)	((INTEGER)(x)<<(n))
+#define __ASHR(x, n)	((INTEGER)(x)>>(n))
+#define __ASHF(x, n)	SYSTEM_ASH(x, n)
+#define __ASHFL(x, n)	SYSTEM_ASHL(x, n)
 #define __DUP(x, l, t)	x=(void*)__MEMCPY(alloca(l*sizeof(t)),x,l*sizeof(t))
 #define __DUPARR(v, t)	v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
 #define __DEL(x)	/* DUP with alloca frees storage automatically */
@@ -212,7 +214,8 @@ void SYSTEM_INIT(int argc, SYSTEM_ADR argvadr);
 void SYSTEM_FINI(void);
 long SYSTEM_XCHK(long i, long ub);
 long SYSTEM_RCHK(long i, long ub);
-LONGINT SYSTEM_ASH(LONGINT i, int n);
+INTEGER SYSTEM_ASH(INTEGER x, INTEGER y);
+LONGINT SYSTEM_ASHL(LONGINT x, INTEGER y);
 long SYSTEM_ABS(long i);
 double SYSTEM_ABSD(double i);
 void SYSTEM_INHERIT(long *t, long *t0);
