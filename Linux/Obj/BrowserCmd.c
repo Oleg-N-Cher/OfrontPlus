@@ -562,7 +562,7 @@ static void EnumPtrs(void (*P)(void*))
 }
 
 
-export main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	__INIT(argc, argv);
 	__IMPORT(Args__init);

@@ -100,7 +100,7 @@ void OfrontCmd_Translate (void)
 }
 
 
-export main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	__INIT(argc, argv);
 	__IMPORT(Kernel__init);
