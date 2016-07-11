@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -pke */
+/*  Ofront 1.2 -spke */
 #include "SYSTEM.h"
 
 struct SYSTEM__1 {

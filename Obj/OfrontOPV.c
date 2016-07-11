@@ -756,7 +756,7 @@ static void OfrontOPV_ActualPar (OfrontOPT_Node n, OfrontOPT_Object fp)
 		} else {
 			OfrontOPV_expr(n, prec);
 		}
-		if (((form == 6 && n->class == 7) && n->conval->intval <= OfrontOPM_MaxInt) && n->conval->intval >= OfrontOPM_MinInt) {
+		if (((form == 6 && n->class == 7) && n->conval->intval <= (LONGINT)OfrontOPM_MaxInt) && n->conval->intval >= (LONGINT)OfrontOPM_MinInt) {
 			OfrontOPM_PromoteIntConstToLInt();
 		} else if (comp == 4 && mode == 2) {
 			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
@@ -943,10 +943,12 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 								} else {
 									OfrontOPM_WriteString((CHAR*)"__ASHR(", (LONGINT)8);
 								}
-							} else if (OfrontOPV_SideEffects(r)) {
-								OfrontOPM_WriteString((CHAR*)"__ASHF(", (LONGINT)8);
-							} else {
+							} else if (!OfrontOPV_SideEffects(r)) {
 								OfrontOPM_WriteString((CHAR*)"__ASH(", (LONGINT)7);
+							} else if (form == 6) {
+								OfrontOPM_WriteString((CHAR*)"__ASHFL(", (LONGINT)9);
+							} else {
+								OfrontOPM_WriteString((CHAR*)"__ASHF(", (LONGINT)8);
 							}
 							break;
 						case 18: 
