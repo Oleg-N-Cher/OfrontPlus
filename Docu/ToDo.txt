@@ -5,4 +5,10 @@
 - Убрать сортировку, чтобы избежать PROCEDURE -AAincludeStdlib "#include <stdlib.h>";
 
 - Тип long имеет размер 4 байта в MinGW64 и 8 в GCC64.
-  Избавиться от использования long, заменив его на long long, SYSTEM_ADR или void*
+  Избавиться от long, заменив его на long long, LONGINT, SYSTEM_ADR или void*
+
+- В OfrontOPM.cmdln.Mod двумя коммитами:
+    * Mod/OfrontOPM.cmdln.Mod: * made compilable, #1
+    * Mod/OfrontOPM.cmdln.Mod: * made compilable, #2
+  типы менялись для того, чтобы Ofront+ собрал самого себя со старыми типами в OfrontOP*
+  После перевода на новые типы OfrontOP* исправить эти типы в OfrontOPM.cmdln.Mod назад.
