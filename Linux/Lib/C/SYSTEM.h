@@ -31,7 +31,7 @@ typedef unsigned char CHAR;
 typedef short int SHORTINT;
 typedef int INTEGER;
 #if defined __amd64__ || defined __x86_64__
-  typedef long long LONGINT;
+  typedef long long LONGINT; /* long long is _at least_ 64 bits */
 #else
   typedef long LONGINT;
 #endif
@@ -51,7 +51,7 @@ extern void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n);
 extern long SYSTEM_DIV();
 extern long SYSTEM_MOD();
 extern long SYSTEM_ENTIER();
-extern long SYSTEM_ASH();
+extern LONGINT SYSTEM_ASH();
 extern long SYSTEM_ABS();
 extern long SYSTEM_XCHK();
 extern long SYSTEM_RCHK();
@@ -137,9 +137,9 @@ static int __STRCMP(x, y)
 	return (int)ch1 - (int)ch2;
 }
 #define __ASH(x, n)	((n)>=0?__ASHL(x,n):__ASHR(x,-(n)))
-#define __ASHL(x, n)	((long)(x)<<(n))
-#define __ASHR(x, n)	((long)(x)>>(n))
-#define __ASHF(x, n)	SYSTEM_ASH((long)(x), (long)(n))
+#define __ASHL(x, n)	(sizeof(x)==sizeof(LONGINT)? (LONGINT)(x)<<(n): (int)(x)<<(n))
+#define __ASHR(x, n)	(sizeof(x)==sizeof(LONGINT)? (LONGINT)(x)>>(n): (int)(x)>>(n))
+#define __ASHF(x, n)	SYSTEM_ASH((LONGINT)(x), n)
 #define __DUP(x, l, t)	x=(void*)__MEMCPY(alloca(l*sizeof(t)),x,l*sizeof(t))
 #define __DUPARR(v, t)	v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
 #define __DEL(x)	/* DUP with alloca frees storage automatically */
@@ -212,7 +212,7 @@ void SYSTEM_INIT(int argc, SYSTEM_ADR argvadr);
 void SYSTEM_FINI(void);
 long SYSTEM_XCHK(long i, long ub);
 long SYSTEM_RCHK(long i, long ub);
-long SYSTEM_ASH(long i, long n);
+LONGINT SYSTEM_ASH(LONGINT i, int n);
 long SYSTEM_ABS(long i);
 double SYSTEM_ABSD(double i);
 void SYSTEM_INHERIT(long *t, long *t0);

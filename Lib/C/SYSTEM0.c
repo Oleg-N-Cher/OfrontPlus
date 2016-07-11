@@ -66,7 +66,7 @@ void SYSTEM_FINI()
 
 long SYSTEM_XCHK(i, ub) long i, ub; {return __X(i, ub);}
 long SYSTEM_RCHK(i, ub) long i, ub; {return __R(i, ub);}
-long SYSTEM_ASH(i, n) long i, n; {return __ASH(i, n);}
+LONGINT SYSTEM_ASH(i, n) LONGINT i; int n; {return __ASH(i, n);}
 long SYSTEM_ABS(i) long i; {return __ABS(i);}
 double SYSTEM_ABSD(i) double i; {return __ABS(i);}
 
