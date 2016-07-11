@@ -96,7 +96,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MinReal*, MaxReal*, MinLReal*, MaxLReal*: LONGREAL;
 
 		noerr*: BOOLEAN;
-		curpos*, errpos*: INTEGER;	(* character and error position in source file *)
+		curpos*: INTEGER; errpos*: LONGINT;	(* character and error position in source file *)
 		breakpc*: INTEGER;	(* set by OPV.Init *)
 		currFile*: INTEGER;	(* current output file *)
 		level*: INTEGER;	(* procedure nesting level *)
@@ -263,8 +263,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		OfrontErrors.LogErrMsg(n)
 	END LogErrMsg;
 
-	PROCEDURE Mark*(n: INTEGER; pos: INTEGER);
-	BEGIN
+	PROCEDURE Mark*(n: INTEGER; pos1: LONGINT);
+		VAR pos: INTEGER;
+	BEGIN pos := SHORT(pos1);
 		IF useLineNo THEN
 			IF n >= 0 THEN
 				noerr := FALSE;
@@ -323,20 +324,22 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END err;
 
-	PROCEDURE FPrint*(VAR fp: INTEGER; val: INTEGER);
+	PROCEDURE FPrint*(VAR fp: LONGINT; val: LONGINT);
+		VAR fp1, val1: INTEGER;
 	BEGIN
-		fp := SYSTEM.ROT(SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, fp) / SYSTEM.VAL(SET, val)), 1)
+	  fp1 := SHORT(fp); val1 := SHORT(val);
+		fp := SYSTEM.ROT(SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, fp1) / SYSTEM.VAL(SET, val1)), 1);
 	END FPrint;
 
-	PROCEDURE FPrintSet*(VAR fp: INTEGER; set: SET);
+	PROCEDURE FPrintSet*(VAR fp: LONGINT; set: SET);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, set))
 	END FPrintSet;
 
-	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: REAL);
+	PROCEDURE FPrintReal*(VAR fp: LONGINT; real: REAL);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, real))
 	END FPrintReal;
 
-	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: LONGREAL);
+	PROCEDURE FPrintLReal*(VAR fp: LONGINT; lr: LONGREAL);
 		VAR l, h: INTEGER;
 	BEGIN
 		SYSTEM.GET(SYSTEM.ADR(lr), l); SYSTEM.GET(SYSTEM.ADR(lr)+4, h);
@@ -399,8 +402,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
 		IF IntSize = 4 THEN MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
 		IF LIntSize = 8 THEN
-			MinInt := ASH(base, IntSize*8-2);	(*-9223372036854775808*)
-			MaxLInt := 7FFFFFFFFFFFFFFFL	(*9223372036854775807*)
+			MinLInt := ASH(base, IntSize*8-2);	(*-9223372036854775808*)
+			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
 		MaxIndex := 7FFFFFFFH	(*2147483647*)
@@ -418,7 +421,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END SymRInt;
 		
 	PROCEDURE SymRSet*(VAR s: SET);
-	BEGIN Files.ReadNum(oldSF, SYSTEM.VAL(INTEGER, s))
+		VAR k: LONGINT;
+	BEGIN Files.ReadNum(oldSF, k); s := SYSTEM.VAL(SET, SHORT(k))
 	END SymRSet;
 	
 	PROCEDURE SymRReal*(VAR r: REAL);
@@ -507,7 +511,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		Files.WriteBytes(R[currFile], s, i)
 	END WriteStringVar;
 
-	PROCEDURE WriteHex* (i: INTEGER);
+	PROCEDURE WriteHex* (i: LONGINT);
 		VAR s: ARRAY 3 OF CHAR;
 			digit : INTEGER;
 	BEGIN
@@ -596,7 +600,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE CloseFiles*;
 		VAR FName: ARRAY 32 OF CHAR; res: INTEGER;
 	BEGIN
-		IF noerr THEN LogWStr("    "); LogWNum(Files.Pos(R[BodyFile]), 0) END ;
+		IF noerr THEN LogWStr("    "); LogWNum(SHORT( Files.Pos(R[BodyFile]) ), 0) END ;
 		IF noerr THEN
 			IF modName = "SYSTEM" THEN
 				IF ~(mainprog IN opt) THEN Files.Register(BFile) END
