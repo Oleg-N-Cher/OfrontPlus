@@ -224,7 +224,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 				(* at 255 means:  >= 255 *)
 			END
 		ELSIF ch = 0DX THEN
-			curpos := Texts.Pos(inR)	(* supports CR LF mapping *)
+			curpos := SHORT( Texts.Pos(inR) )	(* supports CR LF mapping *)
 		ELSE
 			INC(curpos)
 		END ;
@@ -355,14 +355,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END GetProperty;
 
 	PROCEDURE GetProperties();
-		VAR T: Texts.Text; S: Texts.Scanner;
+		VAR T: Texts.Text; S: Texts.Scanner; base: LONGINT;
 	BEGIN
 		(* default characteristics *)
 		ByteSize := 1; CharSize := 1; BoolSize := 1; SIntSize := 1; IntSize := 2; LIntSize := 4;
 		SetSize := 4; RealSize := 4; LRealSize := 8; ProcSize := 4; PointerSize := 4; RecSize := 1;
 		CharAlign := 1; BoolAlign := 1; SIntAlign := 1; IntAlign := 2; LIntAlign := 4;
 		SetAlign := 4; RealAlign := 4; LRealAlign := 8; ProcAlign := 4; PointerAlign := 4; RecAlign := 1;
-		MinSInt := -80H; MinInt := -8000H; MinLInt :=  80000000H;	(*-2147483648*)
+		MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
 		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
 		MaxSet := 31;
 		(* read Ofront.par *)
@@ -396,10 +396,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END ;
 		MinReal := -MaxReal;
 		MinLReal := -MaxLReal;
-		IF IntSize = 4 THEN MinInt := MinLInt; MaxInt := MaxLInt END ;
 		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
+		IF IntSize = 4 THEN MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
+		IF LIntSize = 8 THEN
+			MinInt := ASH(base, IntSize*8-2);	(*-9223372036854775808*)
+			MaxLInt := 7FFFFFFFFFFFFFFFL	(*9223372036854775807*)
+		END ;
 		MaxSet := SetSize * 8 - 1;
-		MaxIndex := MaxLInt
+		MaxIndex := 7FFFFFFFH	(*2147483647*)
 	END GetProperties;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
