@@ -1399,10 +1399,9 @@ void OfrontOPC_GenEnumPtrs (OfrontOPT_Object var)
 void OfrontOPC_EnterBody (void)
 {
 	OfrontOPM_WriteLn();
-	OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
 	if (OfrontOPC_mainprog) {
 		if (OfrontOPC_ansi) {
-			OfrontOPM_WriteString((CHAR*)"main(int argc, char **argv)", (LONGINT)28);
+			OfrontOPM_WriteString((CHAR*)"int main(int argc, char **argv)", (LONGINT)32);
 			OfrontOPM_WriteLn();
 		} else {
 			OfrontOPM_WriteString((CHAR*)"main(argc, argv)", (LONGINT)17);
@@ -1412,6 +1411,7 @@ void OfrontOPC_EnterBody (void)
 			OfrontOPM_WriteLn();
 		}
 	} else {
+		OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
 		OfrontOPM_WriteString((CHAR*)"void *", (LONGINT)7);
 		OfrontOPM_WriteString(OfrontOPM_modName, 32);
 		OfrontOPM_WriteString(OfrontOPC_BodyNameExt, 13);

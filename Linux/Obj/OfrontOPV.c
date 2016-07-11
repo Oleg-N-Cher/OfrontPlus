@@ -751,7 +751,7 @@ static void OfrontOPV_ActualPar (OfrontOPT_Node n, OfrontOPT_Object fp)
 		} else {
 			OfrontOPV_expr(n, prec);
 		}
-		if (((form == 6 && n->class == 7) && n->conval->intval <= OfrontOPM_MaxInt) && n->conval->intval >= OfrontOPM_MinInt) {
+		if (((form == 6 && n->class == 7) && n->conval->intval <= (LONGINT)OfrontOPM_MaxInt) && n->conval->intval >= (LONGINT)OfrontOPM_MinInt) {
 			OfrontOPM_PromoteIntConstToLInt();
 		} else if (comp == 4 && mode == 2) {
 			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
