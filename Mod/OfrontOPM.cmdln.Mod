@@ -91,16 +91,16 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		LIntSize*, SetSize*, RealSize*, LRealSize*, PointerSize*, ProcSize*, RecSize*,
 		CharAlign*, BoolAlign*, SIntAlign*, IntAlign*,
 		LIntAlign*, SetAlign*, RealAlign*, LRealAlign*, PointerAlign*, ProcAlign*, RecAlign*,
-		ByteOrder*, BitOrder*, MaxSet*: SHORTINT;
-		MinSInt*, MinInt*, MinLInt*, MaxSInt*, MaxInt*, MaxLInt*, MaxIndex*: INTEGER;
+		ByteOrder*, BitOrder*, MaxSet*: INTEGER;
+		MinSInt*, MinInt*, MaxSInt*, MaxInt*, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
 		MinReal*, MaxReal*, MinLReal*, MaxLReal*: LONGREAL;
 
 		noerr*: BOOLEAN;
 		curpos*, errpos*: INTEGER;	(* character and error position in source file *)
 		breakpc*: INTEGER;	(* set by OPV.Init *)
-		currFile*: SHORTINT;	(* current output file *)
-		level*: SHORTINT;	(* procedure nesting level *)
-		pc*, entno*: SHORTINT;  (* entry number *)
+		currFile*: INTEGER;	(* current output file *)
+		level*: INTEGER;	(* procedure nesting level *)
+		pc*, entno*: INTEGER;  (* entry number *)
 		modName*: ARRAY 32 OF CHAR;
 		objname*: ARRAY 64 OF CHAR;
 
@@ -114,7 +114,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		R: ARRAY 3 OF Files.Rider;
 		oldSFile, newSFile, HFile, BFile, HIFile: Files.File;
 
-		S: SHORTINT;
+		S: INTEGER;
 		stop, useLineNo: BOOLEAN;
 
 
@@ -140,7 +140,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- parameter handling -------------------------*)
 
 	PROCEDURE ScanOptions(VAR s: ARRAY OF CHAR; VAR opt: SET);
-		VAR i: SHORTINT;
+		VAR i: INTEGER;
 	BEGIN i := 1; (* skip - *)
 		WHILE s[i] # 0X DO
 			CASE s[i] OF
@@ -232,7 +232,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END Get;
 	
 	PROCEDURE MakeFileName(VAR name, FName: ARRAY OF CHAR; ext: ARRAY OF CHAR);
-		VAR i, j: SHORTINT; ch: CHAR;
+		VAR i, j: INTEGER; ch: CHAR;
 	BEGIN i := 0;
 		LOOP ch := name[i];
 			IF ch = 0X THEN EXIT END ;
@@ -243,8 +243,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		UNTIL ch = 0X
 	END MakeFileName;
 
-	PROCEDURE LogErrMsg(n: SHORTINT);
-		(*VAR S: Texts.Scanner; T: Texts.Text; ch: CHAR; i: SHORTINT;
+	PROCEDURE LogErrMsg(n: INTEGER);
+		(*VAR S: Texts.Scanner; T: Texts.Text; ch: CHAR; i: INTEGER;
 			buf: ARRAY 1024 OF CHAR;*)
 	BEGIN
 		IF n >= 0 THEN LogWStr("  err ")
@@ -263,7 +263,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		OfrontErrors.LogErrMsg(n)
 	END LogErrMsg;
 
-	PROCEDURE Mark*(n: SHORTINT; pos: INTEGER);
+	PROCEDURE Mark*(n: INTEGER; pos: INTEGER);
 	BEGIN
 		IF useLineNo THEN
 			IF n >= 0 THEN
@@ -314,7 +314,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END Mark;
 
-	PROCEDURE err*(n: SHORTINT);
+	PROCEDURE err*(n: INTEGER);
 	BEGIN 
 		IF useLineNo & (errpos MOD 256 = 255) THEN (* line underflow from OPS.Get *)
 			Mark(n, errpos + 1)
@@ -345,7 +345,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- initialization ------------------------- *)
 
-	PROCEDURE GetProperty(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR size, align: SHORTINT);
+	PROCEDURE GetProperty(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR size, align: INTEGER);
 	BEGIN
 		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
 			IF S.class = Texts.Int THEN size := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END ;
@@ -408,8 +408,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.Read(oldSF, ch)
 	END SymRCh;
 	
-	PROCEDURE SymRInt*(): INTEGER;
-		VAR k: INTEGER;
+	PROCEDURE SymRInt*(): LONGINT;
+		VAR k: LONGINT;
 	BEGIN Files.ReadNum(oldSF, k); RETURN k
 	END SymRInt;
 		
@@ -450,7 +450,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.Write(newSF, ch)
 	END SymWCh;
 
-	PROCEDURE SymWInt*(i: INTEGER);
+	PROCEDURE SymWInt*(i: LONGINT);
 	BEGIN Files.WriteNum(newSF, i)
 	END SymWInt;
 
@@ -490,14 +490,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END Write;
 
 	PROCEDURE WriteString*(s: ARRAY [1] OF CHAR);
-		VAR i: SHORTINT;
+		VAR i: INTEGER;
 	BEGIN i := 0;
 		WHILE s[i] # 0X DO INC(i) END ;
 		Files.WriteBytes(R[currFile], s, i)
 	END WriteString;
 
 	PROCEDURE WriteStringVar*(VAR s: ARRAY OF CHAR);
-		VAR i: SHORTINT;
+		VAR i: INTEGER;
 	BEGIN i := 0;
 		WHILE s[i] # 0X DO INC(i) END ;
 		Files.WriteBytes(R[currFile], s, i)
@@ -505,7 +505,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE WriteHex* (i: INTEGER);
 		VAR s: ARRAY 3 OF CHAR;
-			digit : SHORTINT;
+			digit : INTEGER;
 	BEGIN
 		digit := SHORT(i) DIV 16;
 		IF digit < 10 THEN s[0] := CHR (ORD ("0") + digit); ELSE s[0] := CHR (ORD ("a") - 10 + digit ); END;
@@ -515,10 +515,15 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		WriteString(s)
 	END WriteHex;
 	
-	PROCEDURE WriteInt* (i: INTEGER);
-		VAR s: ARRAY 20 OF CHAR; i1, k: INTEGER;
+	PROCEDURE WriteInt* (i: LONGINT);
+		VAR s: ARRAY 20 OF CHAR; i1: LONGINT; k: INTEGER;
 	BEGIN
-		IF i = MinLInt THEN Write("("); WriteInt(i+1); WriteString("-1)")	(* requires special bootstrap for 64 bit *)
+		IF (i = MIN(INTEGER)) OR (i = MIN(LONGINT)) THEN	(* requires special bootstrap for 64 bit *)
+			(* ABS(MIN(INTEGER)) is one more than MAX(INTEGER), causing problems representing the value
+				as a minus sign followed by absoute value. Therefore represent as -MaxInt - 1.
+				For INTEGER this avoids a compiler warning 'this decimal constant is unsigned only in ISO C90'.
+				For LONGINT it is the only way to represent MinLInt. *)
+			Write("("); WriteInt(i+1); WriteString("-1)")	(* requires special bootstrap for 64 bit *)
 		ELSE i1 := ABS(i);
 			s[0] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; k := 1;
 			WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END ;
@@ -528,7 +533,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteInt;
 
 	PROCEDURE WriteReal* (r: LONGREAL; suffx: CHAR);
-		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: SHORTINT;
+		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
 	BEGIN
 (*should be improved *)
 		IF (r < MaxLInt) & (r > MinLInt) & (r = ENTIER(r)) THEN 
@@ -585,7 +590,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END OpenFiles;
 
 	PROCEDURE CloseFiles*;
-		VAR FName: ARRAY 32 OF CHAR; res: SHORTINT;
+		VAR FName: ARRAY 32 OF CHAR; res: INTEGER;
 	BEGIN
 		IF noerr THEN LogWStr("    "); LogWNum(Files.Pos(R[BodyFile]), 0) END ;
 		IF noerr THEN
