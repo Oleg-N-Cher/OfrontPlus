@@ -1125,8 +1125,8 @@ avoid unnecessary intermediate variables in OFront
 		| ashfn: (*ASH*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF f # LInt THEN Convert(x, OPT.linttyp) END
-				ELSE err(111); x^.typ := OPT.linttyp
+					IF f < Int THEN Convert(x, OPT.inttyp) END
+				ELSE err(111); x^.typ := OPT.inttyp
 				END
 		| adrfn: (*SYSTEM.ADR*)
 				CheckLeaf(x, FALSE); MOp(adr, x)
@@ -1239,7 +1239,7 @@ avoid unnecessary intermediate variables in OFront
 						ELSE p^.conval^.intval := ASH(p^.conval^.intval, x^.conval^.intval)
 						END ;
 						p^.obj := NIL
-					ELSE p := NewOp(Ndop, ash, p, x); p^.typ := OPT.linttyp
+					ELSE p := NewOp(Ndop, ash, p, x); p^.typ := typ
 					END
 				ELSE err(111)
 				END
