@@ -17,22 +17,19 @@ BEGIN
   |   3: Console.String("illegal character in string")
   |   4: Console.String("identifier does not match procedure name")
   |   5: Console.String("comment not closed")
-  |   6:
-  |   7:
-  |   8:
+
   |   9: Console.String('"=" expected')
-  |  10:
-  |  11:
+
   |  12: Console.String("type definition starts with incorrect symbol")
   |  13: Console.String("factor starts with incorrect symbol")
   |  14: Console.String("statement starts with incorrect symbol")
   |  15: Console.String("declaration followed by incorrect symbol")
   |  16: Console.String("MODULE expected")
-  |  17:
+
   |  18: Console.String('"." missing')
   |  19: Console.String('"," missing')
   |  20: Console.String('":" missing')
-  |  21:
+
   |  22: Console.String('")" missing')
   |  23: Console.String('"]" missing')
   |  24: Console.String('"}" missing')
@@ -40,27 +37,22 @@ BEGIN
   |  26: Console.String("THEN missing")
   |  27: Console.String("DO missing")
   |  28: Console.String("TO missing")
-  |  29:
+
   |  30: Console.String('"(" missing')
-  |  31:
-  |  32:
-  |  33:
+
   |  34: Console.String('":=" missing')
   |  35: Console.String('"," or OF expected')
-  |  36:
-  |  37:
+
   |  38: Console.String("identifier expected")
   |  39: Console.String('";" missing')
-  |  40:
+
   |  41: Console.String("END missing")
-  |  42:
-  |  43:
+
   |  44: Console.String("UNTIL missing")
-  |  45:
+
   |  46: Console.String("EXIT not within loop statement")
   |  47: Console.String("illegally marked identifier")
-  |  48:
-  |  49:
+
   |  50: Console.String("expression should be constant")
   |  51: Console.String("constant not an integer")
   |  52: Console.String("identifier does not denote a type")
@@ -100,9 +92,7 @@ BEGIN
   |  86: Console.String("guard or testtype is not a pointer")
   |  87: Console.String("guarded or tested variable is neither a pointer nor a VAR-parameter record")
   |  88: Console.String("open array not allowed as variable, record field or array element")
-  |  89:
-  |  90:
-  |  91:
+
   |  92: Console.String("operand of IN not an integer, or not a set")
   |  93: Console.String("set element type is not an integer")
   |  94: Console.String("operand of & is not of type BOOLEAN")
