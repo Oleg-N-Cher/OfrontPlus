@@ -54,10 +54,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MaxStruct* = 255;
 
 		(* maximal number of pointer fields in a record: *)
-		MaxPtr* = MAX(LONGINT);
+		MaxPtr* = MAX(INTEGER);
 
 		(* maximal number of global pointers per module: *)
-		MaxGPtr* = MAX(LONGINT);
+		MaxGPtr* = MAX(INTEGER);
 
 		(* maximal number of hidden fields in an exported record: *)
 		MaxHdFld* = 512;
@@ -92,12 +92,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		CharAlign*, BoolAlign*, SIntAlign*, IntAlign*,
 		LIntAlign*, SetAlign*, RealAlign*, LRealAlign*, PointerAlign*, ProcAlign*, RecAlign*,
 		ByteOrder*, BitOrder*, MaxSet*: SHORTINT;
-		MinSInt*, MinInt*, MinLInt*, MaxSInt*, MaxInt*, MaxLInt*, MaxIndex*: LONGINT;
+		MinSInt*, MinInt*, MinLInt*, MaxSInt*, MaxInt*, MaxLInt*, MaxIndex*: INTEGER;
 		MinReal*, MaxReal*, MinLReal*, MaxLReal*: LONGREAL;
 
 		noerr*: BOOLEAN;
-		curpos*, errpos*: LONGINT;	(* character and error position in source file *)
-		breakpc*: LONGINT;	(* set by OPV.Init *)
+		curpos*, errpos*: INTEGER;	(* character and error position in source file *)
+		breakpc*: INTEGER;	(* set by OPV.Init *)
 		currFile*: SHORTINT;	(* current output file *)
 		level*: SHORTINT;	(* procedure nesting level *)
 		pc*, entno*: SHORTINT;  (* entry number *)
@@ -106,7 +106,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		opt*, glbopt*: SET;
 
-		lasterrpos: LONGINT;
+		lasterrpos: INTEGER;
 		inR: Texts.Reader;
 		Log: Texts.Text;
 		W: Texts.Writer;
@@ -128,7 +128,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Console.String(s)
 	END LogWStr;
 	
-	PROCEDURE LogWNum*(i, len: LONGINT);
+	PROCEDURE LogWNum*(i, len: INTEGER);
 	BEGIN Console.Int(i, len)
 	END LogWNum;
 
@@ -195,7 +195,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END InitOptions;
 
 	PROCEDURE Init*(VAR done: BOOLEAN);	(* get the source for one translation *)
-		VAR T: Texts.Text; beg, end, time: LONGINT;
+		VAR T: Texts.Text; beg, end, time: INTEGER;
 			s: ARRAY 256 OF CHAR;
 	BEGIN
 		done := FALSE; curpos := 0;
@@ -263,7 +263,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		OfrontErrors.LogErrMsg(n)
 	END LogErrMsg;
 
-	PROCEDURE Mark*(n: SHORTINT; pos: LONGINT);
+	PROCEDURE Mark*(n: SHORTINT; pos: INTEGER);
 	BEGIN
 		IF useLineNo THEN
 			IF n >= 0 THEN
@@ -323,21 +323,21 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END err;
 
-	PROCEDURE FPrint*(VAR fp: LONGINT; val: LONGINT);
+	PROCEDURE FPrint*(VAR fp: INTEGER; val: INTEGER);
 	BEGIN
-		fp := SYSTEM.ROT(SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, fp) / SYSTEM.VAL(SET, val)), 1)
+		fp := SYSTEM.ROT(SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, fp) / SYSTEM.VAL(SET, val)), 1)
 	END FPrint;
 
-	PROCEDURE FPrintSet*(VAR fp: LONGINT; set: SET);
-	BEGIN FPrint(fp, SYSTEM.VAL(LONGINT, set))
+	PROCEDURE FPrintSet*(VAR fp: INTEGER; set: SET);
+	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, set))
 	END FPrintSet;
 
-	PROCEDURE FPrintReal*(VAR fp: LONGINT; real: REAL);
-	BEGIN FPrint(fp, SYSTEM.VAL(LONGINT, real))
+	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: REAL);
+	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, real))
 	END FPrintReal;
 
-	PROCEDURE FPrintLReal*(VAR fp: LONGINT; lr: LONGREAL);
-		VAR l, h: LONGINT;
+	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: LONGREAL);
+		VAR l, h: INTEGER;
 	BEGIN
 		SYSTEM.GET(SYSTEM.ADR(lr), l); SYSTEM.GET(SYSTEM.ADR(lr)+4, h);
 		FPrint(fp, l); FPrint(fp, h)
@@ -408,13 +408,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.Read(oldSF, ch)
 	END SymRCh;
 	
-	PROCEDURE SymRInt*(): LONGINT;
-		VAR k: LONGINT;
+	PROCEDURE SymRInt*(): INTEGER;
+		VAR k: INTEGER;
 	BEGIN Files.ReadNum(oldSF, k); RETURN k
 	END SymRInt;
 		
 	PROCEDURE SymRSet*(VAR s: SET);
-	BEGIN Files.ReadNum(oldSF, SYSTEM.VAL(LONGINT, s))
+	BEGIN Files.ReadNum(oldSF, SYSTEM.VAL(INTEGER, s))
 	END SymRSet;
 	
 	PROCEDURE SymRReal*(VAR r: REAL);
@@ -450,12 +450,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.Write(newSF, ch)
 	END SymWCh;
 
-	PROCEDURE SymWInt*(i: LONGINT);
+	PROCEDURE SymWInt*(i: INTEGER);
 	BEGIN Files.WriteNum(newSF, i)
 	END SymWInt;
 
 	PROCEDURE SymWSet*(s: SET);
-	BEGIN Files.WriteNum(newSF, SYSTEM.VAL(LONGINT, s))
+	BEGIN Files.WriteNum(newSF, SYSTEM.VAL(INTEGER, s))
 	END SymWSet;
 
 	PROCEDURE SymWReal*(r: REAL);
@@ -503,7 +503,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		Files.WriteBytes(R[currFile], s, i)
 	END WriteStringVar;
 
-	PROCEDURE WriteHex* (i: LONGINT);
+	PROCEDURE WriteHex* (i: INTEGER);
 		VAR s: ARRAY 3 OF CHAR;
 			digit : SHORTINT;
 	BEGIN
@@ -515,8 +515,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		WriteString(s)
 	END WriteHex;
 	
-	PROCEDURE WriteInt* (i: LONGINT);
-		VAR s: ARRAY 20 OF CHAR; i1, k: LONGINT;
+	PROCEDURE WriteInt* (i: INTEGER);
+		VAR s: ARRAY 20 OF CHAR; i1, k: INTEGER;
 	BEGIN
 		IF i = MinLInt THEN Write("("); WriteInt(i+1); WriteString("-1)")	(* requires special bootstrap for 64 bit *)
 		ELSE i1 := ABS(i);
