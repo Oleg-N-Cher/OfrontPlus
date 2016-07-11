@@ -3,3 +3,9 @@ https://github.com/vishaps/voc/blob/master/triage/V2CHANGES.md
 
 software therapy. story about left shift
 http://norayr.am/log/?p=95
+
+Compiler output Error redirection
+https://www.cs.colorado.edu/~main/cs1300/doc/mingwfaq.html
+
+Mingw displays compilation and linking errors to stderr instead of stdout. To easily view these errors, you may need to redirect the output to stdout or a file. Some methods to do so include using one of the following programs:
+On Windows NT systems stderr can be redirected. For example: gcc --help 2>&1|more
