@@ -642,6 +642,11 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 											IF r^.conval^.intval >= 0 THEN OPM.WriteString("__ASHL(")
 											ELSE OPM.WriteString("__ASHR(")
 											END
+(*
+	The macro __ASH(x, n) uses n twice. If n is not a constant and not a simple
+	variable but is a function that may have a side-effect, it would produce this
+	side-effect twice. The function __ASHF is used to avoid using n twice. J.Templ
+*)
 										ELSIF ~SideEffects(r) THEN OPM.WriteString("__ASH(")
 										ELSIF form = LInt THEN OPM.WriteString("__ASHFL(")
 										ELSE OPM.WriteString("__ASHF(")
