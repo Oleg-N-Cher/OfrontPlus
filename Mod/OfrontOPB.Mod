@@ -56,7 +56,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	VAR
 		typSize*: PROCEDURE(typ: OPT.Struct);
 		exp: INTEGER;	(*side effect of log*)
-		maxExp: LONGINT;	(* max n in ASH(1, n) on this machine *)
+		maxExp: LONGINT;	(* max n in ASH(LONG(LONG(1)), n) on this machine *)
 		
 	PROCEDURE err(n: INTEGER);
 	BEGIN OPM.err(n)
@@ -839,7 +839,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						IF y^.class = Nconst THEN
 							IF y^.conval^.intval = 0 THEN err(205)
 							ELSIF log(y^.conval^.intval) = 1 THEN
-								op := msk; y^.conval^.intval := ASH(-1, exp); y^.obj := NIL
+								op := msk; y^.conval^.intval := ASH(LONG(LONG(-1)), exp); y^.obj := NIL
 							END
 						END
 					ELSIF f # Undef THEN err(104); typ := OPT.undftyp
@@ -1232,14 +1232,16 @@ avoid unnecessary intermediate variables in OFront
 					IF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						IF (-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp) THEN err(208); p^.conval^.intval := 1
 						ELSIF x^.conval^.intval >= 0 THEN
-							IF ABS(p^.conval^.intval) <= MAX(LONGINT) DIV ASH(1, x^.conval^.intval) THEN
-								p^.conval^.intval := p^.conval^.intval * ASH(1, x^.conval^.intval)
+							IF ABS(p^.conval^.intval) <= MAX(LONGINT) DIV ASH(LONG(LONG(1)), x^.conval^.intval) THEN
+								p^.conval^.intval := p^.conval^.intval * ASH(LONG(LONG(1)), x^.conval^.intval)
 							ELSE err(208); p^.conval^.intval := 1
 							END
 						ELSE p^.conval^.intval := ASH(p^.conval^.intval, x^.conval^.intval)
 						END ;
 						p^.obj := NIL
-					ELSE p := NewOp(Ndop, ash, p, x); p^.typ := OPT.linttyp
+					ELSE
+						IF f = LInt THEN Convert(x, OPT.inttyp) END;
+						typ := p^.typ; p := NewOp(Ndop, ash, p, x); p^.typ := typ
 					END
 				ELSE err(111)
 				END
