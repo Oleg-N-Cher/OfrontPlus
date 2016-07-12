@@ -938,10 +938,12 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 								} else {
 									OfrontOPM_WriteString((CHAR*)"__ASHR(", (LONGINT)8);
 								}
-							} else if (OfrontOPV_SideEffects(r)) {
-								OfrontOPM_WriteString((CHAR*)"__ASHF(", (LONGINT)8);
-							} else {
+							} else if (!OfrontOPV_SideEffects(r)) {
 								OfrontOPM_WriteString((CHAR*)"__ASH(", (LONGINT)7);
+							} else if (form == 6) {
+								OfrontOPM_WriteString((CHAR*)"__ASHFL(", (LONGINT)9);
+							} else {
+								OfrontOPM_WriteString((CHAR*)"__ASHF(", (LONGINT)8);
 							}
 							break;
 						case 18: 
