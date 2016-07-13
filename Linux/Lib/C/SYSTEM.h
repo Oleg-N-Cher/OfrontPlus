@@ -114,7 +114,7 @@ extern void SYSTEM_ENUMR();
 #define __DIVF(x, y)	SYSTEM_DIV((long)(x),(long)(y))
 #define __MOD(x, y)	((x)>=0?(x)%(y):__MODF(x,y))
 #define __MODF(x, y)	SYSTEM_MOD((long)(x),(long)(y))
-#define __NEW(p, t)	p=SYSTEM_NEWREC((long)t##__typ)
+#define __NEW(p, t)	p=SYSTEM_NEWREC((LONGINT)(SYSTEM_ADR)t##__typ)
 #define __NEWARR	SYSTEM_NEWARR
 #define __HALT(x)	SYSTEM_HALT(x)
 #define __ASSERT(cond, x)	if (!(cond)) {SYSTEM_assert = x; SYSTEM_HALT(-1);}
