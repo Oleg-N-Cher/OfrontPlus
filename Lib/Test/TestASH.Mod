@@ -47,4 +47,10 @@ BEGIN
   l := ASH(MAX(LONGINT), SHORT(l));
   l := ASH(l, SHORT(l));
 
+  i := ASH(i, 30); i := ASH(i, -30);
+  i := ASH(800000H, 7);
+  i := ASH(400000H, 8);
+(*
+  l := ASH(l, 63); l := ASH(l, -63);
+*)
 END TestASH.
