@@ -336,13 +336,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 			IF from < LInt THEN OPM.WriteString("(LONGINT)") END ;
 			Entier(n, 9)
 		ELSIF form = Int THEN
-			IF from < Int THEN OPM.WriteString("(int)"); expr(n, 9)
+			IF from < Int THEN OPM.WriteString("(INTEGER)"); expr(n, 9)
 			ELSE
 				IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 					IF SideEffects(n) THEN OPM.Write("F") END ;
 					OPM.Write(OpenParen); Entier(n, MinPrec);
 					OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxInt + 1); OPM.Write(CloseParen)
-				ELSE OPM.WriteString("(int)"); Entier(n, 9)
+				ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
 				END
 			END
 		ELSIF form = SInt THEN
@@ -350,7 +350,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 				IF SideEffects(n) THEN OPM.Write("F") END ;
 				OPM.Write(OpenParen); Entier(n, MinPrec);
 				OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxSInt + 1); OPM.Write(CloseParen)
-			ELSE OPM.WriteString("(int)"); Entier(n, 9)
+			ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
 			END
 		ELSIF form = Char THEN
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
@@ -608,7 +608,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 					|	abs:
 								IF SideEffects(l) THEN
 									IF l^.typ^.form < Real THEN
-										IF l^.typ^.form < LInt THEN OPM.WriteString("(int)") END ;
+										IF l^.typ^.form < LInt THEN OPM.WriteString("(INTEGER)") END ;
 										OPM.WriteString("__ABSF(")
 									ELSE OPM.WriteString("__ABSFD(")
 									END
@@ -688,12 +688,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 										END
 							|	div:
 										IF SideEffects(n) THEN
-											IF form < LInt THEN OPM.WriteString("(int)") END ;
+											IF form < LInt THEN OPM.WriteString("(INTEGER)") END ;
 											OPM.WriteString("__DIVF(")
 										ELSE OPM.WriteString("__DIV(")
 										END
 							|	mod:
-										IF form < LInt THEN OPM.WriteString("(int)") END ;
+										IF form < LInt THEN OPM.WriteString("(INTEGER)") END ;
 										IF SideEffects(n) THEN OPM.WriteString("__MODF(")
 										ELSE OPM.WriteString("__MOD(")
 										END
