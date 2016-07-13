@@ -56,12 +56,11 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	VAR
 		typSize*: PROCEDURE(typ: OPT.Struct);
 		exp: INTEGER;	(*side effect of log*)
-		maxExp: LONGINT;	(* max n in ASH(LONG(LONG(1)), n) on this machine *)
-		
+
 	PROCEDURE err(n: INTEGER);
 	BEGIN OPM.err(n)
 	END err;
-	
+
 	PROCEDURE NewLeaf*(obj: OPT.Object): OPT.Node;
 		VAR node: OPT.Node;
 	BEGIN
@@ -1172,8 +1171,8 @@ avoid unnecessary intermediate variables in OFront
 	END StPar0;
 
 	PROCEDURE StPar1*(VAR par0: OPT.Node; x: OPT.Node; fctno: SHORTINT);	(* x: second parameter of standard proc *)
-		VAR f, L: INTEGER; typ: OPT.Struct; p, t: OPT.Node;
-		
+		VAR f, L: INTEGER; typ: OPT.Struct; p, t: OPT.Node; maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
+
 		PROCEDURE NewOp(class, subcl: SHORTINT; left, right: OPT.Node): OPT.Node;
 			VAR node: OPT.Node;
 		BEGIN
@@ -1229,10 +1228,11 @@ avoid unnecessary intermediate variables in OFront
 		| ashfn: (*ASH*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF (p^.class = Nconst) & (x^.class = Nconst) THEN
-						IF (-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp) THEN err(208); p^.conval^.intval := 1
-						ELSIF x^.conval^.intval >= 0 THEN
-							IF ABS(p^.conval^.intval) <= MAX(LONGINT) DIV ASH(LONG(LONG(1)), x^.conval^.intval) THEN
+					maxExp := SHORT(log(OPM.MaxLInt DIV 2 + 1)); maxExp := exp;
+					IF (x^.class = Nconst) & ((-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
+					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
+						IF x^.conval^.intval >= 0 THEN
+							IF ABS(p^.conval^.intval) <= OPM.MaxLInt DIV ASH(LONG(LONG(1)), x^.conval^.intval) THEN
 								p^.conval^.intval := p^.conval^.intval * ASH(LONG(LONG(1)), x^.conval^.intval)
 							ELSE err(208); p^.conval^.intval := 1
 							END
@@ -1537,7 +1537,5 @@ avoid unnecessary intermediate variables in OFront
 		IF inittd = NIL THEN inittd := node ELSE last^.link := node END ;
 		last := node
 	END Inittd;
-	
-BEGIN
-	maxExp := log(MAX(LONGINT) DIV 2 + 1); maxExp := exp
+
 END OfrontOPB.

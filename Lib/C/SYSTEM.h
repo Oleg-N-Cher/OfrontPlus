@@ -138,8 +138,8 @@ static int __STRCMP(x, y)
 	return (int)ch1 - (int)ch2;
 }
 #define __ASH(x, n)	((n)>=0?__ASHL(x,n):__ASHR(x,-(n)))
-#define __ASHL(x, n)	((INTEGER)(x)<<(n))
-#define __ASHR(x, n)	((INTEGER)(x)>>(n))
+#define __ASHL(x, n)	((x)<<(n))
+#define __ASHR(x, n)	((x)>>(n))
 #define __ASHF(x, n)	SYSTEM_ASH(x, n)
 #define __ASHFL(x, n)	SYSTEM_ASHL(x, n)
 #define __DUP(x, l, t)	x=(void*)__MEMCPY(alloca(l*sizeof(t)),x,l*sizeof(t))
