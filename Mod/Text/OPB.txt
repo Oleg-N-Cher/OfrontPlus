@@ -1317,7 +1317,7 @@ avoid unnecessary intermediate variables in OFront
 	END StPar0;
 
 	PROCEDURE StPar1*(VAR par0: OPT.Node; x: OPT.Node; fctno: BYTE);	(* x: second parameter of standard proc *)
-		VAR f, L: SHORTINT; typ: OPT.Struct; p, t: OPT.Node; maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
+		VAR f, L: SHORTINT; typ: OPT.Struct; p, t: OPT.Node; maxInt: LONGINT; maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
 
 		PROCEDURE NewOp(class, subcl: BYTE; left, right: OPT.Node): OPT.Node;
 			VAR node: OPT.Node;
@@ -1374,15 +1374,16 @@ avoid unnecessary intermediate variables in OFront
 		| ashfn: (*ASH*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					maxExp := SHORT(log(OPM.MaxLInt DIV 2 + 1)); maxExp := exp;
+					IF p^.typ = OPT.linttyp THEN maxInt := OPM.MaxLInt ELSE maxInt := OPM.MaxInt END;
+					maxExp := SHORT(log(maxInt DIV 2 + 1)); maxExp := exp;
 					IF (x^.class = Nconst) & ((-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						IF x^.conval^.intval >= 0 THEN
-							IF ABS(p^.conval^.intval) <= OPM.MaxLInt DIV ASH(LONG(1), x^.conval^.intval) THEN
-								p^.conval^.intval := p^.conval^.intval * ASH(LONG(1), x^.conval^.intval)
+							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(1), SHORT(x^.conval^.intval)) THEN
+								p^.conval^.intval := p^.conval^.intval * ASH(LONG(1), SHORT(x^.conval^.intval))
 							ELSE err(208); p^.conval^.intval := 1
 							END
-						ELSE p^.conval^.intval := ASH(p^.conval^.intval, x^.conval^.intval)
+						ELSE p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))
 						END ;
 						p^.obj := NIL
 					ELSE
