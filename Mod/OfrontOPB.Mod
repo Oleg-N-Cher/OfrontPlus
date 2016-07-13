@@ -1240,7 +1240,7 @@ avoid unnecessary intermediate variables in OFront
 						END ;
 						p^.obj := NIL
 					ELSE
-						IF f = LInt THEN Convert(x, OPT.inttyp) END;
+						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
 						typ := p^.typ; p := NewOp(Ndop, ash, p, x); p^.typ := typ
 					END
 				ELSE err(111)
