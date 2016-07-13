@@ -13,6 +13,7 @@
 @CALL ..\Bin\mingw %Lib% SYSTEM0
 @CALL ..\Bin\mingw %Lib% Args
 @CALL ..\Bin\mingw %Lib% Console
+@CALL ..\Bin\mingw %Lib% Platform
 @CALL ..\Bin\mingw %Lib% Unix
 @CALL ..\Bin\mingw %Lib% Kernel
 @CALL ..\Bin\mingw %Lib% Files
