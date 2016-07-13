@@ -15,6 +15,7 @@ pause
 @CALL ..\Bin\mingw64 %Lib% Args
 pause
 @CALL ..\Bin\mingw64 %Lib% Console
+@CALL ..\Bin\mingw %Lib% Platform
 @CALL ..\Bin\mingw64 %Lib% Unix
 @CALL ..\Bin\mingw64 %Lib% Kernel
 @CALL ..\Bin\mingw64 %Lib% Files
