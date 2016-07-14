@@ -1,7 +1,5 @@
 MODULE Unix;  (* Josef Templ, 5.3.90  Linux system calls *)
 
-(* Adapted for Windows (msvcrt.dll) & 32/64 bit by Oleg N. Cher, 2016 *)
-
 (* Module Unix provides a system call interface to Linux.
   Naming conventions:
     Procedure and Type-names always start with a capital letter.
@@ -156,43 +154,38 @@ CONST
 TYPE
   Int16 = SHORTINT;
   Int32 = INTEGER;
-  ANYPTR = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR; (* 32 or 64 bit *)
-  SizeT = POINTER [1] TO ARRAY 1 OF SYSTEM.PTR; (* 32 or 64 bit *)
+  ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
+  SizeT = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
 
-  JmpBuf* = RECORD
-    bx*, si*, di*, bp*, sp*, pc*: LONGINT;
-    maskWasSaved*, savedMask*: LONGINT;
+  (* setjmp.h *)
+  JmpBuf* = RECORD (* jmp_buf *)
+    bx*, si*, di*, bp*, sp*, pc*: Int32;
+    maskWasSaved*: Int32;
+    savedMask*: ARRAY 32 OF Int32;
   END ;
 
-  DevT* = Int32; (* typedef unsigned int dev_t; *)
-  InoT* = Int16; (* typedef unsigned short ino_t; *)
+  DevT* = Int32; (* typedef unsigned int dev_t *)
+  InoT* = Int16; (* typedef unsigned short ino_t *)
   TimeT* = SizeT; (* 32 or 64 bit *)
 
-  (* /usr/include/sys/stat.h *)
+  (* sys/stat.h *)
   Status* = RECORD (* struct stat *)
-    dev* : DevT; (* _dev_t st_dev; *)
+    dev* : DevT; (* _dev_t st_dev *)
     ino: InoT; (* _ino_t st_ino; is always 0 in msvcrt *)
-    mode*: Int16; (* unsigned short st_mode; *)
-    nlink*, uid*, gid*: Int16; (* short st_nlink, st_uid, st_gid; *)
-    rdev*: DevT; (* _dev_t st_rdev; *)
-    size*: Int32; (* _off_t st_size; *)
-    atime*, mtime*, ctime*: TimeT; (* time_t st_atime, st_mtime, st_ctime; *)
+    mode*: Int16; (* unsigned short st_mode *)
+    nlink*, uid*, gid*: Int16; (* short st_nlink, st_uid, st_gid *)
+    rdev*: DevT; (* _dev_t st_rdev *)
+    size*: Int32; (* _off_t st_size *)
+    atime*, mtime*, ctime*: TimeT; (* time_t st_atime, st_mtime, st_ctime *)
   END ;
 
-  (* /usr/include/sys/time.h *)
+  (* sys/time.h *)
   Timeval* = RECORD (* struct timeval *)
-    sec*, usec*: Int32 (* long tv_sec; long tv_usec; *)
+    sec*, usec*: Int32 (* long tv_sec; long tv_usec *)
   END ;
 
-  (* /usr/include/sys/time.h *)
   Timezone* = RECORD (* struct timezone *)
-    minuteswest*, dsttime*: Int32 (* int tz_minuteswest; int tz_dsttime; *)
-  END ;
-
-  (* /usr/include/sys/timeb.h *)
-  Timeb = RECORD (* struct timeb *)
-    time: TimeT; (* time_t time; *)
-    millitm, timezone, dstflag: Int16 (* short millitm, timezone, dstflag; *)
+    minuteswest*, dsttime*: Int32 (* int tz_minuteswest; int tz_dsttime *)
   END ;
 
   Itimerval* = RECORD
@@ -229,22 +222,22 @@ TYPE
 
   (* /usr/include/sys/poll.h *)
   Pollfd* = RECORD (* struct pollfd *)
-    fd*: SizeT; (* SOCKET fd; *)
-    events*, revents*: Int16 (* short events, revents; *)
+    fd*: SizeT; (* SOCKET fd *)
+    events*, revents*: Int16 (* short events, revents *)
   END ;
 
   Sockaddr* = RECORD
-    family*: Int16; (* short sin_family; *)
-    port*: Int16; (* u_short	sin_port; *)
-    internetAddr*: Int32; (* struct in_addr	sin_addr; *)
-    pad: ARRAY 8 OF BYTE; (* char	sin_zero[8]; *)
+    family*: Int16; (* short sin_family *)
+    port*: Int16; (* u_short	sin_port *)
+    internetAddr*: Int32; (* struct in_addr	sin_addr *)
+    pad: ARRAY 8 OF BYTE; (* char	sin_zero[8] *)
   END ;
 
   HostEntry* = POINTER [1] TO Hostent;
   Hostent* = RECORD
-    name*, aliases*: ANYPTR; (* char *h_name; char **h_aliases; *)
-    addrtype*, length*: Int16; (* short h_addrtype; short h_length; *)
-    addrlist*: ANYPTR; (*POINTER TO POINTER TO LONGINT, network byte order*)
+    name*, aliases*: ADR; (* char *h_name; char **h_aliases *)
+    addrtype*, length*: Int16; (* short h_addrtype; short h_length *)
+    addrlist*: ADR; (* POINTER TO POINTER TO LONGINT, network byte order *)
   END;
 
   Name* = ARRAY OF CHAR;
@@ -254,14 +247,14 @@ TYPE
 
   PROCEDURE -includeErrno()
     "#include <errno.h>";
-
+(*
   PROCEDURE -includeSóstimeb()
     "#include <sys/timeb.h>";
 
   (* for _chsize() *)
   PROCEDURE -includeIo()
      "#include <io.h>";
-
+*)
   PROCEDURE -err(): LONGINT
     "errno";
 
@@ -282,20 +275,8 @@ TYPE
   PROCEDURE -Select*(width: LONGINT; VAR readfds, writefds, exceptfds: FdSet; VAR timeout: Timeval): LONGINT
     "select(width, readfds, writefds, exceptfds, timeout)";
 
-  PROCEDURE -Ftime* (VAR timebuf: Timeb)
-    "_ftime((struct _timeb*)timebuf)";
-
-  PROCEDURE Gettimeofday* (VAR tv: Timeval; VAR tz: Timezone);
-  (* From: Martin Lambers
-     Subject:  gettimeofday() for Win32
-     http://lists.gnu.org/archive/html/bug-gnulib/2005-08/msg00166.html
-  *)
-    VAR timebuf: Timeb;
-  BEGIN
-    Ftime(timebuf);
-    tv.sec := SYSTEM.VAL(Int32, timebuf.time);
-    tv.usec := timebuf.millitm * 1000;
-  END Gettimeofday;
+  PROCEDURE -Gettimeofday* (VAR tv: Timeval; VAR tz: Timezone)
+    "gettimeofday(tv, tz)";
 
   PROCEDURE -Read* (fd, buf, nbyte: LONGINT): LONGINT
     "read(fd, buf, nbyte)";
