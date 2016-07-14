@@ -8,5 +8,5 @@
 @SET lib=-I ..\Obj -I ..\C ..\Ofront.a
 @SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -Wl,--gc-sections -Wl,--file-alignment,512
 
-%gcc% %1 %2 %3 %4 %5 %6 %7 %8 %9 %lib%
+%gcc% %1 %2 %3 %4 %5 %6 %7 %8 %9 %lib% 2>&1|more
 @IF errorlevel 1 PAUSE
