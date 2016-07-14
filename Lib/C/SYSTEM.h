@@ -14,7 +14,9 @@ uses double # as concatenation operator
 #if defined __linux__ || defined __unix__
 #  include <alloca.h>
 #else
+#  define errno __errno__ /* to avoid of implicit inclusion "errno" */
 #  include <malloc.h>
+#  undef errno
 #endif
 
 #define export
