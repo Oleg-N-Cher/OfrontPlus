@@ -166,12 +166,12 @@ static int __STRCMP(x, y)
 /* record type descriptors */
 #define __TDESC(t__desc, m, n) \
 	static struct t__desc {\
-		long tproc[m]; \
-		long tag, next, level, module; \
+		LONGINT tproc[m]; \
+		LONGINT tag, next, level, module; \
 		char name[24]; \
-		long *base[__MAXEXT]; \
+		LONGINT *base[__MAXEXT]; \
 		char *rsrvd; \
-		long blksz, ptr[n+1]; \
+		LONGINT blksz, ptr[n+1]; \
 	} t__desc
 
 #define __BASEOFF	(__MAXEXT+1)
@@ -182,13 +182,13 @@ static int __STRCMP(x, y)
 #define __ENUMR(adr, typ, size, n, P)	SYSTEM_ENUMR(adr, typ, (long)(size), (long)(n), P)
 
 #define __INITYP(t, t0, level) \
-	t##__typ= &t##__desc.blksz; \
-	__MEMCPY(t##__desc.base, t0##__typ - __BASEOFF, level*sizeof(long)); \
-	t##__desc.base[level]=t##__typ; \
-	t##__desc.module=(long)m; \
+	t##__typ = (LONGINT*)&t##__desc.blksz; \
+	__MEMCPY(t##__desc.base, t0##__typ - __BASEOFF, level*sizeof(LONGINT)); \
+	t##__desc.base[level] = (LONGINT*)t##__typ; \
+	t##__desc.module = (LONGINT)(SYSTEM_ADR)m; \
 	if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15); \
-	t##__desc.blksz=(t##__desc.blksz+5*sizeof(long)-1)/(4*sizeof(long))*(4*sizeof(long)); \
-	SYSTEM_REGTYP(m, (long)&t##__desc.next); \
+	t##__desc.blksz = (t##__desc.blksz+5*sizeof(LONGINT)-1)/(4*sizeof(LONGINT))*(4*sizeof(LONGINT)); \
+	SYSTEM_REGTYP(m, (LONGINT)(SYSTEM_ADR)&t##__desc.next); \
 	SYSTEM_INHERIT(t##__typ, t0##__typ)
 
 /* Oberon-2 type bound procedures support */
