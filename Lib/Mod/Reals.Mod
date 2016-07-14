@@ -3,9 +3,9 @@ MODULE Reals;
 
 	IMPORT S := SYSTEM;
 
-
+	PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
 	PROCEDURE -ecvt (x: LONGREAL; ndigit, decpt, sign: LONGINT): LONGINT
-			"ecvt (x, ndigit, decpt, sign)";
+			"((LONGINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
 
 	PROCEDURE Ten*(e: INTEGER): REAL;
 		VAR r, power: LONGREAL;
