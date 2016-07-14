@@ -19,10 +19,10 @@ TYPE
     mtime*:  LONGINT;  (* File modification time, value is system dependent *)
   END;
 
-  EnvPtr    = POINTER TO ARRAY 1024 OF CHAR;
-  ArgPtr    = POINTER TO ARRAY 1024 OF CHAR;
-  ArgVec    = POINTER TO ARRAY 1024 OF ArgPtr;
-  ArgVecPtr = POINTER TO ARRAY 1 OF LONGINT;
+  EnvPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
+  ArgPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
+  ArgVec    = POINTER [1] TO ARRAY 1024 OF ArgPtr;
+  ArgVecPtr = POINTER [1] TO ARRAY 1 OF LONGINT;
 
 
 VAR
