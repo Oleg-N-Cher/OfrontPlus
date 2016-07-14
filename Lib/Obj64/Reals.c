@@ -16,7 +16,8 @@ export REAL Reals_Ten (INTEGER e);
 export LONGREAL Reals_TenL (INTEGER e);
 static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len);
 
-#define Reals_ecvt(x, ndigit, decpt, sign)	ecvt (x, ndigit, decpt, sign)
+#include <stdlib.h>
+#define Reals_ecvt(x, ndigit, decpt, sign)	((LONGINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))
 
 /*============================================================================*/
 
@@ -57,7 +58,7 @@ LONGREAL Reals_TenL (INTEGER e)
 /*----------------------------------------------------------------------------*/
 INTEGER Reals_Expo (REAL x)
 {
-	return (int)__MASK(__ASHR(__VAL(LONGINT, x), 23), -256);
+	return (INTEGER)__MASK(__ASHR(__VAL(LONGINT, x), 23), -256);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -65,7 +66,7 @@ INTEGER Reals_ExpoL (LONGREAL x)
 {
 	LONGINT h;
 	__GET((LONGINT)&x + 4, h, LONGINT);
-	return (int)__MASK(__ASHR(h, 20), -2048);
+	return (INTEGER)__MASK(__ASHR(h, 20), -2048);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -121,13 +122,13 @@ static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
 	i = 0;
 	len = b__len;
 	while ((LONGINT)i < len) {
-		k = (int)__ASHR((int)(__VAL(CHAR, b[__X(i, b__len)])), 4);
+		k = (INTEGER)__ASHR((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), 4);
 		if (k > 9) {
 			d[__X(__ASHL(i, 1), d__len)] = k + 55;
 		} else {
 			d[__X(__ASHL(i, 1), d__len)] = k + 48;
 		}
-		k = (int)__MASK((int)(__VAL(CHAR, b[__X(i, b__len)])), -16);
+		k = (INTEGER)__MASK((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), -16);
 		if (k > 9) {
 			d[__X(__ASHL(i, 1) + 1, d__len)] = k + 55;
 		} else {
