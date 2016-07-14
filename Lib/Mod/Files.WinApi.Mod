@@ -80,7 +80,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 		IF f # NIL THEN
 			IF f.registerName # "" THEN Console.String(f.registerName) ELSE Console.String(f.workName) END
 		END ;
-		IF errno # 0 THEN Console.String(" errno = "); Console.Int(errno, 1) END ;
+		IF errno # 0 THEN Console.String(" errno = "); Console.LongInt(errno, 1) END ;
 		Console.Ln;
 		HALT(99)
 	END Err;
@@ -271,7 +271,7 @@ MODULE Files;	(* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *
 				END ;
 IF (~done) & (errno # Unix.ENOENT) THEN 
 	Console.String("warning Files.Old "); Console.String(name); 
-	Console.String(" errno = "); Console.Int(errno, 0); Console.Ln;
+	Console.String(" errno = "); Console.LongInt(errno, 0); Console.Ln;
 END ;
 				IF done THEN
 					res := Unix.Fstat(fd, stat);
@@ -604,15 +604,15 @@ Especially Length would become fairly complex.
 	BEGIN i := 0;
 		REPEAT Read(R, ch); x[i] := ch; INC(i) UNTIL ch = 0X
 	END ReadString;
-	
+
 	PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
 		VAR s: SHORTINT; ch: CHAR; n: LONGINT;
 	BEGIN s := 0; n := 0; Read(R, ch);
-		WHILE ORD(ch) >= 128 DO INC(n, ASH(ORD(ch) - 128, s) ); INC(s, 7); Read(R, ch) END;
-		INC(n, ASH(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64, s) );
+		WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); Read(R, ch) END;
+		INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
 		x := n
 	END ReadNum;
-	
+
 	PROCEDURE WriteBool* (VAR R: Rider; x: BOOLEAN);
 	BEGIN Write(R, SYSTEM.VAL(CHAR, x))
 	END WriteBool;
