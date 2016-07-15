@@ -9,6 +9,8 @@ Linux/ocat
 Linux/ofront+
 Linux/showdef
 Obj/*.o
+Obj64/*.o
+ToDo/
 Work/*.c
 Work/*.exe
 *.sbm
