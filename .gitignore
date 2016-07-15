@@ -2,7 +2,9 @@ Lib/Obj/*.o
 Lib/Obj/*.sym
 Lib/Obj/ofrontparam.exe
 Lib/Obj64/*.o
+Lib/Test/*.c
 Lib/Test/*.exe
+Lib/Test64/*.c
 Lib/Test64/*.exe
 Linux/Obj/*.o
 Linux/ocat
