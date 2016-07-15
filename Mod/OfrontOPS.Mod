@@ -16,7 +16,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		name*: Name;
 		str*: String;
 		numtyp*: INTEGER; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
-		intval*: LONGINT;	(* integer value or string length *)
+		intval*: LONGINT;	(* integer value or string length (incl. 0X) *)
 		realval*: REAL;
 		lrlval*: LONGREAL;
 
@@ -39,7 +39,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 
 	CONST
 		(* numtyp values *)
-		char = 1; integer = 2; real = 3; longreal = 4;
+		char = 1; integer = 2; real = 3; longreal = 4; longint = 5;
 
 		(*symbol values*)
 		null = 0; times = 1; slash = 2; div = 3; mod = 4;
