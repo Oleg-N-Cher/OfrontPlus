@@ -2,7 +2,7 @@
 #include "SYSTEM.h"
 
 typedef
-	SYSTEM_PTR (*Unix_ANYPTR)[1];
+	CHAR (*Unix_ADR)[1];
 
 typedef
 	struct Unix_Dirent {
@@ -19,9 +19,9 @@ typedef
 
 typedef
 	struct Unix_Hostent {
-		Unix_ANYPTR name, aliases;
+		Unix_ADR name, aliases;
 		SHORTINT addrtype, length;
-		Unix_ANYPTR addrlist;
+		Unix_ADR addrlist;
 	} Unix_Hostent;
 
 typedef
@@ -41,14 +41,15 @@ typedef
 
 typedef
 	struct Unix_JmpBuf {
-		LONGINT bx, si, di, bp, sp, pc, maskWasSaved, savedMask;
+		INTEGER bx, si, di, bp, sp, pc, maskWasSaved;
+		INTEGER savedMask[32];
 	} Unix_JmpBuf;
 
 typedef
 	CHAR *Unix_Name;
 
 typedef
-	SYSTEM_PTR (*Unix_SizeT)[1];
+	CHAR (*Unix_SizeT)[1];
 
 typedef
 	struct Unix_Pollfd {
@@ -92,12 +93,6 @@ typedef
 	} Unix_Status;
 
 typedef
-	struct Unix_Timeb {
-		Unix_SizeT time;
-		SHORTINT millitm, timezone, dstflag;
-	} Unix_Timeb;
-
-typedef
 	struct Unix_Timezone {
 		INTEGER minuteswest, dsttime;
 	} Unix_Timezone;
@@ -108,7 +103,6 @@ export LONGINT *Unix_JmpBuf__typ;
 export LONGINT *Unix_Status__typ;
 export LONGINT *Unix_Timeval__typ;
 export LONGINT *Unix_Timezone__typ;
-export LONGINT *Unix_Timeb__typ;
 export LONGINT *Unix_Itimerval__typ;
 export LONGINT *Unix_SigContext__typ;
 export LONGINT *Unix_Dirent__typ;
@@ -119,7 +113,6 @@ export LONGINT *Unix_Sockaddr__typ;
 export LONGINT *Unix_Hostent__typ;
 
 export LONGINT Unix_Fstat (LONGINT fd, Unix_Status *statbuf, LONGINT *statbuf__typ);
-export void Unix_Gettimeofday (Unix_Timeval *tv, LONGINT *tv__typ, Unix_Timezone *tz, LONGINT *tz__typ);
 export LONGINT Unix_Stat (CHAR *name, LONGINT name__len, Unix_Status *statbuf, LONGINT *statbuf__typ);
 export LONGINT Unix_errno (void);
 
@@ -137,7 +130,6 @@ export LONGINT Unix_errno (void);
 #define Unix_Flock(fd, operation)	flock(fd, operation)
 #define Unix_Fork()	fork()
 #define Unix_Fsync(fd)	_commit(fd)
-#define Unix_Ftime(timebuf, timebuf__typ)	_ftime((struct _timeb*)timebuf)
 #define Unix_Ftruncate(fd, length)	_chsize(fd, length)
 #define Unix_Getegid()	getegid()
 #define Unix_Geteuid()	geteuid()
@@ -146,6 +138,7 @@ export LONGINT Unix_errno (void);
 #define Unix_Gethostname(name, name__len)	gethostname(name, name__len)
 #define Unix_Getpid()	getpid()
 #define Unix_Getsockname(socket, name, name__typ, namelen)	getsockname(socket, name, namelen)
+#define Unix_Gettimeofday(tv, tv__typ, tz, tz__typ)	gettimeofday(tv, tz)
 #define Unix_Getuid()	getuid()
 #define Unix_Ioctl(fd, request, arg)	ioctl(fd, request, arg)
 #define Unix_Kill(pid, sig)	kill(pid, sig)
@@ -168,8 +161,6 @@ export LONGINT Unix_errno (void);
 #define Unix_err()	errno
 #define Unix_fstat(fd, statbuf, statbuf__typ)	fstat(fd, (struct stat*)statbuf)
 #include <errno.h>
-#include <io.h>
-#include <sys/timeb.h>
 #include <sys/stat.h>
 #define Unix_stat(name, name__len, statbuf, statbuf__typ)	stat((const char*)name, (struct stat*)statbuf)
 
@@ -178,15 +169,6 @@ export LONGINT Unix_errno (void);
 LONGINT Unix_errno (void)
 {
 	return Unix_err();
-}
-
-/*----------------------------------------------------------------------------*/
-void Unix_Gettimeofday (Unix_Timeval *tv, LONGINT *tv__typ, Unix_Timezone *tz, LONGINT *tz__typ)
-{
-	Unix_Timeb timebuf;
-	Unix_Ftime(&timebuf, Unix_Timeb__typ);
-	(*tv).sec = __VAL(INTEGER, timebuf.time);
-	(*tv).usec = timebuf.millitm * 1000;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -208,11 +190,10 @@ LONGINT Unix_Fstat (LONGINT fd, Unix_Status *statbuf, LONGINT *statbuf__typ)
 }
 
 /*----------------------------------------------------------------------------*/
-__TDESC(Unix_JmpBuf__desc, 1, 0) = {__TDFLDS("JmpBuf", 64), {-8}};
+__TDESC(Unix_JmpBuf__desc, 1, 0) = {__TDFLDS("JmpBuf", 156), {-8}};
 __TDESC(Unix_Status__desc, 1, 0) = {__TDFLDS("Status", 48), {-8}};
 __TDESC(Unix_Timeval__desc, 1, 0) = {__TDFLDS("Timeval", 8), {-8}};
 __TDESC(Unix_Timezone__desc, 1, 0) = {__TDFLDS("Timezone", 8), {-8}};
-__TDESC(Unix_Timeb__desc, 1, 0) = {__TDFLDS("Timeb", 16), {-8}};
 __TDESC(Unix_Itimerval__desc, 1, 0) = {__TDFLDS("Itimerval", 16), {-8}};
 __TDESC(Unix_SigContext__desc, 1, 0) = {__TDFLDS("SigContext", 1), {-8}};
 __TDESC(Unix_Dirent__desc, 1, 0) = {__TDFLDS("Dirent", 280), {-8}};
@@ -230,7 +211,6 @@ export void *Unix__init(void)
 	__INITYP(Unix_Status, Unix_Status, 0);
 	__INITYP(Unix_Timeval, Unix_Timeval, 0);
 	__INITYP(Unix_Timezone, Unix_Timezone, 0);
-	__INITYP(Unix_Timeb, Unix_Timeb, 0);
 	__INITYP(Unix_Itimerval, Unix_Itimerval, 0);
 	__INITYP(Unix_SigContext, Unix_SigContext, 0);
 	__INITYP(Unix_Dirent, Unix_Dirent, 0);

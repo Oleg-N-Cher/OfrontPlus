@@ -66,11 +66,11 @@ void Console_Int (INTEGER i, INTEGER n)
 		k = 10;
 	} else {
 		i1 = __ABS(i);
-		s[0] = (CHAR)((int)__MOD(i1, 10) + 48);
+		s[0] = (CHAR)((INTEGER)__MOD(i1, 10) + 48);
 		i1 = __DIV(i1, 10);
 		k = 1;
 		while (i1 > 0) {
-			s[__X(k, 16)] = (CHAR)((int)__MOD(i1, 10) + 48);
+			s[__X(k, 16)] = (CHAR)((INTEGER)__MOD(i1, 10) + 48);
 			i1 = __DIV(i1, 10);
 			k += 1;
 		}
@@ -145,7 +145,7 @@ void Console_Hex (INTEGER i)
 	INTEGER k, n;
 	k = -28;
 	while (k <= 0) {
-		n = (int)__MASK(__ASH((LONGINT)i, k), -16);
+		n = (INTEGER)__MASK(__ASH(i, k), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {
@@ -161,7 +161,7 @@ void Console_LongHex (LONGINT i)
 	INTEGER k, n;
 	k = -28;
 	while (k <= 0) {
-		n = (int)__MASK(__ASH(i, k), -16);
+		n = (INTEGER)__MASK(__ASH(i, k), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {

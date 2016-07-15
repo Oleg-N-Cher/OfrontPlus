@@ -128,7 +128,7 @@ static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, LONGINT errno)
 	}
 	if (errno != 0) {
 		Console_String((CHAR*)" errno = ", (LONGINT)10);
-		Console_Int(errno, 1);
+		Console_LongInt(errno, 1);
 	}
 	Console_Ln();
 	__HALT(99);
@@ -200,7 +200,7 @@ static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *na
 	}
 	name[__X(i, name__len)] = '.';
 	i += 1;
-	n = (int)Unix_Getpid();
+	n = (INTEGER)Unix_Getpid();
 	while (n > 0) {
 		name[__X(i, name__len)] = (CHAR)(__MOD(n, 10) + 48);
 		n = __DIV(n, 10);
@@ -429,7 +429,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 				Console_String((CHAR*)"warning Files.Old ", (LONGINT)19);
 				Console_String(name, name__len);
 				Console_String((CHAR*)" errno = ", (LONGINT)10);
-				Console_Int(errno, 0);
+				Console_LongInt(errno, 0);
 				Console_Ln();
 			}
 			if (done) {
@@ -712,8 +712,8 @@ void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len,
 void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res)
 {
 	__DUP(name, name__len, CHAR);
-	*res = (int)Unix_Unlink(name, name__len);
-	*res = (int)Unix_errno();
+	*res = (INTEGER)Unix_Unlink(name, name__len);
+	*res = (INTEGER)Unix_errno();
 	__DEL(name);
 }
 
@@ -752,7 +752,7 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 		}
 		r = Unix_Rename(old, old__len, new, new__len);
 		if (r < 0) {
-			*res = (int)Unix_errno();
+			*res = (INTEGER)Unix_errno();
 			if (*res == 18) {
 				fdold = Unix_Open(old, old__len, 0x8000, 0x0);
 				if (fdold < 0) {
@@ -829,7 +829,7 @@ void Files_Register (Files_File f)
 void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res)
 {
 	__DUP(path, path__len, CHAR);
-	*res = (int)Unix_Chdir(path, path__len);
+	*res = (INTEGER)Unix_Chdir(path, path__len);
 	Files_getcwd((void*)Kernel_CWD, 256);
 	__DEL(path);
 }
@@ -861,7 +861,7 @@ void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x)
 {
 	CHAR b[2];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 2, 2);
-	*x = (int)b[0] + __ASHL((int)b[1], 8);
+	*x = (INTEGER)b[0] + __ASHL((INTEGER)b[1], 8);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -869,7 +869,7 @@ void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((int)b[2], 16)) + __ASHL((int)b[3], 24);
+	*x = (((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8)) + __ASHL((INTEGER)b[2], 16)) + __ASHL((INTEGER)b[3], 24);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -877,7 +877,7 @@ void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (SET)((((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((int)b[2], 16)) + __ASHL((int)b[3], 24));
+	*x = (SET)((((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8)) + __ASHL((INTEGER)b[2], 16)) + __ASHL((INTEGER)b[3], 24));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -918,12 +918,12 @@ void Files_ReadNum (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 	s = 0;
 	n = 0;
 	Files_Read(&*R, R__typ, (void*)&ch);
-	while ((int)ch >= 128) {
-		n += __ASH((LONGINT)((int)ch - 128), s);
+	while ((INTEGER)ch >= 128) {
+		n += __ASH((LONGINT)((INTEGER)ch - 128), s);
 		s += 7;
 		Files_Read(&*R, R__typ, (void*)&ch);
 	}
-	n += __ASH((LONGINT)(__MASK((int)ch, -64) - __ASHL(__ASHR((int)ch, 6), 6)), s);
+	n += __ASH((LONGINT)(__MASK((INTEGER)ch, -64) - __ASHL(__ASHR((INTEGER)ch, 6), 6)), s);
 	*x = n;
 }
 

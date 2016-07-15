@@ -737,7 +737,7 @@ static void ReadScaleFactor__32 (void)
 		}
 	}
 	while ('0' <= *Scan__31_s->ch && *Scan__31_s->ch <= '9') {
-		*Scan__31_s->e = (*Scan__31_s->e * 10 + (int)*Scan__31_s->ch) - 48;
+		*Scan__31_s->e = (*Scan__31_s->e * 10 + (INTEGER)*Scan__31_s->ch) - 48;
 		CmdlnTexts_Read((void*)&*Scan__31_s->S, Scan__31_s->S__typ, &*Scan__31_s->ch);
 	}
 }
@@ -809,10 +809,10 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 				if ('9' < ch) {
 					if ('A' <= ch && ch <= 'F') {
 						hex = 1;
-						ch = (CHAR)((int)ch - 7);
+						ch = (CHAR)((INTEGER)ch - 7);
 					} else if ('a' <= ch && ch <= 'f') {
 						hex = 1;
-						ch = (CHAR)((int)ch - 39);
+						ch = (CHAR)((INTEGER)ch - 39);
 					} else {
 						break;
 					}
@@ -824,13 +824,13 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 				if (i - j > 8) {
 					j = i - 8;
 				}
-				k = (int)d[__X(j, 32)] - 48;
+				k = (INTEGER)d[__X(j, 32)] - 48;
 				j += 1;
 				if (i - j == 7 && k >= 8) {
 					k -= 16;
 				}
 				while (j < i) {
-					k = __ASHL(k, 4) + (LONGINT)((int)d[__X(j, 32)] - 48);
+					k = __ASHL(k, 4) + (LONGINT)((INTEGER)d[__X(j, 32)] - 48);
 					j += 1;
 				}
 				if (neg) {
@@ -851,12 +851,12 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 					y = (LONGREAL)0;
 					g = (LONGREAL)1;
 					do {
-						y = y * (LONGREAL)10 + ((int)d[__X(j, 32)] - 48);
+						y = y * (LONGREAL)10 + ((INTEGER)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
 						g = g / (LONGREAL)(LONGREAL)10;
-						y = ((int)d[__X(j, 32)] - 48) * g + y;
+						y = ((INTEGER)d[__X(j, 32)] - 48) * g + y;
 						j += 1;
 					}
 					ReadScaleFactor__32();
@@ -883,12 +883,12 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 					x = (REAL)0;
 					f = (REAL)1;
 					do {
-						x = x * (REAL)10 + ((int)d[__X(j, 32)] - 48);
+						x = x * (REAL)10 + ((INTEGER)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
 						f = f / (REAL)(REAL)10;
-						x = ((int)d[__X(j, 32)] - 48) * f + x;
+						x = ((INTEGER)d[__X(j, 32)] - 48) * f + x;
 						j += 1;
 					}
 					if (ch == 'E') {
@@ -920,7 +920,7 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 				(*S).class = 3;
 				k = 0;
 				do {
-					k = k * 10 + (LONGINT)((int)d[__X(j, 32)] - 48);
+					k = k * 10 + (LONGINT)((INTEGER)d[__X(j, 32)] - 48);
 					j += 1;
 				} while (!(j == i));
 				if (neg) {
@@ -1052,7 +1052,7 @@ void CmdlnTexts_WriteInt (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGINT x, LONG
 	CHAR a[11];
 	i = 0;
 	if (x < 0) {
-		if (x == (-2147483647-1)) {
+		if (x == (-9223372036854775807-1)) {
 			CmdlnTexts_WriteString(&*W, W__typ, (CHAR*)" -2147483648", (LONGINT)13);
 			return;
 		} else {
@@ -1171,7 +1171,7 @@ void CmdlnTexts_WriteReal (CmdlnTexts_Writer *W, LONGINT *W__typ, REAL x, INTEGE
 			CmdlnTexts_Write(&*W, W__typ, '+');
 		}
 		CmdlnTexts_Write(&*W, W__typ, (CHAR)(__DIV(e, 10) + 48));
-		CmdlnTexts_Write(&*W, W__typ, (CHAR)((int)__MOD(e, 10) + 48));
+		CmdlnTexts_Write(&*W, W__typ, (CHAR)((INTEGER)__MOD(e, 10) + 48));
 	}
 }
 
@@ -1324,7 +1324,7 @@ void CmdlnTexts_WriteLongReal (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGREAL x
 		} else {
 			CmdlnTexts_Write(&*W, W__typ, ' ');
 		}
-		e = (int)__ASHR((LONGINT)(e - 1023) * 77, 8);
+		e = (INTEGER)__ASHR((LONGINT)(e - 1023) * 77, 8);
 		if (e >= 0) {
 			x = x / (LONGREAL)Reals_TenL(e);
 		} else {
@@ -1356,9 +1356,9 @@ void CmdlnTexts_WriteLongReal (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGREAL x
 			CmdlnTexts_Write(&*W, W__typ, '+');
 		}
 		CmdlnTexts_Write(&*W, W__typ, (CHAR)(__DIV(e, 100) + 48));
-		e = (int)__MOD(e, 100);
+		e = (INTEGER)__MOD(e, 100);
 		CmdlnTexts_Write(&*W, W__typ, (CHAR)(__DIV(e, 10) + 48));
-		CmdlnTexts_Write(&*W, W__typ, (CHAR)((int)__MOD(e, 10) + 48));
+		CmdlnTexts_Write(&*W, W__typ, (CHAR)((INTEGER)__MOD(e, 10) + 48));
 	}
 }
 
@@ -1493,7 +1493,7 @@ static void CmdlnTexts_Load0 (Files_Rider *r, LONGINT *r__typ, CmdlnTexts_Text T
 	pos = Files_Pos(&*r, r__typ);
 	f = Files_Base(&*r, r__typ);
 	__NEW(u, CmdlnTexts_RunDesc);
-	u->len = 2147483647;
+	u->len = 9223372036854775807;
 	u->fnt = NIL;
 	u->col = 15;
 	T->head = u;
@@ -1575,7 +1575,7 @@ void CmdlnTexts_Open (CmdlnTexts_Text T, CHAR *name, LONGINT name__len)
 		CmdlnTexts_Load0(&r, Files_Rider__typ, T);
 	} else {
 		__NEW(u, CmdlnTexts_RunDesc);
-		u->len = 2147483647;
+		u->len = 9223372036854775807;
 		u->fnt = NIL;
 		u->col = 15;
 		__NEW(p, CmdlnTexts_PieceDesc);

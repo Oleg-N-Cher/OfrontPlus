@@ -6,7 +6,7 @@
 #include "SYSTEM.h"
 
 typedef
-	SYSTEM_PTR (*Unix_ANYPTR)[1];
+	CHAR (*Unix_ADR)[1];
 
 typedef
 	struct Unix_Dirent {
@@ -22,9 +22,9 @@ typedef
 
 typedef
 	struct Unix_Hostent {
-		Unix_ANYPTR name, aliases;
+		Unix_ADR name, aliases;
 		SHORTINT addrtype, length;
-		Unix_ANYPTR addrlist;
+		Unix_ADR addrlist;
 	} Unix_Hostent;
 
 typedef
@@ -44,14 +44,15 @@ typedef
 
 typedef
 	struct Unix_JmpBuf {
-		LONGINT bx, si, di, bp, sp, pc, maskWasSaved, savedMask;
+		INTEGER bx, si, di, bp, sp, pc, maskWasSaved;
+		INTEGER savedMask[32];
 	} Unix_JmpBuf;
 
 typedef
 	CHAR *Unix_Name;
 
 typedef
-	SYSTEM_PTR (*Unix_SizeT)[1];
+	CHAR (*Unix_SizeT)[1];
 
 typedef
 	struct Unix_Pollfd {
@@ -96,12 +97,6 @@ typedef
 	} Unix_Status;
 
 typedef
-	struct Unix_Timeb {
-		INTEGER _prvt0;
-		char _prvt1[6];
-	} Unix_Timeb;
-
-typedef
 	struct Unix_Timezone {
 		INTEGER minuteswest, dsttime;
 	} Unix_Timezone;
@@ -112,7 +107,6 @@ import LONGINT *Unix_JmpBuf__typ;
 import LONGINT *Unix_Status__typ;
 import LONGINT *Unix_Timeval__typ;
 import LONGINT *Unix_Timezone__typ;
-import LONGINT *Unix_Timeb__typ;
 import LONGINT *Unix_Itimerval__typ;
 import LONGINT *Unix_SigContext__typ;
 import LONGINT *Unix_Dirent__typ;
@@ -123,7 +117,6 @@ import LONGINT *Unix_Sockaddr__typ;
 import LONGINT *Unix_Hostent__typ;
 
 import LONGINT Unix_Fstat (LONGINT fd, Unix_Status *statbuf, LONGINT *statbuf__typ);
-import void Unix_Gettimeofday (Unix_Timeval *tv, LONGINT *tv__typ, Unix_Timezone *tz, LONGINT *tz__typ);
 import LONGINT Unix_Stat (CHAR *name, LONGINT name__len, Unix_Status *statbuf, LONGINT *statbuf__typ);
 import LONGINT Unix_errno (void);
 import void *Unix__init(void);
@@ -142,7 +135,6 @@ import void *Unix__init(void);
 #define Unix_Flock(fd, operation)	flock(fd, operation)
 #define Unix_Fork()	fork()
 #define Unix_Fsync(fd)	_commit(fd)
-#define Unix_Ftime(timebuf, timebuf__typ)	_ftime((struct _timeb*)timebuf)
 #define Unix_Ftruncate(fd, length)	_chsize(fd, length)
 #define Unix_Getegid()	getegid()
 #define Unix_Geteuid()	geteuid()
@@ -151,6 +143,7 @@ import void *Unix__init(void);
 #define Unix_Gethostname(name, name__len)	gethostname(name, name__len)
 #define Unix_Getpid()	getpid()
 #define Unix_Getsockname(socket, name, name__typ, namelen)	getsockname(socket, name, namelen)
+#define Unix_Gettimeofday(tv, tv__typ, tz, tz__typ)	gettimeofday(tv, tz)
 #define Unix_Getuid()	getuid()
 #define Unix_Ioctl(fd, request, arg)	ioctl(fd, request, arg)
 #define Unix_Kill(pid, sig)	kill(pid, sig)
