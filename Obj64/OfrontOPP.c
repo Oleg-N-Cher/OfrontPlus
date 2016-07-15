@@ -10,7 +10,7 @@ struct OfrontOPP__1 {
 };
 
 typedef
-	struct OfrontOPP__1 OfrontOPP_CaseTable[128];
+	struct OfrontOPP__1 OfrontOPP_CaseTable[256];
 
 
 static SHORTINT OfrontOPP_sym, OfrontOPP_level;
@@ -60,7 +60,7 @@ static void OfrontOPP_err (INTEGER n)
 
 static void OfrontOPP_CheckSym (INTEGER s)
 {
-	if ((int)OfrontOPP_sym == s) {
+	if ((INTEGER)OfrontOPP_sym == s) {
 		OfrontOPS_Get(&OfrontOPP_sym);
 	} else {
 		OfrontOPM_err(s);
@@ -148,7 +148,7 @@ static void OfrontOPP_CheckSysFlag (INTEGER *sysflag, INTEGER default_)
 			OfrontOPP_err(51);
 			sf = 0;
 		}
-		*sysflag = (int)sf;
+		*sysflag = (INTEGER)sf;
 		OfrontOPP_CheckSym(23);
 	} else {
 		*sysflag = default_;
@@ -272,7 +272,7 @@ static void OfrontOPP_ArrayType (OfrontOPT_Struct *typ, OfrontOPT_Struct *banned
 		OfrontOPP_ConstExpression(&x);
 		if (__IN(x->typ->form, 0x70)) {
 			n = x->conval->intval;
-			if (n <= 0 || n > OfrontOPM_MaxIndex) {
+			if (n <= 0 || n > (LONGINT)OfrontOPM_MaxIndex) {
 				OfrontOPP_err(63);
 				n = 1;
 			}
@@ -627,7 +627,7 @@ static void OfrontOPP_StandProcCall (OfrontOPT_Node *x)
 	OfrontOPT_Node y = NIL;
 	SHORTINT m;
 	INTEGER n;
-	m = (int)(*x)->obj->adr;
+	m = (INTEGER)(*x)->obj->adr;
 	n = 0;
 	if (OfrontOPP_sym == 30) {
 		OfrontOPS_Get(&OfrontOPP_sym);
@@ -1186,7 +1186,7 @@ static void OfrontOPP_CaseLabelList (OfrontOPT_Node *lab, INTEGER LabelForm, INT
 			OfrontOPS_Get(&OfrontOPP_sym);
 			OfrontOPP_ConstExpression(&y);
 			yval = y->conval->intval;
-			if ((int)y->typ->form != f && !(__IN(f, 0x70) && __IN(y->typ->form, 0x70))) {
+			if ((INTEGER)y->typ->form != f && !(__IN(f, 0x70) && __IN(y->typ->form, 0x70))) {
 				OfrontOPP_err(60);
 			}
 			if (yval < xval) {
@@ -1198,22 +1198,22 @@ static void OfrontOPP_CaseLabelList (OfrontOPT_Node *lab, INTEGER LabelForm, INT
 		}
 		x->conval->intval2 = yval;
 		i = *n;
-		if (i < 128) {
+		if (i < 256) {
 			for (;;) {
 				if (i == 0) {
 					break;
 				}
-				if (tab[__X(i - 1, 128)].low <= yval) {
-					if (tab[__X(i - 1, 128)].high >= xval) {
+				if (tab[__X(i - 1, 256)].low <= yval) {
+					if (tab[__X(i - 1, 256)].high >= xval) {
 						OfrontOPP_err(62);
 					}
 					break;
 				}
-				tab[__X(i, 128)] = tab[__X(i - 1, 128)];
+				tab[__X(i, 256)] = tab[__X(i - 1, 256)];
 				i -= 1;
 			}
-			tab[__X(i, 128)].low = xval;
-			tab[__X(i, 128)].high = yval;
+			tab[__X(i, 256)].low = xval;
+			tab[__X(i, 256)].high = yval;
 			*n += 1;
 		} else {
 			OfrontOPP_err(213);
@@ -1272,7 +1272,7 @@ static void CasePart__31 (OfrontOPT_Node *x)
 	}
 	if (n > 0) {
 		low = tab[0].low;
-		high = tab[__X(n - 1, 128)].high;
+		high = tab[__X(n - 1, 256)].high;
 		if (high - low > 512) {
 			OfrontOPP_err(209);
 		}

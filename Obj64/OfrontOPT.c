@@ -386,7 +386,7 @@ static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len)
 	i = 0;
 	do {
 		ch = name[__X(i, name__len)];
-		OfrontOPM_FPrint(&*fp, (int)ch);
+		OfrontOPM_FPrint(&*fp, (INTEGER)ch);
 		i += 1;
 	} while (!(ch == 0x00));
 }
@@ -621,11 +621,11 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 		} else if (obj->mode == 9) {
 			OfrontOPT_FPrintSign(&fprint, obj->typ, obj->link);
 			ext = obj->conval->ext;
-			m = (int)(*ext)[0];
+			m = (INTEGER)(*ext)[0];
 			f = 1;
 			OfrontOPM_FPrint(&fprint, m);
 			while (f <= m) {
-				OfrontOPM_FPrint(&fprint, (int)(*ext)[__X(f, 256)]);
+				OfrontOPM_FPrint(&fprint, (INTEGER)(*ext)[__X(f, 256)]);
 				f += 1;
 			}
 		} else if (obj->mode == 5) {
@@ -792,7 +792,7 @@ static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval)
 	switch (f) {
 		case 1: case 3: case 2: 
 			OfrontOPM_SymRCh(&ch);
-			conval->intval = (int)ch;
+			conval->intval = (INTEGER)ch;
 			break;
 		case 4: case 5: case 6: 
 			conval->intval = OfrontOPM_SymRInt();
@@ -972,7 +972,7 @@ static void OfrontOPT_InStruct (OfrontOPT_Struct *typ)
 		obj->vis = 0;
 		tag = OfrontOPM_SymRInt();
 		if (tag == 35) {
-			(*typ)->sysflag = (int)OfrontOPM_SymRInt();
+			(*typ)->sysflag = (INTEGER)OfrontOPM_SymRInt();
 			tag = OfrontOPM_SymRInt();
 		}
 		switch (tag) {
@@ -1129,7 +1129,7 @@ static OfrontOPT_Object OfrontOPT_InObj (SHORTINT mno)
 					obj->mode = 9;
 					ext = OfrontOPT_NewExt();
 					obj->conval->ext = ext;
-					s = (int)OfrontOPM_SymRInt();
+					s = (INTEGER)OfrontOPM_SymRInt();
 					(*ext)[0] = (CHAR)s;
 					i = 1;
 					while (i <= s) {
@@ -1529,7 +1529,7 @@ static void OfrontOPT_OutObj (OfrontOPT_Object obj)
 						OfrontOPM_SymWInt(33);
 						OfrontOPT_OutSign(obj->typ, obj->link);
 						ext = obj->conval->ext;
-						j = (int)(*ext)[0];
+						j = (INTEGER)(*ext)[0];
 						i = 1;
 						OfrontOPM_SymWInt(j);
 						while (i <= j) {

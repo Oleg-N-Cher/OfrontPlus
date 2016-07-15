@@ -115,7 +115,7 @@ void OfrontOPV_TypSize (OfrontOPT_Struct typ)
 			}
 			typ->size = offset;
 			typ->align = base;
-			typ->sysflag = __MASK(typ->sysflag, -256) + (int)__ASHL(offset - off0, 8);
+			typ->sysflag = __MASK(typ->sysflag, -256) + (INTEGER)__ASHL(offset - off0, 8);
 		} else if (c == 2) {
 			OfrontOPV_TypSize(typ->BaseTyp);
 			typ->size = typ->n * typ->BaseTyp->size;
@@ -207,7 +207,7 @@ static void OfrontOPV_Stamp (OfrontOPS_Name s)
 	i += 2;
 	k = 0;
 	do {
-		n[__X(k, 10)] = (CHAR)((int)__MOD(j, 10) + 48);
+		n[__X(k, 10)] = (CHAR)((INTEGER)__MOD(j, 10) + 48);
 		j = __DIV(j, 10);
 		k += 1;
 	} while (!(j == 0));
@@ -442,7 +442,7 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 		OfrontOPV_Entier(n, 9);
 	} else if (form == 5) {
 		if (from < 5) {
-			OfrontOPM_WriteString((CHAR*)"(int)", (LONGINT)6);
+			OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 			OfrontOPV_expr(n, 9);
 		} else {
 			if (__IN(2, OfrontOPM_opt)) {
@@ -456,7 +456,7 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 				OfrontOPM_WriteInt(OfrontOPM_MaxInt + 1);
 				OfrontOPM_Write(')');
 			} else {
-				OfrontOPM_WriteString((CHAR*)"(int)", (LONGINT)6);
+				OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 				OfrontOPV_Entier(n, 9);
 			}
 		}
@@ -472,7 +472,7 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 			OfrontOPM_WriteInt(OfrontOPM_MaxSInt + 1);
 			OfrontOPM_Write(')');
 		} else {
-			OfrontOPM_WriteString((CHAR*)"(int)", (LONGINT)6);
+			OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 			OfrontOPV_Entier(n, 9);
 		}
 	} else if (form == 3) {
@@ -543,7 +543,7 @@ static void OfrontOPV_design (OfrontOPT_Node n, INTEGER prec)
 	obj = n->obj;
 	class = n->class;
 	designPrec = OfrontOPV_Precedence(class, n->subcl, n->typ->form, comp);
-	if (((class == 0 && obj->mnolev > 0) && (int)obj->mnolev != OfrontOPM_level) && prec == 10) {
+	if (((class == 0 && obj->mnolev > 0) && (INTEGER)obj->mnolev != OfrontOPM_level) && prec == 10) {
 		designPrec = 9;
 	}
 	if (prec > designPrec) {
@@ -642,7 +642,7 @@ static void OfrontOPV_design (OfrontOPT_Node n, INTEGER prec)
 			if (__IN(3, OfrontOPM_opt)) {
 				if (typ->comp == 4) {
 					OfrontOPM_WriteString((CHAR*)"__GUARDR(", (LONGINT)10);
-					if ((int)obj->mnolev != OfrontOPM_level) {
+					if ((INTEGER)obj->mnolev != OfrontOPM_level) {
 						OfrontOPM_WriteStringVar((void*)obj->scope->name, 32);
 						OfrontOPM_WriteString((CHAR*)"__curr->", (LONGINT)9);
 						OfrontOPC_Ident(obj);
@@ -873,7 +873,7 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 					if (OfrontOPV_SideEffects(l)) {
 						if (l->typ->form < 7) {
 							if (l->typ->form < 6) {
-								OfrontOPM_WriteString((CHAR*)"(int)", (LONGINT)6);
+								OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 							}
 							OfrontOPM_WriteString((CHAR*)"__ABSF(", (LONGINT)8);
 						} else {
@@ -982,7 +982,7 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 						case 3: 
 							if (OfrontOPV_SideEffects(n)) {
 								if (form < 6) {
-									OfrontOPM_WriteString((CHAR*)"(int)", (LONGINT)6);
+									OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 								}
 								OfrontOPM_WriteString((CHAR*)"__DIVF(", (LONGINT)8);
 							} else {
@@ -991,7 +991,7 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 							break;
 						case 4: 
 							if (form < 6) {
-								OfrontOPM_WriteString((CHAR*)"(int)", (LONGINT)6);
+								OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 							}
 							if (OfrontOPV_SideEffects(n)) {
 								OfrontOPM_WriteString((CHAR*)"__MODF(", (LONGINT)8);

@@ -216,7 +216,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 					BrowserCmd_Wsign(obj->typ, obj->link);
 					if (obj->mode == 9) {
 						ext = obj->conval->ext;
-						m = (int)(*ext)[0];
+						m = (INTEGER)(*ext)[0];
 						i = 1;
 						BrowserCmd_Ws((CHAR*)"  \"", (LONGINT)4);
 						while (i <= (LONGINT)m) {
@@ -448,7 +448,7 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, CmdlnTexts_Text T)
 		Header__8((CHAR*)"IMPORT", (LONGINT)7);
 		i = 1;
 		first = 1;
-		while (i < (int)OfrontOPT_nofGmod) {
+		while (i < (INTEGER)OfrontOPT_nofGmod) {
 			if (first) {
 				first = 0;
 				BrowserCmd_Indent(2);
@@ -565,7 +565,7 @@ static void EnumPtrs(void (*P)(void*))
 }
 
 
-export main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	__INIT(argc, argv);
 	__IMPORT(Args__init);

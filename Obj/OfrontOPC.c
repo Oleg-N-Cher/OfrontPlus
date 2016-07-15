@@ -180,10 +180,10 @@ static INTEGER OfrontOPC_PerfectHash (CHAR *s, LONGINT s__len)
 	i = 0;
 	h = 0;
 	while (s[__X(i, s__len)] != 0x00 && i < 5) {
-		h = 3 * h + (int)s[__X(i, s__len)];
+		h = 3 * h + (INTEGER)s[__X(i, s__len)];
 		i += 1;
 	}
-	return (int)__MOD(h, 105);
+	return (INTEGER)__MOD(h, 105);
 }
 
 void OfrontOPC_Ident (OfrontOPT_Object obj)
@@ -752,7 +752,7 @@ static void OfrontOPC_CProcDefs (OfrontOPT_Object obj, INTEGER vis)
 	INTEGER _for__9;
 	if (obj != NIL) {
 		OfrontOPC_CProcDefs(obj->left, vis);
-		if ((obj->mode == 9 && (int)obj->vis >= vis) && obj->adr == 1) {
+		if ((obj->mode == 9 && (INTEGER)obj->vis >= vis) && obj->adr == 1) {
 			ext = obj->conval->ext;
 			i = 1;
 			if ((*ext)[1] != '#' && !(OfrontOPC_Prefixed(ext, (CHAR*)"extern ", (LONGINT)8) || OfrontOPC_Prefixed(ext, (CHAR*)"import ", (LONGINT)8))) {
@@ -761,7 +761,7 @@ static void OfrontOPC_CProcDefs (OfrontOPT_Object obj, INTEGER vis)
 				OfrontOPC_DeclareParams(obj->link, 1);
 				OfrontOPM_Write(0x09);
 			}
-			_for__9 = (int)(*obj->conval->ext)[0];
+			_for__9 = (INTEGER)(*obj->conval->ext)[0];
 			i = i;
 			while (i <= _for__9) {
 				OfrontOPM_Write((*obj->conval->ext)[__X(i, 256)]);
@@ -1013,7 +1013,7 @@ static void OfrontOPC_IdentList (OfrontOPT_Object obj, INTEGER vis)
 	first = 1;
 	while (obj != NIL && obj->mode != 13) {
 		if ((__IN(vis, 0x05) || vis == 1 && obj->vis != 0) || vis == 3 && !obj->leaf) {
-			if (obj->typ != base || (int)obj->vis != lastvis) {
+			if (obj->typ != base || (INTEGER)obj->vis != lastvis) {
 				if (!first) {
 					OfrontOPC_EndStat();
 				}
@@ -1167,7 +1167,7 @@ static void OfrontOPC_IncludeImports (OfrontOPT_Object obj, INTEGER vis)
 {
 	if (obj != NIL) {
 		OfrontOPC_IncludeImports(obj->left, vis);
-		if ((obj->mode == 11 && obj->mnolev != 0) && (int)OfrontOPT_GlbMod[__X(-obj->mnolev, 64)]->vis >= vis) {
+		if ((obj->mode == 11 && obj->mnolev != 0) && (INTEGER)OfrontOPT_GlbMod[__X(-obj->mnolev, 64)]->vis >= vis) {
 			OfrontOPC_Include(OfrontOPT_GlbMod[__X(-obj->mnolev, 64)]->name, 32);
 		}
 		OfrontOPC_IncludeImports(obj->right, vis);
@@ -1421,10 +1421,9 @@ void OfrontOPC_GenEnumPtrs (OfrontOPT_Object var)
 void OfrontOPC_EnterBody (void)
 {
 	OfrontOPM_WriteLn();
-	OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
 	if (OfrontOPC_mainprog) {
 		if (OfrontOPC_ansi) {
-			OfrontOPM_WriteString((CHAR*)"main(int argc, char **argv)", (LONGINT)28);
+			OfrontOPM_WriteString((CHAR*)"int main(int argc, char **argv)", (LONGINT)32);
 			OfrontOPM_WriteLn();
 		} else {
 			OfrontOPM_WriteString((CHAR*)"main(argc, argv)", (LONGINT)17);
@@ -1434,6 +1433,7 @@ void OfrontOPC_EnterBody (void)
 			OfrontOPM_WriteLn();
 		}
 	} else {
+		OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
 		OfrontOPM_WriteString((CHAR*)"void *", (LONGINT)7);
 		OfrontOPM_WriteString(OfrontOPM_modName, 32);
 		OfrontOPM_WriteString(OfrontOPC_BodyNameExt, 13);
@@ -1777,7 +1777,7 @@ void OfrontOPC_TypeOf (OfrontOPT_Object ap)
 	INTEGER i;
 	__ASSERT(ap->typ->comp == 4, 0);
 	if (ap->mode == 2) {
-		if ((int)ap->mnolev != OfrontOPM_level) {
+		if ((INTEGER)ap->mnolev != OfrontOPM_level) {
 			OfrontOPM_WriteStringVar((void*)ap->scope->name, 32);
 			OfrontOPM_WriteString((CHAR*)"_s->", (LONGINT)5);
 			OfrontOPC_Ident(ap);
@@ -1957,7 +1957,7 @@ void OfrontOPC_Constant (OfrontOPT_Const con, INTEGER form)
 			break;
 		case 10: 
 			OfrontOPM_Write('\"');
-			len = (int)con->intval2 - 1;
+			len = (INTEGER)con->intval2 - 1;
 			i = 0;
 			while (i < len) {
 				ch = (*con->ext)[__X(i, 256)];

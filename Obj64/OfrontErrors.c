@@ -31,18 +31,8 @@ void OfrontErrors_LogErrMsg (INTEGER n)
 		case 5: 
 			Console_String((CHAR*)"comment not closed", (LONGINT)19);
 			break;
-		case 6: 
-			break;
-		case 7: 
-			break;
-		case 8: 
-			break;
 		case 9: 
 			Console_String((CHAR*)"\"=\" expected", (LONGINT)13);
-			break;
-		case 10: 
-			break;
-		case 11: 
 			break;
 		case 12: 
 			Console_String((CHAR*)"type definition starts with incorrect symbol", (LONGINT)45);
@@ -59,8 +49,6 @@ void OfrontErrors_LogErrMsg (INTEGER n)
 		case 16: 
 			Console_String((CHAR*)"MODULE expected", (LONGINT)16);
 			break;
-		case 17: 
-			break;
 		case 18: 
 			Console_String((CHAR*)"\".\" missing", (LONGINT)12);
 			break;
@@ -69,8 +57,6 @@ void OfrontErrors_LogErrMsg (INTEGER n)
 			break;
 		case 20: 
 			Console_String((CHAR*)"\":\" missing", (LONGINT)12);
-			break;
-		case 21: 
 			break;
 		case 22: 
 			Console_String((CHAR*)"\")\" missing", (LONGINT)12);
@@ -93,16 +79,8 @@ void OfrontErrors_LogErrMsg (INTEGER n)
 		case 28: 
 			Console_String((CHAR*)"TO missing", (LONGINT)11);
 			break;
-		case 29: 
-			break;
 		case 30: 
 			Console_String((CHAR*)"\"(\" missing", (LONGINT)12);
-			break;
-		case 31: 
-			break;
-		case 32: 
-			break;
-		case 33: 
 			break;
 		case 34: 
 			Console_String((CHAR*)"\":=\" missing", (LONGINT)13);
@@ -110,39 +88,23 @@ void OfrontErrors_LogErrMsg (INTEGER n)
 		case 35: 
 			Console_String((CHAR*)"\",\" or OF expected", (LONGINT)19);
 			break;
-		case 36: 
-			break;
-		case 37: 
-			break;
 		case 38: 
 			Console_String((CHAR*)"identifier expected", (LONGINT)20);
 			break;
 		case 39: 
 			Console_String((CHAR*)"\";\" missing", (LONGINT)12);
 			break;
-		case 40: 
-			break;
 		case 41: 
 			Console_String((CHAR*)"END missing", (LONGINT)12);
 			break;
-		case 42: 
-			break;
-		case 43: 
-			break;
 		case 44: 
 			Console_String((CHAR*)"UNTIL missing", (LONGINT)14);
-			break;
-		case 45: 
 			break;
 		case 46: 
 			Console_String((CHAR*)"EXIT not within loop statement", (LONGINT)31);
 			break;
 		case 47: 
 			Console_String((CHAR*)"illegally marked identifier", (LONGINT)28);
-			break;
-		case 48: 
-			break;
-		case 49: 
 			break;
 		case 50: 
 			Console_String((CHAR*)"expression should be constant", (LONGINT)30);
@@ -260,12 +222,6 @@ void OfrontErrors_LogErrMsg (INTEGER n)
 			break;
 		case 88: 
 			Console_String((CHAR*)"open array not allowed as variable, record field or array element", (LONGINT)66);
-			break;
-		case 89: 
-			break;
-		case 90: 
-			break;
-		case 91: 
 			break;
 		case 92: 
 			Console_String((CHAR*)"operand of IN not an integer, or not a set", (LONGINT)43);

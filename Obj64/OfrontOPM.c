@@ -3,22 +3,25 @@
 #include "Args.h"
 #include "Console.h"
 #include "Files.h"
+#include "OfrontErrors.h"
 #include "CmdlnTexts.h"
 
 typedef
 	CHAR OfrontOPM_FileName[32];
 
 
-export INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet;
-export LONGINT OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MinLInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt, OfrontOPM_MaxLInt, OfrontOPM_MaxIndex;
+export INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet, OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt;
+export INTEGER OfrontOPM_MaxIndex;
+export LONGINT OfrontOPM_MinLInt, OfrontOPM_MaxLInt;
 export LONGREAL OfrontOPM_MinReal, OfrontOPM_MaxReal, OfrontOPM_MinLReal, OfrontOPM_MaxLReal;
 export BOOLEAN OfrontOPM_noerr;
-export LONGINT OfrontOPM_curpos, OfrontOPM_errpos, OfrontOPM_breakpc;
-export INTEGER OfrontOPM_currFile, OfrontOPM_level, OfrontOPM_pc, OfrontOPM_entno;
+export INTEGER OfrontOPM_curpos;
+export LONGINT OfrontOPM_errpos;
+export INTEGER OfrontOPM_breakpc, OfrontOPM_currFile, OfrontOPM_level, OfrontOPM_pc, OfrontOPM_entno;
 export CHAR OfrontOPM_modName[32];
 export CHAR OfrontOPM_objname[64];
 export SET OfrontOPM_opt, OfrontOPM_glbopt;
-static LONGINT OfrontOPM_lasterrpos;
+static INTEGER OfrontOPM_lasterrpos;
 static CmdlnTexts_Reader OfrontOPM_inR;
 static CmdlnTexts_Text OfrontOPM_Log;
 static CmdlnTexts_Writer OfrontOPM_W;
@@ -45,10 +48,10 @@ export void OfrontOPM_InitOptions (void);
 static void OfrontOPM_LogErrMsg (INTEGER n);
 export void OfrontOPM_LogW (CHAR ch);
 export void OfrontOPM_LogWLn (void);
-export void OfrontOPM_LogWNum (LONGINT i, LONGINT len);
+export void OfrontOPM_LogWNum (INTEGER i, INTEGER len);
 export void OfrontOPM_LogWStr (CHAR *s, LONGINT s__len);
 static void OfrontOPM_MakeFileName (CHAR *name, LONGINT name__len, CHAR *FName, LONGINT FName__len, CHAR *ext, LONGINT ext__len);
-export void OfrontOPM_Mark (INTEGER n, LONGINT pos);
+export void OfrontOPM_Mark (INTEGER n, LONGINT pos1);
 export void OfrontOPM_NewSym (CHAR *modName, LONGINT modName__len);
 export void OfrontOPM_OldSym (CHAR *modName, LONGINT modName__len, BOOLEAN *done);
 export void OfrontOPM_OpenFiles (CHAR *moduleName, LONGINT moduleName__len);
@@ -93,7 +96,7 @@ void OfrontOPM_LogWStr (CHAR *s, LONGINT s__len)
 }
 
 /*----------------------------------------------------------------------------*/
-void OfrontOPM_LogWNum (LONGINT i, LONGINT len)
+void OfrontOPM_LogWNum (INTEGER i, INTEGER len)
 {
 	Console_Int(i, len);
 }
@@ -165,7 +168,7 @@ void OfrontOPM_OpenPar (void)
 	if (Args_argc == 1) {
 		OfrontOPM_stop = 1;
 		Console_Ln();
-		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0 #1", (LONGINT)46);
+		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0 #2", (LONGINT)46);
 		Console_Ln();
 		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016", (LONGINT)78);
 		Console_Ln();
@@ -222,7 +225,7 @@ void OfrontOPM_InitOptions (void)
 void OfrontOPM_Init (BOOLEAN *done)
 {
 	CmdlnTexts_Text T = NIL;
-	LONGINT beg, end, time;
+	INTEGER beg, end, time;
 	CHAR s[256];
 	*done = 0;
 	OfrontOPM_curpos = 0;
@@ -260,7 +263,7 @@ void OfrontOPM_Get (CHAR *ch)
 			OfrontOPM_curpos += 1;
 		}
 	} else if (*ch == 0x0d) {
-		OfrontOPM_curpos = CmdlnTexts_Pos(&OfrontOPM_inR, CmdlnTexts_Reader__typ);
+		OfrontOPM_curpos = (INTEGER)CmdlnTexts_Pos(&OfrontOPM_inR, CmdlnTexts_Reader__typ);
 	} else {
 		OfrontOPM_curpos += 1;
 	}
@@ -296,11 +299,6 @@ static void OfrontOPM_MakeFileName (CHAR *name, LONGINT name__len, CHAR *FName, 
 
 static void OfrontOPM_LogErrMsg (INTEGER n)
 {
-	CmdlnTexts_Scanner S;
-	CmdlnTexts_Text T = NIL;
-	CHAR ch;
-	INTEGER i;
-	CHAR buf[1024];
 	if (n >= 0) {
 		OfrontOPM_LogWStr((CHAR*)"  err ", (LONGINT)7);
 	} else {
@@ -309,30 +307,13 @@ static void OfrontOPM_LogErrMsg (INTEGER n)
 	}
 	OfrontOPM_LogWNum(n, 1);
 	OfrontOPM_LogWStr((CHAR*)"  ", (LONGINT)3);
-	__NEW(T, CmdlnTexts_TextDesc);
-	CmdlnTexts_Open(T, (CHAR*)"OfrontErrors.Text", (LONGINT)18);
-	CmdlnTexts_OpenScanner(&S, CmdlnTexts_Scanner__typ, T, 0);
-	do {
-		S.line = 0;
-		do {
-			CmdlnTexts_Scan(&S, CmdlnTexts_Scanner__typ);
-		} while (!(S.eot || S.line != 0));
-	} while (!(S.eot || S.class == 3 && S.i == (LONGINT)n));
-	if (!S.eot) {
-		CmdlnTexts_Read((void*)&S, CmdlnTexts_Scanner__typ, &ch);
-		i = 0;
-		while (!S.eot && ch != 0x0d) {
-			buf[__X(i, 1024)] = ch;
-			i += 1;
-			CmdlnTexts_Read((void*)&S, CmdlnTexts_Scanner__typ, &ch);
-		}
-		buf[__X(i, 1024)] = 0x00;
-		OfrontOPM_LogWStr(buf, 1024);
-	}
+	OfrontErrors_LogErrMsg(n);
 }
 
-void OfrontOPM_Mark (INTEGER n, LONGINT pos)
+void OfrontOPM_Mark (INTEGER n, LONGINT pos1)
 {
+	INTEGER pos;
+	pos = (INTEGER)pos1;
 	if (OfrontOPM_useLineNo) {
 		if (n >= 0) {
 			OfrontOPM_noerr = 0;
@@ -443,27 +424,30 @@ void OfrontOPM_err (INTEGER n)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_FPrint (LONGINT *fp, LONGINT val)
 {
-	*fp = __ROTL((LONGINT)(__VAL(SET, *fp) ^ __VAL(SET, val)), 1, LONGINT);
+	INTEGER fp1, val1;
+	fp1 = (INTEGER)*fp;
+	val1 = (INTEGER)val;
+	*fp = __ROTL((INTEGER)(__VAL(SET, fp1) ^ __VAL(SET, val1)), 1, INTEGER);
 }
 
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_FPrintSet (LONGINT *fp, SET set)
 {
-	OfrontOPM_FPrint(&*fp, __VAL(LONGINT, set));
+	OfrontOPM_FPrint(&*fp, __VAL(INTEGER, set));
 }
 
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_FPrintReal (LONGINT *fp, REAL real)
 {
-	OfrontOPM_FPrint(&*fp, __VAL(LONGINT, real));
+	OfrontOPM_FPrint(&*fp, __VAL(INTEGER, real));
 }
 
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_FPrintLReal (LONGINT *fp, LONGREAL lr)
 {
-	LONGINT l, h;
-	__GET((LONGINT)&lr, l, LONGINT);
-	__GET((LONGINT)&lr + 4, h, LONGINT);
+	INTEGER l, h;
+	__GET((LONGINT)&lr, l, INTEGER);
+	__GET((LONGINT)&lr + 4, h, INTEGER);
 	OfrontOPM_FPrint(&*fp, l);
 	OfrontOPM_FPrint(&*fp, h);
 }
@@ -475,13 +459,13 @@ static void OfrontOPM_GetProperty (CmdlnTexts_Scanner *S, LONGINT *S__typ, CHAR 
 	if ((*S).class == 1 && __STRCMP((*S).s, name) == 0) {
 		CmdlnTexts_Scan(&*S, S__typ);
 		if ((*S).class == 3) {
-			*size = (int)(*S).i;
+			*size = (INTEGER)(*S).i;
 			CmdlnTexts_Scan(&*S, S__typ);
 		} else {
 			OfrontOPM_Mark(-157, -1);
 		}
 		if ((*S).class == 3) {
-			*align = (int)(*S).i;
+			*align = (INTEGER)(*S).i;
 			CmdlnTexts_Scan(&*S, S__typ);
 		} else {
 			OfrontOPM_Mark(-157, -1);
@@ -558,16 +542,20 @@ static void OfrontOPM_GetProperties (void)
 	}
 	OfrontOPM_MinReal = -OfrontOPM_MaxReal;
 	OfrontOPM_MinLReal = -OfrontOPM_MaxLReal;
-	if (OfrontOPM_IntSize == 4) {
-		OfrontOPM_MinInt = OfrontOPM_MinLInt;
-		OfrontOPM_MaxInt = OfrontOPM_MaxLInt;
-	}
 	if (OfrontOPM_SIntSize == 2) {
 		OfrontOPM_MinSInt = -32768;
 		OfrontOPM_MaxSInt = 32767;
 	}
+	if (OfrontOPM_IntSize == 4) {
+		OfrontOPM_MinInt = (-2147483647-1);
+		OfrontOPM_MaxInt = 2147483647;
+	}
+	if (OfrontOPM_LIntSize == 8) {
+		OfrontOPM_MinLInt = __LSHL(1, 63, LONGINT);
+		OfrontOPM_MaxLInt = -(OfrontOPM_MinLInt + 1);
+	}
 	OfrontOPM_MaxSet = __ASHL(OfrontOPM_SetSize, 3) - 1;
-	OfrontOPM_MaxIndex = OfrontOPM_MaxLInt;
+	OfrontOPM_MaxIndex = 2147483647;
 }
 
 void OfrontOPM_SymRCh (CHAR *ch)
@@ -586,7 +574,9 @@ LONGINT OfrontOPM_SymRInt (void)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_SymRSet (SET *s)
 {
-	Files_ReadNum(&OfrontOPM_oldSF, Files_Rider__typ, (LONGINT*)&*s);
+	LONGINT k;
+	Files_ReadNum(&OfrontOPM_oldSF, Files_Rider__typ, &k);
+	*s = (SET)((INTEGER)k);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -646,7 +636,7 @@ void OfrontOPM_SymWInt (LONGINT i)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_SymWSet (SET s)
 {
-	Files_WriteNum(&OfrontOPM_newSF, Files_Rider__typ, __VAL(LONGINT, s));
+	Files_WriteNum(&OfrontOPM_newSF, Files_Rider__typ, __VAL(INTEGER, s));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -721,13 +711,13 @@ void OfrontOPM_WriteHex (LONGINT i)
 {
 	CHAR s[3];
 	INTEGER digit;
-	digit = __ASHR((int)i, 4);
+	digit = __ASHR((INTEGER)i, 4);
 	if (digit < 10) {
 		s[0] = (CHAR)(48 + digit);
 	} else {
 		s[0] = (CHAR)(87 + digit);
 	}
-	digit = __MASK((int)i, -16);
+	digit = __MASK((INTEGER)i, -16);
 	if (digit < 10) {
 		s[1] = (CHAR)(48 + digit);
 	} else {
@@ -741,8 +731,9 @@ void OfrontOPM_WriteHex (LONGINT i)
 void OfrontOPM_WriteInt (LONGINT i)
 {
 	CHAR s[20];
-	LONGINT i1, k;
-	if (i == OfrontOPM_MinLInt) {
+	LONGINT i1;
+	INTEGER k;
+	if (i == (-2147483647-1) || i == (-9223372036854775807-1)) {
 		OfrontOPM_Write('(');
 		OfrontOPM_WriteInt(i + 1);
 		OfrontOPM_WriteString((CHAR*)"-1)", (LONGINT)4);
@@ -875,7 +866,7 @@ void OfrontOPM_CloseFiles (void)
 	INTEGER res;
 	if (OfrontOPM_noerr) {
 		OfrontOPM_LogWStr((CHAR*)"    ", (LONGINT)5);
-		OfrontOPM_LogWNum(Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
+		OfrontOPM_LogWNum((INTEGER)Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
 	}
 	if (OfrontOPM_noerr) {
 		if (__STRCMP(OfrontOPM_modName, "SYSTEM") == 0) {
@@ -937,6 +928,7 @@ export void *OfrontOPM__init(void)
 	__IMPORT(Args__init);
 	__IMPORT(Console__init);
 	__IMPORT(Files__init);
+	__IMPORT(OfrontErrors__init);
 	__IMPORT(CmdlnTexts__init);
 	__REGMOD("OfrontOPM", EnumPtrs);
 	__REGCMD("CloseFiles", OfrontOPM_CloseFiles);

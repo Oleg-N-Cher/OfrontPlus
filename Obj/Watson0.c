@@ -200,7 +200,7 @@ static void Watson0_WriteConstValue (OfrontOPT_Object obj)
 				Watson0_Ch((CHAR)y);
 				Watson0_Ch('\"');
 			} else {
-				i = (int)__ASHR(y, 4);
+				i = (INTEGER)__ASHR(y, 4);
 				if (i > 0) {
 					if (i > 9) {
 						Watson0_Ch('0');
@@ -552,7 +552,7 @@ static void Scope__35 (OfrontOPT_Object obj, INTEGER mode)
 {
 	if (obj != NIL) {
 		Scope__35(obj->left, mode);
-		if ((int)obj->mode == mode) {
+		if ((INTEGER)obj->mode == mode) {
 			Watson0_WriteObject(obj, mode);
 		}
 		Scope__35(obj->right, mode);
@@ -746,8 +746,8 @@ static void Watson0_Commands (Files_File F, CHAR *modName, LONGINT modName__len)
 	Files_ReadNum(&R, Files_Rider__typ, &symSize);
 	Files_Set(&R, Files_Rider__typ, F, Files_Pos(&R, Files_Rider__typ) + symSize);
 	Files_ReadBytes(&R, Files_Rider__typ, (void*)&ref, 4, 4);
-	Files_ReadBytes(&R, Files_Rider__typ, (void*)&nofentry, 2, 2);
-	Files_ReadBytes(&R, Files_Rider__typ, (void*)&nofcmds, 2, 2);
+	Files_ReadBytes(&R, Files_Rider__typ, (void*)&nofentry, 4, 2);
+	Files_ReadBytes(&R, Files_Rider__typ, (void*)&nofcmds, 4, 2);
 	Files_Set(&R, Files_Rider__typ, F, Files_Pos(&R, Files_Rider__typ) + 18);
 	do {
 		Files_Read(&R, Files_Rider__typ, (void*)&ch);
@@ -758,7 +758,7 @@ static void Watson0_Commands (Files_File F, CHAR *modName, LONGINT modName__len)
 		return;
 	}
 	while (nofentry > 0) {
-		Files_ReadBytes(&R, Files_Rider__typ, (void*)&e, 2, 2);
+		Files_ReadBytes(&R, Files_Rider__typ, (void*)&e, 4, 2);
 		nofentry -= 1;
 	}
 	Files_Read(&R, Files_Rider__typ, (void*)&ch);
@@ -782,7 +782,7 @@ static void Watson0_Commands (Files_File F, CHAR *modName, LONGINT modName__len)
 			name[__X(i, 32)] = ch;
 			i += 1;
 		} while (!(ch == 0x00));
-		Files_ReadBytes(&R, Files_Rider__typ, (void*)&c, 2, 2);
+		Files_ReadBytes(&R, Files_Rider__typ, (void*)&c, 4, 2);
 		Watson0_Ch(0x09);
 		if (Watson0_showAdr) {
 			Watson0_Ch('[');
