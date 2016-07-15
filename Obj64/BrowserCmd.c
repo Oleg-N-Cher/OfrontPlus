@@ -125,7 +125,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 								BrowserCmd_Wch((CHAR)obj->conval->intval);
 								BrowserCmd_Wch('\"');
 							} else {
-								i = __ASHR(obj->conval->intval, 4);
+								i = __ASHR(obj->conval->intval, 4, LONGINT);
 								if (i > 9) {
 									BrowserCmd_Wch((CHAR)(55 + i));
 								} else {
@@ -257,7 +257,7 @@ static void BrowserCmd_Wmthd (OfrontOPT_Object obj)
 			if (BrowserCmd_option == 'x') {
 				BrowserCmd_Indent(1);
 				BrowserCmd_Ws((CHAR*)"(* methno: ", (LONGINT)12);
-				BrowserCmd_Wi(__ASHR(obj->adr, 16));
+				BrowserCmd_Wi(__ASHR(obj->adr, 16, LONGINT));
 				BrowserCmd_Ws((CHAR*)" *)", (LONGINT)4);
 			}
 			BrowserCmd_Wln();

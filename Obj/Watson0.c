@@ -107,20 +107,20 @@ static void Watson0_Num (LONGINT i)
 static void Watson0_Hexa (LONGINT i, BOOLEAN short_)
 {
 	if (!short_) {
-		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 28), 17)]);
+		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 28, LONGINT), 17)]);
 		i = __MASK(i, -268435456);
-		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 24), 17)]);
+		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 24, LONGINT), 17)]);
 		i = __MASK(i, -16777216);
-		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 20), 17)]);
+		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 20, LONGINT), 17)]);
 		i = __MASK(i, -1048576);
-		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 16), 17)]);
+		Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 16, LONGINT), 17)]);
 		i = __MASK(i, -65536);
 	}
-	Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 12), 17)]);
+	Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 12, LONGINT), 17)]);
 	i = __MASK(i, -4096);
-	Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 8), 17)]);
+	Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 8, LONGINT), 17)]);
 	i = __MASK(i, -256);
-	Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 4), 17)]);
+	Watson0_Ch(Watson0_Hex[__X(__ASHR(i, 4, LONGINT), 17)]);
 	Watson0_Ch(Watson0_Hex[__X(__MASK(i, -16), 17)]);
 }
 
@@ -200,7 +200,7 @@ static void Watson0_WriteConstValue (OfrontOPT_Object obj)
 				Watson0_Ch((CHAR)y);
 				Watson0_Ch('\"');
 			} else {
-				i = (INTEGER)__ASHR(y, 4);
+				i = (INTEGER)__ASHR(y, 4, LONGINT);
 				if (i > 0) {
 					if (i > 9) {
 						Watson0_Ch('0');
@@ -334,7 +334,7 @@ static void Watson0_WriteTProcs (OfrontOPT_Object obj, INTEGER i)
 				Watson0_Ch('[');
 				Watson0_Num(__MASK(obj->adr, -65536));
 				Watson0_Str((CHAR*)", ", (LONGINT)3);
-				Watson0_Num(__ASHR(obj->adr, 16));
+				Watson0_Num(__ASHR(obj->adr, 16, LONGINT));
 				Watson0_Str((CHAR*)"] ", (LONGINT)3);
 			}
 			Watson0_Str((CHAR*)"PROCEDURE ", (LONGINT)11);

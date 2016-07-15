@@ -311,7 +311,7 @@ void OfrontOPC_Andent (OfrontOPT_Struct typ)
 {
 	if (typ->strobj == NIL || typ->align >= 65536) {
 		OfrontOPM_WriteStringVar((void*)OfrontOPM_modName, 32);
-		OfrontOPC_Str1((CHAR*)"__#", (LONGINT)4, __ASHR(typ->align, 16));
+		OfrontOPC_Str1((CHAR*)"__#", (LONGINT)4, __ASHR(typ->align, 16, LONGINT));
 	} else {
 		OfrontOPC_Ident(typ->strobj);
 	}
@@ -486,7 +486,7 @@ static void OfrontOPC_InitTProcs (OfrontOPT_Object typ, OfrontOPT_Object obj)
 			OfrontOPC_Ident(typ);
 			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
 			OfrontOPC_Ident(obj);
-			OfrontOPC_Str1((CHAR*)", #)", (LONGINT)5, __ASHR(obj->adr, 16));
+			OfrontOPC_Str1((CHAR*)", #)", (LONGINT)5, __ASHR(obj->adr, 16, LONGINT));
 			OfrontOPC_EndStat();
 		}
 		OfrontOPC_InitTProcs(typ, obj->right);
@@ -611,7 +611,7 @@ OfrontOPT_Object OfrontOPC_BaseTProc (OfrontOPT_Object obj)
 		typ = typ->BaseTyp;
 	}
 	base = typ->BaseTyp;
-	mno = __ASHR(obj->adr, 16);
+	mno = __ASHR(obj->adr, 16, LONGINT);
 	while (base != NIL && mno < base->n) {
 		typ = base;
 		base = typ->BaseTyp;
@@ -640,7 +640,7 @@ static void OfrontOPC_DefineTProcMacros (OfrontOPT_Object obj, BOOLEAN *empty)
 			}
 			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
 			OfrontOPC_Ident(obj);
-			OfrontOPC_Str1((CHAR*)", #, ", (LONGINT)6, __ASHR(obj->adr, 16));
+			OfrontOPC_Str1((CHAR*)", #, ", (LONGINT)6, __ASHR(obj->adr, 16, LONGINT));
 			if (obj->typ == OfrontOPT_notyp) {
 				OfrontOPM_WriteString((CHAR*)"void", (LONGINT)5);
 			} else {
@@ -992,7 +992,7 @@ static void OfrontOPC_FieldList (OfrontOPT_Struct typ, BOOLEAN last, LONGINT *of
 		}
 	}
 	if (last) {
-		adr = typ->size - (LONGINT)__ASHR(typ->sysflag, 8);
+		adr = typ->size - (LONGINT)__ASHR(typ->sysflag, 8, INTEGER);
 		if (adr == 0) {
 			gap = 1;
 		} else {
@@ -1941,7 +1941,7 @@ void OfrontOPC_Constant (OfrontOPT_Const con, INTEGER form)
 				hex = 0;
 				do {
 					i -= 1;
-					hex = __ASHL(hex, 1);
+					hex = __ASHL(hex, 1, LONGINT);
 					if (__IN(i, s)) {
 						hex += 1;
 					}

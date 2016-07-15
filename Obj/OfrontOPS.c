@@ -100,7 +100,7 @@ static LONGREAL Ten__9 (INTEGER e)
 		if (__ODD(e)) {
 			x = x * p;
 		}
-		e = __ASHR(e, 1);
+		e = __ASHR(e, 1, INTEGER);
 		if (e > 0) {
 			p = p * p;
 		}
@@ -169,7 +169,7 @@ static void OfrontOPS_Number (void)
 				OfrontOPS_numtyp = 1;
 				if (n <= 2) {
 					while (i < n) {
-						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
+						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4, LONGINT) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
 						i += 1;
 					}
 				} else {
@@ -183,7 +183,7 @@ static void OfrontOPS_Number (void)
 						OfrontOPS_intval = -1;
 					}
 					while (i < n) {
-						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
+						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4, LONGINT) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
 						i += 1;
 					}
 				} else {

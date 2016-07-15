@@ -487,7 +487,7 @@ static LONGINT OfrontOPB_log (LONGINT x)
 	OfrontOPB_exp = 0;
 	if (x > 0) {
 		while (!__ODD(x)) {
-			x = __ASHR(x, 1);
+			x = __ASHR(x, 1, LONGINT);
 			OfrontOPB_exp += 1;
 		}
 	}
@@ -1414,7 +1414,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 							OfrontOPB_err(205);
 						} else if (OfrontOPB_log(y->conval->intval) == 1) {
 							op = 18;
-							y->conval->intval = __ASH(-1, OfrontOPB_exp);
+							y->conval->intval = __ASH(-1, OfrontOPB_exp, LONGINT);
 							y->obj = NIL;
 						}
 					}
@@ -2106,20 +2106,20 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 				} else {
 					maxInt = OfrontOPM_MaxInt;
 				}
-				maxExp = (INTEGER)OfrontOPB_log(__ASHR(maxInt, 1) + 1);
+				maxExp = (INTEGER)OfrontOPB_log(__ASHR(maxInt, 1, LONGINT) + 1);
 				maxExp = OfrontOPB_exp;
 				if (x->class == 7 && ((LONGINT)(-maxExp) > x->conval->intval || x->conval->intval > (LONGINT)maxExp)) {
 					OfrontOPB_err(208);
 				} else if (p->class == 7 && x->class == 7) {
 					if (x->conval->intval >= 0) {
-						if (__ABS(p->conval->intval) <= __DIV(maxInt, __ASH(1, (INTEGER)x->conval->intval))) {
-							p->conval->intval = p->conval->intval * __ASH(1, (INTEGER)x->conval->intval);
+						if (__ABS(p->conval->intval) <= __DIV(maxInt, __ASH(1, (INTEGER)x->conval->intval, LONGINT))) {
+							p->conval->intval = p->conval->intval * __ASH(1, (INTEGER)x->conval->intval, LONGINT);
 						} else {
 							OfrontOPB_err(208);
 							p->conval->intval = 1;
 						}
 					} else {
-						p->conval->intval = __ASH(p->conval->intval, (INTEGER)x->conval->intval);
+						p->conval->intval = __ASH(p->conval->intval, (INTEGER)x->conval->intval, LONGINT);
 					}
 					p->obj = NIL;
 				} else {

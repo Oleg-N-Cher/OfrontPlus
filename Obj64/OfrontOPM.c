@@ -258,7 +258,7 @@ void OfrontOPM_Get (CHAR *ch)
 	CmdlnTexts_Read(&OfrontOPM_inR, CmdlnTexts_Reader__typ, &*ch);
 	if (OfrontOPM_useLineNo) {
 		if (*ch == 0x0d) {
-			OfrontOPM_curpos = __ASHL(__ASHR(OfrontOPM_curpos, 8) + 1, 8);
+			OfrontOPM_curpos = __ASHL(__ASHR(OfrontOPM_curpos, 8, INTEGER) + 1, 8, INTEGER);
 		} else if (__MASK(OfrontOPM_curpos, -256) != 255) {
 			OfrontOPM_curpos += 1;
 		}
@@ -323,13 +323,13 @@ void OfrontOPM_Mark (INTEGER n, LONGINT pos1)
 				OfrontOPM_LogWStr((CHAR*)"  ", (LONGINT)3);
 				if (n < 249) {
 					OfrontOPM_LogWStr((CHAR*)"  line ", (LONGINT)8);
-					OfrontOPM_LogWNum(__ASHR(pos, 8), 1);
+					OfrontOPM_LogWNum(__ASHR(pos, 8, INTEGER), 1);
 					OfrontOPM_LogWStr((CHAR*)"  pos ", (LONGINT)7);
 					OfrontOPM_LogWNum(__MASK(pos, -256), 1);
 					OfrontOPM_LogErrMsg(n);
 				} else if (n == 255) {
 					OfrontOPM_LogWStr((CHAR*)"  line ", (LONGINT)8);
-					OfrontOPM_LogWNum(__ASHR(pos, 8), 1);
+					OfrontOPM_LogWNum(__ASHR(pos, 8, INTEGER), 1);
 					OfrontOPM_LogWStr((CHAR*)"  pos ", (LONGINT)7);
 					OfrontOPM_LogWNum(__MASK(pos, -256), 1);
 					OfrontOPM_LogWStr((CHAR*)"  pc ", (LONGINT)6);
@@ -355,7 +355,7 @@ void OfrontOPM_Mark (INTEGER n, LONGINT pos1)
 			if (pos >= 0) {
 				OfrontOPM_LogWLn();
 				OfrontOPM_LogWStr((CHAR*)"  line ", (LONGINT)8);
-				OfrontOPM_LogWNum(__ASHR(pos, 8), 1);
+				OfrontOPM_LogWNum(__ASHR(pos, 8, INTEGER), 1);
 				OfrontOPM_LogWStr((CHAR*)"  pos ", (LONGINT)7);
 				OfrontOPM_LogWNum(__MASK(pos, -256), 1);
 			}
@@ -554,7 +554,7 @@ static void OfrontOPM_GetProperties (void)
 		OfrontOPM_MinLInt = __LSHL(1, 63, LONGINT);
 		OfrontOPM_MaxLInt = -(OfrontOPM_MinLInt + 1);
 	}
-	OfrontOPM_MaxSet = __ASHL(OfrontOPM_SetSize, 3) - 1;
+	OfrontOPM_MaxSet = __ASHL(OfrontOPM_SetSize, 3, INTEGER) - 1;
 	OfrontOPM_MaxIndex = 2147483647;
 }
 
@@ -711,7 +711,7 @@ void OfrontOPM_WriteHex (LONGINT i)
 {
 	CHAR s[3];
 	INTEGER digit;
-	digit = __ASHR((INTEGER)i, 4);
+	digit = __ASHR((INTEGER)i, 4, INTEGER);
 	if (digit < 10) {
 		s[0] = (CHAR)(48 + digit);
 	} else {

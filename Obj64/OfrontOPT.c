@@ -502,7 +502,7 @@ static void FPrintTProcs__16 (OfrontOPT_Object obj)
 		if (obj->mode == 13) {
 			if (obj->vis != 0) {
 				OfrontOPM_FPrint(&*FPrintStr__11_s->pbfp, 13);
-				OfrontOPM_FPrint(&*FPrintStr__11_s->pbfp, __ASHR(obj->adr, 16));
+				OfrontOPM_FPrint(&*FPrintStr__11_s->pbfp, __ASHR(obj->adr, 16, LONGINT));
 				OfrontOPT_FPrintSign(&*FPrintStr__11_s->pbfp, obj->typ, obj->link);
 				OfrontOPT_FPrintName(&*FPrintStr__11_s->pbfp, (void*)obj->name, 32);
 			}
@@ -900,14 +900,14 @@ static OfrontOPT_Object OfrontOPT_InTProc (SHORTINT mno)
 		OfrontOPT_InSign(mno, &obj->typ, &obj->link);
 		obj->vis = 1;
 		OfrontOPT_InName((void*)obj->name, 32);
-		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16);
+		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16, LONGINT);
 	} else {
 		obj->mode = 13;
 		__MOVE("@tproc", obj->name, 7);
 		obj->link = OfrontOPT_NewObj();
 		obj->typ = OfrontOPT_undftyp;
 		obj->vis = 0;
-		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16);
+		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16, LONGINT);
 	}
 	return obj;
 }
@@ -1329,7 +1329,7 @@ static void OfrontOPT_OutTProcs (OfrontOPT_Struct typ, OfrontOPT_Object obj)
 	if (obj != NIL) {
 		OfrontOPT_OutTProcs(typ, obj->left);
 		if (obj->mode == 13) {
-			if ((typ->BaseTyp != NIL && __ASHR(obj->adr, 16) < typ->BaseTyp->n) && obj->vis == 0) {
+			if ((typ->BaseTyp != NIL && __ASHR(obj->adr, 16, LONGINT) < typ->BaseTyp->n) && obj->vis == 0) {
 				OfrontOPM_Mark(109, typ->txtpos);
 			}
 			if (obj->vis != 0) {
@@ -1337,10 +1337,10 @@ static void OfrontOPT_OutTProcs (OfrontOPT_Struct typ, OfrontOPT_Object obj)
 					OfrontOPM_SymWInt(29);
 					OfrontOPT_OutSign(obj->typ, obj->link);
 					OfrontOPT_OutName((void*)obj->name, 32);
-					OfrontOPM_SymWInt(__ASHR(obj->adr, 16));
+					OfrontOPM_SymWInt(__ASHR(obj->adr, 16, LONGINT));
 				} else {
 					OfrontOPM_SymWInt(30);
-					OfrontOPM_SymWInt(__ASHR(obj->adr, 16));
+					OfrontOPM_SymWInt(__ASHR(obj->adr, 16, LONGINT));
 				}
 			}
 		}

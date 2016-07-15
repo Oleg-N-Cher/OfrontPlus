@@ -84,7 +84,7 @@ void OfrontOPV_TypSize (OfrontOPT_Struct typ)
 				base = OfrontOPM_RecAlign;
 			} else {
 				OfrontOPV_TypSize(btyp);
-				offset = btyp->size - (LONGINT)__ASHR(btyp->sysflag, 8);
+				offset = btyp->size - (LONGINT)__ASHR(btyp->sysflag, 8, INTEGER);
 				base = btyp->align;
 			}
 			fld = typ->link;
@@ -111,11 +111,11 @@ void OfrontOPV_TypSize (OfrontOPT_Struct typ)
 			OfrontOPC_Align(&offset, base);
 			if (typ->strobj == NIL && __MASK(typ->align, -65536) == 0) {
 				OfrontOPV_recno += 1;
-				base += __ASHL(OfrontOPV_recno, 16);
+				base += __ASHL(OfrontOPV_recno, 16, LONGINT);
 			}
 			typ->size = offset;
 			typ->align = base;
-			typ->sysflag = __MASK(typ->sysflag, -256) + (INTEGER)__ASHL(offset - off0, 8);
+			typ->sysflag = __MASK(typ->sysflag, -256) + (INTEGER)__ASHL(offset - off0, 8, LONGINT);
 		} else if (c == 2) {
 			OfrontOPV_TypSize(typ->BaseTyp);
 			typ->size = typ->n * typ->BaseTyp->size;
@@ -166,12 +166,12 @@ static void OfrontOPV_GetTProcNum (OfrontOPT_Object obj)
 	}
 	OfrontOPT_FindField(obj->name, typ->BaseTyp, &redef);
 	if (redef != NIL) {
-		obj->adr = __ASHL(__ASHR(redef->adr, 16), 16);
+		obj->adr = __ASHL(__ASHR(redef->adr, 16, LONGINT), 16, LONGINT);
 		if (!__IN(2, obj->conval->setval)) {
 			OfrontOPM_err(119);
 		}
 	} else {
-		obj->adr += __ASHL(typ->n, 16);
+		obj->adr += __ASHL(typ->n, 16, LONGINT);
 		typ->n += 1;
 	}
 	OfrontOPM_errpos = oldPos;
@@ -622,7 +622,7 @@ static void OfrontOPV_design (OfrontOPT_Node n, INTEGER prec)
 				}
 				if (n->typ->comp == 3) {
 					OfrontOPM_Write(')');
-					while ((LONGINT)i < __ASHR(d->typ->size - 4, 2)) {
+					while ((LONGINT)i < __ASHR(d->typ->size - 4, 2, LONGINT)) {
 						OfrontOPM_WriteString((CHAR*)" * ", (LONGINT)4);
 						OfrontOPV_Len(d, i);
 						i += 1;
@@ -1008,7 +1008,7 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 					} else {
 						OfrontOPV_expr(r, -1);
 					}
-					if (__IN(subclass, 0x18000000)) {
+					if (__IN(subclass, 0x18020000)) {
 						OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
 						OfrontOPC_Ident(l->typ->strobj);
 					}

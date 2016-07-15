@@ -22,7 +22,7 @@ static void WatsonCmd_ShowDef (void)
 }
 
 
-export main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	__INIT(argc, argv);
 	__IMPORT(CmdlnTexts__init);
