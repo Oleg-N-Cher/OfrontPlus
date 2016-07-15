@@ -358,7 +358,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END GetProperty;
 
 	PROCEDURE GetProperties();
-		VAR T: Texts.Text; S: Texts.Scanner; base: LONGINT;
+		VAR T: Texts.Text; S: Texts.Scanner;
 	BEGIN
 		(* default characteristics *)
 		ByteSize := 1; CharSize := 1; BoolSize := 1; SIntSize := 1; IntSize := 2; LIntSize := 4;
@@ -402,8 +402,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
 		IF IntSize = 4 THEN MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
 		IF LIntSize = 8 THEN
-			base := -2;
-			MinLInt := ASH(base, IntSize*8-2);	(*-9223372036854775808*)
+			MinLInt := SYSTEM.LSH(LONG(LONG(1)), 63);	(*-9223372036854775808*)
 			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
