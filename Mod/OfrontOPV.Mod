@@ -687,7 +687,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								OPM.WriteInt(-r^.conval^.intval)
 							ELSE expr(r, MinPrec)
 							END ;
-							IF subclass IN {lsh, rot} THEN OPM.WriteString(Comma); OPC.Ident(l^.typ^.strobj) END ;
+							IF subclass IN {ash, lsh, rot} THEN OPM.WriteString(Comma); OPC.Ident(l^.typ^.strobj) END ;
 							OPM.Write(CloseParen)
 					| eql .. geq:
 							IF l^.typ^.form IN {String, Comp} THEN
