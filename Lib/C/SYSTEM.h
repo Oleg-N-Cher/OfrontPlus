@@ -139,11 +139,11 @@ static int __STRCMP(x, y)
 	} while (ch1==ch2);
 	return (int)ch1 - (int)ch2;
 }
-#define __ASH(x, n)	((n)>=0?__ASHL(x,n):__ASHR(x,-(n)))
-#define __ASHL(x, n)	((x)<<(n))
-#define __ASHR(x, n)	((x)>>(n))
-#define __ASHF(x, n)	SYSTEM_ASH(x, n)
-#define __ASHFL(x, n)	SYSTEM_ASHL(x, n)
+#define __ASH(x, n, t)	((n)>=0?__ASHL(x,n,t):__ASHR(x,-(n),t))
+#define __ASHL(x, n, t)	((t)(x)<<(n))
+#define __ASHR(x, n, t) ((t)(x)>>(n))
+#define __ASHF(x, n, t)	SYSTEM_ASH(x, n)
+#define __ASHFL(x, n, t)	SYSTEM_ASHL(x, n)
 #define __DUP(x, l, t)	x=(void*)__MEMCPY(alloca(l*sizeof(t)),x,l*sizeof(t))
 #define __DUPARR(v, t)	v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
 #define __DEL(x)	/* DUP with alloca frees storage automatically */
