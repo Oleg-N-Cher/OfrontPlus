@@ -1,5 +1,5 @@
 // windows.h wrapper
-// Includes winsock.h while avoiding conflicts with Oberon types.
+// Includes windows.h while avoiding conflicts with Oberon types.
 
 #define BOOLEAN _BOOLEAN
 #define BYTE _BYTE
