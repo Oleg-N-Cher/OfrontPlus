@@ -1,9 +1,41 @@
-MODULE TestASH;
+MODULE TestASH; IMPORT SYSTEM;
 CONST Ash* = ASH(-1, 30);
 VAR
   b: BYTE; s: SHORTINT; i: INTEGER; l: LONGINT;
 
 BEGIN
+
+  s := SHORT(s+i);
+
+  s := SHORT(ASH(s, 2));
+  i := ASH(s, 2);
+  l := ASH(s, 2);
+  i := ASH(i, 2);
+  l := ASH(i, 2);
+  l := ASH(l, 2);
+  (* i := ASH(l, 2); *)
+  s := SHORT(ASH(1, b));
+  i := ASH(1, b);
+  l := ASH(1, b);
+  i := ASH(1, b);
+  l := ASH(1, b);
+  l := ASH(1, b);
+
+  i := SHORT(ASH(LONG(LONG(1)), b));
+  l := ASH(LONG(LONG(1)), b);
+  l := ASH(LONG(LONG(1)), b);
+  l := ASH(LONG(LONG(1)), b);
+  l := ASH(LONG(LONG(1)), b);
+  l := ASH(LONG(LONG(1)), b);
+
+  s := SHORT(ASH(s, 2)); s := SHORT(ASH(s, -2));
+  s := SYSTEM.LSH(s, 2); s := SYSTEM.LSH(s, -2);
+
+  s := s*2; s := SHORT(LONG(s)*2); s := SHORT(SHORT(LONG(LONG(s))*2));
+  i := s*2; i := LONG(s)*2;
+  i := s*2; i := s DIV 2;
+  i := i*2; i := i DIV 2;
+  l := s*2; l := l DIV 2;
 
   i := ASH(1, b);
   l := ASH(LONG(LONG(1)), b);
