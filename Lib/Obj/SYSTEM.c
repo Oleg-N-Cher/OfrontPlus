@@ -194,7 +194,7 @@ SYSTEM_PTR SYSTEM_NEWREC (LONGINT tag)
 	SYSTEM_PTR new = NIL;
 	SYSTEM_Lock();
 	__GET(tag, blksz, LONGINT);
-		i0 = __ASHR(blksz, 4);
+		i0 = __ASHR(blksz, 4, LONGINT);
 	i = i0;
 	if (i < 9) {
 		adr = SYSTEM_freeList[i];
@@ -208,7 +208,7 @@ SYSTEM_PTR SYSTEM_NEWREC (LONGINT tag)
 		SYSTEM_freeList[i] = next;
 		if (i != i0) {
 			di = i - i0;
-			restsize = __ASHL(di, 4);
+			restsize = __ASHL(di, 4, LONGINT);
 			end = adr + restsize;
 			__PUT(end + 4, blksz, LONGINT);
 			__PUT(end + 8, -4, LONGINT);
@@ -226,14 +226,14 @@ SYSTEM_PTR SYSTEM_NEWREC (LONGINT tag)
 				if (SYSTEM_firstTry) {
 					SYSTEM_GC(1);
 					blksz += 16;
-					if (__ASHL((SYSTEM_heapsize - SYSTEM_allocated) - blksz, 2) < SYSTEM_heapsize) {
-						SYSTEM_ExtendHeap(__ASHL(__DIV(SYSTEM_allocated + blksz, 48), 6) - SYSTEM_heapsize);
+					if (__ASHL((SYSTEM_heapsize - SYSTEM_allocated) - blksz, 2, LONGINT) < SYSTEM_heapsize) {
+						SYSTEM_ExtendHeap(__ASHL(__DIV(SYSTEM_allocated + blksz, 48), 6, LONGINT) - SYSTEM_heapsize);
 					}
 					SYSTEM_firstTry = 0;
 					new = SYSTEM_NEWREC(tag);
 					SYSTEM_firstTry = 1;
 					if (new == NIL) {
-						SYSTEM_ExtendHeap(__ASHL(__DIV(SYSTEM_allocated + blksz, 48), 6) - SYSTEM_heapsize);
+						SYSTEM_ExtendHeap(__ASHL(__DIV(SYSTEM_allocated + blksz, 48), 6, LONGINT) - SYSTEM_heapsize);
 						new = SYSTEM_NEWREC(tag);
 					}
 					SYSTEM_Unlock();
@@ -265,7 +265,7 @@ SYSTEM_PTR SYSTEM_NEWREC (LONGINT tag)
 				__PUT(prev + 12, next, LONGINT);
 			}
 			if (restsize > 0) {
-				di = __ASHR(restsize, 4);
+				di = __ASHR(restsize, 4, LONGINT);
 				__PUT(adr + 4, restsize, LONGINT);
 				__PUT(adr + 12, SYSTEM_freeList[di], LONGINT);
 				SYSTEM_freeList[di] = adr;
@@ -297,7 +297,7 @@ SYSTEM_PTR SYSTEM_NEWBLK (LONGINT size)
 	LONGINT blksz, tag;
 	SYSTEM_PTR new = NIL;
 	SYSTEM_Lock();
-	blksz = __ASHL(__ASHR(size + 31, 4), 4);
+	blksz = __ASHL(__ASHR(size + 31, 4, LONGINT), 4, LONGINT);
 	new = SYSTEM_NEWREC((INTEGER)&blksz);
 	tag = ((LONGINT)new + blksz) - 12;
 	__PUT(tag - 4, 0, LONGINT);
@@ -382,7 +382,7 @@ static void SYSTEM_Scan (void)
 					__PUT(start, start + 4, LONGINT);
 					__PUT(start + 4, freesize, LONGINT);
 					__PUT(start + 8, -4, LONGINT);
-					i = __ASHR(freesize, 4);
+					i = __ASHR(freesize, 4, LONGINT);
 					freesize = 0;
 					if (i < 9) {
 						__PUT(start + 12, SYSTEM_freeList[i], LONGINT);
@@ -408,7 +408,7 @@ static void SYSTEM_Scan (void)
 			__PUT(start, start + 4, LONGINT);
 			__PUT(start + 4, freesize, LONGINT);
 			__PUT(start + 8, -4, LONGINT);
-			i = __ASHR(freesize, 4);
+			i = __ASHR(freesize, 4, LONGINT);
 			freesize = 0;
 			if (i < 9) {
 				__PUT(start + 12, SYSTEM_freeList[i], LONGINT);
@@ -429,7 +429,7 @@ static void SYSTEM_Sift (LONGINT l, LONGINT r, LONGINT *a, LONGINT a__len)
 	x = a[j];
 	for (;;) {
 		i = j;
-		j = __ASHL(j, 1) + 1;
+		j = __ASHL(j, 1, LONGINT) + 1;
 		if (j < r && a[j] < a[j + 1]) {
 			j += 1;
 		}
@@ -444,7 +444,7 @@ static void SYSTEM_Sift (LONGINT l, LONGINT r, LONGINT *a, LONGINT a__len)
 static void SYSTEM_HeapSort (LONGINT n, LONGINT *a, LONGINT a__len)
 {
 	LONGINT l, r, x;
-	l = __ASHR(n, 1);
+	l = __ASHR(n, 1, LONGINT);
 	r = n - 1;
 	while (l > 0) {
 		l -= 1;

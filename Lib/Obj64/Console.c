@@ -145,7 +145,7 @@ void Console_Hex (INTEGER i)
 	INTEGER k, n;
 	k = -28;
 	while (k <= 0) {
-		n = (INTEGER)__MASK(__ASH(i, k), -16);
+		n = (INTEGER)__MASK(__ASH(i, k, INTEGER), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {
@@ -161,7 +161,7 @@ void Console_LongHex (LONGINT i)
 	INTEGER k, n;
 	k = -60;
 	while (k <= 0) {
-		n = (INTEGER)__MASK(__ASH(i, k), -16);
+		n = (INTEGER)__MASK(__ASH(i, k, LONGINT), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {

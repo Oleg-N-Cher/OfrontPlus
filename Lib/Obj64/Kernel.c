@@ -70,8 +70,8 @@ void Kernel_GetClock (LONGINT *t, LONGINT *d)
 	Kernel_RealTime time = NIL;
 	Unix_Gettimeofday(&tv, Unix_Timeval__typ, &tz, Unix_Timezone__typ);
 	time = Kernel_localtime((Unix_SizeT*)&tv.sec);
-	*t = (time->sec + __ASHL(time->min, 6)) + __ASHL(time->hour, 12);
-	*d = (time->mday + __ASHL(time->mon + 1, 5)) + __ASHL(__MOD(time->year, 100), 9);
+	*t = (time->sec + __ASHL(time->min, 6, LONGINT)) + __ASHL(time->hour, 12, LONGINT);
+	*d = (time->mday + __ASHL(time->mon + 1, 5, LONGINT)) + __ASHL(__MOD(time->year, 100), 9, LONGINT);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -133,8 +133,8 @@ export void *Kernel__init(void)
 	__MOVE(".", Kernel_OBERON, 2);
 	Kernel_LIB[0] = 0x00;
 	Kernel_getcwd((void*)Kernel_CWD, 256);
-	Args_GetEnv((CHAR*)"OBERON", (LONGINT)7, (void*)Kernel_OBERON, 1024);
-	Args_GetEnv((CHAR*)"OBERON_LIB", (LONGINT)11, (void*)Kernel_LIB, 256);
+	Args_GetEnv((void*)&"OBERON", (LONGINT)7, (void*)Kernel_OBERON, 1024);
+	Args_GetEnv((void*)&"OBERON_LIB", (LONGINT)11, (void*)Kernel_LIB, 256);
 	Kernel_TimeUnit = 1000;
 	Kernel_timeStart = 0;
 	Kernel_timeStart = Kernel_Time();

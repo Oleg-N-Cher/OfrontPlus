@@ -830,7 +830,7 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 					k -= 16;
 				}
 				while (j < i) {
-					k = __ASHL(k, 4) + (LONGINT)((INTEGER)d[__X(j, 32)] - 48);
+					k = __ASHL(k, 4, LONGINT) + (LONGINT)((INTEGER)d[__X(j, 32)] - 48);
 					j += 1;
 				}
 				if (neg) {
@@ -1095,7 +1095,7 @@ void CmdlnTexts_WriteHex (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGINT x)
 		} else {
 			a[__X(i, 10)] = (CHAR)(y + 55);
 		}
-		x = __ASHR(x, 4);
+		x = __ASHR(x, 4, LONGINT);
 		i += 1;
 	} while (!(i == 8));
 	do {
@@ -1139,7 +1139,7 @@ void CmdlnTexts_WriteReal (CmdlnTexts_Writer *W, LONGINT *W__typ, REAL x, INTEGE
 		} else {
 			CmdlnTexts_Write(&*W, W__typ, ' ');
 		}
-		e = __ASHR((e - 127) * 77, 8);
+		e = __ASHR((e - 127) * 77, 8, INTEGER);
 		if (e >= 0) {
 			x = x / (REAL)Reals_Ten(e);
 		} else {
@@ -1228,7 +1228,7 @@ void CmdlnTexts_WriteRealFix (CmdlnTexts_Writer *W, LONGINT *W__typ, REAL x, INT
 		CmdlnTexts_WriteString(&*W, W__typ, (CHAR*)" NaN", (LONGINT)5);
 		seq__56(' ', n - 4);
 	} else {
-		e = __ASHR((e - 127) * 77, 8);
+		e = __ASHR((e - 127) * 77, 8, INTEGER);
 		if (x < (REAL)0) {
 			sign = '-';
 			x = -x;
@@ -1324,7 +1324,7 @@ void CmdlnTexts_WriteLongReal (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGREAL x
 		} else {
 			CmdlnTexts_Write(&*W, W__typ, ' ');
 		}
-		e = (INTEGER)__ASHR((LONGINT)(e - 1023) * 77, 8);
+		e = (INTEGER)__ASHR((LONGINT)(e - 1023) * 77, 8, LONGINT);
 		if (e >= 0) {
 			x = x / (LONGREAL)Reals_TenL(e);
 		} else {
@@ -1398,10 +1398,10 @@ void CmdlnTexts_WriteDate (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGINT t, LON
 	_s.lnk = WriteDate__43_s;
 	WriteDate__43_s = &_s;
 	WritePair__44(' ', __MASK(d, -32));
-	WritePair__44('.', __MASK(__ASHR(d, 5), -16));
-	WritePair__44('.', __MASK(__ASHR(d, 9), -128));
-	WritePair__44(' ', __MASK(__ASHR(t, 12), -32));
-	WritePair__44(':', __MASK(__ASHR(t, 6), -64));
+	WritePair__44('.', __MASK(__ASHR(d, 5, LONGINT), -16));
+	WritePair__44('.', __MASK(__ASHR(d, 9, LONGINT), -128));
+	WritePair__44(' ', __MASK(__ASHR(t, 12, LONGINT), -32));
+	WritePair__44(':', __MASK(__ASHR(t, 6, LONGINT), -64));
 	WritePair__44(':', __MASK(t, -64));
 	WriteDate__43_s = _s.lnk;
 }

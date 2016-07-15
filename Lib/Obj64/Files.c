@@ -344,7 +344,7 @@ static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len)
 		*pos += 1;
 		ch = Kernel_OBERON[__X(*pos, 1024)];
 		home[0] = 0x00;
-		Args_GetEnv((CHAR*)"HOME", (LONGINT)5, (void*)home, 256);
+		Args_GetEnv((void*)&"HOME", (LONGINT)5, (void*)home, 256);
 		while (home[__X(i, 256)] != 0x00) {
 			dir[__X(i, dir__len)] = home[__X(i, 256)];
 			i += 1;
@@ -509,8 +509,8 @@ void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d)
 	Files_Create(f);
 	res = Unix_Fstat(f->fd, &stat, Unix_Status__typ);
 	time = Files_localtime(&stat.mtime);
-	*t = (time->sec + __ASHL(time->min, 6)) + __ASHL(time->hour, 12);
-	*d = (time->mday + __ASHL(time->mon + 1, 5)) + __ASHL(__MOD(time->year, 100), 9);
+	*t = (time->sec + __ASHL(time->min, 6, LONGINT)) + __ASHL(time->hour, 12, LONGINT);
+	*d = (time->mday + __ASHL(time->mon + 1, 5, LONGINT)) + __ASHL(__MOD(time->year, 100), 9, LONGINT);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -861,7 +861,7 @@ void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x)
 {
 	CHAR b[2];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 2, 2);
-	*x = (INTEGER)b[0] + __ASHL((INTEGER)b[1], 8);
+	*x = (INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -869,7 +869,7 @@ void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8)) + __ASHL((INTEGER)b[2], 16)) + __ASHL((INTEGER)b[3], 24);
+	*x = (((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -877,7 +877,7 @@ void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (SET)((((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8)) + __ASHL((INTEGER)b[2], 16)) + __ASHL((INTEGER)b[3], 24));
+	*x = (SET)((((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -919,11 +919,11 @@ void Files_ReadNum (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 	n = 0;
 	Files_Read(&*R, R__typ, (void*)&ch);
 	while ((INTEGER)ch >= 128) {
-		n += __ASH((LONGINT)((INTEGER)ch - 128), s);
+		n += __ASH((LONGINT)((INTEGER)ch - 128), s, LONGINT);
 		s += 7;
 		Files_Read(&*R, R__typ, (void*)&ch);
 	}
-	n += __ASH((LONGINT)(__MASK((INTEGER)ch, -64) - __ASHL(__ASHR((INTEGER)ch, 6), 6)), s);
+	n += __ASH((LONGINT)(__MASK((INTEGER)ch, -64) - __ASHL(__ASHR((INTEGER)ch, 6, INTEGER), 6, INTEGER)), s, LONGINT);
 	*x = n;
 }
 
@@ -938,7 +938,7 @@ void Files_WriteInt (Files_Rider *R, LONGINT *R__typ, INTEGER x)
 {
 	CHAR b[2];
 	b[0] = (CHAR)x;
-	b[1] = (CHAR)__ASHR(x, 8);
+	b[1] = (CHAR)__ASHR(x, 8, INTEGER);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 2, 2);
 }
 
@@ -947,9 +947,9 @@ void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 {
 	CHAR b[4];
 	b[0] = (CHAR)x;
-	b[1] = (CHAR)__ASHR(x, 8);
-	b[2] = (CHAR)__ASHR(x, 16);
-	b[3] = (CHAR)__ASHR(x, 24);
+	b[1] = (CHAR)__ASHR(x, 8, LONGINT);
+	b[2] = (CHAR)__ASHR(x, 16, LONGINT);
+	b[3] = (CHAR)__ASHR(x, 24, LONGINT);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 4, 4);
 }
 
@@ -960,9 +960,9 @@ void Files_WriteSet (Files_Rider *R, LONGINT *R__typ, SET x)
 	LONGINT i;
 	i = __VAL(LONGINT, x);
 	b[0] = (CHAR)i;
-	b[1] = (CHAR)__ASHR(i, 8);
-	b[2] = (CHAR)__ASHR(i, 16);
-	b[3] = (CHAR)__ASHR(i, 24);
+	b[1] = (CHAR)__ASHR(i, 8, LONGINT);
+	b[2] = (CHAR)__ASHR(i, 16, LONGINT);
+	b[3] = (CHAR)__ASHR(i, 24, LONGINT);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 4, 4);
 }
 
@@ -998,7 +998,7 @@ void Files_WriteNum (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 {
 	while (x < -64 || x > 63) {
 		Files_Write(&*R, R__typ, (CHAR)(__MASK(x, -128) + 128));
-		x = __ASHR(x, 7);
+		x = __ASHR(x, 7, LONGINT);
 	}
 	Files_Write(&*R, R__typ, (CHAR)__MASK(x, -128));
 }
