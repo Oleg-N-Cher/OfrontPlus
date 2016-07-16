@@ -2,6 +2,7 @@
 export OBERON=.:../C:../Sym
 
 mod=$2
+if [ "$2" == "Platform.Unix" ]; then mod="Platform"; fi
 if [ "$2" == "Files.Unix" ]; then mod="Files"; fi
 if [ "$2" == "Kernel.Unix" ]; then mod="Kernel"; fi
 if [ "$2" == "Modules.Unix" ]; then mod="Modules"; fi
