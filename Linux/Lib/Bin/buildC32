@@ -7,6 +7,7 @@ rm ../Sym/*.sym
 
 ## Ofront+
 ../Bin/compileC32 $Lib SYSTEM
+../Bin/compileC32 $Lib Platform.Unix
 ../Bin/compileC32 $Lib Args
 ../Bin/compileC32 $Lib Console
 ../Bin/compileC32 $Lib Unix
