@@ -2,6 +2,9 @@
 #include "SYSTEM.h"
 
 typedef
+	CHAR (*Unix_ADR)[1];
+
+typedef
 	struct Unix_Dirent {
 		LONGINT ino, off;
 		INTEGER reclen;
@@ -20,7 +23,7 @@ typedef
 	} Unix_Hostent;
 
 typedef
-	SYSTEM_PTR (*Unix_SizeT)[1];
+	CHAR (*Unix_SizeT)[1];
 
 typedef
 	struct Unix_Iovec {
@@ -39,8 +42,8 @@ typedef
 
 typedef
 	struct Unix_JmpBuf {
-		LONGINT bx, si, di, bp, sp, pc, maskWasSaved;
-		LONGINT savedMask[32];
+		INTEGER bx, si, di, bp, sp, pc, maskWasSaved;
+		INTEGER savedMask[32];
 	} Unix_JmpBuf;
 
 typedef

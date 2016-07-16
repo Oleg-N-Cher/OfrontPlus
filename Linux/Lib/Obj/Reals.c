@@ -16,7 +16,8 @@ export REAL Reals_Ten (INTEGER e);
 export LONGREAL Reals_TenL (INTEGER e);
 static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len);
 
-#define Reals_ecvt(x, ndigit, decpt, sign)	ecvt (x, ndigit, decpt, sign)
+#include <stdlib.h>
+#define Reals_ecvt(x, ndigit, decpt, sign)	((LONGINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))
 
 REAL Reals_Ten (INTEGER e)
 {
@@ -28,7 +29,7 @@ REAL Reals_Ten (INTEGER e)
 			r = r * power;
 		}
 		power = power * power;
-		e = __ASHR(e, 1);
+		e = __ASHR(e, 1, INTEGER);
 	}
 	return r;
 }
@@ -42,7 +43,7 @@ LONGREAL Reals_TenL (INTEGER e)
 		if (__ODD(e)) {
 			r = r * power;
 		}
-		e = __ASHR(e, 1);
+		e = __ASHR(e, 1, INTEGER);
 		if (e <= 0) {
 			return r;
 		}
@@ -53,26 +54,26 @@ LONGREAL Reals_TenL (INTEGER e)
 
 INTEGER Reals_Expo (REAL x)
 {
-	return (int)__MASK(__ASHR(__VAL(LONGINT, x), 23), -256);
+	return (INTEGER)__MASK(__ASHR(__VAL(LONGINT, x), 23, LONGINT), -256);
 }
 
 INTEGER Reals_ExpoL (LONGREAL x)
 {
 	LONGINT h;
 	__GET((LONGINT)&x + 4, h, LONGINT);
-	return (int)__MASK(__ASHR(h, 20), -2048);
+	return (INTEGER)__MASK(__ASHR(h, 20, LONGINT), -2048);
 }
 
 void Reals_SetExpo (INTEGER e, REAL *x)
 {
-	*x = (REAL)(__VAL(SET, *x) & ~0x01fe | (SET)__ASHL((LONGINT)e, 23));
+	*x = (REAL)(__VAL(SET, *x) & ~0x01fe | (SET)__ASHL((LONGINT)e, 23, LONGINT));
 }
 
 void Reals_SetExpoL (INTEGER e, LONGREAL *x)
 {
 	SET h;
 	__GET((LONGINT)x + 4, h, SET);
-	h = h & ~0x0ffe | (SET)__ASHL((LONGINT)e, 20);
+	h = h & ~0x0ffe | (SET)__ASHL((LONGINT)e, 20, LONGINT);
 	__PUT((LONGINT)x + 4, h, SET);
 }
 
@@ -111,17 +112,17 @@ static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
 	i = 0;
 	len = b__len;
 	while ((LONGINT)i < len) {
-		k = (int)__ASHR((int)(__VAL(CHAR, b[__X(i, b__len)])), 4);
+		k = (INTEGER)__ASHR((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), 4, INTEGER);
 		if (k > 9) {
-			d[__X(__ASHL(i, 1), d__len)] = k + 55;
+			d[__X(__ASHL(i, 1, SHORTINT), d__len)] = k + 55;
 		} else {
-			d[__X(__ASHL(i, 1), d__len)] = k + 48;
+			d[__X(__ASHL(i, 1, SHORTINT), d__len)] = k + 48;
 		}
-		k = (int)__MASK((int)(__VAL(CHAR, b[__X(i, b__len)])), -16);
+		k = (INTEGER)__MASK((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), -16);
 		if (k > 9) {
-			d[__X(__ASHL(i, 1) + 1, d__len)] = k + 55;
+			d[__X(__ASHL(i, 1, SHORTINT) + 1, d__len)] = k + 55;
 		} else {
-			d[__X(__ASHL(i, 1) + 1, d__len)] = k + 48;
+			d[__X(__ASHL(i, 1, SHORTINT) + 1, d__len)] = k + 48;
 		}
 		i += 1;
 	}

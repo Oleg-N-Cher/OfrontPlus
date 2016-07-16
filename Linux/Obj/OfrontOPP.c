@@ -58,7 +58,7 @@ static void OfrontOPP_err (INTEGER n)
 
 static void OfrontOPP_CheckSym (INTEGER s)
 {
-	if ((int)OfrontOPP_sym == s) {
+	if ((INTEGER)OfrontOPP_sym == s) {
 		OfrontOPS_Get(&OfrontOPP_sym);
 	} else {
 		OfrontOPM_err(s);
@@ -146,7 +146,7 @@ static void OfrontOPP_CheckSysFlag (INTEGER *sysflag, INTEGER default_)
 			OfrontOPP_err(51);
 			sf = 0;
 		}
-		*sysflag = (int)sf;
+		*sysflag = (INTEGER)sf;
 		OfrontOPP_CheckSym(23);
 	} else {
 		*sysflag = default_;
@@ -625,7 +625,7 @@ static void OfrontOPP_StandProcCall (OfrontOPT_Node *x)
 	OfrontOPT_Node y = NIL;
 	SHORTINT m;
 	INTEGER n;
-	m = (int)(*x)->obj->adr;
+	m = (INTEGER)(*x)->obj->adr;
 	n = 0;
 	if (OfrontOPP_sym == 30) {
 		OfrontOPS_Get(&OfrontOPP_sym);
@@ -1184,7 +1184,7 @@ static void OfrontOPP_CaseLabelList (OfrontOPT_Node *lab, INTEGER LabelForm, INT
 			OfrontOPS_Get(&OfrontOPP_sym);
 			OfrontOPP_ConstExpression(&y);
 			yval = y->conval->intval;
-			if ((int)y->typ->form != f && !(__IN(f, 0x70) && __IN(y->typ->form, 0x70))) {
+			if ((INTEGER)y->typ->form != f && !(__IN(f, 0x70) && __IN(y->typ->form, 0x70))) {
 				OfrontOPP_err(60);
 			}
 			if (yval < xval) {

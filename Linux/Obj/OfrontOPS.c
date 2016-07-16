@@ -59,7 +59,7 @@ static void OfrontOPS_Str (SHORTINT *sym)
 	if (OfrontOPS_intval == 2) {
 		*sym = 35;
 		OfrontOPS_numtyp = 1;
-		OfrontOPS_intval = (int)OfrontOPS_str[0];
+		OfrontOPS_intval = (INTEGER)OfrontOPS_str[0];
 	} else {
 		*sym = 37;
 	}
@@ -98,7 +98,7 @@ static LONGREAL Ten__9 (INTEGER e)
 		if (__ODD(e)) {
 			x = x * p;
 		}
-		e = __ASHR(e, 1);
+		e = __ASHR(e, 1, INTEGER);
 		if (e > 0) {
 			p = p * p;
 		}
@@ -109,9 +109,9 @@ static LONGREAL Ten__9 (INTEGER e)
 static INTEGER Ord__7 (CHAR ch, BOOLEAN hex)
 {
 	if (ch <= '9') {
-		return (int)ch - 48;
+		return (INTEGER)ch - 48;
 	} else if (hex) {
-		return ((int)ch - 65) + 10;
+		return ((INTEGER)ch - 65) + 10;
 	} else {
 		OfrontOPS_err(2);
 		return 0;
@@ -167,7 +167,7 @@ static void OfrontOPS_Number (void)
 				OfrontOPS_numtyp = 1;
 				if (n <= 2) {
 					while (i < n) {
-						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
+						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4, LONGINT) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
 						i += 1;
 					}
 				} else {
@@ -176,12 +176,12 @@ static void OfrontOPS_Number (void)
 			} else if (OfrontOPS_ch == 'H') {
 				OfrontOPM_Get(&OfrontOPS_ch);
 				OfrontOPS_numtyp = 2;
-				if (n <= 8) {
-					if (n == 8 && dig[0] > '7') {
+				if (n <= 16) {
+					if (n == 16 && dig[0] > '7') {
 						OfrontOPS_intval = -1;
 					}
 					while (i < n) {
-						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
+						OfrontOPS_intval = __ASHL(OfrontOPS_intval, 4, LONGINT) + (LONGINT)Ord__7(dig[__X(i, 24)], 1);
 						i += 1;
 					}
 				} else {

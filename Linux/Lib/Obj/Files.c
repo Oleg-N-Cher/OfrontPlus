@@ -195,7 +195,7 @@ static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *na
 	}
 	name[__X(i, name__len)] = '.';
 	i += 1;
-	n = (int)Unix_Getpid();
+	n = (INTEGER)Unix_Getpid();
 	while (n > 0) {
 		name[__X(i, name__len)] = (CHAR)(__MOD(n, 10) + 48);
 		n = __DIV(n, 10);
@@ -526,8 +526,8 @@ void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d)
 	Files_Create(f);
 	res = Unix_Fstat(f->fd, &stat, Unix_Status__typ);
 	time = Files_localtime(&stat.mtime);
-	*t = (time->sec + __ASHL(time->min, 6)) + __ASHL(time->hour, 12);
-	*d = (time->mday + __ASHL(time->mon + 1, 5)) + __ASHL(__MOD(time->year, 100), 9);
+	*t = (time->sec + __ASHL(time->min, 6, LONGINT)) + __ASHL(time->hour, 12, LONGINT);
+	*d = (time->mday + __ASHL(time->mon + 1, 5, LONGINT)) + __ASHL(__MOD(time->year, 100), 9, LONGINT);
 }
 
 LONGINT Files_Pos (Files_Rider *r, LONGINT *r__typ)
@@ -721,8 +721,8 @@ void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len,
 void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res)
 {
 	__DUP(name, name__len, CHAR);
-	*res = (int)Unix_Unlink(name, name__len);
-	*res = (int)Unix_errno();
+	*res = (INTEGER)Unix_Unlink(name, name__len);
+	*res = (INTEGER)Unix_errno();
 	__DEL(name);
 }
 
@@ -741,7 +741,7 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 		}
 		r = Unix_Rename(old, old__len, new, new__len);
 		if (r < 0) {
-			*res = (int)Unix_errno();
+			*res = (INTEGER)Unix_errno();
 			if (*res == 18) {
 				fdold = Unix_Open(old, old__len, 0x0, 0x0);
 				if (fdold < 0) {
@@ -816,7 +816,7 @@ void Files_Register (Files_File f)
 void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res)
 {
 	__DUP(path, path__len, CHAR);
-	*res = (int)Unix_Chdir(path, path__len);
+	*res = (INTEGER)Unix_Chdir(path, path__len);
 	Files_getcwd((void*)Kernel_CWD, 256);
 	__DEL(path);
 }
@@ -846,21 +846,21 @@ void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x)
 {
 	CHAR b[2];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 2, 2);
-	*x = (int)b[0] + __ASHL((int)b[1], 8);
+	*x = (INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER);
 }
 
 void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((int)b[2], 16)) + __ASHL((int)b[3], 24);
+	*x = (((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER);
 }
 
 void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (SET)((((int)b[0] + __ASHL((int)b[1], 8)) + __ASHL((int)b[2], 16)) + __ASHL((int)b[3], 24));
+	*x = (SET)((((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER));
 }
 
 void Files_ReadReal (Files_Rider *R, LONGINT *R__typ, REAL *x)
@@ -897,12 +897,12 @@ void Files_ReadNum (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 	s = 0;
 	n = 0;
 	Files_Read(&*R, R__typ, (void*)&ch);
-	while ((int)ch >= 128) {
-		n += __ASH((LONGINT)((int)ch - 128), s);
+	while ((INTEGER)ch >= 128) {
+		n += __ASH((LONGINT)((INTEGER)ch - 128), s, LONGINT);
 		s += 7;
 		Files_Read(&*R, R__typ, (void*)&ch);
 	}
-	n += __ASH((LONGINT)(__MASK((int)ch, -64) - __ASHL(__ASHR((int)ch, 6), 6)), s);
+	n += __ASH((LONGINT)(__MASK((INTEGER)ch, -64) - __ASHL(__ASHR((INTEGER)ch, 6, INTEGER), 6, INTEGER)), s, LONGINT);
 	*x = n;
 }
 
@@ -915,7 +915,7 @@ void Files_WriteInt (Files_Rider *R, LONGINT *R__typ, INTEGER x)
 {
 	CHAR b[2];
 	b[0] = (CHAR)x;
-	b[1] = (CHAR)__ASHR(x, 8);
+	b[1] = (CHAR)__ASHR(x, 8, INTEGER);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 2, 2);
 }
 
@@ -923,9 +923,9 @@ void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 {
 	CHAR b[4];
 	b[0] = (CHAR)x;
-	b[1] = (CHAR)__ASHR(x, 8);
-	b[2] = (CHAR)__ASHR(x, 16);
-	b[3] = (CHAR)__ASHR(x, 24);
+	b[1] = (CHAR)__ASHR(x, 8, LONGINT);
+	b[2] = (CHAR)__ASHR(x, 16, LONGINT);
+	b[3] = (CHAR)__ASHR(x, 24, LONGINT);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 4, 4);
 }
 
@@ -935,9 +935,9 @@ void Files_WriteSet (Files_Rider *R, LONGINT *R__typ, SET x)
 	LONGINT i;
 	i = (LONGINT)x;
 	b[0] = (CHAR)i;
-	b[1] = (CHAR)__ASHR(i, 8);
-	b[2] = (CHAR)__ASHR(i, 16);
-	b[3] = (CHAR)__ASHR(i, 24);
+	b[1] = (CHAR)__ASHR(i, 8, LONGINT);
+	b[2] = (CHAR)__ASHR(i, 16, LONGINT);
+	b[3] = (CHAR)__ASHR(i, 24, LONGINT);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 4, 4);
 }
 
@@ -969,7 +969,7 @@ void Files_WriteNum (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 {
 	while (x < -64 || x > 63) {
 		Files_Write(&*R, R__typ, (CHAR)(__MASK(x, -128) + 128));
-		x = __ASHR(x, 7);
+		x = __ASHR(x, 7, LONGINT);
 	}
 	Files_Write(&*R, R__typ, (CHAR)__MASK(x, -128));
 }

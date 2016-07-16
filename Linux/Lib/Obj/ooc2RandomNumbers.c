@@ -19,7 +19,7 @@ void ooc2RandomNumbers_GetSeed (INTEGER *seed)
 
 void ooc2RandomNumbers_PutSeed (INTEGER seed)
 {
-	seed = (int)__MOD(seed, 2147483647);
+	seed = (INTEGER)__MOD(seed, 2147483647);
 	if (seed == 0) {
 		ooc2RandomNumbers_z = 1;
 	} else {
@@ -31,7 +31,7 @@ static void ooc2RandomNumbers_NextRND (void)
 {
 	INTEGER lo, hi, test;
 	hi = __DIV(ooc2RandomNumbers_z, 127773);
-	lo = (int)__MOD(ooc2RandomNumbers_z, 127773);
+	lo = (INTEGER)__MOD(ooc2RandomNumbers_z, 127773);
 	test = 16807 * lo - 2836 * hi;
 	if (test > 0) {
 		ooc2RandomNumbers_z = test;
@@ -43,7 +43,7 @@ static void ooc2RandomNumbers_NextRND (void)
 INTEGER ooc2RandomNumbers_RND (INTEGER range)
 {
 	ooc2RandomNumbers_NextRND();
-	return (int)__MOD(ooc2RandomNumbers_z, range);
+	return (INTEGER)__MOD(ooc2RandomNumbers_z, range);
 }
 
 REAL ooc2RandomNumbers_Random (void)

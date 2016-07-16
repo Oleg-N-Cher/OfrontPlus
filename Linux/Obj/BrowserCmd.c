@@ -123,7 +123,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 								BrowserCmd_Wch((CHAR)obj->conval->intval);
 								BrowserCmd_Wch('\"');
 							} else {
-								i = __ASHR(obj->conval->intval, 4);
+								i = __ASHR(obj->conval->intval, 4, LONGINT);
 								if (i > 9) {
 									BrowserCmd_Wch((CHAR)(55 + i));
 								} else {
@@ -214,7 +214,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 					BrowserCmd_Wsign(obj->typ, obj->link);
 					if (obj->mode == 9) {
 						ext = obj->conval->ext;
-						m = (int)(*ext)[0];
+						m = (INTEGER)(*ext)[0];
 						i = 1;
 						BrowserCmd_Ws((CHAR*)"  \"", (LONGINT)4);
 						while (i <= (LONGINT)m) {
@@ -255,7 +255,7 @@ static void BrowserCmd_Wmthd (OfrontOPT_Object obj)
 			if (BrowserCmd_option == 'x') {
 				BrowserCmd_Indent(1);
 				BrowserCmd_Ws((CHAR*)"(* methno: ", (LONGINT)12);
-				BrowserCmd_Wi(__ASHR(obj->adr, 16));
+				BrowserCmd_Wi(__ASHR(obj->adr, 16, LONGINT));
 				BrowserCmd_Ws((CHAR*)" *)", (LONGINT)4);
 			}
 			BrowserCmd_Wln();
@@ -446,7 +446,7 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, CmdlnTexts_Text T)
 		Header__8((CHAR*)"IMPORT", (LONGINT)7);
 		i = 1;
 		first = 1;
-		while (i < (int)OfrontOPT_nofGmod) {
+		while (i < (INTEGER)OfrontOPT_nofGmod) {
 			if (first) {
 				first = 0;
 				BrowserCmd_Indent(2);

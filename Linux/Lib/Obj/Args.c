@@ -41,11 +41,11 @@ void Args_GetInt (INTEGER n, INTEGER *val)
 		i = 1;
 	}
 	k = 0;
-	d = (int)s[__X(i, 64)] - 48;
+	d = (INTEGER)s[__X(i, 64)] - 48;
 	while (d >= 0 && d <= 9) {
 		k = k * 10 + d;
 		i += 1;
-		d = (int)s[__X(i, 64)] - 48;
+		d = (INTEGER)s[__X(i, 64)] - 48;
 	}
 	if (s[0] == '-') {
 		d = -d;
@@ -68,11 +68,11 @@ void Args_GetLongInt (INTEGER n, LONGINT *val)
 		i = 1;
 	}
 	k = 0;
-	d = (int)s[__X(i, 64)] - 48;
+	d = (INTEGER)s[__X(i, 64)] - 48;
 	while (d >= 0 && d <= 9) {
 		k = k * 10 + (LONGINT)d;
 		i += 1;
-		d = (int)s[__X(i, 64)] - 48;
+		d = (INTEGER)s[__X(i, 64)] - 48;
 	}
 	if (s[0] == '-') {
 		d = -d;

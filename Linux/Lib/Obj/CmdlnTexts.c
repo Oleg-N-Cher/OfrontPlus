@@ -718,7 +718,7 @@ static void ReadScaleFactor__32 (void)
 		}
 	}
 	while ('0' <= *Scan__31_s->ch && *Scan__31_s->ch <= '9') {
-		*Scan__31_s->e = (*Scan__31_s->e * 10 + (int)*Scan__31_s->ch) - 48;
+		*Scan__31_s->e = (*Scan__31_s->e * 10 + (INTEGER)*Scan__31_s->ch) - 48;
 		CmdlnTexts_Read((void*)&*Scan__31_s->S, Scan__31_s->S__typ, &*Scan__31_s->ch);
 	}
 }
@@ -790,10 +790,10 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 				if ('9' < ch) {
 					if ('A' <= ch && ch <= 'F') {
 						hex = 1;
-						ch = (CHAR)((int)ch - 7);
+						ch = (CHAR)((INTEGER)ch - 7);
 					} else if ('a' <= ch && ch <= 'f') {
 						hex = 1;
-						ch = (CHAR)((int)ch - 39);
+						ch = (CHAR)((INTEGER)ch - 39);
 					} else {
 						break;
 					}
@@ -805,13 +805,13 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 				if (i - j > 8) {
 					j = i - 8;
 				}
-				k = (int)d[__X(j, 32)] - 48;
+				k = (INTEGER)d[__X(j, 32)] - 48;
 				j += 1;
 				if (i - j == 7 && k >= 8) {
 					k -= 16;
 				}
 				while (j < i) {
-					k = __ASHL(k, 4) + (LONGINT)((int)d[__X(j, 32)] - 48);
+					k = __ASHL(k, 4, LONGINT) + (LONGINT)((INTEGER)d[__X(j, 32)] - 48);
 					j += 1;
 				}
 				if (neg) {
@@ -832,12 +832,12 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 					y = (LONGREAL)0;
 					g = (LONGREAL)1;
 					do {
-						y = y * (LONGREAL)10 + ((int)d[__X(j, 32)] - 48);
+						y = y * (LONGREAL)10 + ((INTEGER)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
 						g = g / (LONGREAL)(LONGREAL)10;
-						y = ((int)d[__X(j, 32)] - 48) * g + y;
+						y = ((INTEGER)d[__X(j, 32)] - 48) * g + y;
 						j += 1;
 					}
 					ReadScaleFactor__32();
@@ -864,12 +864,12 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 					x = (REAL)0;
 					f = (REAL)1;
 					do {
-						x = x * (REAL)10 + ((int)d[__X(j, 32)] - 48);
+						x = x * (REAL)10 + ((INTEGER)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
 						f = f / (REAL)(REAL)10;
-						x = ((int)d[__X(j, 32)] - 48) * f + x;
+						x = ((INTEGER)d[__X(j, 32)] - 48) * f + x;
 						j += 1;
 					}
 					if (ch == 'E') {
@@ -901,7 +901,7 @@ void CmdlnTexts_Scan (CmdlnTexts_Scanner *S, LONGINT *S__typ)
 				(*S).class = 3;
 				k = 0;
 				do {
-					k = k * 10 + (LONGINT)((int)d[__X(j, 32)] - 48);
+					k = k * 10 + (LONGINT)((INTEGER)d[__X(j, 32)] - 48);
 					j += 1;
 				} while (!(j == i));
 				if (neg) {
@@ -1066,7 +1066,7 @@ void CmdlnTexts_WriteHex (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGINT x)
 		} else {
 			a[__X(i, 10)] = (CHAR)(y + 55);
 		}
-		x = __ASHR(x, 4);
+		x = __ASHR(x, 4, LONGINT);
 		i += 1;
 	} while (!(i == 8));
 	do {
@@ -1109,7 +1109,7 @@ void CmdlnTexts_WriteReal (CmdlnTexts_Writer *W, LONGINT *W__typ, REAL x, INTEGE
 		} else {
 			CmdlnTexts_Write(&*W, W__typ, ' ');
 		}
-		e = __ASHR((e - 127) * 77, 8);
+		e = __ASHR((e - 127) * 77, 8, INTEGER);
 		if (e >= 0) {
 			x = x / (REAL)Reals_Ten(e);
 		} else {
@@ -1141,7 +1141,7 @@ void CmdlnTexts_WriteReal (CmdlnTexts_Writer *W, LONGINT *W__typ, REAL x, INTEGE
 			CmdlnTexts_Write(&*W, W__typ, '+');
 		}
 		CmdlnTexts_Write(&*W, W__typ, (CHAR)(__DIV(e, 10) + 48));
-		CmdlnTexts_Write(&*W, W__typ, (CHAR)((int)__MOD(e, 10) + 48));
+		CmdlnTexts_Write(&*W, W__typ, (CHAR)((INTEGER)__MOD(e, 10) + 48));
 	}
 }
 
@@ -1197,7 +1197,7 @@ void CmdlnTexts_WriteRealFix (CmdlnTexts_Writer *W, LONGINT *W__typ, REAL x, INT
 		CmdlnTexts_WriteString(&*W, W__typ, (CHAR*)" NaN", (LONGINT)5);
 		seq__56(' ', n - 4);
 	} else {
-		e = __ASHR((e - 127) * 77, 8);
+		e = __ASHR((e - 127) * 77, 8, INTEGER);
 		if (x < (REAL)0) {
 			sign = '-';
 			x = -x;
@@ -1291,7 +1291,7 @@ void CmdlnTexts_WriteLongReal (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGREAL x
 		} else {
 			CmdlnTexts_Write(&*W, W__typ, ' ');
 		}
-		e = (int)__ASHR((LONGINT)(e - 1023) * 77, 8);
+		e = (INTEGER)__ASHR((LONGINT)(e - 1023) * 77, 8, LONGINT);
 		if (e >= 0) {
 			x = x / (LONGREAL)Reals_TenL(e);
 		} else {
@@ -1323,9 +1323,9 @@ void CmdlnTexts_WriteLongReal (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGREAL x
 			CmdlnTexts_Write(&*W, W__typ, '+');
 		}
 		CmdlnTexts_Write(&*W, W__typ, (CHAR)(__DIV(e, 100) + 48));
-		e = (int)__MOD(e, 100);
+		e = (INTEGER)__MOD(e, 100);
 		CmdlnTexts_Write(&*W, W__typ, (CHAR)(__DIV(e, 10) + 48));
-		CmdlnTexts_Write(&*W, W__typ, (CHAR)((int)__MOD(e, 10) + 48));
+		CmdlnTexts_Write(&*W, W__typ, (CHAR)((INTEGER)__MOD(e, 10) + 48));
 	}
 }
 
@@ -1363,10 +1363,10 @@ void CmdlnTexts_WriteDate (CmdlnTexts_Writer *W, LONGINT *W__typ, LONGINT t, LON
 	_s.lnk = WriteDate__43_s;
 	WriteDate__43_s = &_s;
 	WritePair__44(' ', __MASK(d, -32));
-	WritePair__44('.', __MASK(__ASHR(d, 5), -16));
-	WritePair__44('.', __MASK(__ASHR(d, 9), -128));
-	WritePair__44(' ', __MASK(__ASHR(t, 12), -32));
-	WritePair__44(':', __MASK(__ASHR(t, 6), -64));
+	WritePair__44('.', __MASK(__ASHR(d, 5, LONGINT), -16));
+	WritePair__44('.', __MASK(__ASHR(d, 9, LONGINT), -128));
+	WritePair__44(' ', __MASK(__ASHR(t, 12, LONGINT), -32));
+	WritePair__44(':', __MASK(__ASHR(t, 6, LONGINT), -64));
 	WritePair__44(':', __MASK(t, -64));
 	WriteDate__43_s = _s.lnk;
 }

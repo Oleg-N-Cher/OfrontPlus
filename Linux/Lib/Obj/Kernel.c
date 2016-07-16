@@ -71,8 +71,8 @@ void Kernel_GetClock (LONGINT *t, LONGINT *d)
 	Kernel_RealTime time = NIL;
 	Unix_Gettimeofday(&tv, Unix_Timeval__typ, &tz, Unix_Timezone__typ);
 	time = Kernel_localtime(&tv.sec);
-	*t = (time->sec + __ASHL(time->min, 6)) + __ASHL(time->hour, 12);
-	*d = (time->mday + __ASHL(time->mon + 1, 5)) + __ASHL(__MOD(time->year, 100), 9);
+	*t = (time->sec + __ASHL(time->min, 6, LONGINT)) + __ASHL(time->hour, 12, LONGINT);
+	*d = (time->mday + __ASHL(time->mon + 1, 5, LONGINT)) + __ASHL(__MOD(time->year, 100), 9, LONGINT);
 }
 
 void Kernel_SetClock (LONGINT t, LONGINT d)
