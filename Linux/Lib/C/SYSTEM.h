@@ -32,7 +32,7 @@ typedef char BOOLEAN;
 typedef unsigned char CHAR;
 typedef short int SHORTINT;
 typedef int INTEGER;
-#if defined __amd64__ || defined __x86_64__
+#if defined __amd64__ || defined __x86_64__ || defined _LONGINT64
   typedef long long LONGINT; /* long long is _at least_ 64 bits */
 #else
   typedef long LONGINT;
