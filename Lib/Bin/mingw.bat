@@ -8,7 +8,7 @@
 @SET Mod=%2
 @IF %2==SYSTEM0 SET Mod=..\C\SYSTEM0
 
-%gcc% -c %Mod%.c -I "." -I ..\C
+%gcc% -c %Mod%.c -I "." -I ..\C %3 %4 %5 %6 %7 %8 %9
 @IF errorlevel 1 PAUSE
 
 @ar.exe -rc %1 %2.o

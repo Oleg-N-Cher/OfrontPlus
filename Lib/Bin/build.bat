@@ -4,7 +4,7 @@
 @EXIT
 
 :XDev
-@IF %1==WinApi DEL WinApi.c
+@IF "%1"=="WinApi" DEL WinApi.c
 
 @SET Lib=..\Ofront.a
 @IF EXIST %Lib% DEL %Lib%
