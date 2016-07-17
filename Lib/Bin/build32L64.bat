@@ -27,6 +27,8 @@ ofront+ -lse ..\Mod\Console.Mod
 @CALL ..\Bin\mingw %Lib% Args -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Console -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Platform -D_LONGINT64
+::@CALL ..\Bin\mingw %Lib% Heap -D_LONGINT64
+::@CALL ..\Bin\mingw %Lib% Strings -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Unix -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Kernel -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Files -D_LONGINT64
