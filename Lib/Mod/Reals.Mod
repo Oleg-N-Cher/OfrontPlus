@@ -3,9 +3,14 @@ MODULE Reals;
 
 	IMPORT S := SYSTEM;
 
+	TYPE
+		ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR;
+
+	PROCEDURE -Offset(adr: ADR; offset: INTEGER): ADR
+			"((Reals_ADR)((SYSTEM_ADR)adr + offset))"; 
 	PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
-	PROCEDURE -ecvt (x: LONGREAL; ndigit, decpt, sign: LONGINT): LONGINT
-			"((LONGINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
+	PROCEDURE -ecvt (x: LONGREAL; ndigit, decpt, sign: LONGINT): ADR
+			"((Reals_ADR)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
 
 	PROCEDURE Ten*(e: INTEGER): REAL;
 		VAR r, power: LONGREAL;
@@ -67,12 +72,12 @@ MODULE Reals;
 	END Convert;
 	
 	PROCEDURE ConvertL*(x: LONGREAL; n: INTEGER; VAR d: ARRAY OF CHAR);
-		VAR decpt, sign, i: LONGINT; buf: LONGINT;
+		VAR decpt, sign, i: INTEGER; buf: ADR;
 	BEGIN
 		(*x := x - 0.5; already rounded in ecvt*)
 		buf := ecvt(x, n+2, S.ADR(decpt), S.ADR(sign));
 		i := 0;
-		WHILE i < decpt DO S.GET(buf + i, d[n - i -1]); INC(i) END ;
+		WHILE i < decpt DO S.GET(Offset(buf, i), d[n - i -1]); INC(i) END ;
 		i := n - i - 1;
 		WHILE i >= 0 DO d[i] := "0"; DEC(i) END ;
 	END ConvertL;

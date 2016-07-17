@@ -22,7 +22,7 @@
 typedef char          BOOLEAN;
 typedef signed char   BYTE;
 typedef unsigned char CHAR;
-typedef signed char   SHORTINT;
+typedef short int     SHORTINT;
 typedef int           INTEGER;   // INTEGER is 32 bit.
 typedef float         REAL;
 typedef double        LONGREAL;
@@ -30,14 +30,14 @@ typedef void*         SYSTEM_PTR;
 
 // Unsigned variants are for use by shift and rotate macros.
 
-typedef unsigned char U_BYTE;
-typedef unsigned char U_CHAR;
-typedef unsigned char U_SHORTINT;
-typedef unsigned int  U_INTEGER;
+typedef unsigned char      U_BYTE;
+typedef unsigned char      U_CHAR;
+typedef unsigned short int U_SHORTINT;
+typedef unsigned int       U_INTEGER;
   
 // For 32 bit builds, the size of LONGINT depends on a make option:
 
-#if (__SIZEOF_POINTER__ == 8) || defined(LARGE) || defined(_WIN64)
+#if (__SIZEOF_POINTER__ == 8) || defined(_LONGINT64) || defined(_WIN64)
   typedef long long          LONGINT;   // LONGINT is 64 bit. (long long is always 64 bits, while long can be 32 bits e.g. under MSC/MingW)
   typedef unsigned long long U_LONGINT;
 #else
