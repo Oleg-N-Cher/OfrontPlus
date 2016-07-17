@@ -6,6 +6,15 @@
 #include "SYSTEM.h"
 
 typedef
+	CHAR (*Platform_ADR)[1];
+
+typedef
+	CHAR (*Platform_ArgPtr)[1024];
+
+typedef
+	Platform_ArgPtr (*Platform_ArgVec)[1024];
+
+typedef
 	struct Platform_FileIdentity {
 		LONGINT _prvt0;
 		char _prvt1[32];
@@ -19,11 +28,12 @@ typedef
 
 
 import BOOLEAN Platform_LittleEndian;
-import LONGINT Platform_MainStackFrame, Platform_HaltCode;
+import Platform_ADR Platform_MainStackFrame;
+import LONGINT Platform_HaltCode;
 import INTEGER Platform_PID;
 import CHAR Platform_CWD[4096];
 import INTEGER Platform_ArgCount;
-import LONGINT Platform_ArgVector;
+import Platform_ArgVec Platform_ArgVector;
 import INTEGER Platform_SeekSet, Platform_SeekCur, Platform_SeekEnd;
 import LONGINT Platform_StdIn, Platform_StdOut, Platform_StdErr;
 import CHAR Platform_nl[3];
@@ -43,13 +53,13 @@ import void Platform_Exit (INTEGER code);
 import void Platform_GetArg (INTEGER n, CHAR *val, LONGINT val__len);
 import void Platform_GetClock (LONGINT *t, LONGINT *d);
 import void Platform_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len);
-import void Platform_GetIntArg (INTEGER n, LONGINT *val);
+import void Platform_GetIntArg (INTEGER n, INTEGER *val);
 import void Platform_GetTimeOfDay (LONGINT *sec, LONGINT *usec);
 import void Platform_Halt (LONGINT code);
 import INTEGER Platform_Identify (LONGINT h, Platform_FileIdentity *identity, LONGINT *identity__typ);
 import INTEGER Platform_IdentifyByName (CHAR *n, LONGINT n__len, Platform_FileIdentity *identity, LONGINT *identity__typ);
 import BOOLEAN Platform_Inaccessible (INTEGER e);
-import void Platform_Init (INTEGER argc, LONGINT argvadr);
+import void Platform_Init (INTEGER argc, SYSTEM_PTR argvadr);
 import void Platform_MTimeAsClock (Platform_FileIdentity i, LONGINT *t, LONGINT *d);
 import INTEGER Platform_New (CHAR *n, LONGINT n__len, LONGINT *h);
 import BOOLEAN Platform_NoSuchDirectory (INTEGER e);

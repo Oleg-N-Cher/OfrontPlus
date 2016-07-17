@@ -23,7 +23,7 @@ ofront+ -lse ..\Mod\Args.Mod
 ofront+ -lse ..\Mod\Console.Mod
 @IF errorlevel 1 PAUSE
 
-@CALL ..\Bin\mingw %Lib% SYSTEM0 -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% SYSTEM -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Args -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Console -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Platform -D_LONGINT64

@@ -7,6 +7,9 @@ struct Heap__1 {
 };
 
 typedef
+	CHAR (*Heap_ADR)[1];
+
+typedef
 	struct Heap_CmdDesc *Heap_Cmd;
 
 typedef
@@ -100,13 +103,13 @@ export void Heap_Unlock (void);
 
 #include "Platform.h"
 extern void *Heap__init();
-extern LONGINT Platform_MainStackFrame;
+extern Heap_ADR Platform_MainStackFrame;
 extern LONGINT Platform_OSAllocate(LONGINT size);
 #define Heap_FetchAddress(pointer)	(LONGINT)(SYSTEM_ADR)(*((void**)((SYSTEM_ADR)pointer)))
 #define Heap_HeapModuleInit()	Heap__init()
 #define Heap_OSAllocate(size)	Platform_OSAllocate(size)
 #define Heap_PlatformHalt(code)	Platform_Halt(code)
-#define Heap_PlatformMainStackFrame()	Platform_MainStackFrame
+#define Heap_PlatformMainStackFrame()	((LONGINT)Platform_MainStackFrame)
 
 /*============================================================================*/
 

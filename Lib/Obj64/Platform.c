@@ -2,16 +2,13 @@
 #include "SYSTEM.h"
 
 typedef
+	CHAR (*Platform_ADR)[1];
+
+typedef
 	CHAR (*Platform_ArgPtr)[1024];
 
 typedef
 	Platform_ArgPtr (*Platform_ArgVec)[1024];
-
-typedef
-	LONGINT (*Platform_ArgVecPtr)[1];
-
-typedef
-	CHAR (*Platform_EnvPtr)[1024];
 
 typedef
 	struct Platform_FileIdentity {
@@ -26,11 +23,12 @@ typedef
 
 
 export BOOLEAN Platform_LittleEndian;
-export LONGINT Platform_MainStackFrame, Platform_HaltCode;
+export Platform_ADR Platform_MainStackFrame;
+export LONGINT Platform_HaltCode;
 export INTEGER Platform_PID;
 export CHAR Platform_CWD[4096];
 export INTEGER Platform_ArgCount;
-export LONGINT Platform_ArgVector;
+export Platform_ArgVec Platform_ArgVector;
 static Platform_HaltProcedure Platform_HaltHandler;
 static LONGINT Platform_TimeStart;
 export INTEGER Platform_SeekSet, Platform_SeekCur, Platform_SeekEnd;
@@ -54,13 +52,13 @@ export void Platform_Exit (INTEGER code);
 export void Platform_GetArg (INTEGER n, CHAR *val, LONGINT val__len);
 export void Platform_GetClock (LONGINT *t, LONGINT *d);
 export void Platform_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len);
-export void Platform_GetIntArg (INTEGER n, LONGINT *val);
+export void Platform_GetIntArg (INTEGER n, INTEGER *val);
 export void Platform_GetTimeOfDay (LONGINT *sec, LONGINT *usec);
 export void Platform_Halt (LONGINT code);
 export INTEGER Platform_Identify (LONGINT h, Platform_FileIdentity *identity, LONGINT *identity__typ);
 export INTEGER Platform_IdentifyByName (CHAR *n, LONGINT n__len, Platform_FileIdentity *identity, LONGINT *identity__typ);
 export BOOLEAN Platform_Inaccessible (INTEGER e);
-export void Platform_Init (INTEGER argc, LONGINT argvadr);
+export void Platform_Init (INTEGER argc, SYSTEM_PTR argvadr);
 export void Platform_MTimeAsClock (Platform_FileIdentity i, LONGINT *t, LONGINT *d);
 export INTEGER Platform_New (CHAR *n, LONGINT n__len, LONGINT *h);
 export BOOLEAN Platform_NoSuchDirectory (INTEGER e);
@@ -226,13 +224,16 @@ void Platform_OSFree (LONGINT address)
 }
 
 /*----------------------------------------------------------------------------*/
-void Platform_Init (INTEGER argc, LONGINT argvadr)
+typedef
+	Platform_ArgVec (*ArgVecPtr__39)[1];
+
+void Platform_Init (INTEGER argc, SYSTEM_PTR argvadr)
 {
-	Platform_ArgVecPtr av = NIL;
-	Platform_MainStackFrame = argvadr;
+	ArgVecPtr__39 av = NIL;
+	Platform_MainStackFrame = (Platform_ADR)argvadr;
 	Platform_ArgCount = argc;
-	av = (Platform_ArgVecPtr)argvadr;
-	Platform_ArgVector = (*av)[0];
+	av = (ArgVecPtr__39)argvadr;
+	Platform_ArgVector = (Platform_ArgVec)(*av)[0];
 	Platform_HaltCode = -128;
 	Platform_HeapInitHeap();
 }
@@ -268,18 +269,16 @@ void Platform_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len)
 /*----------------------------------------------------------------------------*/
 void Platform_GetArg (INTEGER n, CHAR *val, LONGINT val__len)
 {
-	Platform_ArgVec av = NIL;
 	if (n < Platform_ArgCount) {
-		av = (Platform_ArgVec)Platform_ArgVector;
-		__COPY(*(*av)[__X(n, 1024)], val, val__len);
+		__COPY(*(*Platform_ArgVector)[__X(n, 1024)], val, val__len);
 	}
 }
 
 /*----------------------------------------------------------------------------*/
-void Platform_GetIntArg (INTEGER n, LONGINT *val)
+void Platform_GetIntArg (INTEGER n, INTEGER *val)
 {
 	CHAR s[64];
-	LONGINT k, d, i;
+	INTEGER k, d, i;
 	s[0] = 0x00;
 	Platform_GetArg(n, (void*)s, 64);
 	i = 0;
