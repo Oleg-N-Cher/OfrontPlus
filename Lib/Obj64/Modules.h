@@ -48,7 +48,7 @@ import Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONG
 import Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len);
 import void *Modules__init(void);
 
-#define Modules_modules()	(Modules_Module)SYSTEM_modules
-#define Modules_setmodules(m)	SYSTEM_modules = m
+#define Modules_modules()	(Modules_Module)Heap_modules
+#define Modules_setmodules(m)	Heap_modules = m
 
 #endif

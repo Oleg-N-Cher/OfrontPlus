@@ -12,7 +12,6 @@
 @IF "%Mod%"=="Args2" SET Mod=Args
 @IF "%Mod%"=="Files.WinApi" SET Mod=Files
 @IF "%Mod%"=="Kernel.WinApi" SET Mod=Kernel
-@IF "%Mod%"=="Unix.WinApi" SET Mod=Unix
 @IF "%Mod%"=="Platform.Windows" SET Mod=Platform
 @IF "%Mod%"=="SYSTEM" SET Mod=..\C\SYSTEM
 @IF NOT "%Mod%"=="WinApi" GOTO MinGW

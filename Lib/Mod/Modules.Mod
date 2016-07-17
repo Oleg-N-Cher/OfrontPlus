@@ -3,7 +3,7 @@ MODULE Modules;	(* jt 6.1.96 *)
 	(* access to list of modules and commands, based on ETH Oberon *)
 
 
-	IMPORT SYSTEM, Console;
+	IMPORT SYSTEM, Console, Heap;
 
 	CONST
 		ModNameLen* = 20;
@@ -12,7 +12,7 @@ MODULE Modules;	(* jt 6.1.96 *)
 		ModuleName* = ARRAY ModNameLen OF CHAR;
 		Module* = POINTER TO ModuleDesc;
 		Cmd* = POINTER TO CmdDesc;
-		ModuleDesc* = RECORD	(* cf. SYSTEM.Mod *)
+		ModuleDesc* = RECORD	(* cf. Heap.Mod *)
 			next-: Module;
 			name-: ModuleName;
 			refcnt-: LONGINT;
@@ -37,10 +37,10 @@ MODULE Modules;	(* jt 6.1.96 *)
 
 
 	PROCEDURE -modules*(): Module
-			"(Modules_Module)SYSTEM_modules";
+			"(Modules_Module)Heap_modules";
 
 	PROCEDURE -setmodules*(m: Module)
-			"SYSTEM_modules = m";
+			"Heap_modules = m";
 
 
 	PROCEDURE Append(VAR a: ARRAY OF CHAR; b: ARRAY OF CHAR);

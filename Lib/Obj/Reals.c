@@ -1,6 +1,9 @@
 /*  Ofront 1.2 -xtspkae */
 #include "SYSTEM.h"
 
+typedef
+	CHAR (*Reals_ADR)[1];
+
 
 
 
@@ -17,7 +20,8 @@ export LONGREAL Reals_TenL (INTEGER e);
 static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len);
 
 #include <stdlib.h>
-#define Reals_ecvt(x, ndigit, decpt, sign)	((LONGINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))
+#define Reals_Offset(adr, offset)	((Reals_ADR)((SYSTEM_ADR)adr + offset))
+#define Reals_ecvt(x, ndigit, decpt, sign)	((Reals_ADR)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))
 
 /*============================================================================*/
 
@@ -100,14 +104,15 @@ void Reals_Convert (REAL x, INTEGER n, CHAR *d, LONGINT d__len)
 /*----------------------------------------------------------------------------*/
 void Reals_ConvertL (LONGREAL x, INTEGER n, CHAR *d, LONGINT d__len)
 {
-	LONGINT decpt, sign, i, buf;
+	INTEGER decpt, sign, i;
+	Reals_ADR buf = NIL;
 	buf = Reals_ecvt(x, n + 2, (INTEGER)&decpt, (INTEGER)&sign);
 	i = 0;
 	while (i < decpt) {
-		__GET(buf + i, d[__X(((LONGINT)n - i) - 1, d__len)], CHAR);
+		__GET(Reals_Offset(buf, i), d[__X((n - i) - 1, d__len)], CHAR);
 		i += 1;
 	}
-	i = ((LONGINT)n - i) - 1;
+	i = (n - i) - 1;
 	while (i >= 0) {
 		d[__X(i, d__len)] = '0';
 		i -= 1;

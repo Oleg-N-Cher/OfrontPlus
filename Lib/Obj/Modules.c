@@ -1,6 +1,7 @@
 /*  Ofront 1.2 -xtspkae */
 #include "SYSTEM.h"
 #include "Console.h"
+#include "Heap.h"
 
 typedef
 	struct Modules_CmdDesc *Modules_Cmd;
@@ -45,8 +46,8 @@ export void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all);
 export Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT name__len);
 export Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len);
 
-#define Modules_modules()	(Modules_Module)SYSTEM_modules
-#define Modules_setmodules(m)	SYSTEM_modules = m
+#define Modules_modules()	(Modules_Module)Heap_modules
+#define Modules_setmodules(m)	Heap_modules = m
 
 /*============================================================================*/
 
@@ -161,6 +162,7 @@ export void *Modules__init(void)
 {
 	__DEFMOD;
 	__IMPORT(Console__init);
+	__IMPORT(Heap__init);
 	__REGMOD("Modules", 0);
 	__INITYP(Modules_ModuleDesc, Modules_ModuleDesc, 0);
 	__INITYP(Modules_CmdDesc, Modules_CmdDesc, 0);
