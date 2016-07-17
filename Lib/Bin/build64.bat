@@ -10,7 +10,7 @@
 @IF EXIST %Lib% DEL %Lib%
 
 :: Ofront+
-@CALL ..\Bin\mingw64 %Lib% SYSTEM0
+@CALL ..\Bin\mingw64 %Lib% SYSTEM
 pause
 @CALL ..\Bin\mingw64 %Lib% Args
 pause

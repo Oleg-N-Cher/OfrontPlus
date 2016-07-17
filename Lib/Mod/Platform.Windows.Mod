@@ -22,21 +22,20 @@ TYPE
     mtimelow:  LONGINT;  (* File modification time, value is system dependent *)
   END;
 
-  EnvPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
+  ADR       = POINTER [1] TO ARRAY [1] 1 OF CHAR;
   ArgPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
-  ArgVec    = POINTER [1] TO ARRAY 1024 OF ArgPtr;
-  ArgVecPtr = POINTER [1] TO ARRAY 1 OF LONGINT;
+  ArgVec*   = POINTER [1] TO ARRAY 1024 OF ArgPtr;
 
 
 VAR
   LittleEndian-:    BOOLEAN;
-  MainStackFrame-:  LONGINT;
+  MainStackFrame-:  ADR;
   HaltCode-:        LONGINT;
   PID-:             INTEGER;    (* Note: Must be updated by Fork implementation *)
   CWD-:             ARRAY 4096 OF CHAR;
   ArgCount-:        INTEGER;
 
-  ArgVector-:       LONGINT;
+  ArgVector-:       ArgVec;
   HaltHandler:      HaltProcedure;
   TimeStart:        LONGINT;
 
@@ -118,13 +117,16 @@ PROCEDURE OSFree*(address: LONGINT); BEGIN free(address) END OSFree;
 PROCEDURE -ExternInitHeap  "extern void Heap_InitHeap();";
 PROCEDURE -HeapInitHeap()  "Heap_InitHeap()";
 
-PROCEDURE Init*(argc: INTEGER; argvadr: LONGINT);
-VAR  av: ArgVecPtr;
+PROCEDURE Init*(argc: INTEGER; argvadr: SYSTEM.PTR);
+TYPE
+  ArgVecPtr = POINTER [1] TO ARRAY 1 OF ArgVec; 
+VAR
+  av: ArgVecPtr;
 BEGIN
-  MainStackFrame := argvadr;
+  MainStackFrame := SYSTEM.VAL(ADR, argvadr);
   ArgCount       := argc;
   av             := SYSTEM.VAL(ArgVecPtr, argvadr);
-  ArgVector      := av[0];
+  ArgVector      := SYSTEM.VAL(ArgVec, av[0]);
   HaltCode       := -128;
 
   (* This function (Platform.Init) is called at program startup BEFORE any
@@ -161,16 +163,12 @@ BEGIN
 END GetEnv;
 
 PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
-  VAR av: ArgVec;
 BEGIN
-  IF n < ArgCount THEN
-    av := SYSTEM.VAL(ArgVec,ArgVector);
-    COPY(av[n]^, val)
-  END
+  IF n < ArgCount THEN COPY(ArgVector[n]^, val) END
 END GetArg;
 
-PROCEDURE GetIntArg*(n: INTEGER; VAR val: LONGINT);
-  VAR s: ARRAY 64 OF CHAR; k, d, i: LONGINT;
+PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);
+  VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
 BEGIN
   s := ""; GetArg(n, s); i := 0;
   IF s[0] = "-" THEN i := 1 END ;

@@ -33,6 +33,8 @@ MODULE Heap;
     LongZero  = LONG(LONG(0));
 
   TYPE
+    ADR        = POINTER [1] TO ARRAY [1] 1 OF CHAR;
+
     ModuleName = ARRAY ModNameLen OF CHAR;
     CmdName    = ARRAY CmdNameLen OF CHAR;
 
@@ -491,8 +493,8 @@ MODULE Heap;
     END
   END FINALL;
 
-  PROCEDURE -ExternMainStackFrame              "extern LONGINT Platform_MainStackFrame;";
-  PROCEDURE -PlatformMainStackFrame(): LONGINT "Platform_MainStackFrame";
+  PROCEDURE -ExternMainStackFrame              "extern Heap_ADR Platform_MainStackFrame;";
+  PROCEDURE -PlatformMainStackFrame(): LONGINT "((LONGINT)Platform_MainStackFrame)";
 
   PROCEDURE MarkStack(n: LONGINT; VAR cand: ARRAY OF LONGINT);
     VAR

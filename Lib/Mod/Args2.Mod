@@ -3,61 +3,29 @@ MODULE Args;	(* jt, 8.12.94 *)
 	(* command line argument handling for ofront *)
 
 
-	IMPORT SYSTEM;
+	IMPORT Platform;
 
-	TYPE
-		ArgPtr = POINTER [1] TO ARRAY 1024 OF CHAR;
-		ArgVec = POINTER [1] TO ARRAY 1024 OF ArgPtr;
-
-	VAR argc-: INTEGER; argv-: ArgVec;
-
-	PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* getenv() *)
-	PROCEDURE -Argc(): INTEGER "SYSTEM_argc";
-	PROCEDURE -Argv(): ArgVec "(Args_ArgVec)SYSTEM_argv";
-	PROCEDURE -getenv(var: ARRAY OF CHAR): ArgPtr
-		"(Args_ArgPtr)getenv((char*)var)";
+	VAR argc-: INTEGER; argv-: Platform.ArgVec;
 
 	PROCEDURE Get*(n: INTEGER; VAR val: ARRAY OF CHAR);
 	BEGIN
-		IF n < argc THEN COPY(argv[n]^, val) END
+		Platform.GetArg(n, val)
 	END Get;
 
 	PROCEDURE GetInt*(n: INTEGER; VAR val: INTEGER);
-		VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
 	BEGIN
-		s := ""; Get(n, s); i := 0;
-		IF s[0] = "-" THEN i := 1 END ;
-		k := 0; d := ORD(s[i]) - ORD("0");
-		WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
-		IF s[0] = "-" THEN d := -d; DEC(i) END ;
-		IF i > 0 THEN val := k END
+		Platform.GetIntArg(n, val)
 	END GetInt;
 
-	PROCEDURE GetLongInt*(n: INTEGER; VAR val: LONGINT);
-		VAR s: ARRAY 64 OF CHAR; k: LONGINT; d, i: INTEGER;
-	BEGIN
-		s := ""; Get(n, s); i := 0;
-		IF s[0] = "-" THEN i := 1 END ;
-		k := 0; d := ORD(s[i]) - ORD("0");
-		WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
-		IF s[0] = "-" THEN d := -d; DEC(i) END ;
-		IF i > 0 THEN val := k END
-	END GetLongInt;
-
 	PROCEDURE Pos*(IN s: ARRAY OF CHAR): INTEGER;
-		VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 	BEGIN
-		i := 0; Get(i, arg);
-		WHILE (i < argc) & (s # arg) DO INC(i); Get(i, arg) END ;
-		RETURN i
+		RETURN Platform.ArgPos(s)
 	END Pos;
 
 	PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
-		VAR p: ArgPtr;
 	BEGIN
-		p := getenv(var);
-		IF p # NIL THEN COPY(p^, val) END
+		Platform.GetEnv(var, val)
 	END GetEnv;
 
-BEGIN argc := Argc(); argv := Argv()
+BEGIN argc := Platform.ArgCount; argv := Platform.ArgVector
 END Args.
