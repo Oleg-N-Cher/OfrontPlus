@@ -6,8 +6,7 @@
 #define CHAR _CHAR
 
 #undef _WIN32_WINNT
-// 0x0501 is for Windows XP ( no service pack ), 
-// values for other configurations are listed in the article
+// 0x0501 is for Windows XP (no service pack)
 #define _WIN32_WINNT 0x0501
 #include <windows.h>
 
