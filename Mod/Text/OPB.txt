@@ -529,7 +529,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (z^.class < Nconst) OR (f = String) THEN z := NewOp(op, typ, z)
 					ELSE err(127)
 					END ;
-					z^.typ := OPT.linttyp
+					IF OPM.PointerSize = OPM.IntSize THEN z^.typ := OPT.inttyp
+					ELSE z^.typ := OPT.linttyp
+					END;
 			| cc: (*SYSTEM.CC*)
 					IF (f IN intSet) & (z^.class = Nconst) THEN
 						IF (0 <= z^.conval^.intval) & (z^.conval^.intval <= OPM.MaxCC) THEN z := NewOp(op, typ, z) ELSE err(219) END
