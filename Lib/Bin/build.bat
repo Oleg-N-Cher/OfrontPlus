@@ -10,7 +10,7 @@
 @IF EXIST %Lib% DEL %Lib%
 
 :: Ofront+
-@CALL ..\Bin\mingw %Lib% SYSTEM0
+@CALL ..\Bin\mingw %Lib% SYSTEM
 @CALL ..\Bin\mingw %Lib% Args
 @CALL ..\Bin\mingw %Lib% Console
 @CALL ..\Bin\mingw %Lib% Platform
