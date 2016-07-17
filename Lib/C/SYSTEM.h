@@ -1,28 +1,6 @@
 #ifndef SYSTEM__h
 #define SYSTEM__h
 
-#ifndef _WIN32
-
-  // Building for a Unix/Linux based system
-  #include <string.h>  // For memcpy ...
-  #include <stdint.h>  // For uintptr_t ...
-
-#else
-
-  // Building for Windows platform with either mingw under cygwin, or the MS C compiler
-  #ifdef _WIN64
-    typedef unsigned long long size_t;
-    typedef unsigned long long uintptr_t;
-  #else
-    typedef unsigned int size_t;
-    typedef unsigned int uintptr_t;
-  #endif /* _WIN64 */
-
-  typedef unsigned int uint32_t;
-  void * __cdecl memcpy(void * dest, const void * source, size_t size);
-
-#endif
-
 
 // The compiler uses 'import' and 'export' which translate to 'extern' and
 // nothing respectively.
@@ -42,34 +20,38 @@
 // Oberon types
 
 typedef char          BOOLEAN;
-typedef unsigned char SYSTEM_BYTE;
+typedef signed char   BYTE;
 typedef unsigned char CHAR;
 typedef signed char   SHORTINT;
+typedef int           INTEGER;   // INTEGER is 32 bit.
 typedef float         REAL;
 typedef double        LONGREAL;
 typedef void*         SYSTEM_PTR;
 
 // Unsigned variants are for use by shift and rotate macros.
 
-typedef unsigned char U_SYSTEM_BYTE;
+typedef unsigned char U_BYTE;
 typedef unsigned char U_CHAR;
 typedef unsigned char U_SHORTINT;
-
+typedef unsigned int  U_INTEGER;
+  
 // For 32 bit builds, the size of LONGINT depends on a make option:
 
 #if (__SIZEOF_POINTER__ == 8) || defined(LARGE) || defined(_WIN64)
-  typedef int                INTEGER;   // INTEGER is 32 bit.
   typedef long long          LONGINT;   // LONGINT is 64 bit. (long long is always 64 bits, while long can be 32 bits e.g. under MSC/MingW)
-  typedef int                U_INTEGER;
   typedef unsigned long long U_LONGINT;
 #else
-  typedef short int          INTEGER;   // INTEGER is 16 bit.
   typedef long               LONGINT;   // LONGINT is 32 bit.
-  typedef unsigned short int U_INTEGER;
   typedef unsigned long      U_LONGINT;
 #endif
 
-typedef U_LONGINT SET;
+typedef U_INTEGER SET;   // SET is 32 bit.
+
+#if defined __amd64__ || defined __x86_64__
+  typedef unsigned long long SYSTEM_ADR;
+#else
+  typedef unsigned int SYSTEM_ADR;
+#endif
 
 
 // OS Memory allocation interfaces are in PlatformXXX.Mod
@@ -80,9 +62,11 @@ extern void    Platform_OSFree     (LONGINT addr);
 
 // Run time system routines in SYSTEM.c
 
+extern void *SYSTEM_MEMCPY   (void *dest, void *src, SYSTEM_ADR n);
 extern LONGINT SYSTEM_XCHK   (LONGINT i, LONGINT ub);
 extern LONGINT SYSTEM_RCHK   (LONGINT i, LONGINT ub);
-extern LONGINT SYSTEM_ASH    (LONGINT i, LONGINT n);
+extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
+extern LONGINT SYSTEM_ASHL   (LONGINT x, INTEGER n);
 extern LONGINT SYSTEM_ABS    (LONGINT i);
 extern double  SYSTEM_ABSD   (double i);
 extern void    SYSTEM_INHERIT(LONGINT *t, LONGINT *t0);
@@ -96,10 +80,10 @@ extern LONGINT SYSTEM_ENTIER (double x);
 // Signal handling in SYSTEM.c
 
 #ifndef _WIN32
-  extern void SystemSetHandler(int s, uintptr_t h);
+  extern void SystemSetHandler(int s, SYSTEM_ADR h);
 #else
-  extern void SystemSetInterruptHandler(uintptr_t h);
-  extern void SystemSetQuitHandler     (uintptr_t h);
+  extern void SystemSetInterruptHandler(SYSTEM_ADR h);
+  extern void SystemSetQuitHandler     (SYSTEM_ADR h);
 #endif
 
 
@@ -122,9 +106,9 @@ static int __str_cmp(CHAR *x, CHAR *y){
 
 #define __COPY(s, d, n) {char*_a=(void*)s,*_b=(void*)d; LONGINT _i=0,_t=n-1; \
                          while(_i<_t&&((_b[_i]=_a[_i])!=0)){_i++;};_b[_i]=0;}
-#define __DUP(x, l, t)  x=(void*)memcpy((void*)(uintptr_t)Platform_OSAllocate(l*sizeof(t)),x,l*sizeof(t))
-#define __DUPARR(v, t)  v=(void*)memcpy(v##__copy,v,sizeof(t))
-#define __DEL(x)        Platform_OSFree((LONGINT)(uintptr_t)x)
+#define __DUP(x, l, t)  x=(void*)__MEMCPY((void*)(SYSTEM_ADR)Platform_OSAllocate(l*sizeof(t)),x,l*sizeof(t))
+#define __DUPARR(v, t)  v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
+#define __DEL(x)        Platform_OSFree((LONGINT)(SYSTEM_ADR)x)
 
 
 
@@ -132,26 +116,28 @@ static int __str_cmp(CHAR *x, CHAR *y){
 /* SYSTEM ops */
 
 #define __VAL(t, x)     ((t)(x))
-#define __VALP(t, x)    ((t)(uintptr_t)(x))
+#define __VALP(t, x)    ((t)(SYSTEM_ADR)(x))
 
-#define __GET(a, x, t)  x= *(t*)(uintptr_t)(a)
-#define __PUT(a, x, t)  *(t*)(uintptr_t)(a)=x
+#define __GET(a, x, t)  x= *(t*)(SYSTEM_ADR)(a)
+#define __PUT(a, x, t)  *(t*)(SYSTEM_ADR)(a)=x
 
 #define __LSHL(x, n, t) ((t)((U_##t)(x)<<(n)))
 #define __LSHR(x, n, t) ((t)((U_##t)(x)>>(n)))
 #define __LSH(x, n, t)  ((n)>=0? __LSHL(x, n, t): __LSHR(x, -(n), t))
 
-#define __ASHL(x, n)    ((LONGINT)(x)<<(n))
-#define __ASHR(x, n)    ((LONGINT)(x)>>(n))
-#define __ASH(x, n)     ((n)>=0?__ASHL(x,n):__ASHR(x,-(n)))
+#define __ASH(x, n, t)  ((n)>=0?__ASHL(x,n,t):__ASHR(x,-(n),t))
+#define __ASHL(x, n, t) ((t)(x)<<(n))
+#define __ASHR(x, n, t) ((t)(x)>>(n))
+#define __ASHF(x, n, t)  SYSTEM_ASH(x, n)
+#define __ASHFL(x, n, t) SYSTEM_ASHL(x, n)
 
 #define __ROTL(x, n, t) ((t)((U_##t)(x)<<(n)|(U_##t)(x)>>(8*sizeof(t)-(n))))
 #define __ROTR(x, n, t) ((t)((U_##t)(x)>>(n)|(U_##t)(x)<<(8*sizeof(t)-(n))))
 #define __ROT(x, n, t)  ((n)>=0? __ROTL(x, n, t): __ROTR(x, -(n), t))
 
 #define __BIT(x, n)     (*(U_LONGINT*)(x)>>(n)&1)
-#define __MOVE(s, d, n) memcpy((char*)(uintptr_t)(d),(char*)(uintptr_t)(s),n)
-#define __ASHF(x, n)    SYSTEM_ASH((LONGINT)(x), (LONGINT)(n))
+#define __MEMCPY        SYSTEM_MEMCPY
+#define __MOVE(s, d, n) __MEMCPY((char*)(SYSTEM_ADR)(d),(char*)(SYSTEM_ADR)(s),n)
 #define __SHORT(x, y)   ((int)((U_LONGINT)(x)+(y)<(y)+(y)?(x):(__HALT(-8),0)))
 #define __SHORTF(x, y)  ((int)(__RF((x)+(y),(y)+(y))-(y)))
 #define __CHR(x)        ((CHAR)__R(x, 256))
@@ -202,17 +188,16 @@ extern void       Heap_INCREF();
 #define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, cmd)
 #define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,enum);}
 #define __ENDMOD              return m
-#define __MODULE_IMPORT(name) Heap_INCREF(name##__init())
-
+#define __IMPORT(name__init)	Heap_INCREF(name__init())
 
 
 // Main module initialisation, registration and finalisation
 
-extern void Platform_Init(INTEGER argc, LONGINT argv);
+extern void Platform_Init(INTEGER argc, SYSTEM_PTR argv);
 extern void *Platform_MainModule;
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; Platform_Init((INTEGER)argc, (LONGINT)(uintptr_t)&argv);
+#define __INIT(argc, argv)    static void *m; Platform_Init((INTEGER)argc, (SYSTEM_PTR)&argv);
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,enum)
 #define __FINI                Heap_FINALL(); return 0
 
@@ -233,15 +218,15 @@ extern SYSTEM_PTR Heap_NEWREC (LONGINT tag);
 extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
 
 #define __SYSNEW(p, len) p = Heap_NEWBLK((LONGINT)(len))
-#define __NEW(p, t)      p = Heap_NEWREC((LONGINT)(uintptr_t)t##__typ)
+#define __NEW(p, t)      p = Heap_NEWREC((LONGINT)(SYSTEM_ADR)t##__typ)
 #define __NEWARR         SYSTEM_NEWARR
 
 
 
 /* Type handling */
 
-#define __TDESC(t, m, n)                                                \
-  static struct t##__desc {                                             \
+#define __TDESC(t__desc, m, n)                                                \
+  static struct t__desc {                                             \
     LONGINT  tproc[m];         /* Proc for each ptr field            */ \
     LONGINT  tag;                                                       \
     LONGINT  next;             /* Module table type list points here */ \
@@ -252,7 +237,7 @@ extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
     LONGINT  reserved;                                                  \
     LONGINT  blksz;            /* xxx_typ points here                */ \
     LONGINT  ptr[n+1];         /* Offsets of ptrs up to -ve sentinel */ \
-  } t##__desc
+  } t__desc
 
 #define __BASEOFF   (__MAXEXT+1)                           // blksz as index to base.
 #define __TPROC0OFF (__BASEOFF+24/sizeof(LONGINT)+5)       // blksz as index to tproc IFF m=1.
@@ -263,21 +248,21 @@ extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
 
 #define __INITYP(t, t0, level) \
   t##__typ               = (LONGINT*)&t##__desc.blksz;                                                    \
-  memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(LONGINT));                                  \
-  t##__desc.basep[level] = (LONGINT)(uintptr_t)t##__typ;                                                  \
-  t##__desc.module       = (LONGINT)(uintptr_t)m;                                                         \
+  __MEMCPY(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(LONGINT));                                  \
+  t##__desc.basep[level] = (LONGINT)(SYSTEM_ADR)t##__typ;                                                  \
+  t##__desc.module       = (LONGINT)(SYSTEM_ADR)m;                                                         \
   if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15);                                                      \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(LONGINT)-1)/(4*sizeof(LONGINT))*(4*sizeof(LONGINT)); \
-  Heap_REGTYP(m, (LONGINT)(uintptr_t)&t##__desc.next);                                                    \
+  Heap_REGTYP(m, (LONGINT)(SYSTEM_ADR)&t##__desc.next);                                                    \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
 
-#define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(LONGINT)(uintptr_t)typ##__typ)
-#define __TYPEOF(p)           ((LONGINT*)(uintptr_t)(*(((LONGINT*)(p))-1)))
+#define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(LONGINT)(SYSTEM_ADR)typ##__typ)
+#define __TYPEOF(p)           ((LONGINT*)(SYSTEM_ADR)(*(((LONGINT*)(p))-1)))
 #define __ISP(p, typ, level)  __IS(__TYPEOF(p),typ,level)
 
 // Oberon-2 type bound procedures support
-#define __INITBP(t, proc, num)            *(t##__typ-(__TPROC0OFF+num))=(LONGINT)(uintptr_t)proc
-#define __SEND(typ, num, funtyp, parlist) ((funtyp)((uintptr_t)*(typ-(__TPROC0OFF+num))))parlist
+#define __INITBP(t, proc, num)            *(t##__typ-(__TPROC0OFF+num))=(LONGINT)(SYSTEM_ADR)proc
+#define __SEND(typ, num, funtyp, parlist) ((funtyp)((SYSTEM_ADR)*(typ-(__TPROC0OFF+num))))parlist
 
 
 

@@ -20,7 +20,19 @@
 
 LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub) {return __X(i, ub);}
 LONGINT SYSTEM_RCHK(LONGINT i, LONGINT ub) {return __R(i, ub);}
-LONGINT SYSTEM_ASH (LONGINT i, LONGINT n)  {return __ASH(i, n);}
+
+INTEGER SYSTEM_ASH(INTEGER x, INTEGER y)
+{
+  if (y >= 0) return x << y;
+  else return x >> (-y);
+}
+
+LONGINT SYSTEM_ASHL(LONGINT x, INTEGER y)
+{
+  if (y >= 0) return x << y;
+  else return x >> (-y);
+}
+
 LONGINT SYSTEM_ABS (LONGINT i)             {return __ABS(i);}
 double  SYSTEM_ABSD(double i)              {return __ABS(i);}
 
@@ -35,7 +47,7 @@ void SYSTEM_INHERIT(LONGINT *t, LONGINT *t0)
 void SYSTEM_ENUMP(void *adr, LONGINT n, void (*P)())
 {
     while (n > 0) {
-        P((LONGINT)(uintptr_t)(*((void**)(adr))));
+        P((LONGINT)(SYSTEM_ADR)(*((void**)(adr))));
         adr = ((void**)adr) + 1;
         n--;
     }
@@ -106,7 +118,7 @@ SYSTEM_PTR SYSTEM_NEWARR(LONGINT *typ, LONGINT elemsz, int elemalgn, int nofdim,
     else if (typ == (LONGINT*)POINTER__typ) {
         /* element type is a pointer */
         x = Heap_NEWBLK(size + nofelems * sizeof(LONGINT));
-        p = (LONGINT*)(uintptr_t)x[-1];
+        p = (LONGINT*)(SYSTEM_ADR)x[-1];
         p[-nofelems] = *p;  /* build new type desc in situ: 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nofelems - 1; n = 1;   /* n =1 for skipping the size field */
         while (n <= nofelems) {*p = n*sizeof(LONGINT); p++; n++;}
@@ -119,7 +131,7 @@ SYSTEM_PTR SYSTEM_NEWARR(LONGINT *typ, LONGINT elemsz, int elemalgn, int nofdim,
         while (ptab[nofptrs] >= 0) {nofptrs++;} /* number of pointers per element */
         nptr = nofelems * nofptrs;  /* total number of pointers */
         x = Heap_NEWBLK(size + nptr * sizeof(LONGINT));
-        p = (LONGINT*)(uintptr_t)x[- 1];
+        p = (LONGINT*)(SYSTEM_ADR)x[- 1];
         p[-nptr] = *p;  /* build new type desc in situ; 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nptr - 1; n = 0; off = dataoff;
         while (n < nofelems) {i = 0;
@@ -141,6 +153,18 @@ SYSTEM_PTR SYSTEM_NEWARR(LONGINT *typ, LONGINT elemsz, int elemalgn, int nofdim,
 }
 
 
+#ifndef _WIN32
+  // Building for a Unix/Linux based system
+#  include <string.h>  // For memcpy ...
+#else
+  // Building for Windows platform with either mingw under cygwin, or the MS C compiler
+  void * __cdecl memcpy(void * dest, const void * source, SYSTEM_ADR size);
+#endif
+
+void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n)
+{
+  return memcpy(dest, (const void*)src, n);
+}
 
 
 typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
@@ -155,7 +179,7 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         // (Ignore other signals)
     }
 
-    void SystemSetHandler(int s, uintptr_t h) {
+    void SystemSetHandler(int s, SYSTEM_ADR h) {
         if (s >= 2 && s <= 4) {
             int needtosetsystemhandler = handler[s-2] == 0;
             handler[s-2] = (SystemSignalHandler)h;
@@ -166,7 +190,7 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 #else
 
     // Provides Windows callback handlers for signal-like scenarios
-    #include "WindowsWrapper.h"
+#   include "_windows.h"
 
     SystemSignalHandler SystemInterruptHandler = 0;
     SystemSignalHandler SystemQuitHandler      = 0;
@@ -194,12 +218,12 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         }
     }
 
-    void SystemSetInterruptHandler(uintptr_t h) {
+    void SystemSetInterruptHandler(SYSTEM_ADR h) {
         EnsureConsoleCtrlHandler();
         SystemInterruptHandler = (SystemSignalHandler)h;
     }
 
-    void SystemSetQuitHandler(uintptr_t h) {
+    void SystemSetQuitHandler(SYSTEM_ADR h) {
         EnsureConsoleCtrlHandler();
         SystemQuitHandler = (SystemSignalHandler)h;
     }
