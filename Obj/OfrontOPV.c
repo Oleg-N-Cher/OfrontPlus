@@ -896,7 +896,11 @@ static void OfrontOPV_expr (OfrontOPT_Node n, INTEGER prec)
 					OfrontOPM_Write(')');
 					break;
 				case 24: 
-					OfrontOPM_WriteString((CHAR*)"(LONGINT)", (LONGINT)10);
+					if (OfrontOPM_PointerSize == OfrontOPM_IntSize) {
+						OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
+					} else {
+						OfrontOPM_WriteString((CHAR*)"(LONGINT)", (LONGINT)10);
+					}
 					if (l->class == 1) {
 						OfrontOPC_CompleteIdent(l->obj);
 					} else {

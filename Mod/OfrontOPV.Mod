@@ -612,7 +612,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					|	odd:
 								OPM.WriteString("__ODD("); expr(l, MinPrec); OPM.Write(CloseParen)
 					|	adr: (*SYSTEM*)
-								OPM.WriteString("(LONGINT)");
+								IF OPM.PointerSize = OPM.IntSize THEN OPM.WriteString("(INTEGER)")
+								ELSE OPM.WriteString("(LONGINT)")
+								END;
 								IF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
 									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END ;
