@@ -642,7 +642,11 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				} else {
 					OfrontOPB_err(127);
 				}
-				z->typ = OfrontOPT_linttyp;
+				if (OfrontOPM_PointerSize == OfrontOPM_IntSize) {
+					z->typ = OfrontOPT_inttyp;
+				} else {
+					z->typ = OfrontOPT_linttyp;
+				}
 				break;
 			case 25: 
 				if (__IN(f, 0x70) && z->class == 7) {
