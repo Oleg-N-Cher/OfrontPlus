@@ -1145,8 +1145,14 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| getfn, putfn, bitfn, movefn: (*SYSTEM.GET, SYSTEM.PUT, SYSTEM.BIT, SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF (x^.class = Nconst) & (f IN {SInt, Int}) THEN Convert(x, OPT.linttyp)
-				ELSIF ~(f IN {LInt, Pointer}) THEN err(111); x^.typ := OPT.linttyp
+				ELSIF OPM.PointerSize = OPM.IntSize THEN
+					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
+					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
+					END
+				ELSE
+					IF (x^.class = Nconst) & (f IN {Byte, SInt, Int}) THEN Convert(x, OPT.linttyp)
+					ELSIF ~(f IN {LInt, Pointer}) THEN err(111); x^.typ := OPT.linttyp
+					END
 				END
 		| getrfn, putrfn: (*SYSTEM.GETREG, SYSTEM.PUTREG*)
 				IF (f IN intSet) & (x^.class = Nconst) THEN
@@ -1304,8 +1310,14 @@ avoid unnecessary intermediate variables in OFront
 				p^.typ := OPT.notyp
 		| movefn: (*SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF (x^.class = Nconst) & (f IN {SInt, Int}) THEN Convert(x, OPT.linttyp)
-				ELSIF ~(f IN {LInt, Pointer}) THEN err(111); x^.typ := OPT.linttyp
+				ELSIF OPM.PointerSize = OPM.IntSize THEN
+					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
+					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
+					END
+				ELSE
+					IF (x^.class = Nconst) & (f IN {Byte, SInt, Int}) THEN Convert(x, OPT.linttyp)
+					ELSIF ~(f IN {LInt, Pointer}) THEN err(111); x^.typ := OPT.linttyp
+					END
 				END ;
 				p^.link := x
 		| assertfn: (*ASSERT*)
