@@ -1,32 +1,9 @@
 MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 
 	IMPORT
-		SYSTEM, Unix, Kernel,
+		SYSTEM, Heap, Platform,
 		OPP := OfrontOPP, OPB := OfrontOPB, OPT := OfrontOPT,
 		OPV := OfrontOPV, OPC := OfrontOPC, OPM := OfrontOPM;
-
-	PROCEDURE -signal(sig: LONGINT; func: Unix.SignalHandler)
-		"signal(sig, func)";
-
-	PROCEDURE -fin()
-		"SYSTEM_FINALL()";
-
-	PROCEDURE -halt(): LONGINT
-		"SYSTEM_halt";
-
-(*
-	PROCEDURE -gclock()
-		"SYSTEM_gclock = 1";
-*)
-
-	PROCEDURE Trap(sig, code: LONGINT; scp: Unix.SigCtxPtr);
-	BEGIN fin();
-		IF sig = 3 THEN Unix.Exit(0)
-		ELSE
-			IF (sig = 4) & (halt() = -15) THEN OPM.LogWStr(" --- ofront: internal error");  OPM.LogWLn END ;
-			Unix.Exit(2)
-		END
-	END Trap;
 
 	PROCEDURE Module*(VAR done: BOOLEAN);
 		VAR ext, new: BOOLEAN; p: OPT.Node;
@@ -74,15 +51,29 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 			OPM.Init(done);
 			IF ~done THEN EXIT END ;
 			OPM.InitOptions;
-			Kernel.GC(FALSE);
+			Heap.GC(FALSE);
 			Module(done);
-			IF ~done THEN Unix.Exit(1) END
+			IF ~done THEN Platform.Exit(1) END
 		END
 	END Translate;
 
+	PROCEDURE Trap(sig: INTEGER);
+	BEGIN
+		Heap.FINALL();
+		IF sig = 3 THEN
+			Platform.Exit(0)
+		ELSE
+			IF (sig = 4) & (Platform.HaltCode = -15) THEN
+				OPM.LogWStr(" --- Ofront+: internal error");
+				OPM.LogWLn
+			END ;
+			Platform.Exit(2)
+		END
+	END Trap;
+
 BEGIN (*$MAIN*)
-	signal(2, Trap);	(* interrupt *)
-	signal(3, Trap);	(* quit *)
-	signal(4, Trap);	(* illegal instruction, HALT *)
+	Platform.SetInterruptHandler(Trap);	(* interrupt *)
+	Platform.SetQuitHandler(Trap);	(* quit *)
+	Platform.SetBadInstructionHandler(Trap);	(* illegal instruction, HALT *)
 	OPB.typSize := OPV.TypSize; OPT.typSize := OPV.TypSize; Translate
 END OfrontCmd.
