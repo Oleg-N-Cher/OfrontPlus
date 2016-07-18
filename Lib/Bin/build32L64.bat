@@ -31,7 +31,6 @@ ofront+ -lse ..\Mod\Console.Mod
 @CALL ..\Bin\mingw %Lib% Args -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Console -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Strings -D_LONGINT64
-::@CALL ..\Bin\mingw %Lib% Kernel -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Files -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Reals -D_LONGINT64
 ::@CALL ..\Bin\mingw %Lib% Modules -D_LONGINT64
