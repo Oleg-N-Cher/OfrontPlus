@@ -1,19 +1,16 @@
 @SET PATH=%CD%\..\..\Bin;%PATH%
 @CD ..\Obj
 
-ofront+ -liapxe ..\Mod\SYSTEM.Mod
+:: Ofront+
+ofront+ -liapxe ..\Mod\Heap.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -liapxe ..\Mod\Platform.Windows.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\Args.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\Console.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Platform.Mod
-@IF errorlevel 1 PAUSE
-ofront+ -liapxe ..\Mod\Heap.Mod
-@IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Unix.msvcrt.Mod
-@IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Kernel.Mod
+ofront+ -lse ..\Mod\Strings.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\Files.Mod
 @IF errorlevel 1 PAUSE
@@ -22,4 +19,8 @@ ofront+ -lse ..\Mod\Reals.Mod
 ofront+ -lse ..\Mod\Modules.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\CmdlnTexts.Mod
+@IF errorlevel 1 PAUSE
+
+:: OOC2
+ofront+ -lse ..\Mod\ooc2RandomNumbers.Mod
 @IF errorlevel 1 PAUSE
