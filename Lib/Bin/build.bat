@@ -16,7 +16,6 @@
 @CALL ..\Bin\mingw %Lib% Args
 @CALL ..\Bin\mingw %Lib% Console
 @CALL ..\Bin\mingw %Lib% Strings
-@CALL ..\Bin\mingw %Lib% Kernel
 @CALL ..\Bin\mingw %Lib% Files
 @CALL ..\Bin\mingw %Lib% Reals
 @CALL ..\Bin\mingw %Lib% Modules
