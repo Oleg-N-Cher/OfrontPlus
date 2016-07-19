@@ -24,3 +24,5 @@ ofront+ -lse ..\Mod\CmdlnTexts.Mod
 :: OOC2
 ofront+ -lse ..\Mod\ooc2RandomNumbers.Mod
 @IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\ooc2Strings.Mod
+@IF errorlevel 1 PAUSE

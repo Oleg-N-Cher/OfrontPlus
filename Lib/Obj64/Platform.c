@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -spke */
+/*  Ofront 1.2 -xtspkae */
 #include "SYSTEM.h"
 
 typedef
@@ -270,7 +270,7 @@ void Platform_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len)
 void Platform_GetArg (INTEGER n, CHAR *val, LONGINT val__len)
 {
 	if (n < Platform_ArgCount) {
-		__COPY(*(*Platform_ArgVector)[n], val, val__len);
+		__COPY(*(*Platform_ArgVector)[__X(n, 1024)], val, val__len);
 	}
 }
 
@@ -286,11 +286,11 @@ void Platform_GetIntArg (INTEGER n, INTEGER *val)
 		i = 1;
 	}
 	k = 0;
-	d = (INTEGER)s[i] - 48;
+	d = (INTEGER)s[__X(i, 64)] - 48;
 	while (d >= 0 && d <= 9) {
 		k = k * 10 + d;
 		i += 1;
-		d = (INTEGER)s[i] - 48;
+		d = (INTEGER)s[__X(i, 64)] - 48;
 	}
 	if (s[0] == '-') {
 		k = -k;

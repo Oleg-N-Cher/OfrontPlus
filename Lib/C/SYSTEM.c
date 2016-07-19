@@ -20,19 +20,8 @@
 
 LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub) {return __X(i, ub);}
 LONGINT SYSTEM_RCHK(LONGINT i, LONGINT ub) {return __R(i, ub);}
-
-INTEGER SYSTEM_ASH(INTEGER x, INTEGER y)
-{
-  if (y >= 0) return x << y;
-  else return x >> (-y);
-}
-
-LONGINT SYSTEM_ASHL(LONGINT x, INTEGER y)
-{
-  if (y >= 0) return x << y;
-  else return x >> (-y);
-}
-
+INTEGER SYSTEM_ASH (INTEGER x, INTEGER n)  {return __ASH(x, n, INTEGER);}
+LONGINT SYSTEM_ASHL(LONGINT x, INTEGER n)  {return __ASH(x, n, LONGINT);}
 LONGINT SYSTEM_ABS (LONGINT i)             {return __ABS(i);}
 double  SYSTEM_ABSD(double i)              {return __ABS(i);}
 

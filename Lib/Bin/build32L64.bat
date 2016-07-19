@@ -24,24 +24,37 @@ ofront+ -lse ..\Mod\Args.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\Console.Mod
 @IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\Strings.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\Files.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\Reals.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\Modules.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\CmdlnTexts.Mod
+@IF errorlevel 1 PAUSE
 
 @CALL ..\Bin\mingw %Lib% SYSTEM -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Heap -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Platform -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Args -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Console -D_LONGINT64
-::@CALL ..\Bin\mingw %Lib% Strings -D_LONGINT64
-::@CALL ..\Bin\mingw %Lib% Files -D_LONGINT64
-::@CALL ..\Bin\mingw %Lib% Reals -D_LONGINT64
-::@CALL ..\Bin\mingw %Lib% Modules -D_LONGINT64
-::@CALL ..\Bin\mingw %Lib% CmdlnTexts -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% Strings -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% Files -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% Reals -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% Modules -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% CmdlnTexts -D_LONGINT64
 
 :: OOC2
 
 ofront+ -lse ..\Mod\ooc2RandomNumbers.Mod
 @IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\ooc2Strings.Mod
+@IF errorlevel 1 PAUSE
 
 @CALL ..\Bin\mingw %Lib% ooc2RandomNumbers -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% ooc2Strings -D_LONGINT64
 
 @MOVE *.sym ..\Sym32L64
 @..\Bin\clear
