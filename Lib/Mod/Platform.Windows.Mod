@@ -23,8 +23,8 @@ TYPE
   END;
 
   ADR       = POINTER [1] TO ARRAY [1] 1 OF CHAR;
-  ArgPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
-  ArgVec*   = POINTER [1] TO ARRAY 1024 OF ArgPtr;
+  ArgPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
+  ArgVec*   = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
 
 
 VAR
@@ -119,7 +119,7 @@ PROCEDURE -HeapInitHeap()  "Heap_InitHeap()";
 
 PROCEDURE Init*(argc: INTEGER; argvadr: SYSTEM.PTR);
 TYPE
-  ArgVecPtr = POINTER [1] TO ARRAY 1 OF ArgVec; 
+  ArgVecPtr = POINTER [1] TO ARRAY [1] 1 OF ArgVec; 
 VAR
   av: ArgVecPtr;
 BEGIN
