@@ -23,5 +23,6 @@
 
 :: OOC2
 @CALL ..\Bin\mingw %Lib% ooc2RandomNumbers
+@CALL ..\Bin\mingw %Lib% ooc2Strings
 
 @..\Bin\clear
