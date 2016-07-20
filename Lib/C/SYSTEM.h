@@ -62,7 +62,8 @@ extern void    Platform_OSFree     (LONGINT addr);
 
 // Run time system routines in SYSTEM.c
 
-extern void *SYSTEM_MEMCPY   (void *dest, void *src, SYSTEM_ADR n);
+extern int     SYSTEM_STRCMP (CHAR *x, CHAR *y);
+extern void   *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n);
 extern LONGINT SYSTEM_XCHK   (LONGINT i, LONGINT ub);
 extern LONGINT SYSTEM_RCHK   (LONGINT i, LONGINT ub);
 extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
@@ -90,15 +91,7 @@ extern LONGINT SYSTEM_ENTIER (double x);
 
 // String comparison
 
-static int __str_cmp(CHAR *x, CHAR *y){
-  LONGINT i = 0;
-  CHAR ch1, ch2;
-  do {ch1 = x[i]; ch2 = y[i]; i++;
-    if (!ch1) return -(int)ch2;
-  } while (ch1==ch2);
-  return (int)ch1 - (int)ch2;
-}
-#define __STRCMP(a,b) __str_cmp((CHAR*)(a), (CHAR*)(b))
+#define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
 
 
 
