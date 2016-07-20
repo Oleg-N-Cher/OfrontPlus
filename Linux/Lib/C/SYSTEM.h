@@ -1,6 +1,13 @@
 #ifndef SYSTEM__h
 #define SYSTEM__h
 
+/*
+
+  the Ofront+ runtime system interface and macro library
+  based on SYSTEM.h by Josef Templ and voc team
+
+*/
+
 
 // The compiler uses 'import' and 'export' which translate to 'extern' and
 // nothing respectively.
