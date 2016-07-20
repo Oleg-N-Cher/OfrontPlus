@@ -39,7 +39,6 @@ typedef
 import INTEGER Modules_res;
 import CHAR Modules_resMsg[256];
 import Modules_ModuleName Modules_imported, Modules_importing;
-import BOOLEAN Modules_trace;
 
 import LONGINT *Modules_ModuleDesc__typ;
 import LONGINT *Modules_CmdDesc__typ;
@@ -49,7 +48,7 @@ import Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONG
 import Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len);
 import void *Modules__init(void);
 
-#define Modules_modules()	(Modules_Module)SYSTEM_modules
-#define Modules_setmodules(m)	SYSTEM_modules = m
+#define Modules_modules()	(Modules_Module)Heap_modules
+#define Modules_setmodules(m)	Heap_modules = m
 
 #endif

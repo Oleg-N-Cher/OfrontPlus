@@ -625,7 +625,11 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				} else {
 					OfrontOPB_err(127);
 				}
-				z->typ = OfrontOPT_linttyp;
+				if (OfrontOPM_PointerSize == OfrontOPM_IntSize) {
+					z->typ = OfrontOPT_inttyp;
+				} else {
+					z->typ = OfrontOPT_linttyp;
+				}
 				break;
 			case 25: 
 				if (__IN(f, 0x70) && z->class == 7) {
@@ -1922,11 +1926,20 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 		case 24: case 25: case 28: case 31: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (x->class == 7 && __IN(f, 0x30)) {
-				OfrontOPB_Convert(&x, OfrontOPT_linttyp);
-			} else if (!__IN(f, 0x2040)) {
-				OfrontOPB_err(111);
-				x->typ = OfrontOPT_linttyp;
+			} else if (OfrontOPM_PointerSize == OfrontOPM_IntSize) {
+				if (x->class == 7 && __IN(f, 0x12)) {
+					OfrontOPB_Convert(&x, OfrontOPT_inttyp);
+				} else if (!__IN(f, 0x2020)) {
+					OfrontOPB_err(111);
+					x->typ = OfrontOPT_inttyp;
+				}
+			} else {
+				if (x->class == 7 && __IN(f, 0x32)) {
+					OfrontOPB_Convert(&x, OfrontOPT_linttyp);
+				} else if (!__IN(f, 0x2040)) {
+					OfrontOPB_err(111);
+					x->typ = OfrontOPT_linttyp;
+				}
 			}
 			break;
 		case 26: case 27: 
@@ -2195,11 +2208,20 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 		case 31: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (x->class == 7 && __IN(f, 0x30)) {
-				OfrontOPB_Convert(&x, OfrontOPT_linttyp);
-			} else if (!__IN(f, 0x2040)) {
-				OfrontOPB_err(111);
-				x->typ = OfrontOPT_linttyp;
+			} else if (OfrontOPM_PointerSize == OfrontOPM_IntSize) {
+				if (x->class == 7 && __IN(f, 0x12)) {
+					OfrontOPB_Convert(&x, OfrontOPT_inttyp);
+				} else if (!__IN(f, 0x2020)) {
+					OfrontOPB_err(111);
+					x->typ = OfrontOPT_inttyp;
+				}
+			} else {
+				if (x->class == 7 && __IN(f, 0x32)) {
+					OfrontOPB_Convert(&x, OfrontOPT_linttyp);
+				} else if (!__IN(f, 0x2040)) {
+					OfrontOPB_err(111);
+					x->typ = OfrontOPT_linttyp;
+				}
 			}
 			p->link = x;
 			break;
