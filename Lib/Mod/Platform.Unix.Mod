@@ -133,7 +133,7 @@ BEGIN
   HaltCode       := -128;
 
   (* This function (Platform.Init) is called at program startup BEFORE any
-     modules have been initalised. In turn we must initialise the heap
+     modules have been initalized. In turn we must initialize the heap
      before module startup (xxx__init) code is run. *)
   HeapInitHeap();
 END Init;
