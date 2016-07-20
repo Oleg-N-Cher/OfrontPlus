@@ -48,11 +48,17 @@ ofront+ -lse ..\Mod\CmdlnTexts.Mod
 
 :: OOC2
 
+ofront+ -lse ..\Mod\ooc2Ascii.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\ooc2ConvTypes.Mod
+@IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\ooc2RandomNumbers.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\ooc2Strings.Mod
 @IF errorlevel 1 PAUSE
 
+@CALL ..\Bin\mingw %Lib% ooc2Ascii -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% ooc2ConvTypes -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% ooc2RandomNumbers -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% ooc2Strings -D_LONGINT64
 
