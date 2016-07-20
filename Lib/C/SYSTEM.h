@@ -190,6 +190,8 @@ extern void       Heap_INCREF();
 #define __ENDMOD              return m
 #define __IMPORT(name__init)	Heap_INCREF(name__init())
 
+#define __EXTERN __attribute__((dllimport))
+#define __CALL_1 __attribute__((__stdcall__))
 
 // Main module initialisation, registration and finalisation
 
