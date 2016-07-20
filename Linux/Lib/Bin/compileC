@@ -3,8 +3,6 @@ export OBERON=.:../C:../Sym64
 
 mod=$2
 if [ "$2" == "Platform.Unix" ]; then mod="Platform"; fi
-if [ "$2" == "Files.Unix" ]; then mod="Files"; fi
-if [ "$2" == "Kernel.Unix" ]; then mod="Kernel"; fi
 if [ "$2" == "Modules.Unix" ]; then mod="Modules"; fi
 
 gcc -c $mod.c -I ../C -s -Os -fno-exceptions -fno-asynchronous-unwind-tables

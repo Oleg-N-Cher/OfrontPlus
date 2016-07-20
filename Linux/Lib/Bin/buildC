@@ -8,16 +8,19 @@ rm ../Sym64/*.sym
 ## Ofront+
 ../Bin/compileC $Lib SYSTEM
 ../Bin/compileC $Lib Platform.Unix
+../Bin/compileC $Lib Heap
 ../Bin/compileC $Lib Args
 ../Bin/compileC $Lib Console
-../Bin/compileC $Lib Unix
-../Bin/compileC $Lib Kernel.Unix
-../Bin/compileC $Lib Files.Unix
+../Bin/compileC $Lib Strings
+../Bin/compileC $Lib Files
 ../Bin/compileC $Lib Reals
 ../Bin/compileC $Lib Modules.Unix
 ../Bin/compileC $Lib CmdlnTexts
 
 ## OOC2
+../Bin/compileC $Lib ooc2Ascii
+../Bin/compileC $Lib ooc2ConvTypes
 ../Bin/compileC $Lib ooc2RandomNumbers
+../Bin/compileC $Lib ooc2Strings
 
 #../Bin/clear
