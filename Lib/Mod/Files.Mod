@@ -39,30 +39,30 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       tempFile: BOOLEAN;
       identity: Platform.FileIdentity;
       fd-:      Platform.FileHandle;
-      len, pos: LONGINT;
+      len, pos: INTEGER;
       bufs: ARRAY nofbufs OF Buffer;
-      swapper, state: INTEGER
+      swapper, state: SHORTINT
     END;
 
     BufDesc = RECORD
       f:    File;
       chg:  BOOLEAN;
-      org:  LONGINT;
-      size: LONGINT;
+      org:  INTEGER;
+      size: INTEGER;
       data: ARRAY bufsize OF BYTE
     END;
 
     Rider* = RECORD
-      res*: LONGINT;
+      res*: INTEGER;
       eof*: BOOLEAN;
       buf: Buffer;
-      org, offset: LONGINT
+      org, offset: INTEGER
     END;
 
 
   VAR
-    fileTab:    ARRAY fileTabSize OF LONGINT (*=File*);
-    tempno:     INTEGER;
+    fileTab:    ARRAY fileTabSize OF INTEGER (*=File*);
+    tempno:     SHORTINT;
     HOME:       ARRAY 1024 OF CHAR;
     SearchPath: POINTER TO ARRAY OF CHAR;
 
@@ -86,7 +86,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END Err;
 
   PROCEDURE MakeFileName(dir, name: ARRAY OF CHAR; VAR dest: ARRAY OF CHAR);
-    VAR i, j: INTEGER;
+    VAR i, j: SHORTINT;
   BEGIN i := 0; j := 0;
     WHILE dir[i] # 0X DO dest[i] := dir[i]; INC(i) END;
     IF dest[i-1] # "/" THEN dest[i] := "/"; INC(i) END;
@@ -95,7 +95,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END MakeFileName;
 
   PROCEDURE GetTempName(finalName: ARRAY OF CHAR; VAR name: ARRAY OF CHAR);
-    VAR n, i, j: LONGINT;
+    VAR n, i, j: INTEGER;
   BEGIN
     INC(tempno); n := tempno; i := 0;
     IF finalName[0] # "/" THEN  (* relative pathname *)
@@ -149,7 +149,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
           (* Console.String("f.fd = "); Console.Int(f.fd,1); Console.Ln; *)
           error := Platform.Close(f.fd); Err("too many files open", f, 0)
         ELSE
-          fileTab[f.fd] := SYSTEM.VAL(LONGINT, f);
+          fileTab[f.fd] := SYSTEM.VAL(INTEGER, f);
           INC(Heap.FileCount);
           Heap.RegisterFinalizer(f, Finalize);
           f.state    := open;
@@ -203,7 +203,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   PROCEDURE Close* (f: File);
     VAR
-      i:     LONGINT;
+      i:     INTEGER;
       error: Platform.ErrorCode;
   BEGIN
     (*
@@ -228,7 +228,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     END
   END Close;
 
-  PROCEDURE Length* (f: File): LONGINT;
+  PROCEDURE Length* (f: File): INTEGER;
   BEGIN RETURN f.len END Length;
 
   PROCEDURE New* (name: ARRAY OF CHAR): File;
@@ -239,11 +239,11 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     RETURN f
   END New;
 
-  PROCEDURE ScanPath(VAR pos: INTEGER; VAR dir: ARRAY OF CHAR);
+  PROCEDURE ScanPath(VAR pos: SHORTINT; VAR dir: ARRAY OF CHAR);
   (* Extract next individual directory from searchpath starting at pos,
      updating pos and returning dir.
      Supports ~, ~user and blanks inside path *)
-  VAR i: INTEGER; ch: CHAR;
+  VAR i: SHORTINT; ch: CHAR;
   BEGIN
     i := 0;
     IF SearchPath = NIL THEN
@@ -267,14 +267,14 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END ScanPath;
 
   PROCEDURE HasDir(VAR name: ARRAY OF CHAR): BOOLEAN;
-    VAR i: INTEGER; ch: CHAR;
+    VAR i: SHORTINT; ch: CHAR;
   BEGIN i := 0; ch := name[0];
     WHILE (ch # 0X) & (ch # "/") DO INC(i); ch := name[i] END;
     RETURN ch = "/"
   END HasDir;
 
   PROCEDURE CacheEntry(identity: Platform.FileIdentity): File;
-    VAR f: File;  i: INTEGER;  error: Platform.ErrorCode;
+    VAR f: File;  i: SHORTINT;  error: Platform.ErrorCode;
   BEGIN i := 0;
     WHILE i < fileTabSize DO
       f := SYSTEM.VAL(File, fileTab[i]);
@@ -298,7 +298,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR
       f:         File;
       fd:        Platform.FileHandle;
-      pos:       INTEGER;
+      pos:       SHORTINT;
       done:      BOOLEAN;
       dir, path: ARRAY 256 OF CHAR;
       error:     Platform.ErrorCode;
@@ -336,7 +336,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
             (* Console.String("fd = "); Console.Int(fd,1); Console.Ln; *)
             error := Platform.Close(fd);
             Err("too many files open", f, 0)
-          ELSE NEW(f); fileTab[fd] := SYSTEM.VAL(LONGINT, f); INC(Heap.FileCount); Heap.RegisterFinalizer(f, Finalize);
+          ELSE NEW(f); fileTab[fd] := SYSTEM.VAL(INTEGER, f); INC(Heap.FileCount); Heap.RegisterFinalizer(f, Finalize);
             f.fd := fd; f.state := open; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
             error := Platform.Size(fd, f.len);
             COPY(name, f.workName); f.registerName := ""; f.tempFile := FALSE;
@@ -352,7 +352,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END Old;
 
   PROCEDURE Purge* (f: File);
-    VAR i: INTEGER;  identity: Platform.FileIdentity;  error: Platform.ErrorCode;
+    VAR i: SHORTINT;  identity: Platform.FileIdentity;  error: Platform.ErrorCode;
   BEGIN i := 0;
     WHILE i < nofbufs DO
       IF f.bufs[i] # NIL THEN f.bufs[i].org := -1; f.bufs[i] := NIL END;
@@ -366,7 +366,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     error := Platform.Identify(f.fd, identity); Platform.SetMTime(f.identity, identity)
   END Purge;
 
-  PROCEDURE GetDate* (f: File; VAR t, d: LONGINT);
+  PROCEDURE GetDate* (f: File; VAR t, d: INTEGER);
     VAR
       identity: Platform.FileIdentity;  error: Platform.ErrorCode;
   BEGIN
@@ -374,12 +374,12 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     Platform.MTimeAsClock(identity, t, d)
   END GetDate;
 
-  PROCEDURE Pos* (VAR r: Rider): LONGINT;
+  PROCEDURE Pos* (VAR r: Rider): INTEGER;
   BEGIN RETURN r.org + r.offset
   END Pos;
 
-  PROCEDURE Set* (VAR r: Rider; f: File; pos: LONGINT);
-    VAR org, offset, i, n: LONGINT;  buf: Buffer;  error: Platform.ErrorCode;
+  PROCEDURE Set* (VAR r: Rider; f: File; pos: INTEGER);
+    VAR org, offset, i, n: INTEGER;  buf: Buffer;  error: Platform.ErrorCode;
   BEGIN
     IF f # NIL THEN
       (*
@@ -418,7 +418,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END Set;
 
   PROCEDURE Read* (VAR r: Rider; VAR x: BYTE);
-    VAR offset: LONGINT; buf: Buffer;
+    VAR offset: INTEGER; buf: Buffer;
   BEGIN
     buf := r.buf; offset := r.offset;
     IF r.org # buf.org THEN Set(r, buf.f, r.org + offset); buf := r.buf; offset := r.offset END;
@@ -432,8 +432,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     END
   END Read;
 
-  PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT);
-    VAR xpos, min, restInBuf, offset: LONGINT; buf: Buffer;
+  PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
+    VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
     IF n > LEN(x) THEN IdxTrap END;
     xpos := 0; buf := r.buf; offset := r.offset;
@@ -461,7 +461,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END Base;
 
   PROCEDURE Write* (VAR r: Rider; x: BYTE);
-    VAR buf: Buffer; offset: LONGINT;
+    VAR buf: Buffer; offset: INTEGER;
   BEGIN
     buf := r.buf; offset := r.offset;
     IF (r.org # buf.org) OR (offset >= bufsize) THEN
@@ -476,8 +476,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     r.offset := offset + 1; r.res := 0
   END Write;
 
-  PROCEDURE WriteBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: LONGINT);
-    VAR xpos, min, restInBuf, offset: LONGINT; buf: Buffer;
+  PROCEDURE WriteBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
+    VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
     IF n > LEN(x) THEN IdxTrap END;
     xpos := 0; buf := r.buf; offset := r.offset;
@@ -502,7 +502,7 @@ Read and Write in buffer, buf.size replaced by bufsize in Write ops, buf.size an
 must be made consistent with offset (if offset > buf.size) in a lazy way.
 
 PROCEDURE Write* (VAR r: Rider; x: BYTE);
-  VAR buf: Buffer; offset: LONGINT;
+  VAR buf: Buffer; offset: INTEGER;
 BEGIN
   buf := r.buf; offset := r.offset;
   IF (offset >= bufsize) OR (r.org # buf.org) THEN
@@ -514,7 +514,7 @@ END Write;
 PROCEDURE WriteBytes ...
 
 PROCEDURE Read* (VAR r: Rider; VAR x: BYTE);
-  VAR offset: LONGINT; buf: Buffer;
+  VAR offset: INTEGER; buf: Buffer;
 BEGIN
   buf := r.buf; offset := r.offset;
   IF (offset >= buf.size) OR (r.org # buf.org) THEN
@@ -529,13 +529,13 @@ but this would also affect Set, Length, and Flush.
 Especially Length would become fairly complex.
 *)
 
-  PROCEDURE Delete*(name: ARRAY OF CHAR; VAR res: INTEGER);
+  PROCEDURE Delete*(name: ARRAY OF CHAR; VAR res: SHORTINT);
   BEGIN res := Platform.Unlink(name) END Delete;
 
-  PROCEDURE Rename* (old, new: ARRAY OF CHAR; VAR res: INTEGER);
+  PROCEDURE Rename* (old, new: ARRAY OF CHAR; VAR res: SHORTINT);
     VAR
       fdold, fdnew: Platform.FileHandle;
-      n: LONGINT;
+      n: INTEGER;
       error, ignore: Platform.ErrorCode;
       oldidentity, newidentity: Platform.FileIdentity;
       buf: ARRAY 4096 OF CHAR;
@@ -584,7 +584,7 @@ Especially Length would become fairly complex.
   END Rename;
 
   PROCEDURE Register* (f: File);
-    VAR idx, errcode: INTEGER; f1: File; file: ARRAY 104 OF CHAR;
+    VAR idx, errcode: SHORTINT; f1: File; file: ARRAY 104 OF CHAR;
   BEGIN
     (*
     Console.String("Files.Register f.registerName = "); Console.String(f.registerName);
@@ -605,13 +605,13 @@ Especially Length would become fairly complex.
     END
   END Register;
 
-  PROCEDURE ChangeDirectory*(path: ARRAY OF CHAR; VAR res: INTEGER);
+  PROCEDURE ChangeDirectory*(path: ARRAY OF CHAR; VAR res: SHORTINT);
   BEGIN
     res := Platform.Chdir(path);
   END ChangeDirectory;
 
   PROCEDURE FlipBytes(VAR src, dest: ARRAY OF BYTE);
-    VAR i, j: LONGINT;
+    VAR i, j: INTEGER;
   BEGIN
     IF ~Platform.LittleEndian THEN i := LEN(src); j := 0;
       WHILE i > 0 DO DEC(i); dest[j] := src[i]; INC(j) END
@@ -623,13 +623,13 @@ Especially Length would become fairly complex.
   BEGIN Read(R, SYSTEM.VAL(CHAR, x))
   END ReadBool;
 
-  PROCEDURE ReadInt* (VAR R: Rider; VAR x: INTEGER);
+  PROCEDURE ReadInt* (VAR R: Rider; VAR x: SHORTINT);
     VAR b: ARRAY 2 OF CHAR;
   BEGIN ReadBytes(R, b, 2);
     x := ORD(b[0]) + ORD(b[1])*256
   END ReadInt;
 
-  PROCEDURE ReadLInt* (VAR R: Rider; VAR x: LONGINT);
+  PROCEDURE ReadLInt* (VAR R: Rider; VAR x: INTEGER);
     VAR b: ARRAY 4 OF CHAR;
   BEGIN ReadBytes(R, b, 4);
     x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
@@ -652,13 +652,13 @@ Especially Length would become fairly complex.
   END ReadLReal;
 
   PROCEDURE ReadString* (VAR R: Rider; VAR x: ARRAY OF CHAR);
-    VAR i: INTEGER; ch: CHAR;
+    VAR i: SHORTINT; ch: CHAR;
   BEGIN i := 0;
     REPEAT Read(R, ch); x[i] := ch; INC(i) UNTIL ch = 0X
   END ReadString;
 
   PROCEDURE ReadLine* (VAR R: Rider; VAR x: ARRAY OF CHAR);
-    VAR i: INTEGER; ch: CHAR; b : BOOLEAN;
+    VAR i: SHORTINT; ch: CHAR; b : BOOLEAN;
   BEGIN
     i := 0;
     b := FALSE;
@@ -673,8 +673,8 @@ Especially Length would become fairly complex.
     UNTIL b
   END ReadLine;
 
-  PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
-    VAR s: SHORTINT; ch: CHAR; n: LONGINT;
+  PROCEDURE ReadNum* (VAR R: Rider; VAR x: INTEGER);
+    VAR s: SHORTINT; ch: CHAR; n: INTEGER;
   BEGIN s := 0; n := 0; Read(R, ch);
     WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); Read(R, ch) END;
     INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
@@ -685,13 +685,13 @@ Especially Length would become fairly complex.
   BEGIN Write(R, SYSTEM.VAL(CHAR, x))
   END WriteBool;
 
-  PROCEDURE WriteInt* (VAR R: Rider; x: INTEGER);
+  PROCEDURE WriteInt* (VAR R: Rider; x: SHORTINT);
     VAR b: ARRAY 2 OF CHAR;
   BEGIN b[0] := CHR(x); b[1] := CHR(x DIV 256);
     WriteBytes(R, b, 2);
   END WriteInt;
 
-  PROCEDURE WriteLInt* (VAR R: Rider; x: LONGINT);
+  PROCEDURE WriteLInt* (VAR R: Rider; x: INTEGER);
     VAR b: ARRAY 4 OF CHAR;
   BEGIN
     b[0] := CHR(x); b[1] := CHR(x DIV 100H); b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H);
@@ -699,8 +699,8 @@ Especially Length would become fairly complex.
   END WriteLInt;
 
   PROCEDURE WriteSet* (VAR R: Rider; x: SET);
-    VAR b: ARRAY 4 OF CHAR; i: LONGINT;
-  BEGIN i := SYSTEM.VAL(LONGINT, x);
+    VAR b: ARRAY 4 OF CHAR; i: INTEGER;
+  BEGIN i := SYSTEM.VAL(INTEGER, x);
     b[0] := CHR(i); b[1] := CHR(i DIV 100H); b[2] := CHR(i DIV 10000H); b[3] := CHR(i DIV 1000000H);
     WriteBytes(R, b, 4);
   END WriteSet;
@@ -716,13 +716,13 @@ Especially Length would become fairly complex.
   END WriteLReal;
 
   PROCEDURE WriteString* (VAR R: Rider; x: ARRAY [1] OF CHAR);
-    VAR i: INTEGER;
+    VAR i: SHORTINT;
   BEGIN i := 0;
     WHILE x[i] # 0X DO INC(i) END;
     WriteBytes(R, x, i+1)
   END WriteString;
 
-  PROCEDURE WriteNum* (VAR R: Rider; x: LONGINT);
+  PROCEDURE WriteNum* (VAR R: Rider; x: INTEGER);
   BEGIN
     WHILE (x < - 64) OR (x > 63) DO Write(R, CHR(x MOD 128 + 128)); x := x DIV 128 END;
     Write(R, CHR(x MOD 128))
@@ -734,7 +734,7 @@ Especially Length would become fairly complex.
   END GetName;
 
   PROCEDURE Finalize(o: SYSTEM.PTR);
-    VAR f: File; res: LONGINT;
+    VAR f: File; res: INTEGER;
   BEGIN
     f := SYSTEM.VAL(File, o);
     (*
@@ -759,7 +759,7 @@ Especially Length would become fairly complex.
   END SetSearchPath;
 
   PROCEDURE Init;
-    VAR i: LONGINT;
+    VAR i: INTEGER;
   BEGIN
     i := 0; WHILE i < fileTabSize DO fileTab[i] := 0; INC(i) END;
     tempno := -1;
