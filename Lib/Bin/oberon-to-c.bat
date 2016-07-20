@@ -22,6 +22,10 @@ ofront+ -lse ..\Mod\CmdlnTexts.Mod
 @IF errorlevel 1 PAUSE
 
 :: OOC2
+ofront+ -lse ..\Mod\ooc2Ascii.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -lse ..\Mod\ooc2ConvTypes.Mod
+@IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\ooc2RandomNumbers.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\ooc2Strings.Mod

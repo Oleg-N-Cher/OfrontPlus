@@ -22,6 +22,8 @@
 @CALL ..\Bin\mingw %Lib% CmdlnTexts
 
 :: OOC2
+@CALL ..\Bin\mingw %Lib% ooc2Ascii
+@CALL ..\Bin\mingw %Lib% ooc2ConvTypes
 @CALL ..\Bin\mingw %Lib% ooc2RandomNumbers
 @CALL ..\Bin\mingw %Lib% ooc2Strings
 
