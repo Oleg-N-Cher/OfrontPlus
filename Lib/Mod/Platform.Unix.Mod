@@ -9,26 +9,27 @@ CONST
 
 
 TYPE
-  ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
-  SIZE_T = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
-  
+  ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
+  SIZE_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
+  TIME_T = SIZE_T;  (* time_t type is used instead of long,
+    but which is also a 32-bit representation on some systems while
+    there are even 64-bit representations on other systems. *)
+  DEV_T = LONGINT;  (* 64 bit in Linux 2.2 *)
+  INO_T = SIZE_T;   (* 32 or 64 bit *)
+
   HaltProcedure = PROCEDURE(n: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
 
   ErrorCode*  = INTEGER;
-  FileHandle* = INTEGER; (* In UNIX, a file handle is an opaque number
+  FileHandle* = INTEGER;  (* In UNIX, a file handle is an opaque number
     that is used to uniquely identify a file or other file system object.
     The only operations that can be carried out with the file handle in UNIX
     are to copy and compare it for equality with another file handle. *)
 
-  Dev  = LONGINT;  (* 64 bit in Linux 2.2 *)
-  Ino  = ADR;      (* 32 or 64 bit *)
-  Time = ADR;      (* 32 or 64 bit *)
-  
   FileIdentity* = RECORD
-    volume: Dev;   (* dev on Unix filesystems, volume serial number on NTFS *)
-    index:  Ino;   (* inode on Unix filesystems, file id on NTFS *)
-    mtime:  Time;  (* File modification time, value is system dependent *)
+    volume: DEV_T;   (* dev on Unix filesystems, volume serial number on NTFS *)
+    index:  INO_T;   (* inode on Unix filesystems, file id on NTFS *)
+    mtime:  TIME_T;  (* File modification time, value is system dependent *)
   END;
 
   EnvPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
@@ -52,21 +53,21 @@ VAR
   SeekCur-:        INTEGER;
   SeekEnd-:        INTEGER;
 
-  nl-:             ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
+  nl-:             ARRAY 2 OF CHAR;  (* Platform specific newline representation *)
 
 
 (* Unix headers to be included *)
 
-PROCEDURE -Aincludesystime  "#include <sys/time.h>";  (* for gettimeofday *)
-PROCEDURE -Aincludetime     "#include <time.h>";      (* for localtime *)
-PROCEDURE -Aincludesystypes "#include <sys/types.h>";
-PROCEDURE -Aincludeunistd   "#include <unistd.h>";
-PROCEDURE -Aincludesysstat  "#include <sys/stat.h>";
-PROCEDURE -Aincludefcntl    "#include <fcntl.h>";
-PROCEDURE -Aincludeerrno    "#include <errno.h>";
-PROCEDURE -Astdlib          "#include <stdlib.h>";
-PROCEDURE -Astdio           "#include <stdio.h>";
-PROCEDURE -Aerrno           "#include <errno.h>";
+PROCEDURE -AAincludesystime  "#include <sys/time.h>";  (* for gettimeofday *)
+PROCEDURE -AAincludetime     "#include <time.h>";      (* for localtime *)
+PROCEDURE -AAincludesystypes "#include <sys/types.h>";
+PROCEDURE -AAincludeunistd   "#include <unistd.h>";
+PROCEDURE -AAincludesysstat  "#include <sys/stat.h>";
+PROCEDURE -AAincludefcntl    "#include <fcntl.h>";
+PROCEDURE -AAincludeerrno    "#include <errno.h>";
+PROCEDURE -AAstdlib          "#include <stdlib.h>";
+PROCEDURE -AAstdio           "#include <stdio.h>";
+PROCEDURE -AAerrno           "#include <errno.h>";
 
 
 (* Error code tests *)
@@ -199,16 +200,36 @@ BEGIN sethandler(4, handler); END SetBadInstructionHandler;
 
 (* Time of day *)
 
+(* struct timeval
+   The struct timeval structure represents an elapsed time. It is declared
+   in sys/time.h and has the following members:
+
+      time_t tv_sec
+      This represents the number of whole seconds of elapsed time.
+
+      suseconds_t tv_usec
+      This is the rest of the elapsed time (a fraction of a second), represented
+      as the number of microseconds. It is always less than one million.
+
+   Using long int for tv_sec will work until year 2038, and after that the
+   tv_sec will overflow on machines where long is 4 bytes.
+    
+   That is why some are using unsigned long, as it will stop the overflow
+   until year 2100+. You should use the time_t type instead, and you won't need
+   to think about how long your program is supposed to run for in the future.
+*)
 PROCEDURE -gettimeval          "struct timeval tv; gettimeofday(&tv,0)";
-PROCEDURE -tvsec():  INTEGER   "tv.tv_sec";
-PROCEDURE -tvusec(): INTEGER   "tv.tv_usec";
-PROCEDURE -sectotm(s: INTEGER) "struct tm *time = localtime((time_t*)&s)";
-PROCEDURE -tmsec():  INTEGER   "(INTEGER)time->tm_sec";
-PROCEDURE -tmmin():  INTEGER   "(INTEGER)time->tm_min";
-PROCEDURE -tmhour(): INTEGER   "(INTEGER)time->tm_hour";
-PROCEDURE -tmmday(): INTEGER   "(INTEGER)time->tm_mday";
-PROCEDURE -tmmon():  INTEGER   "(INTEGER)time->tm_mon";
-PROCEDURE -tmyear(): INTEGER   "(INTEGER)time->tm_year";
+PROCEDURE -tvsec():  TIME_T    "(Platform_TIME_T)tv.tv_sec";
+PROCEDURE -tvusec(): INTEGER   "(INTEGER)tv.tv_usec";
+PROCEDURE -sectotm(s: TIME_T)  "struct tm *time = localtime((time_t*)&s)";
+PROCEDURE -tmsec():  INTEGER   "time->tm_sec";
+PROCEDURE -tmmin():  INTEGER   "time->tm_min";
+PROCEDURE -tmhour(): INTEGER   "time->tm_hour";
+PROCEDURE -tmmday(): INTEGER   "time->tm_mday";
+PROCEDURE -tmmon():  INTEGER   "time->tm_mon";
+PROCEDURE -tmyear(): INTEGER   "time->tm_year";
+
+PROCEDURE -timeLongint(time: TIME_T): LONGINT "((LONGINT)(SYSTEM_ADR)(time))";
 
 PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
@@ -222,16 +243,16 @@ BEGIN
   YMDHMStoClock(tmyear(), tmmon(), tmmday(), tmhour(), tmmin(), tmsec(), t, d);
 END GetClock;
 
-PROCEDURE GetTimeOfDay*(VAR sec, usec: INTEGER);
+PROCEDURE GetTimeOfDay*(VAR sec: LONGINT; usec: INTEGER);
 BEGIN
-  gettimeval; sec := tvsec(); usec := tvusec();
+  gettimeval; sec := timeLongint(tvsec()); usec := tvusec();
 END GetTimeOfDay;
 
 PROCEDURE Time*(): INTEGER;
 VAR ms: INTEGER;
 BEGIN
   gettimeval;
-  ms := (tvusec() DIV 1000) + (tvsec() * 1000);
+  ms := (tvusec() DIV 1000) + (timeLongint(tvsec()) * 1000);
   RETURN (ms - TimeStart) MOD 7FFFFFFFH
 END Time;
 
@@ -517,11 +538,11 @@ BEGIN HaltHandler := p; END SetHalt;
 
 
 PROCEDURE TestLittleEndian;
-  VAR i: SHORTINT;
+  VAR i: INTEGER;
  BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
 
 
-PROCEDURE -getpid(): SHORTINT   "(SHORTINT)getpid()";
+PROCEDURE -getpid(): INTEGER   "(INTEGER)getpid()";
 
 BEGIN
   TestLittleEndian;
