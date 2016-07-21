@@ -1,82 +1,88 @@
-MODULE Platform;
+MODULE Platform; (* Unix *)
 IMPORT SYSTEM;
+
 
 CONST
   StdIn-  = 0;
   StdOut- = 1;
   StdErr- = 2;
 
+
 TYPE
+  ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
+  SIZE_T = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
+  
   HaltProcedure = PROCEDURE(n: INTEGER);
-  SignalHandler = PROCEDURE(signal: SHORTINT);
+  SignalHandler = PROCEDURE(signal: INTEGER);
 
-  ErrorCode*  = SHORTINT;
-  FileHandle* = INTEGER;
+  ErrorCode*  = INTEGER;
+  FileHandle* = INTEGER; (* In UNIX, a file handle is an opaque number
+    that is used to uniquely identify a file or other file system object.
+    The only operations that can be carried out with the file handle in UNIX
+    are to copy and compare it for equality with another file handle. *)
 
+  Dev  = LONGINT;  (* 64 bit in Linux 2.2 *)
+  Ino  = ADR;      (* 32 or 64 bit *)
+  Time = ADR;      (* 32 or 64 bit *)
+  
   FileIdentity* = RECORD
-    volume*: INTEGER;  (* dev on Unix filesystems, volume serial number on NTFS *)
-    index*:  INTEGER;  (* inode on Unix filesystems, file id on NTFS *)
-    mtime*:  INTEGER;  (* File modification time, value is system dependent *)
+    volume: Dev;   (* dev on Unix filesystems, volume serial number on NTFS *)
+    index:  Ino;   (* inode on Unix filesystems, file id on NTFS *)
+    mtime:  Time;  (* File modification time, value is system dependent *)
   END;
 
-  ADR       = POINTER [1] TO ARRAY [1] 1 OF CHAR;
-  EnvPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
-  ArgPtr    = POINTER [1] TO ARRAY 1024 OF CHAR;
-  ArgVec*   = POINTER [1] TO ARRAY 1024 OF ArgPtr;
+  EnvPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
+  ArgPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
+  ArgVec*   = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
 
 
 VAR
   LittleEndian-:   BOOLEAN;
   MainStackFrame-: ADR;
   HaltCode-:       INTEGER;
-  PID-:            SHORTINT;    (* Note: Must be updated by Fork implementation *)
+  PID-:            INTEGER;    (* Note: Must be updated by Fork implementation *)
   CWD-:            ARRAY 256 OF CHAR;
-  ArgCount-:       SHORTINT;
+  ArgCount-:       INTEGER;
 
   ArgVector-:      ArgVec;
   HaltHandler:     HaltProcedure;
-  TimeStart:       INTEGER;
+  TimeStart:       INTEGER; (* milliseconds *)
 
-  SeekSet-:        SHORTINT;
-  SeekCur-:        SHORTINT;
-  SeekEnd-:        SHORTINT;
+  SeekSet-:        INTEGER;
+  SeekCur-:        INTEGER;
+  SeekEnd-:        INTEGER;
 
   nl-:             ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
 
 
-
 (* Unix headers to be included *)
 
-PROCEDURE -Aincludesystime  '#include <sys/time.h>';  (* for gettimeofday *)
-PROCEDURE -Aincludetime     '#include <time.h>';      (* for localtime *)
-PROCEDURE -Aincludesystypes '#include <sys/types.h>';
-PROCEDURE -Aincludeunistd   '#include <unistd.h>';
-PROCEDURE -Aincludesysstat  '#include <sys/stat.h>';
-PROCEDURE -Aincludefcntl    '#include <fcntl.h>';
-PROCEDURE -Aincludeerrno    '#include <errno.h>';
-PROCEDURE -Astdlib          '#include <stdlib.h>';
-PROCEDURE -Astdio           '#include <stdio.h>';
-PROCEDURE -Aerrno           '#include <errno.h>';
-
-
+PROCEDURE -Aincludesystime  "#include <sys/time.h>";  (* for gettimeofday *)
+PROCEDURE -Aincludetime     "#include <time.h>";      (* for localtime *)
+PROCEDURE -Aincludesystypes "#include <sys/types.h>";
+PROCEDURE -Aincludeunistd   "#include <unistd.h>";
+PROCEDURE -Aincludesysstat  "#include <sys/stat.h>";
+PROCEDURE -Aincludefcntl    "#include <fcntl.h>";
+PROCEDURE -Aincludeerrno    "#include <errno.h>";
+PROCEDURE -Astdlib          "#include <stdlib.h>";
+PROCEDURE -Astdio           "#include <stdio.h>";
+PROCEDURE -Aerrno           "#include <errno.h>";
 
 
 (* Error code tests *)
 
-PROCEDURE -EMFILE():       ErrorCode 'EMFILE';
-PROCEDURE -ENFILE():       ErrorCode 'ENFILE';
-PROCEDURE -ENOENT():       ErrorCode 'ENOENT';
-PROCEDURE -EXDEV():        ErrorCode 'EXDEV';
-PROCEDURE -EACCES():       ErrorCode 'EACCES';
-PROCEDURE -EROFS():        ErrorCode 'EROFS';
-PROCEDURE -EAGAIN():       ErrorCode 'EAGAIN';
-PROCEDURE -ETIMEDOUT():    ErrorCode 'ETIMEDOUT';
-PROCEDURE -ECONNREFUSED(): ErrorCode 'ECONNREFUSED';
-PROCEDURE -ECONNABORTED(): ErrorCode 'ECONNABORTED';
-PROCEDURE -ENETUNREACH():  ErrorCode 'ENETUNREACH';
-PROCEDURE -EHOSTUNREACH(): ErrorCode 'EHOSTUNREACH';
-
-
+PROCEDURE -EMFILE():       ErrorCode "EMFILE";
+PROCEDURE -ENFILE():       ErrorCode "ENFILE";
+PROCEDURE -ENOENT():       ErrorCode "ENOENT";
+PROCEDURE -EXDEV():        ErrorCode "EXDEV";
+PROCEDURE -EACCES():       ErrorCode "EACCES";
+PROCEDURE -EROFS():        ErrorCode "EROFS";
+PROCEDURE -EAGAIN():       ErrorCode "EAGAIN";
+PROCEDURE -ETIMEDOUT():    ErrorCode "ETIMEDOUT";
+PROCEDURE -ECONNREFUSED(): ErrorCode "ECONNREFUSED";
+PROCEDURE -ECONNABORTED(): ErrorCode "ECONNABORTED";
+PROCEDURE -ENETUNREACH():  ErrorCode "ENETUNREACH";
+PROCEDURE -EHOSTUNREACH(): ErrorCode "EHOSTUNREACH";
 
 
 PROCEDURE TooManyFiles*(e: ErrorCode): BOOLEAN;
@@ -102,17 +108,13 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
           OR (e = ENETUNREACH())  OR (e = EHOSTUNREACH()) END ConnectionFailed;
 
 
-
-
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): INTEGER "(INTEGER)(SYSTEM_ADR)((void*)malloc((size_t)size))";
-PROCEDURE OSAllocate*(size: INTEGER): INTEGER; BEGIN RETURN allocate(size) END OSAllocate;
+PROCEDURE -allocate(size: SIZE_T): ADR "((Platform_ADR)malloc((size_t)size))";
+PROCEDURE OSAllocate*(size: SIZE_T): ADR; BEGIN RETURN allocate(size) END OSAllocate;
 
-PROCEDURE -free(address: INTEGER) "free((void*)(SYSTEM_ADR)address)";
-PROCEDURE OSFree*(address: INTEGER); BEGIN free(address) END OSFree;
-
-
+PROCEDURE -free(address: ADR) "free((void*)address)";
+PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
 
 
 (* Program startup *)
@@ -120,7 +122,7 @@ PROCEDURE OSFree*(address: INTEGER); BEGIN free(address) END OSFree;
 PROCEDURE -ExternInitHeap  "extern void Heap_InitHeap();";
 PROCEDURE -HeapInitHeap()  "Heap_InitHeap()";
 
-PROCEDURE Init*(argc: SHORTINT; argvadr: SYSTEM.PTR);
+PROCEDURE Init*(argc: INTEGER; argvadr: SYSTEM.PTR);
 TYPE
   ArgVecPtr = POINTER [1] TO ARRAY [1] 1 OF ArgVec;
 VAR
@@ -129,7 +131,7 @@ BEGIN
   MainStackFrame := SYSTEM.VAL(ADR, argvadr);
   ArgCount       := argc;
   av             := SYSTEM.VAL(ArgVecPtr, argvadr);
-  ArgVector      := SYSTEM.VAL(ArgVec, av[0]);
+  ArgVector      := av[0];
   HaltCode       := -128;
 
   (* This function (Platform.Init) is called at program startup BEFORE any
@@ -137,8 +139,6 @@ BEGIN
      before module startup (xxx__init) code is run. *)
   HeapInitHeap();
 END Init;
-
-
 
 
 (* Program arguments and environment access *)
@@ -150,7 +150,7 @@ PROCEDURE getEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
 BEGIN
   p := getenv(var);
   IF p # NIL THEN COPY(p^, val) END;
-  RETURN p # NIL;
+  RETURN p # NIL
 END getEnv;
 
 PROCEDURE GetEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
@@ -163,8 +163,8 @@ BEGIN
   IF n < ArgCount THEN COPY(ArgVector[n]^, val) END
 END GetArg;
 
-PROCEDURE GetIntArg*(n: SHORTINT; VAR val: SHORTINT);
-  VAR s: ARRAY 64 OF CHAR; k, d, i: SHORTINT;
+PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);
+  VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
 BEGIN
   s := ""; GetArg(n, s); i := 0;
   IF s[0] = "-" THEN i := 1 END ;
@@ -174,8 +174,8 @@ BEGIN
   IF i > 0 THEN val := k END
 END GetIntArg;
 
-PROCEDURE ArgPos*(s: ARRAY OF CHAR): SHORTINT;
-  VAR i: SHORTINT; arg: ARRAY 256 OF CHAR;
+PROCEDURE ArgPos*(s: ARRAY OF CHAR): INTEGER;
+  VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 BEGIN
   i := 0; GetArg(i, arg);
   WHILE (i < ArgCount) & (s # arg) DO INC(i); GetArg(i, arg) END ;
@@ -183,12 +183,9 @@ BEGIN
 END ArgPos;
 
 
-
-
-
 (* Signals and traps *)
 
-PROCEDURE -sethandler(s: SHORTINT; h: SignalHandler) "SystemSetHandler(s, (SYSTEM_ADR)h)";
+PROCEDURE -sethandler(s: INTEGER; h: SignalHandler) "SystemSetHandler(s, (SYSTEM_ADR)h)";
 
 PROCEDURE SetInterruptHandler*(handler: SignalHandler);
 BEGIN sethandler(2, handler); END SetInterruptHandler;
@@ -198,8 +195,6 @@ BEGIN sethandler(3, handler); END SetQuitHandler;
 
 PROCEDURE SetBadInstructionHandler*(handler: SignalHandler);
 BEGIN sethandler(4, handler); END SetBadInstructionHandler;
-
-
 
 
 (* Time of day *)
@@ -215,7 +210,7 @@ PROCEDURE -tmmday(): INTEGER   "(INTEGER)time->tm_mday";
 PROCEDURE -tmmon():  INTEGER   "(INTEGER)time->tm_mon";
 PROCEDURE -tmyear(): INTEGER   "(INTEGER)time->tm_year";
 
-PROCEDURE YMDHMStoClock(ye,mo,da,ho,mi,se: INTEGER; VAR t, d: INTEGER);
+PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
   d := ASH(ye MOD 100, 9) + ASH(mo+1, 5) + da;
   t := ASH(ho, 12)        + ASH(mi, 6)   + se;
@@ -237,9 +232,8 @@ VAR ms: INTEGER;
 BEGIN
   gettimeval;
   ms := (tvusec() DIV 1000) + (tvsec() * 1000);
-  RETURN (ms - TimeStart) MOD 7FFFFFFFH;
+  RETURN (ms - TimeStart) MOD 7FFFFFFFH
 END Time;
-
 
 PROCEDURE -nanosleep(s: INTEGER; ns: INTEGER) "struct timespec req, rem; req.tv_sec = s; req.tv_nsec = ns; nanosleep(&req, &rem)";
 
@@ -252,8 +246,6 @@ BEGIN
 END Delay;
 
 
-
-
 (* System call *)
 
 PROCEDURE -system(str: ARRAY OF CHAR): SHORTINT "system((char*)str)";
@@ -261,7 +253,7 @@ PROCEDURE -err(): SHORTINT "errno";
 
 
 PROCEDURE System*(cmd : ARRAY OF CHAR): SHORTINT;
-BEGIN RETURN system(cmd); END System;
+BEGIN RETURN system(cmd) END System;
 
 PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
@@ -362,7 +354,7 @@ BEGIN
   structstats;
   IF fstat(h) < 0 THEN RETURN err() END;
   l := statsize();
-  RETURN 0;
+  RETURN 0
 END Size;
 
 
@@ -463,16 +455,16 @@ PROCEDURE -exit(code: SHORTINT) "exit(code)";
 PROCEDURE Exit*(code: SHORTINT);
 BEGIN exit(code) END Exit;
 
-PROCEDURE -errstring(s: ARRAY OF CHAR) 'write(1, s, s__len-1)';
-PROCEDURE -errc     (c: CHAR)          'write(1, &c, 1)';
+PROCEDURE -errstring(s: ARRAY OF CHAR) "write(1, s, s__len-1)";
+PROCEDURE -errc     (c: CHAR)          "write(1, &c, 1)";
 PROCEDURE errch(c: CHAR); BEGIN errc(c) END errch;
 PROCEDURE errln; BEGIN errch(0DX); errch(0AX) END errln;
 
 PROCEDURE errposint(l: INTEGER);
-BEGIN IF l>10 THEN errposint(l DIV 10) END; errch(CHR(ORD('0') + (l MOD 10))) END errposint;
+BEGIN IF l>10 THEN errposint(l DIV 10) END; errch(CHR(ORD("0") + (l MOD 10))) END errposint;
 
 PROCEDURE errint(l: INTEGER);
-BEGIN IF l<0 THEN errch('-'); l := -l END; errposint(l) END errint;
+BEGIN IF l<0 THEN errch("-"); l := -l END; errposint(l) END errint;
 
 PROCEDURE DisplayHaltCode(code: INTEGER);
 BEGIN
