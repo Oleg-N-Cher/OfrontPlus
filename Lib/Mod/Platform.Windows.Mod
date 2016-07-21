@@ -10,15 +10,14 @@ IMPORT SYSTEM;
 TYPE
   ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
   SIZE_T = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
-  WORD = SHORTINT; (* 16 bit *)
   DWORD = INTEGER; (* 32 bit *)
   
   HaltProcedure = PROCEDURE(n: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
 
   ErrorCode*  = INTEGER;
-  FileHandle* = ADR; (* In Windows, the file handle is used to identify a file.
-    When a file is opened by a process using the CreateFile function,
+  FileHandle* = SIZE_T;  (* In Windows, the file handle is used to identify
+    a file. When a file is opened by a process using the CreateFile function,
     a file handle is associated with it until either the process terminates
     or the handle is closed by using the CloseHandle function. But a HANDLE
     is not a memory address. Although HANDLE is typedef'd as void *, that's
@@ -32,21 +31,21 @@ TYPE
     mtimelow:  DWORD;  (* File modification time, value is system dependent *)
   END;
 
-  ArgPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
-  ArgVec*   = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
+  ArgPtr  = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
+  ArgVec* = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
 
 
 VAR
   LittleEndian-:    BOOLEAN;
   MainStackFrame-:  ADR;
   HaltCode-:        INTEGER;
-  PID-:             INTEGER;    (* Note: Must be updated by Fork implementation *)
+  PID-:             DWORD;  (* Note: Must be updated by Fork implementation *)
   CWD-:             ARRAY 4096 OF CHAR;
   ArgCount-:        INTEGER;
 
   ArgVector-:       ArgVec;
   HaltHandler:      HaltProcedure;
-  TimeStart:        DWORD;      (* milliseconds *)
+  TimeStart:        DWORD;  (* milliseconds *)
 
   SeekSet-:         INTEGER;
   SeekCur-:         INTEGER;
@@ -209,15 +208,15 @@ BEGIN (* TODO *) END SetBadInstructionHandler;
 (* Time of day *)
 
 PROCEDURE -getLocalTime  "SYSTEMTIME st; GetLocalTime(&st)";
-PROCEDURE -stmsec(): WORD  "(SHORTINT)st.wMilliseconds";
-PROCEDURE -stsec():  WORD  "(SHORTINT)st.wSecond";
-PROCEDURE -stmin():  WORD  "(SHORTINT)st.wMinute";
-PROCEDURE -sthour(): WORD  "(SHORTINT)st.wHour";
-PROCEDURE -stmday(): WORD  "(SHORTINT)st.wDay";
-PROCEDURE -stmon():  WORD  "(SHORTINT)st.wMonth";
-PROCEDURE -styear(): WORD  "(SHORTINT)st.wYear";
+PROCEDURE -stmsec(): INTEGER  "(INTEGER)(unsigned)st.wMilliseconds";
+PROCEDURE -stsec():  INTEGER  "(INTEGER)(unsigned)st.wSecond";
+PROCEDURE -stmin():  INTEGER  "(INTEGER)(unsigned)st.wMinute";
+PROCEDURE -sthour(): INTEGER  "(INTEGER)(unsigned)st.wHour";
+PROCEDURE -stmday(): INTEGER  "(INTEGER)(unsigned)st.wDay";
+PROCEDURE -stmon():  INTEGER  "(INTEGER)(unsigned)st.wMonth";
+PROCEDURE -styear(): INTEGER  "(INTEGER)(unsigned)st.wYear";
 
-PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: WORD; VAR t, d: INTEGER);
+PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
   d := ASH(ye MOD 100, 9) + ASH(mo+1, 5) + da;
   t := ASH(ho, 12)        + ASH(mi, 6)   + se;
@@ -229,9 +228,9 @@ BEGIN
   YMDHMStoClock(styear(), stmon(), stmday(), sthour(), stmin(), stsec(), t, d);
 END GetClock;
 
-PROCEDURE GetTimeOfDay*(VAR sec, usec: INTEGER);
+PROCEDURE GetTimeOfDay*(VAR sec: LONGINT; usec: INTEGER);
 BEGIN
-  getLocalTime; sec := stsec(); usec := LONG(stmsec()) * 1000;
+  getLocalTime; sec := stsec(); usec := stmsec() * 1000;
 END GetTimeOfDay;
 
 PROCEDURE -GetTickCount(): DWORD "(INTEGER)GetTickCount()";
@@ -579,7 +578,7 @@ PROCEDURE TestLittleEndian;
 PROCEDURE -getstdinhandle():  FileHandle "(SYSTEM_ADR)GetStdHandle(STD_INPUT_HANDLE)";
 PROCEDURE -getstdouthandle(): FileHandle "(SYSTEM_ADR)GetStdHandle(STD_OUTPUT_HANDLE)";
 PROCEDURE -getstderrhandle(): FileHandle "(SYSTEM_ADR)GetStdHandle(STD_ERROR_HANDLE)";
-PROCEDURE -getpid():          INTEGER    "(INTEGER)GetCurrentProcessId()";
+PROCEDURE -getpid():          DWORD    "(INTEGER)GetCurrentProcessId()";
 
 BEGIN
   TestLittleEndian;
