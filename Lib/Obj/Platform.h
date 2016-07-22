@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -spke */
+/*  Ofront 1.2 -xtspkae */
 
 #ifndef Platform__h
 #define Platform__h
