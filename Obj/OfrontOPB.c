@@ -966,7 +966,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 				}
 			} else if (__IN(f, 0x0180)) {
 				temp = __ABS(yval->realval) <= (LONGREAL)1;
-				if (temp || __ABS(xval->realval) <= 1.797693134862316E+308 / (LONGREAL)__ABS(yval->realval)) {
+				if (temp || __ABS(xval->realval) <= OfrontOPM_MaxLReal / (LONGREAL)__ABS(yval->realval)) {
 					xval->realval = xval->realval * yval->realval;
 					OfrontOPB_CheckRealType(f, 204, xval);
 				} else {
@@ -990,7 +990,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 				x->typ = OfrontOPT_realtyp;
 			} else if (__IN(f, 0x0180)) {
 				temp = __ABS(yval->realval) >= (LONGREAL)1;
-				if (temp || __ABS(xval->realval) <= 1.797693134862316E+308 * __ABS(yval->realval)) {
+				if (temp || __ABS(xval->realval) <= OfrontOPM_MaxLReal * __ABS(yval->realval)) {
 					xval->realval = xval->realval / yval->realval;
 					OfrontOPB_CheckRealType(f, 205, xval);
 				} else {
@@ -1043,8 +1043,8 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 					OfrontOPB_err(206);
 				}
 			} else if (__IN(f, 0x0180)) {
-				temp = yval->realval >= (LONGREAL)0 && xval->realval <= 1.797693134862316E+308 - yval->realval;
-				if (temp || yval->realval < (LONGREAL)0 && xval->realval >= -1.797693134862316E+308 - yval->realval) {
+				temp = yval->realval >= (LONGREAL)0 && xval->realval <= OfrontOPM_MaxLReal - yval->realval;
+				if (temp || yval->realval < (LONGREAL)0 && xval->realval >= -OfrontOPM_MaxLReal - yval->realval) {
 					xval->realval = xval->realval + yval->realval;
 					OfrontOPB_CheckRealType(f, 206, xval);
 				} else {
@@ -1065,8 +1065,8 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 					OfrontOPB_err(207);
 				}
 			} else if (__IN(f, 0x0180)) {
-				temp = yval->realval >= (LONGREAL)0 && xval->realval >= -1.797693134862316E+308 + yval->realval;
-				if (temp || yval->realval < (LONGREAL)0 && xval->realval <= 1.797693134862316E+308 + yval->realval) {
+				temp = yval->realval >= (LONGREAL)0 && xval->realval >= -OfrontOPM_MaxLReal + yval->realval;
+				if (temp || yval->realval < (LONGREAL)0 && xval->realval <= OfrontOPM_MaxLReal + yval->realval) {
 					xval->realval = xval->realval - yval->realval;
 					OfrontOPB_CheckRealType(f, 207, xval);
 				} else {
