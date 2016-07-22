@@ -575,7 +575,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) <= 1.0;
-					IF temp OR (ABS(xval^.realval) <= MAX(LONGREAL) / ABS(yval^.realval)) THEN
+					IF temp OR (ABS(xval^.realval) <= OPM.MaxLReal / ABS(yval^.realval)) THEN
 						xval^.realval := xval^.realval * yval^.realval; CheckRealType(f, 204, xval)
 					ELSE err(204)
 					END
@@ -592,7 +592,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					x^.typ := OPT.realtyp
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) >= 1.0;
-					IF temp OR (ABS(xval^.realval) <= MAX(LONGREAL) * ABS(yval^.realval)) THEN
+					IF temp OR (ABS(xval^.realval) <= OPM.MaxLReal * ABS(yval^.realval)) THEN
 						xval^.realval := xval^.realval / yval^.realval; CheckRealType(f, 205, xval)
 					ELSE err(205)
 					END
@@ -629,8 +629,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(206)
 					END
 				ELSIF f IN realSet THEN
-					temp := (yval^.realval >= 0.0) & (xval^.realval <= MAX(LONGREAL) - yval^.realval);
-					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= -MAX(LONGREAL) - yval^.realval) THEN
+					temp := (yval^.realval >= 0.0) & (xval^.realval <= OPM.MaxLReal - yval^.realval);
+					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= -OPM.MaxLReal - yval^.realval) THEN
 							xval^.realval := xval^.realval + yval^.realval; CheckRealType(f, 206, xval)
 					ELSE err(206)
 					END
@@ -646,8 +646,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(207)
 					END
 				ELSIF f IN realSet THEN
-					temp := (yval^.realval >= 0.0) & (xval^.realval >= -MAX(LONGREAL) + yval^.realval);
-					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= MAX(LONGREAL) + yval^.realval) THEN
+					temp := (yval^.realval >= 0.0) & (xval^.realval >= -OPM.MaxLReal + yval^.realval);
+					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= OPM.MaxLReal + yval^.realval) THEN
 							xval^.realval := xval^.realval - yval^.realval; CheckRealType(f, 207, xval)
 					ELSE err(207)
 					END
