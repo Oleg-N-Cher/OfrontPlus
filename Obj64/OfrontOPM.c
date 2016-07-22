@@ -908,12 +908,12 @@ void OfrontOPM_PromoteIntConstToLInt (void)
 /*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
-	__ENUMR(&OfrontOPM_inR, CmdlnTexts_Reader__typ, 96, 1, P);
+	__ENUMR(&OfrontOPM_inR, CmdlnTexts_Reader__typ, 80, 1, P);
 	P(OfrontOPM_Log);
-	__ENUMR(&OfrontOPM_W, CmdlnTexts_Writer__typ, 72, 1, P);
-	__ENUMR(&OfrontOPM_oldSF, Files_Rider__typ, 40, 1, P);
-	__ENUMR(&OfrontOPM_newSF, Files_Rider__typ, 40, 1, P);
-	__ENUMR(OfrontOPM_R, Files_Rider__typ, 40, 3, P);
+	__ENUMR(&OfrontOPM_W, CmdlnTexts_Writer__typ, 56, 1, P);
+	__ENUMR(&OfrontOPM_oldSF, Files_Rider__typ, 24, 1, P);
+	__ENUMR(&OfrontOPM_newSF, Files_Rider__typ, 24, 1, P);
+	__ENUMR(OfrontOPM_R, Files_Rider__typ, 24, 3, P);
 	P(OfrontOPM_oldSFile);
 	P(OfrontOPM_newSFile);
 	P(OfrontOPM_HFile);
