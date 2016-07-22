@@ -103,13 +103,13 @@ export void Heap_Unlock (void);
 
 #include "Platform.h"
 extern void *Heap__init();
-extern Heap_ADR Platform_MainStackFrame;
-extern LONGINT Platform_OSAllocate(LONGINT size);
+extern SYSTEM_PTR Platform_MainStackFrame;
+extern SYSTEM_PTR Platform_OSAllocate(INTEGER size);
 #define Heap_FetchAddress(pointer)	(LONGINT)(SYSTEM_ADR)(*((void**)((SYSTEM_ADR)pointer)))
 #define Heap_HeapModuleInit()	Heap__init()
-#define Heap_OSAllocate(size)	Platform_OSAllocate(size)
+#define Heap_OSAllocate(size)	(LONGINT)(SYSTEM_ADR)Platform_OSAllocate(size)
 #define Heap_PlatformHalt(code)	Platform_Halt(code)
-#define Heap_PlatformMainStackFrame()	((LONGINT)Platform_MainStackFrame)
+#define Heap_PlatformMainStackFrame()	((LONGINT)(SYSTEM_ADR)Platform_MainStackFrame)
 
 /*============================================================================*/
 
@@ -178,7 +178,7 @@ void Heap_INCREF (Heap_Module m)
 static LONGINT Heap_NewChunk (LONGINT blksz)
 {
 	LONGINT chnk;
-	chnk = Heap_OSAllocate(blksz + 12);
+	chnk = Heap_OSAllocate((INTEGER)(blksz + 12));
 	if (chnk != 0) {
 		__PUT((Heap_ADR)(chnk + 4), chnk + (12 + blksz), LONGINT);
 		__PUT((Heap_ADR)(chnk + 12), chnk + 16, LONGINT);
