@@ -8,10 +8,10 @@ IMPORT SYSTEM;
 
 
 TYPE
+  Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
   MemAdr* = SYSTEM.PTR; (** Here it is not used as a GC pointer type *)
 
-  DWORD = INTEGER; (* 32 bit *)
-  BOOL = INTEGER; (* 32 bit *)
+  BOOL = Int32; DWORD = Int32;
 
   HaltProcedure = PROCEDURE(n: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
@@ -26,7 +26,7 @@ TYPE
      more opaque because it prohibits arithmetic. *)
 
   FileIdentity* = RECORD
-    volume:    DWORD;  (* dev on Unix filesystems, volume serial number on NTFS *)
+    volume:    DWORD;(* dev on Unix filesystems, volume serial number on NTFS *)
     indexhigh: DWORD;  (* inode on Unix filesystems, file id on NTFS *)
     indexlow:  DWORD;
     mtimehigh: DWORD;  (* File modification time, value is system dependent *)
@@ -578,7 +578,7 @@ BEGIN
 
   HaltCode    := -128;
   HaltHandler := NIL;
-  TimeStart   := 0;   TimeStart := Time();
+  TimeStart   := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
   CWD         := "";  getCurrentDirectory(CWD);
   PID         := getpid();
 
@@ -590,7 +590,5 @@ BEGIN
   StdOut := getstdouthandle();
   StdErr := getstderrhandle();
 
-  nl[0] := 0DX;  (* CR *)
-  nl[1] := 0AX;  (* LF *)
-  nl[2] := 0X;
+  nl[0] := 0DX; nl[1] := 0AX; nl[2] := 0X; (* CR LF *)
 END Platform.
