@@ -1,0 +1,25 @@
+MODULE TestFiles;
+IMPORT Files, Texts := CmdlnTexts, Console;
+
+CONST
+  file="TestFiles.Mod";
+
+VAR 
+  t: Texts.Text; r: Texts.Reader; f: Files.File; ch: CHAR;
+
+BEGIN
+  f := Files.Old (file);
+  IF f # NIL THEN
+    NEW(t);
+    Texts.Open(t, file);
+    Texts.OpenReader(r, t, 0);
+    Texts.Read (r, ch);
+    WHILE ~r.eot DO
+      Console.Char(ch);
+      IF ch = 0DX THEN Console.Char(0AX) END;
+      Texts.Read (r, ch);
+    END;
+  ELSE
+    Console.String ("cannot open"); Console.Ln;
+  END;
+END TestFiles.
