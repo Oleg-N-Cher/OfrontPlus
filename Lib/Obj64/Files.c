@@ -6,13 +6,13 @@
 #include "Strings.h"
 
 typedef
-	struct Files_Handle *Files_File;
+	struct Files_FileDesc *Files_File;
 
 typedef
 	struct Files_BufDesc {
 		Files_File f;
 		BOOLEAN chg;
-		LONGINT org, size;
+		INTEGER org, size;
 		BYTE data[4096];
 	} Files_BufDesc;
 
@@ -23,33 +23,35 @@ typedef
 	CHAR Files_FileName[101];
 
 typedef
-	struct Files_Handle {
+	struct Files_FileDesc {
 		Files_FileName workName, registerName;
 		BOOLEAN tempFile;
 		Platform_FileIdentity identity;
-		LONGINT fd, len, pos;
+		Platform_FileHandle fd;
+		INTEGER len, pos;
 		Files_Buffer bufs[4];
-		INTEGER swapper, state;
-	} Files_Handle;
+		SHORTINT swapper, state;
+		Files_File next;
+	} Files_FileDesc;
 
 typedef
 	struct Files_Rider {
-		LONGINT res;
+		INTEGER res;
 		BOOLEAN eof;
 		Files_Buffer buf;
-		LONGINT org, offset;
+		INTEGER org, offset;
 	} Files_Rider;
 
 
-static LONGINT Files_fileTab[256];
-static INTEGER Files_tempno;
+static Files_File Files_files;
+static SHORTINT Files_tempno;
 static CHAR Files_HOME[1024];
 static struct {
 	LONGINT len[1];
 	CHAR data[1];
 } *Files_SearchPath;
 
-export LONGINT *Files_Handle__typ;
+export LONGINT *Files_FileDesc__typ;
 export LONGINT *Files_BufDesc__typ;
 export LONGINT *Files_Rider__typ;
 
@@ -57,27 +59,27 @@ export Files_File Files_Base (Files_Rider *r, LONGINT *r__typ);
 static Files_File Files_CacheEntry (Platform_FileIdentity identity);
 export void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res);
 export void Files_Close (Files_File f);
+static void Files_CloseOSFile (Files_File f);
 static void Files_Create (Files_File f);
 export void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res);
 static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, INTEGER errcode);
 static void Files_Finalize (SYSTEM_PTR o);
 static void Files_FlipBytes (BYTE *src, LONGINT src__len, BYTE *dest, LONGINT dest__len);
 static void Files_Flush (Files_Buffer buf);
-export void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d);
+export void Files_GetDate (Files_File f, INTEGER *t, INTEGER *d);
 export void Files_GetName (Files_File f, CHAR *name, LONGINT name__len);
 static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *name, LONGINT name__len);
 static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len);
-static void Files_Init (void);
-export LONGINT Files_Length (Files_File f);
+export INTEGER Files_Length (Files_File f);
 static void Files_MakeFileName (CHAR *dir, LONGINT dir__len, CHAR *name, LONGINT name__len, CHAR *dest, LONGINT dest__len);
 export Files_File Files_New (CHAR *name, LONGINT name__len);
 export Files_File Files_Old (CHAR *name, LONGINT name__len);
-export LONGINT Files_Pos (Files_Rider *r, LONGINT *r__typ);
+export INTEGER Files_Pos (Files_Rider *r, LONGINT *r__typ);
 export void Files_Purge (Files_File f);
 export void Files_Read (Files_Rider *r, LONGINT *r__typ, BYTE *x);
 export void Files_ReadBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN *x);
 export void Files_ReadByte (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len);
-export void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n);
+export void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, INTEGER n);
 export void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x);
 export void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x);
 export void Files_ReadLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL *x);
@@ -88,12 +90,12 @@ export void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x);
 export void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len);
 export void Files_Register (Files_File f);
 export void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res);
-static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len);
-export void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos);
+static void Files_ScanPath (SHORTINT *pos, CHAR *dir, LONGINT dir__len);
+export void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, INTEGER pos);
 export void Files_SetSearchPath (CHAR *path, LONGINT path__len);
 export void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x);
 export void Files_WriteBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN x);
-export void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n);
+export void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, INTEGER n);
 export void Files_WriteInt (Files_Rider *R, LONGINT *R__typ, INTEGER x);
 export void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x);
 export void Files_WriteLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL x);
@@ -103,6 +105,8 @@ export void Files_WriteSet (Files_Rider *R, LONGINT *R__typ, SET x);
 export void Files_WriteString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len);
 
 #define Files_IdxTrap()	__HALT(-1)
+#define Files_fdLongint(fd)	((LONGINT)(SYSTEM_ADR)(fd))
+#define Files_noDesc()	((Platform_FileHandle)(SYSTEM_ADR)-1)
 
 /*============================================================================*/
 
@@ -119,9 +123,9 @@ static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, INTEGER errcode)
 		} else {
 			Console_String(f->workName, 101);
 		}
-		if (f->fd != 0) {
+		if (Files_fdLongint(f->fd) != 0) {
 			Console_String((CHAR*)"f.fd = ", (LONGINT)8);
-			Console_LongInt(f->fd, 1);
+			Console_LongInt(Files_fdLongint(f->fd), 1);
 		}
 	}
 	if (errcode != 0) {
@@ -135,7 +139,7 @@ static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, INTEGER errcode)
 
 static void Files_MakeFileName (CHAR *dir, LONGINT dir__len, CHAR *name, LONGINT name__len, CHAR *dest, LONGINT dest__len)
 {
-	INTEGER i, j;
+	SHORTINT i, j;
 	__DUP(dir, dir__len, CHAR);
 	__DUP(name, name__len, CHAR);
 	i = 0;
@@ -160,7 +164,7 @@ static void Files_MakeFileName (CHAR *dir, LONGINT dir__len, CHAR *name, LONGINT
 
 static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *name, LONGINT name__len)
 {
-	LONGINT n, i, j;
+	INTEGER n, i, j;
 	__DUP(finalName, finalName__len, CHAR);
 	Files_tempno += 1;
 	n = Files_tempno;
@@ -192,7 +196,7 @@ static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *na
 	name[__X(i + 5, name__len)] = '.';
 	i += 6;
 	while (n > 0) {
-		name[__X(i, name__len)] = (CHAR)(__MOD(n, 10) + 48);
+		name[__X(i, name__len)] = (CHAR)((INTEGER)__MOD(n, 10) + 48);
 		n = __DIV(n, 10);
 		i += 1;
 	}
@@ -200,7 +204,7 @@ static void Files_GetTempName (CHAR *finalName, LONGINT finalName__len, CHAR *na
 	i += 1;
 	n = Platform_PID;
 	while (n > 0) {
-		name[__X(i, name__len)] = (CHAR)(__MOD(n, 10) + 48);
+		name[__X(i, name__len)] = (CHAR)((INTEGER)__MOD(n, 10) + 48);
 		n = __DIV(n, 10);
 		i += 1;
 	}
@@ -214,7 +218,7 @@ static void Files_Create (Files_File f)
 	BOOLEAN done;
 	INTEGER error;
 	CHAR err[32];
-	if (f->fd == -1) {
+	if (f->fd == Files_noDesc()) {
 		if (f->state == 1) {
 			Files_GetTempName(f->registerName, 101, (void*)f->workName, 101);
 			f->tempFile = 1;
@@ -226,26 +230,14 @@ static void Files_Create (Files_File f)
 		error = Platform_Unlink((void*)f->workName, 101);
 		error = Platform_New((void*)f->workName, 101, &f->fd);
 		done = error == 0;
-		if (!done && Platform_TooManyFiles(error) || done && f->fd >= 256) {
-			if (done && f->fd >= 256) {
-				error = Platform_Close(f->fd);
-			}
-			Heap_GC(1);
-			error = Platform_New((void*)f->workName, 101, &f->fd);
-			done = f->fd == 0;
-		}
 		if (done) {
-			if (f->fd >= 256) {
-				error = Platform_Close(f->fd);
-				Files_Err((CHAR*)"too many files open", (LONGINT)20, f, 0);
-			} else {
-				Files_fileTab[__X(f->fd, 256)] = (LONGINT)f;
-				Heap_FileCount += 1;
-				Heap_RegisterFinalizer((void*)f, Files_Finalize);
-				f->state = 0;
-				f->pos = 0;
-				error = Platform_Identify(f->fd, &f->identity, Platform_FileIdentity__typ);
-			}
+			f->next = Files_files;
+			Files_files = f;
+			Heap_FileCount += 1;
+			Heap_RegisterFinalizer((void*)f, Files_Finalize);
+			f->state = 0;
+			f->pos = 0;
+			error = Platform_Identify(f->fd, &f->identity, Platform_FileIdentity__typ);
 		} else {
 			if (Platform_NoSuchDirectory(error)) {
 				__MOVE("no such directory", err, 18);
@@ -269,7 +261,7 @@ static void Files_Flush (Files_Buffer buf)
 		if (buf->org != f->pos) {
 			error = Platform_Seek(f->fd, buf->org, Platform_SeekSet);
 		}
-		error = Platform_Write(f->fd, (LONGINT)buf->data, buf->size);
+		error = Platform_Write(f->fd, (SYSTEM_PTR)((LONGINT)buf->data), buf->size);
 		if (error != 0) {
 			Files_Err((CHAR*)"error writing file", (LONGINT)19, f, error);
 		}
@@ -282,10 +274,30 @@ static void Files_Flush (Files_Buffer buf)
 	}
 }
 
+static void Files_CloseOSFile (Files_File f)
+{
+	Files_File prev = NIL;
+	INTEGER error;
+	if (Files_files == f) {
+		Files_files = f->next;
+	} else {
+		prev = Files_files;
+		while (prev != NIL && prev->next != f) {
+			prev = prev->next;
+		}
+		if (prev->next != NIL) {
+			prev->next = f->next;
+		}
+	}
+	error = Platform_Close(f->fd);
+	f->fd = Files_noDesc();
+	f->state = 1;
+	Heap_FileCount -= 1;
+}
+
 void Files_Close (Files_File f)
 {
-	LONGINT i;
-	INTEGER error;
+	INTEGER i, error;
 	if (f->state != 1 || f->registerName[0] != 0x00) {
 		Files_Create(f);
 		i = 0;
@@ -297,16 +309,12 @@ void Files_Close (Files_File f)
 		if (error != 0) {
 			Files_Err((CHAR*)"error writing file", (LONGINT)19, f, error);
 		}
-		Files_fileTab[__X(f->fd, 256)] = 0;
-		error = Platform_Close(f->fd);
-		f->fd = -1;
-		f->state = 1;
-		Heap_FileCount -= 1;
+		Files_CloseOSFile(f);
 	}
 }
 
 /*----------------------------------------------------------------------------*/
-LONGINT Files_Length (Files_File f)
+INTEGER Files_Length (Files_File f)
 {
 	return f->len;
 }
@@ -316,10 +324,10 @@ Files_File Files_New (CHAR *name, LONGINT name__len)
 {
 	Files_File f = NIL;
 	__DUP(name, name__len, CHAR);
-	__NEW(f, Files_Handle);
+	__NEW(f, Files_FileDesc);
 	f->workName[0] = 0x00;
 	__COPY(name, f->registerName, 101);
-	f->fd = -1;
+	f->fd = Files_noDesc();
 	f->state = 1;
 	f->len = 0;
 	f->pos = 0;
@@ -329,9 +337,9 @@ Files_File Files_New (CHAR *name, LONGINT name__len)
 }
 
 /*----------------------------------------------------------------------------*/
-static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len)
+static void Files_ScanPath (SHORTINT *pos, CHAR *dir, LONGINT dir__len)
 {
-	INTEGER i;
+	SHORTINT i;
 	CHAR ch;
 	i = 0;
 	if (Files_SearchPath == NIL) {
@@ -374,7 +382,7 @@ static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len)
 
 static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len)
 {
-	INTEGER i;
+	SHORTINT i;
 	CHAR ch;
 	i = 0;
 	ch = name[0];
@@ -388,11 +396,12 @@ static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len)
 static Files_File Files_CacheEntry (Platform_FileIdentity identity)
 {
 	Files_File f = NIL;
-	INTEGER i, error;
-	i = 0;
-	while (i < 256) {
-		f = (Files_File)Files_fileTab[__X(i, 256)];
-		if (f != NIL && Platform_SameFile(identity, f->identity)) {
+	SHORTINT i;
+	INTEGER error;
+	LONGINT len;
+	f = Files_files;
+	while (f != NIL) {
+		if (Platform_SameFile(identity, f->identity)) {
 			if (!Platform_SameFileTime(identity, f->identity)) {
 				i = 0;
 				while (i < 4) {
@@ -404,11 +413,12 @@ static Files_File Files_CacheEntry (Platform_FileIdentity identity)
 				}
 				f->swapper = -1;
 				f->identity = identity;
-				error = Platform_Size(f->fd, &f->len);
+				error = Platform_Size(f->fd, &len);
+				f->len = (INTEGER)len;
 			}
 			return f;
 		}
-		i += 1;
+		f = f->next;
 	}
 	return NIL;
 }
@@ -416,12 +426,13 @@ static Files_File Files_CacheEntry (Platform_FileIdentity identity)
 Files_File Files_Old (CHAR *name, LONGINT name__len)
 {
 	Files_File f = NIL;
-	LONGINT fd;
-	INTEGER pos;
+	Platform_FileHandle fd = NIL;
+	SHORTINT pos;
 	BOOLEAN done;
 	CHAR dir[256], path[256];
 	INTEGER error;
 	Platform_FileIdentity identity;
+	LONGINT len;
 	__DUP(name, name__len, CHAR);
 	if (name[0] != 0x00) {
 		if (Files_HasDir((void*)name, name__len)) {
@@ -436,16 +447,8 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 		for (;;) {
 			error = Platform_OldRW((void*)path, 256, &fd);
 			done = error == 0;
-			if (!done && Platform_TooManyFiles(error) || done && fd >= 256) {
-				if (done && fd >= 256) {
-					error = Platform_Close(fd);
-				}
-				Heap_GC(1);
-				error = Platform_OldRW((void*)path, 256, &fd);
-				done = error == 0;
-				if (!done && Platform_TooManyFiles(error)) {
-					Files_Err((CHAR*)"too many files open", (LONGINT)20, f, error);
-				}
+			if (!done && Platform_TooManyFiles(error)) {
+				Files_Err((CHAR*)"too many files open", (LONGINT)20, f, error);
 			}
 			if (!done && Platform_Inaccessible(error)) {
 				error = Platform_OldRO((void*)path, 256, &fd);
@@ -462,26 +465,24 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 				error = Platform_Identify(fd, &identity, Platform_FileIdentity__typ);
 				f = Files_CacheEntry(identity);
 				if (f != NIL) {
-					error = Platform_Close(fd);
 					__DEL(name);
 					return f;
-				} else if (fd >= 256) {
-					error = Platform_Close(fd);
-					Files_Err((CHAR*)"too many files open", (LONGINT)20, f, 0);
 				} else {
-					__NEW(f, Files_Handle);
-					Files_fileTab[__X(fd, 256)] = (LONGINT)f;
-					Heap_FileCount += 1;
+					__NEW(f, Files_FileDesc);
 					Heap_RegisterFinalizer((void*)f, Files_Finalize);
 					f->fd = fd;
 					f->state = 0;
 					f->pos = 0;
 					f->swapper = -1;
-					error = Platform_Size(fd, &f->len);
+					error = Platform_Size(fd, &len);
+					f->len = (INTEGER)len;
 					__COPY(name, f->workName, 101);
 					f->registerName[0] = 0x00;
 					f->tempFile = 0;
 					f->identity = identity;
+					f->next = Files_files;
+					Files_files = f;
+					Heap_FileCount += 1;
 					__DEL(name);
 					return f;
 				}
@@ -503,7 +504,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 /*----------------------------------------------------------------------------*/
 void Files_Purge (Files_File f)
 {
-	INTEGER i;
+	SHORTINT i;
 	Platform_FileIdentity identity;
 	INTEGER error;
 	i = 0;
@@ -514,7 +515,7 @@ void Files_Purge (Files_File f)
 		}
 		i += 1;
 	}
-	if (f->fd != -1) {
+	if (f->fd != Files_noDesc()) {
 		error = Platform_Truncate(f->fd, 0);
 		error = Platform_Seek(f->fd, 0, Platform_SeekSet);
 	}
@@ -526,7 +527,7 @@ void Files_Purge (Files_File f)
 }
 
 /*----------------------------------------------------------------------------*/
-void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d)
+void Files_GetDate (Files_File f, INTEGER *t, INTEGER *d)
 {
 	Platform_FileIdentity identity;
 	INTEGER error;
@@ -536,15 +537,15 @@ void Files_GetDate (Files_File f, LONGINT *t, LONGINT *d)
 }
 
 /*----------------------------------------------------------------------------*/
-LONGINT Files_Pos (Files_Rider *r, LONGINT *r__typ)
+INTEGER Files_Pos (Files_Rider *r, LONGINT *r__typ)
 {
 	return (*r).org + (*r).offset;
 }
 
 /*----------------------------------------------------------------------------*/
-void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos)
+void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, INTEGER pos)
 {
-	LONGINT org, offset, i, n;
+	INTEGER org, offset, i, n;
 	Files_Buffer buf = NIL;
 	INTEGER error;
 	if (f != NIL) {
@@ -607,7 +608,7 @@ void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos)
 /*----------------------------------------------------------------------------*/
 void Files_Read (Files_Rider *r, LONGINT *r__typ, BYTE *x)
 {
-	LONGINT offset;
+	INTEGER offset;
 	Files_Buffer buf = NIL;
 	buf = (*r).buf;
 	offset = (*r).offset;
@@ -630,11 +631,11 @@ void Files_Read (Files_Rider *r, LONGINT *r__typ, BYTE *x)
 }
 
 /*----------------------------------------------------------------------------*/
-void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n)
+void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, INTEGER n)
 {
-	LONGINT xpos, min, restInBuf, offset;
+	INTEGER xpos, min, restInBuf, offset;
 	Files_Buffer buf = NIL;
-	if (n > x__len) {
+	if ((LONGINT)n > x__len) {
 		Files_IdxTrap();
 	}
 	xpos = 0;
@@ -656,7 +657,7 @@ void Files_ReadBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, 
 		} else {
 			min = n;
 		}
-		__MOVE((LONGINT)buf->data + (LONGINT)((INTEGER)offset), (LONGINT)x + (LONGINT)((INTEGER)xpos), min);
+		__MOVE((LONGINT)buf->data + (LONGINT)offset, (LONGINT)x + (LONGINT)xpos, min);
 		offset += min;
 		(*r).offset = offset;
 		xpos += min;
@@ -682,7 +683,7 @@ Files_File Files_Base (Files_Rider *r, LONGINT *r__typ)
 void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x)
 {
 	Files_Buffer buf = NIL;
-	LONGINT offset;
+	INTEGER offset;
 	buf = (*r).buf;
 	offset = (*r).offset;
 	if ((*r).org != buf->org || offset >= 4096) {
@@ -701,11 +702,11 @@ void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x)
 }
 
 /*----------------------------------------------------------------------------*/
-void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, LONGINT n)
+void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len, INTEGER n)
 {
-	LONGINT xpos, min, restInBuf, offset;
+	INTEGER xpos, min, restInBuf, offset;
 	Files_Buffer buf = NIL;
-	if (n > x__len) {
+	if ((LONGINT)n > x__len) {
 		Files_IdxTrap();
 	}
 	xpos = 0;
@@ -723,7 +724,7 @@ void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, LONGINT x__len,
 		} else {
 			min = n;
 		}
-		__MOVE((LONGINT)x + (LONGINT)((INTEGER)xpos), (LONGINT)buf->data + (LONGINT)((INTEGER)offset), min);
+		__MOVE((LONGINT)x + (LONGINT)xpos, (LONGINT)buf->data + (LONGINT)offset, min);
 		offset += min;
 		(*r).offset = offset;
 		if (offset > buf->size) {
@@ -748,8 +749,8 @@ void Files_Delete (CHAR *name, LONGINT name__len, INTEGER *res)
 /*----------------------------------------------------------------------------*/
 void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res)
 {
-	LONGINT fdold, fdnew, n;
-	INTEGER error, ignore;
+	Platform_FileHandle fdold = NIL, fdnew = NIL;
+	INTEGER n, error, ignore;
 	Platform_FileIdentity oldidentity, newidentity;
 	CHAR buf[4096];
 	__DUP(old, old__len, CHAR);
@@ -782,15 +783,15 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 				__DEL(new);
 				return;
 			}
-			error = Platform_Read(fdold, (LONGINT)buf, 4096, &n);
+			error = Platform_Read(fdold, (SYSTEM_PTR)((LONGINT)buf), 4096, &n);
 			while (n > 0) {
-				error = Platform_Write(fdnew, (LONGINT)buf, n);
+				error = Platform_Write(fdnew, (SYSTEM_PTR)((LONGINT)buf), n);
 				if (error != 0) {
 					ignore = Platform_Close(fdold);
 					ignore = Platform_Close(fdnew);
 					Files_Err((CHAR*)"cannot move file", (LONGINT)17, NIL, error);
 				}
-				error = Platform_Read(fdold, (LONGINT)buf, 4096, &n);
+				error = Platform_Read(fdold, (SYSTEM_PTR)((LONGINT)buf), 4096, &n);
 			}
 			ignore = Platform_Close(fdold);
 			ignore = Platform_Close(fdnew);
@@ -811,7 +812,7 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 /*----------------------------------------------------------------------------*/
 void Files_Register (Files_File f)
 {
-	INTEGER idx, errcode;
+	INTEGER errcode;
 	Files_File f1 = NIL;
 	CHAR file[104];
 	if (f->state == 1 && f->registerName[0] != 0x00) {
@@ -841,9 +842,9 @@ void Files_ChangeDirectory (CHAR *path, LONGINT path__len, INTEGER *res)
 /*----------------------------------------------------------------------------*/
 static void Files_FlipBytes (BYTE *src, LONGINT src__len, BYTE *dest, LONGINT dest__len)
 {
-	LONGINT i, j;
+	INTEGER i, j;
 	if (!Platform_LittleEndian) {
-		i = src__len;
+		i = (INTEGER)src__len;
 		j = 0;
 		while (i > 0) {
 			i -= 1;
@@ -903,7 +904,7 @@ void Files_ReadLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL *x)
 /*----------------------------------------------------------------------------*/
 void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 {
-	INTEGER i;
+	SHORTINT i;
 	CHAR ch;
 	i = 0;
 	do {
@@ -916,7 +917,7 @@ void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 /*----------------------------------------------------------------------------*/
 void Files_ReadLine (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 {
-	INTEGER i;
+	SHORTINT i;
 	CHAR ch;
 	BOOLEAN b;
 	i = 0;
@@ -980,12 +981,12 @@ void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 void Files_WriteSet (Files_Rider *R, LONGINT *R__typ, SET x)
 {
 	CHAR b[4];
-	LONGINT i;
-	i = __VAL(LONGINT, x);
+	INTEGER i;
+	i = __VAL(INTEGER, x);
 	b[0] = (CHAR)i;
-	b[1] = (CHAR)__ASHR(i, 8, LONGINT);
-	b[2] = (CHAR)__ASHR(i, 16, LONGINT);
-	b[3] = (CHAR)__ASHR(i, 24, LONGINT);
+	b[1] = (CHAR)__ASHR(i, 8, INTEGER);
+	b[2] = (CHAR)__ASHR(i, 16, INTEGER);
+	b[3] = (CHAR)__ASHR(i, 24, INTEGER);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 4, 4);
 }
 
@@ -1008,7 +1009,7 @@ void Files_WriteLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL x)
 /*----------------------------------------------------------------------------*/
 void Files_WriteString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 {
-	INTEGER i;
+	SHORTINT i;
 	i = 0;
 	while (x[__X(i, x__len)] != 0x00) {
 		i += 1;
@@ -1036,13 +1037,10 @@ void Files_GetName (Files_File f, CHAR *name, LONGINT name__len)
 static void Files_Finalize (SYSTEM_PTR o)
 {
 	Files_File f = NIL;
-	LONGINT res;
+	INTEGER res;
 	f = (Files_File)o;
-	if (f->fd >= 0) {
-		Files_fileTab[__X(f->fd, 256)] = 0;
-		res = Platform_Close(f->fd);
-		f->fd = -1;
-		Heap_FileCount -= 1;
+	if (Files_fdLongint(f->fd) >= 0) {
+		Files_CloseOSFile(f);
 		if (f->tempFile) {
 			res = Platform_Unlink((void*)f->workName, 101);
 		}
@@ -1062,29 +1060,15 @@ void Files_SetSearchPath (CHAR *path, LONGINT path__len)
 }
 
 /*----------------------------------------------------------------------------*/
-static void Files_Init (void)
-{
-	LONGINT i;
-	i = 0;
-	while (i < 256) {
-		Files_fileTab[__X(i, 256)] = 0;
-		i += 1;
-	}
-	Files_tempno = -1;
-	Heap_FileCount = 0;
-	Files_SearchPath = NIL;
-	Files_HOME[0] = 0x00;
-	Platform_GetEnv((CHAR*)"HOME", (LONGINT)5, (void*)Files_HOME, 1024);
-}
-
 static void EnumPtrs(void (*P)(void*))
 {
+	P(Files_files);
 	P(Files_SearchPath);
 }
 
-__TDESC(Files_Handle__desc, 1, 4) = {__TDFLDS("Handle", 312), {272, 280, 288, 296, -40}};
-__TDESC(Files_BufDesc__desc, 1, 1) = {__TDFLDS("BufDesc", 4128), {0, -16}};
-__TDESC(Files_Rider__desc, 1, 1) = {__TDFLDS("Rider", 40), {16, -16}};
+__TDESC(Files_FileDesc__desc, 1, 5) = {__TDFLDS("FileDesc", 288), {240, 248, 256, 264, 280, -48}};
+__TDESC(Files_BufDesc__desc, 1, 1) = {__TDFLDS("BufDesc", 4120), {0, -16}};
+__TDESC(Files_Rider__desc, 1, 1) = {__TDFLDS("Rider", 24), {8, -16}};
 
 export void *Files__init(void)
 {
@@ -1094,10 +1078,13 @@ export void *Files__init(void)
 	__IMPORT(Platform__init);
 	__IMPORT(Strings__init);
 	__REGMOD("Files", EnumPtrs);
-	__INITYP(Files_Handle, Files_Handle, 0);
+	__INITYP(Files_FileDesc, Files_FileDesc, 0);
 	__INITYP(Files_BufDesc, Files_BufDesc, 0);
 	__INITYP(Files_Rider, Files_Rider, 0);
 /* BEGIN */
-	Files_Init();
+	Files_tempno = -1;
+	Heap_FileCount = 0;
+	Files_HOME[0] = 0x00;
+	Platform_GetEnv((CHAR*)"HOME", (LONGINT)5, (void*)Files_HOME, 1024);
 	__ENDMOD;
 }

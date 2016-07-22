@@ -224,7 +224,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 				END
 			ELSIF msg IS FileMsg THEN
 				WITH msg: FileMsg DO
-					IF msg.id = store THEN Files.Set(r, E.file, E.org); i := E.span;
+					IF msg.id = store THEN Files.Set(r, E.file, SHORT(E.org)); i := E.span;
 						WHILE i > 0 DO Files.Read(r, ch); Files.Write(msg.r, ch); DEC(i) END
 					END
 				END
@@ -324,7 +324,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 		IF pos >= T.len THEN pos := T.len END;
 		Find(T, pos, u, R.org, R.off); R.run := u; R.eot := FALSE;
 		IF u IS Piece THEN
-			Files.Set(R.rider, u(Piece).file, u(Piece).org + R.off)
+			Files.Set(R.rider, u(Piece).file, SHORT(u(Piece).org + R.off))
 		END
 	END OpenReader;
 
@@ -335,14 +335,14 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 			IF (ch = 0AX) & u(Piece).ascii THEN ch := CR	(* << LF to CR *)
 			ELSIF (ch = CR) & u(Piece).ascii THEN	(* << CR LF to CR *)
 				pos := Files.Pos(R.rider); Files.Read(R.rider, nextch);
-				IF nextch = 0AX THEN INC(R.off) ELSE Files.Set(R.rider, u(Piece).file, pos) END
+				IF nextch = 0AX THEN INC(R.off) ELSE Files.Set(R.rider, u(Piece).file, SHORT(pos)) END
 			END
 		ELSIF u IS Elem THEN ch := ElemChar; R.elem := u(Elem)
 		ELSE ch := 0X; R.elem := NIL; R.eot := TRUE
 		END;
 		IF R.off = u.len THEN INC(R.org, u.len); u := u.next;
 			IF u IS Piece THEN
-				WITH u: Piece DO Files.Set(R.rider, u.file, u.org) END
+				WITH u: Piece DO Files.Set(R.rider, u.file, SHORT(u.org)) END
 			END;
 			R.run := u; R.off := 0
 		END
@@ -355,7 +355,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 		IF u IS Elem THEN un := u.next; R.run := un; INC(R.org); R.off := 0;
 			R.fnt := u.fnt; R.col := u.col; R.voff := u.voff; R.elem := u(Elem);
 			IF un IS Piece THEN
-				WITH un: Piece DO Files.Set(R.rider, un.file, un.org) END
+				WITH un: Piece DO Files.Set(R.rider, un.file, SHORT(un.org)) END
 			END
 		ELSE R.eot := TRUE; R.elem := NIL
 		END
@@ -725,7 +725,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 				msg.pos := pos; e.handle(e, msg);
 				IF Files.Pos(r) # org + span THEN e := NIL END
 			END;
-			IF e = NIL THEN Files.Set(r, f, org + span);
+			IF e = NIL THEN Files.Set(r, f, SHORT(org + span));
 				NEW(a); a.W := ew; a.H := eh; a.handle := HandleAlien; a.base := T;
 				a.file := f; a.org := org; a.span := span;
 				COPY(mods[eno], a.mod); COPY(procs[eno], a.proc);
@@ -748,7 +748,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 			INC(pos, un.len); u.next := un; un.prev := u; u := un; Files.Read(msg.r, fno)
 		END;
 		u.next := T.head; T.head.prev := u; T.cache := T.head; T.corg := 0;
-		Files.ReadLInt(msg.r, T.len); Files.Set(r, f, Files.Pos(msg.r) + T.len)
+		Files.ReadLInt(msg.r, T.len); Files.Set(r, f, SHORT(Files.Pos(msg.r) + T.len))
 	END Load0;
 	
 	PROCEDURE Load* (VAR r: Files.Rider; T: Text);
@@ -771,7 +771,7 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 			NEW(p);
 			IF (tag = DocBlockId) & (version = 07X) THEN (* extract ascii text from System 3 text document *)
 				Files.Set(r, f, 28); Files.ReadLInt(r, hlen);
-				Files.Set(r, f, 22 + hlen); Files.ReadLInt(r, T.len); p.org := 26 + hlen
+				Files.Set(r, f, SHORT(22 + hlen)); Files.ReadLInt(r, T.len); p.org := 26 + hlen
 			ELSE
 				T.len := Files.Length(f); p.org := 0
 			END ;
@@ -826,20 +826,20 @@ MODULE CmdlnTexts;	(** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.
 		END;
 		Files.Write(msg.r, 0); Files.WriteLInt(msg.r, T.len - delta);
 		(*!!!hlen := Files.Pos(msg.r) - org;*) hlen := Files.Pos(msg.r) - org + 2;
-		Files.Set(r1, Files.Base(msg.r), org); Files.WriteLInt(r1, hlen); (*fixup*)
+		Files.Set(r1, Files.Base(msg.r), SHORT(org)); Files.WriteLInt(r1, hlen); (*fixup*)
 		u := T.head.next;
 		WHILE u # T.head DO
 			IF u IS Piece THEN
 				WITH u: Piece DO
-					IF u.ascii THEN Files.Set(r1, u.file, u.org); delta := u.len;	(* << LF to CR *)
+					IF u.ascii THEN Files.Set(r1, u.file, SHORT(u.org)); delta := u.len;	(* << LF to CR *)
 						WHILE delta > 0 DO Files.Read(r1, ch); DEC(delta);
 							IF ch = 0AX THEN Files.Write(msg.r, CR) ELSE Files.Write(msg.r, ch) END
 						END
-					ELSE Files.Set(r1, u.file, u.org); delta := u.len;
+					ELSE Files.Set(r1, u.file, SHORT(u.org)); delta := u.len;
 						WHILE delta > LEN(block) DO Files.ReadBytes(r1, block, LEN(block));
 							Files.WriteBytes(msg.r, block, LEN(block)); DEC(delta, LEN(block))
 						END;
-						Files.ReadBytes(r1, block, delta); Files.WriteBytes(msg.r, block, delta)
+						Files.ReadBytes(r1, block, SHORT(delta)); Files.WriteBytes(msg.r, block, SHORT(delta))
 					END
 				END
 			ELSE iden.mod[0] := 0X; u(Elem).handle(u(Elem), iden);

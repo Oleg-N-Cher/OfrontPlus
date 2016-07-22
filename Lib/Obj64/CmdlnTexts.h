@@ -71,7 +71,7 @@ typedef
 		CmdlnTexts_FontsFont fnt;
 		SHORTINT col, voff;
 		CmdlnTexts_Elem elem;
-		char _prvt0[64];
+		char _prvt0[48];
 	} CmdlnTexts_Reader;
 
 typedef
@@ -80,7 +80,7 @@ typedef
 		CmdlnTexts_FontsFont fnt;
 		SHORTINT col, voff;
 		CmdlnTexts_Elem elem;
-		char _prvt0[64];
+		char _prvt0[48];
 		CHAR nextCh;
 		INTEGER line, class;
 		LONGINT i;
@@ -105,7 +105,7 @@ typedef
 		CmdlnTexts_Buffer buf;
 		CmdlnTexts_FontsFont fnt;
 		SHORTINT col, voff;
-		char _prvt0[52];
+		char _prvt0[36];
 	} CmdlnTexts_Writer;
 
 

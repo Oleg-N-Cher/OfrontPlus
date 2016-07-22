@@ -404,7 +404,7 @@ static void CmdlnTexts_HandleAlien (CmdlnTexts_Elem E, CmdlnTexts_ElemMsg *msg, 
 			if (__IS(msg__typ, CmdlnTexts_FileMsg, 1)) {
 				CmdlnTexts_FileMsg *msg__ = (void*)msg;
 				if ((*msg__).id == 1) {
-					Files_Set(&r, Files_Rider__typ, ((CmdlnTexts_Alien)E)->file, ((CmdlnTexts_Alien)E)->org);
+					Files_Set(&r, Files_Rider__typ, ((CmdlnTexts_Alien)E)->file, (INTEGER)((CmdlnTexts_Alien)E)->org);
 					i = ((CmdlnTexts_Alien)E)->span;
 					while (i > 0) {
 						Files_Read(&r, Files_Rider__typ, (void*)&ch);
@@ -596,7 +596,7 @@ void CmdlnTexts_OpenReader (CmdlnTexts_Reader *R, LONGINT *R__typ, CmdlnTexts_Te
 	(*R).run = u;
 	(*R).eot = 0;
 	if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
-		Files_Set(&(*R).rider, Files_Rider__typ, __GUARDP(u, CmdlnTexts_PieceDesc, 1)->file, __GUARDP(u, CmdlnTexts_PieceDesc, 1)->org + (*R).off);
+		Files_Set(&(*R).rider, Files_Rider__typ, __GUARDP(u, CmdlnTexts_PieceDesc, 1)->file, (INTEGER)(__GUARDP(u, CmdlnTexts_PieceDesc, 1)->org + (*R).off));
 	}
 }
 
@@ -622,7 +622,7 @@ void CmdlnTexts_Read (CmdlnTexts_Reader *R, LONGINT *R__typ, CHAR *ch)
 			if (nextch == 0x0a) {
 				(*R).off += 1;
 			} else {
-				Files_Set(&(*R).rider, Files_Rider__typ, __GUARDP(u, CmdlnTexts_PieceDesc, 1)->file, pos);
+				Files_Set(&(*R).rider, Files_Rider__typ, __GUARDP(u, CmdlnTexts_PieceDesc, 1)->file, (INTEGER)pos);
 			}
 		}
 	} else if (__ISP(u, CmdlnTexts_ElemDesc, 1)) {
@@ -638,7 +638,7 @@ void CmdlnTexts_Read (CmdlnTexts_Reader *R, LONGINT *R__typ, CHAR *ch)
 		u = u->next;
 		if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
 			if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
-				Files_Set(&(*R).rider, Files_Rider__typ, ((CmdlnTexts_Piece)u)->file, ((CmdlnTexts_Piece)u)->org);
+				Files_Set(&(*R).rider, Files_Rider__typ, ((CmdlnTexts_Piece)u)->file, (INTEGER)((CmdlnTexts_Piece)u)->org);
 			} else __WITHCHK;
 		}
 		(*R).run = u;
@@ -666,7 +666,7 @@ void CmdlnTexts_ReadElem (CmdlnTexts_Reader *R, LONGINT *R__typ)
 		(*R).elem = __GUARDP(u, CmdlnTexts_ElemDesc, 1);
 		if (__ISP(un, CmdlnTexts_PieceDesc, 1)) {
 			if (__ISP(un, CmdlnTexts_PieceDesc, 1)) {
-				Files_Set(&(*R).rider, Files_Rider__typ, ((CmdlnTexts_Piece)un)->file, ((CmdlnTexts_Piece)un)->org);
+				Files_Set(&(*R).rider, Files_Rider__typ, ((CmdlnTexts_Piece)un)->file, (INTEGER)((CmdlnTexts_Piece)un)->org);
 			} else __WITHCHK;
 		}
 	} else {
@@ -1449,12 +1449,12 @@ static void LoadElem__17 (Files_Rider *r, LONGINT *r__typ, LONGINT pos, LONGINT 
 		(*e)->base = *Load0__16_s->T;
 		(*Load0__16_s->msg).pos = pos;
 		(*(*e)->handle)(*e, (void*)&*Load0__16_s->msg, CmdlnTexts_FileMsg__typ);
-		if (Files_Pos(&*r, r__typ) != org + span) {
+		if ((LONGINT)Files_Pos(&*r, r__typ) != org + span) {
 			*e = NIL;
 		}
 	}
 	if (*e == NIL) {
-		Files_Set(&*r, r__typ, *Load0__16_s->f, org + span);
+		Files_Set(&*r, r__typ, *Load0__16_s->f, (INTEGER)(org + span));
 		__NEW(a, CmdlnTexts__1);
 		a->W = ew;
 		a->H = eh;
@@ -1540,7 +1540,7 @@ static void CmdlnTexts_Load0 (Files_Rider *r, LONGINT *r__typ, CmdlnTexts_Text T
 	T->cache = T->head;
 	T->corg = 0;
 	Files_ReadLInt(&msg.r, Files_Rider__typ, &T->len);
-	Files_Set(&*r, r__typ, f, Files_Pos(&msg.r, Files_Rider__typ) + T->len);
+	Files_Set(&*r, r__typ, f, (INTEGER)((LONGINT)Files_Pos(&msg.r, Files_Rider__typ) + T->len));
 	Load0__16_s = _s.lnk;
 }
 
@@ -1582,7 +1582,7 @@ void CmdlnTexts_Open (CmdlnTexts_Text T, CHAR *name, LONGINT name__len)
 		if (tag == 0xf7 && version == 0x07) {
 			Files_Set(&r, Files_Rider__typ, f, 28);
 			Files_ReadLInt(&r, Files_Rider__typ, &hlen);
-			Files_Set(&r, Files_Rider__typ, f, 22 + hlen);
+			Files_Set(&r, Files_Rider__typ, f, (INTEGER)(22 + hlen));
 			Files_ReadLInt(&r, Files_Rider__typ, &T->len);
 			p->org = 26 + hlen;
 		} else {
@@ -1646,7 +1646,7 @@ static void StoreElem__40 (Files_Rider *r, LONGINT *r__typ, LONGINT pos, CmdlnTe
 	(*Store__39_s->msg).pos = pos;
 	org = Files_Pos(&*r, r__typ);
 	(*e->handle)(e, (void*)&*Store__39_s->msg, CmdlnTexts_FileMsg__typ);
-	span = Files_Pos(&*r, r__typ) - org;
+	span = (LONGINT)Files_Pos(&*r, r__typ) - org;
 	Files_WriteLInt(&r1, Files_Rider__typ, -span);
 	Files_WriteLInt(&r1, Files_Rider__typ, e->W);
 	Files_WriteLInt(&r1, Files_Rider__typ, e->H);
@@ -1724,15 +1724,15 @@ void CmdlnTexts_Store (Files_Rider *r, LONGINT *r__typ, CmdlnTexts_Text T)
 	}
 	Files_Write(&msg.r, Files_Rider__typ, 0);
 	Files_WriteLInt(&msg.r, Files_Rider__typ, T->len - delta);
-	hlen = (Files_Pos(&msg.r, Files_Rider__typ) - org) + 2;
-	Files_Set(&r1, Files_Rider__typ, Files_Base(&msg.r, Files_Rider__typ), org);
+	hlen = ((LONGINT)Files_Pos(&msg.r, Files_Rider__typ) - org) + 2;
+	Files_Set(&r1, Files_Rider__typ, Files_Base(&msg.r, Files_Rider__typ), (INTEGER)org);
 	Files_WriteLInt(&r1, Files_Rider__typ, hlen);
 	u = T->head->next;
 	while (u != T->head) {
 		if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
 			if (__ISP(u, CmdlnTexts_PieceDesc, 1)) {
 				if (((CmdlnTexts_Piece)u)->ascii) {
-					Files_Set(&r1, Files_Rider__typ, ((CmdlnTexts_Piece)u)->file, ((CmdlnTexts_Piece)u)->org);
+					Files_Set(&r1, Files_Rider__typ, ((CmdlnTexts_Piece)u)->file, (INTEGER)((CmdlnTexts_Piece)u)->org);
 					delta = ((CmdlnTexts_Piece)u)->len;
 					while (delta > 0) {
 						Files_Read(&r1, Files_Rider__typ, (void*)&ch);
@@ -1744,15 +1744,15 @@ void CmdlnTexts_Store (Files_Rider *r, LONGINT *r__typ, CmdlnTexts_Text T)
 						}
 					}
 				} else {
-					Files_Set(&r1, Files_Rider__typ, ((CmdlnTexts_Piece)u)->file, ((CmdlnTexts_Piece)u)->org);
+					Files_Set(&r1, Files_Rider__typ, ((CmdlnTexts_Piece)u)->file, (INTEGER)((CmdlnTexts_Piece)u)->org);
 					delta = ((CmdlnTexts_Piece)u)->len;
 					while (delta > 1024) {
 						Files_ReadBytes(&r1, Files_Rider__typ, (void*)block, 1024, 1024);
 						Files_WriteBytes(&msg.r, Files_Rider__typ, (void*)block, 1024, 1024);
 						delta -= 1024;
 					}
-					Files_ReadBytes(&r1, Files_Rider__typ, (void*)block, 1024, delta);
-					Files_WriteBytes(&msg.r, Files_Rider__typ, (void*)block, 1024, delta);
+					Files_ReadBytes(&r1, Files_Rider__typ, (void*)block, 1024, (INTEGER)delta);
+					Files_WriteBytes(&msg.r, Files_Rider__typ, (void*)block, 1024, (INTEGER)delta);
 				}
 			} else __WITHCHK;
 		} else {
