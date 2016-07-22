@@ -1,6 +1,6 @@
 MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *)
 
-  IMPORT SYSTEM, Platform, Heap, Strings, Configuration, Console;
+  IMPORT SYSTEM, Platform, Heap, Strings, Console;
 
   (* standard data type I/O
 
@@ -16,7 +16,6 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   CONST
     nofbufs = 4;
     bufsize = 4096;
-    noDesc = -1;
     notDone = -1;
 
     (* file states *)
@@ -73,12 +72,16 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 
+  PROCEDURE -fdLongint(fd: Platform.FileHandle): LONGINT "((LONGINT)(SYSTEM_ADR)(fd))";
+
+  PROCEDURE -noDesc(): Platform.FileHandle "((Platform_FileHandle)(SYSTEM_ADR)-1)";
+
   PROCEDURE Err(s: ARRAY OF CHAR; f: File; errcode: Platform.ErrorCode);
   BEGIN
     Console.Ln; Console.String("-- "); Console.String(s); Console.String(": ");
     IF f # NIL THEN
       IF f.registerName # "" THEN Console.String(f.registerName) ELSE Console.String(f.workName) END;
-      IF f.fd # 0 THEN Console.String("f.fd = "); Console.Int(f.fd,1) END
+      IF fdLongint(f.fd) # 0 THEN Console.String("f.fd = "); Console.LongInt(fdLongint(f.fd),1) END
     END;
     IF errcode # 0 THEN Console.String(" errcode = "); Console.Int(errcode, 1) END;
     Console.Ln;
@@ -127,7 +130,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     Console.String(", state = ");         Console.Int(f.state,1);
     Console.Ln;
     *)
-    IF f.fd = noDesc THEN
+    IF f.fd = noDesc() THEN
       IF f.state = create THEN
         GetTempName(f.registerName, f.workName); f.tempFile := TRUE
       ELSIF f.state = close THEN
@@ -174,7 +177,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
           Console.String(", error code "); Console.Int(error,1); Console.Ln;
         *)
       END;
-      error := Platform.Write(f.fd, SYSTEM.ADR(buf.data), buf.size);
+      error := Platform.Write(f.fd, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf.data)), buf.size);
       IF error # 0 THEN Err("error writing file", f, error) END;
       f.pos := buf.org + buf.size;
       buf.chg := FALSE;
@@ -199,7 +202,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       IF prev.next # NIL THEN prev.next := f.next END
     END;
     error := Platform.Close(f.fd);
-    f.fd := noDesc; f.state := create; DEC(Heap.FileCount);
+    f.fd := noDesc(); f.state := create; DEC(Heap.FileCount);
   END CloseOSFile;
 
 
@@ -224,7 +227,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR f: File;
   BEGIN
     NEW(f); f.workName := ""; COPY(name, f.registerName);
-    f.fd := noDesc; f.state := create; f.len := 0; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
+    f.fd := noDesc(); f.state := create; f.len := 0; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
     RETURN f
   END New;
 
@@ -263,7 +266,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END HasDir;
 
   PROCEDURE CacheEntry(identity: Platform.FileIdentity): File;
-    VAR f: File;  i: SHORTINT;  error: Platform.ErrorCode;
+    VAR f: File;  i: SHORTINT;  error: Platform.ErrorCode; len: LONGINT;
   BEGIN f := files;
     WHILE f # NIL DO
       IF Platform.SameFile(identity, f.identity) THEN
@@ -273,7 +276,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
             INC(i)
           END;
           f.swapper := -1; f.identity := identity;
-          error := Platform.Size(f.fd, f.len);
+          error := Platform.Size(f.fd, len); f.len := SHORT(len);
         END;
         RETURN f
       END;
@@ -291,6 +294,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       dir, path: ARRAY 256 OF CHAR;
       error:     Platform.ErrorCode;
       identity:  Platform.FileIdentity;
+      len:       LONGINT;
   BEGIN
     (* Console.String("Files.Old "); Console.String(name); Console.Ln; *)
     IF name # "" THEN
@@ -316,7 +320,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
             RETURN f
           ELSE NEW(f); Heap.RegisterFinalizer(f, Finalize);
             f.fd := fd; f.state := open; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
-            error := Platform.Size(fd, f.len);
+            error := Platform.Size(fd, len); f.len := SHORT(len);
             COPY(name, f.workName); f.registerName := ""; f.tempFile := FALSE;
             f.identity := identity;
             f.next := files;  files := f; INC(Heap.FileCount);
@@ -337,7 +341,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       IF f.bufs[i] # NIL THEN f.bufs[i].org := -1; f.bufs[i] := NIL END;
       INC(i)
     END;
-    IF f.fd # noDesc THEN
+    IF f.fd # noDesc() THEN
       error := Platform.Truncate(f.fd, 0);
       error := Platform.Seek(f.fd, 0, Platform.SeekSet)
     END;
@@ -508,10 +512,10 @@ but this would also affect Set, Length, and Flush.
 Especially Length would become fairly complex.
 *)
 
-  PROCEDURE Delete*(name: ARRAY OF CHAR; VAR res: SHORTINT);
+  PROCEDURE Delete*(name: ARRAY OF CHAR; VAR res: INTEGER);
   BEGIN res := Platform.Unlink(name) END Delete;
 
-  PROCEDURE Rename* (old, new: ARRAY OF CHAR; VAR res: SHORTINT);
+  PROCEDURE Rename* (old, new: ARRAY OF CHAR; VAR res: INTEGER);
     VAR
       fdold, fdnew: Platform.FileHandle;
       n: INTEGER;
@@ -539,15 +543,15 @@ Especially Length would become fairly complex.
         IF error # 0 THEN res := 2; RETURN END;
         error := Platform.New(new, fdnew);
         IF error # 0 THEN error := Platform.Close(fdold); res := 3; RETURN END;
-        error := Platform.Read(fdold, SYSTEM.ADR(buf), bufsize, n);
+        error := Platform.Read(fdold, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf)), bufsize, n);
         WHILE n > 0 DO
-          error := Platform.Write(fdnew, SYSTEM.ADR(buf), n);
+          error := Platform.Write(fdnew, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf)), n);
           IF error # 0 THEN
             ignore := Platform.Close(fdold);
             ignore := Platform.Close(fdnew);
             Err("cannot move file", NIL, error)
           END;
-          error := Platform.Read(fdold, SYSTEM.ADR(buf), bufsize, n);
+          error := Platform.Read(fdold, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf)), bufsize, n);
         END;
         ignore := Platform.Close(fdold);
         ignore := Platform.Close(fdnew);
@@ -563,7 +567,7 @@ Especially Length would become fairly complex.
   END Rename;
 
   PROCEDURE Register* (f: File);
-    VAR idx, errcode: SHORTINT; f1: File; file: ARRAY 104 OF CHAR;
+    VAR errcode: INTEGER; f1: File; file: ARRAY 104 OF CHAR;
   BEGIN
     (*
     Console.String("Files.Register f.registerName = "); Console.String(f.registerName);
@@ -584,7 +588,7 @@ Especially Length would become fairly complex.
     END
   END Register;
 
-  PROCEDURE ChangeDirectory*(path: ARRAY OF CHAR; VAR res: SHORTINT);
+  PROCEDURE ChangeDirectory*(path: ARRAY OF CHAR; VAR res: INTEGER);
   BEGIN
     res := Platform.Chdir(path);
   END ChangeDirectory;
@@ -592,7 +596,7 @@ Especially Length would become fairly complex.
   PROCEDURE FlipBytes(VAR src, dest: ARRAY OF BYTE);
     VAR i, j: INTEGER;
   BEGIN
-    IF ~Platform.LittleEndian THEN i := LEN(src); j := 0;
+    IF ~Platform.LittleEndian THEN i := SHORT(LEN(src)); j := 0;
       WHILE i > 0 DO DEC(i); dest[j] := src[i]; INC(j) END
     ELSE SYSTEM.MOVE(SYSTEM.ADR(src), SYSTEM.ADR(dest), LEN(src))
     END
@@ -602,13 +606,13 @@ Especially Length would become fairly complex.
   BEGIN Read(R, SYSTEM.VAL(CHAR, x))
   END ReadBool;
 
-  PROCEDURE ReadInt* (VAR R: Rider; VAR x: SHORTINT);
+  PROCEDURE ReadInt* (VAR R: Rider; VAR x: INTEGER);
     VAR b: ARRAY 2 OF CHAR;
   BEGIN ReadBytes(R, b, 2);
     x := ORD(b[0]) + ORD(b[1])*256
   END ReadInt;
 
-  PROCEDURE ReadLInt* (VAR R: Rider; VAR x: INTEGER);
+  PROCEDURE ReadLInt* (VAR R: Rider; VAR x: LONGINT);
     VAR b: ARRAY 4 OF CHAR;
   BEGIN ReadBytes(R, b, 4);
     x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
@@ -652,11 +656,11 @@ Especially Length would become fairly complex.
     UNTIL b
   END ReadLine;
 
-  PROCEDURE ReadNum* (VAR R: Rider; VAR x: INTEGER);
-    VAR s: SHORTINT; ch: CHAR; n: INTEGER;
+  PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
+    VAR s: SHORTINT; ch: CHAR; n: LONGINT;
   BEGIN s := 0; n := 0; Read(R, ch);
-    WHILE ORD(ch) >= 128 DO INC(n, ASH(ORD(ch) - 128, s) ); INC(s, 7); Read(R, ch) END;
-    INC(n, ASH(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64, s) );
+    WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); Read(R, ch) END;
+    INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
     x := n
   END ReadNum;
 
@@ -664,13 +668,13 @@ Especially Length would become fairly complex.
   BEGIN Write(R, SYSTEM.VAL(CHAR, x))
   END WriteBool;
 
-  PROCEDURE WriteInt* (VAR R: Rider; x: SHORTINT);
+  PROCEDURE WriteInt* (VAR R: Rider; x: INTEGER);
     VAR b: ARRAY 2 OF CHAR;
   BEGIN b[0] := CHR(x); b[1] := CHR(x DIV 256);
     WriteBytes(R, b, 2);
   END WriteInt;
 
-  PROCEDURE WriteLInt* (VAR R: Rider; x: INTEGER);
+  PROCEDURE WriteLInt* (VAR R: Rider; x: LONGINT);
     VAR b: ARRAY 4 OF CHAR;
   BEGIN
     b[0] := CHR(x); b[1] := CHR(x DIV 100H); b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H);
@@ -701,7 +705,7 @@ Especially Length would become fairly complex.
     WriteBytes(R, x, i+1)
   END WriteString;
 
-  PROCEDURE WriteNum* (VAR R: Rider; x: INTEGER);
+  PROCEDURE WriteNum* (VAR R: Rider; x: LONGINT);
   BEGIN
     WHILE (x < - 64) OR (x > 63) DO Write(R, CHR(x MOD 128 + 128)); x := x DIV 128 END;
     Write(R, CHR(x MOD 128))
@@ -721,7 +725,7 @@ Especially Length would become fairly complex.
     Console.String(", f.registername = "); Console.String(f.registerName);
     Console.String(", f.workName = "); Console.String(f.workName); Console.Ln;
     *)
-    IF f.fd >= 0 THEN
+    IF fdLongint(f.fd) >= 0 THEN
       CloseOSFile(f);
       IF f.tempFile THEN res := Platform.Unlink(f.workName) END
     END
