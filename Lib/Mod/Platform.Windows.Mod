@@ -9,7 +9,7 @@ IMPORT SYSTEM;
 
 TYPE
   Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
-  MemAdr* = SYSTEM.PTR; (** Here it is not used as a GC pointer type *)
+  MemAdr* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
 
   BOOL = Int32; DWORD = Int32;
 
@@ -111,7 +111,7 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): MemAdr "((SYSTEM_PTR)HeapAlloc(GetProcessHeap(), 0, (size_t)(unsigned)size))";
+PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)HeapAlloc(GetProcessHeap(), 0, (size_t)(unsigned)size))";
 
 PROCEDURE ^ Halt*(code: INTEGER);
 
