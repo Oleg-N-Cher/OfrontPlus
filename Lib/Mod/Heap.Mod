@@ -165,13 +165,13 @@ MODULE Heap;
   END INCREF;
 
 
-  PROCEDURE -ExternPlatformOSAllocate           "extern LONGINT Platform_OSAllocate(LONGINT size);";
-  PROCEDURE -OSAllocate(size: LONGINT): LONGINT "Platform_OSAllocate(size)";
+  PROCEDURE -ExternPlatformOSAllocate           "extern SYSTEM_PTR Platform_OSAllocate(INTEGER size);";
+  PROCEDURE -OSAllocate(size: INTEGER): LONGINT "(LONGINT)(SYSTEM_ADR)Platform_OSAllocate(size)";
 
   PROCEDURE NewChunk(blksz: LONGINT): LONGINT;
     VAR chnk: LONGINT;
   BEGIN
-    chnk := OSAllocate(blksz + blkOff);
+    chnk := OSAllocate(SHORT(blksz + blkOff));
     IF chnk # 0 THEN
       SYSTEM.PUT(SYSTEM.VAL(ADR, chnk + endOff),             chnk + (blkOff + blksz));
       SYSTEM.PUT(SYSTEM.VAL(ADR, chnk + blkOff),             chnk + (blkOff + sizeOff));
@@ -493,8 +493,8 @@ MODULE Heap;
     END
   END FINALL;
 
-  PROCEDURE -ExternMainStackFrame              "extern Heap_ADR Platform_MainStackFrame;";
-  PROCEDURE -PlatformMainStackFrame(): LONGINT "((LONGINT)Platform_MainStackFrame)";
+  PROCEDURE -ExternMainStackFrame              "extern SYSTEM_PTR Platform_MainStackFrame;";
+  PROCEDURE -PlatformMainStackFrame(): LONGINT "((LONGINT)(SYSTEM_ADR)Platform_MainStackFrame)";
 
   PROCEDURE MarkStack(n: LONGINT; VAR cand: ARRAY OF LONGINT);
     VAR
