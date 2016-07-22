@@ -216,11 +216,11 @@ extern void Platform_AssertFail(INTEGER code);
 // Memory allocation
 
 extern SYSTEM_PTR Heap_NEWBLK (LONGINT size);
-extern SYSTEM_PTR Heap_NEWREC (LONGINT tag);
+extern SYSTEM_PTR Heap_NEWREC (SYSTEM_PTR tag);
 extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
 
 #define __SYSNEW(p, len) p = Heap_NEWBLK((LONGINT)(len))
-#define __NEW(p, t)      p = Heap_NEWREC((LONGINT)(SYSTEM_ADR)t##__typ)
+#define __NEW(p, t)      p = Heap_NEWREC((SYSTEM_PTR)(SYSTEM_ADR)t##__typ)
 #define __NEWARR         SYSTEM_NEWARR
 
 
@@ -255,7 +255,7 @@ extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
   t##__desc.module       = (LONGINT)(SYSTEM_ADR)m;                                                         \
   if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15);                                                      \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(LONGINT)-1)/(4*sizeof(LONGINT))*(4*sizeof(LONGINT)); \
-  Heap_REGTYP(m, (LONGINT)(SYSTEM_ADR)&t##__desc.next);                                                    \
+  Heap_REGTYP(m, (SYSTEM_PTR)(SYSTEM_ADR)&t##__desc.next);                                                    \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
 
 #define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(LONGINT)(SYSTEM_ADR)typ##__typ)
