@@ -63,8 +63,8 @@ typedef U_INTEGER SET;   // SET is 32 bit.
 
 // OS Memory allocation interfaces are in PlatformXXX.Mod
 
-extern LONGINT Platform_OSAllocate (LONGINT size);
-extern void    Platform_OSFree     (LONGINT addr);
+extern SYSTEM_PTR Platform_OSAllocate (INTEGER size);
+extern void       Platform_OSFree     (SYSTEM_PTR addr);
 
 
 // Run time system routines in SYSTEM.c
@@ -106,9 +106,9 @@ extern LONGINT SYSTEM_ENTIER (double x);
 
 #define __COPY(s, d, n) {char*_a=(void*)s,*_b=(void*)d; LONGINT _i=0,_t=n-1; \
                          while(_i<_t&&((_b[_i]=_a[_i])!=0)){_i++;};_b[_i]=0;}
-#define __DUP(x, l, t)  x=(void*)__MEMCPY((void*)(SYSTEM_ADR)Platform_OSAllocate(l*sizeof(t)),x,l*sizeof(t))
+#define __DUP(x, l, t)  x=(void*)__MEMCPY((void*)Platform_OSAllocate(l*sizeof(t)),x,l*sizeof(t))
 #define __DUPARR(v, t)  v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
-#define __DEL(x)        Platform_OSFree((LONGINT)(SYSTEM_ADR)x)
+#define __DEL(x)        Platform_OSFree((SYSTEM_PTR)x)
 
 
 
@@ -199,18 +199,18 @@ extern void Platform_Init(INTEGER argc, SYSTEM_PTR argv);
 extern void *Platform_MainModule;
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; Platform_Init((INTEGER)argc, (SYSTEM_PTR)&argv);
+#define __INIT(argc, argv)    static void *m; Platform_Init(argc, (SYSTEM_PTR)&argv);
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,enum)
 #define __FINI                Heap_FINALL(); return 0
 
 
 // Assertions and Halts
 
-extern void Platform_Halt(LONGINT x);
-extern void Platform_AssertFail(LONGINT x);
+extern void Platform_Halt(INTEGER code);
+extern void Platform_AssertFail(INTEGER code);
 
-#define __HALT(x)         Platform_Halt(x)
-#define __ASSERT(cond, x) if (!(cond)) Platform_AssertFail((LONGINT)(x))
+#define __HALT(code)         Platform_Halt(code)
+#define __ASSERT(cond, code) if (!(cond)) Platform_AssertFail(code)
 
 
 // Memory allocation
