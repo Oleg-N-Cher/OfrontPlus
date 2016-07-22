@@ -19,11 +19,14 @@ typedef
 	void (*Platform_HaltProcedure)(INTEGER);
 
 typedef
+	CHAR (*Platform_MemAdr)[1];
+
+typedef
 	void (*Platform_SignalHandler)(INTEGER);
 
 
 export BOOLEAN Platform_LittleEndian;
-export SYSTEM_PTR Platform_MainStackFrame;
+export Platform_MemAdr Platform_MainStackFrame;
 export INTEGER Platform_HaltCode, Platform_PID;
 export CHAR Platform_CWD[4096];
 export INTEGER Platform_ArgCount;
@@ -56,15 +59,15 @@ export void Platform_Halt (INTEGER code);
 export INTEGER Platform_Identify (Platform_FileHandle h, Platform_FileIdentity *identity, LONGINT *identity__typ);
 export INTEGER Platform_IdentifyByName (CHAR *n, LONGINT n__len, Platform_FileIdentity *identity, LONGINT *identity__typ);
 export BOOLEAN Platform_Inaccessible (INTEGER e);
-export void Platform_Init (INTEGER argc, SYSTEM_PTR argvadr);
+export void Platform_Init (INTEGER argc, Platform_MemAdr argvadr);
 export void Platform_MTimeAsClock (Platform_FileIdentity i, INTEGER *t, INTEGER *d);
 export INTEGER Platform_New (CHAR *n, LONGINT n__len, Platform_FileHandle *h);
 export BOOLEAN Platform_NoSuchDirectory (INTEGER e);
-export SYSTEM_PTR Platform_OSAllocate (INTEGER size);
-export void Platform_OSFree (SYSTEM_PTR address);
+export Platform_MemAdr Platform_OSAllocate (INTEGER size);
+export void Platform_OSFree (Platform_MemAdr address);
 export INTEGER Platform_OldRO (CHAR *n, LONGINT n__len, Platform_FileHandle *h);
 export INTEGER Platform_OldRW (CHAR *n, LONGINT n__len, Platform_FileHandle *h);
-export INTEGER Platform_Read (Platform_FileHandle h, SYSTEM_PTR p, INTEGER l, INTEGER *n);
+export INTEGER Platform_Read (Platform_FileHandle h, Platform_MemAdr p, INTEGER l, INTEGER *n);
 export INTEGER Platform_ReadBuf (Platform_FileHandle h, BYTE *b, LONGINT b__len, INTEGER *n);
 export INTEGER Platform_Rename (CHAR *o, LONGINT o__len, CHAR *n, LONGINT n__len);
 export BOOLEAN Platform_SameFile (Platform_FileIdentity i1, Platform_FileIdentity i2);
@@ -82,7 +85,7 @@ export BOOLEAN Platform_TimedOut (INTEGER e);
 export BOOLEAN Platform_TooManyFiles (INTEGER e);
 export INTEGER Platform_Truncate (Platform_FileHandle h, LONGINT limit);
 export INTEGER Platform_Unlink (CHAR *n, LONGINT n__len);
-export INTEGER Platform_Write (Platform_FileHandle h, SYSTEM_PTR p, INTEGER l);
+export INTEGER Platform_Write (Platform_FileHandle h, Platform_MemAdr p, INTEGER l);
 static void Platform_YMDHMStoClock (INTEGER ye, INTEGER mo, INTEGER da, INTEGER ho, INTEGER mi, INTEGER se, INTEGER *t, INTEGER *d);
 static void Platform_errch (CHAR c);
 static void Platform_errint (INTEGER l);
@@ -109,7 +112,7 @@ extern void Heap_InitHeap();
 #define Platform_HeapInitHeap()	Heap_InitHeap()
 #define Platform_SetInterruptHandler(h)	SystemSetInterruptHandler((SYSTEM_ADR)h)
 #define Platform_SetQuitHandler(h)	SystemSetQuitHandler((SYSTEM_ADR)h)
-#define Platform_allocate(size)	((SYSTEM_PTR)HeapAlloc(GetProcessHeap(), 0, (size_t)(unsigned)size))
+#define Platform_allocate(size)	((Platform_MemAdr)HeapAlloc(GetProcessHeap(), 0, (size_t)(unsigned)size))
 #define Platform_bhfiIndexHigh()	(INTEGER)bhfi.nFileIndexHigh
 #define Platform_bhfiIndexLow()	(INTEGER)bhfi.nFileIndexLow
 #define Platform_bhfiMtimeHigh()	(INTEGER)bhfi.ftLastWriteTime.dwHighDateTime
@@ -209,7 +212,7 @@ BOOLEAN Platform_ConnectionFailed (INTEGER e)
 }
 
 /*----------------------------------------------------------------------------*/
-SYSTEM_PTR Platform_OSAllocate (INTEGER size)
+Platform_MemAdr Platform_OSAllocate (INTEGER size)
 {
 	if (size > 0) {
 		return Platform_allocate(size);
@@ -219,7 +222,7 @@ SYSTEM_PTR Platform_OSAllocate (INTEGER size)
 }
 
 /*----------------------------------------------------------------------------*/
-void Platform_OSFree (SYSTEM_PTR address)
+void Platform_OSFree (Platform_MemAdr address)
 {
 	Platform_free(address);
 }
@@ -228,7 +231,7 @@ void Platform_OSFree (SYSTEM_PTR address)
 typedef
 	Platform_ArgVec (*ArgVecPtr__38)[1];
 
-void Platform_Init (INTEGER argc, SYSTEM_PTR argvadr)
+void Platform_Init (INTEGER argc, Platform_MemAdr argvadr)
 {
 	ArgVecPtr__38 av = NIL;
 	Platform_MainStackFrame = argvadr;
@@ -504,7 +507,7 @@ INTEGER Platform_Size (Platform_FileHandle h, LONGINT *l)
 }
 
 /*----------------------------------------------------------------------------*/
-INTEGER Platform_Read (Platform_FileHandle h, SYSTEM_PTR p, INTEGER l, INTEGER *n)
+INTEGER Platform_Read (Platform_FileHandle h, Platform_MemAdr p, INTEGER l, INTEGER *n)
 {
 	INTEGER result;
 	*n = 0;
@@ -523,7 +526,7 @@ INTEGER Platform_ReadBuf (Platform_FileHandle h, BYTE *b, LONGINT b__len, INTEGE
 {
 	INTEGER result;
 	*n = 0;
-	result = Platform_readfile(h, (SYSTEM_PTR)((LONGINT)b), (INTEGER)b__len, &*n);
+	result = Platform_readfile(h, (Platform_MemAdr)((LONGINT)b), (INTEGER)b__len, &*n);
 	if (result == 0) {
 		*n = 0;
 		return Platform_err();
@@ -534,7 +537,7 @@ INTEGER Platform_ReadBuf (Platform_FileHandle h, BYTE *b, LONGINT b__len, INTEGE
 }
 
 /*----------------------------------------------------------------------------*/
-INTEGER Platform_Write (Platform_FileHandle h, SYSTEM_PTR p, INTEGER l)
+INTEGER Platform_Write (Platform_FileHandle h, Platform_MemAdr p, INTEGER l)
 {
 	if (Platform_writefile(h, p, l) == 0) {
 		return Platform_err();
@@ -751,17 +754,12 @@ static void Platform_TestLittleEndian (void)
 	__GET((LONGINT)&i, Platform_LittleEndian, BOOLEAN);
 }
 
-static void EnumPtrs(void (*P)(void*))
-{
-	P(Platform_MainStackFrame);
-}
-
 __TDESC(Platform_FileIdentity__desc, 1, 0) = {__TDFLDS("FileIdentity", 20), {-8}};
 
 export void *Platform__init(void)
 {
 	__DEFMOD;
-	__REGMOD("Platform", EnumPtrs);
+	__REGMOD("Platform", 0);
 	__INITYP(Platform_FileIdentity, Platform_FileIdentity, 0);
 /* BEGIN */
 	Platform_TestLittleEndian();

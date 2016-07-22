@@ -173,7 +173,7 @@ MODULE Heap;
   END INCREF;
 
 
-  PROCEDURE -ExternPlatformOSAllocate       "extern SYSTEM_PTR Platform_OSAllocate(INTEGER size);";
+  PROCEDURE -ExternPlatformOSAllocate       "typedef CHAR (*__Platform_MemAdr)[1]; extern __Platform_MemAdr Platform_OSAllocate(INTEGER size);";
   PROCEDURE -OSAllocate(size: LONGINT): ADR "((Heap_ADR)Platform_OSAllocate((INTEGER)(size)))";
 
   PROCEDURE NewChunk(blksz: LONGINT): ADR;

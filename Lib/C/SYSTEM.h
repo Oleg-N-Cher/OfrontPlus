@@ -60,11 +60,13 @@ typedef U_INTEGER SET;   // SET is 32 bit.
   typedef unsigned int SYSTEM_ADR;
 #endif
 
+typedef CHAR (*__Platform_MemAdr)[1];   // non-GC pointer type compatible with Platform.MemAdr
+
 
 // OS Memory allocation interfaces are in PlatformXXX.Mod
 
-extern SYSTEM_PTR Platform_OSAllocate (INTEGER size);
-extern void       Platform_OSFree     (SYSTEM_PTR addr);
+extern __Platform_MemAdr Platform_OSAllocate (INTEGER size);
+extern void              Platform_OSFree     (__Platform_MemAdr addr);
 
 
 // Run time system routines in SYSTEM.c
@@ -108,7 +110,7 @@ extern LONGINT SYSTEM_ENTIER (double x);
                          while(_i<_t&&((_b[_i]=_a[_i])!=0)){_i++;};_b[_i]=0;}
 #define __DUP(x, l, t)  x=(void*)__MEMCPY((void*)Platform_OSAllocate(l*sizeof(t)),x,l*sizeof(t))
 #define __DUPARR(v, t)  v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
-#define __DEL(x)        Platform_OSFree((SYSTEM_PTR)x)
+#define __DEL(x)        Platform_OSFree((__Platform_MemAdr)x)
 
 
 
@@ -195,11 +197,10 @@ extern void       Heap_INCREF();
 
 // Main module initialisation, registration and finalisation
 
-extern void Platform_Init(INTEGER argc, SYSTEM_PTR argv);
-extern void *Platform_MainModule;
+extern void Platform_Init(INTEGER argc, __Platform_MemAdr argv);
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; Platform_Init(argc, (SYSTEM_PTR)&argv);
+#define __INIT(argc, argv)    static void *m; Platform_Init(argc, (__Platform_MemAdr)&argv);
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,enum)
 #define __FINI                Heap_FINALL(); return 0
 

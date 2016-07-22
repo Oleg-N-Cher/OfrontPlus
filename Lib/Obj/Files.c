@@ -261,7 +261,7 @@ static void Files_Flush (Files_Buffer buf)
 		if (buf->org != f->pos) {
 			error = Platform_Seek(f->fd, buf->org, Platform_SeekSet);
 		}
-		error = Platform_Write(f->fd, (SYSTEM_PTR)((INTEGER)buf->data), buf->size);
+		error = Platform_Write(f->fd, (Platform_MemAdr)((INTEGER)buf->data), buf->size);
 		if (error != 0) {
 			Files_Err((CHAR*)"error writing file", (LONGINT)19, f, error);
 		}
@@ -783,15 +783,15 @@ void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INT
 				__DEL(new);
 				return;
 			}
-			error = Platform_Read(fdold, (SYSTEM_PTR)((INTEGER)buf), 4096, &n);
+			error = Platform_Read(fdold, (Platform_MemAdr)((INTEGER)buf), 4096, &n);
 			while (n > 0) {
-				error = Platform_Write(fdnew, (SYSTEM_PTR)((INTEGER)buf), n);
+				error = Platform_Write(fdnew, (Platform_MemAdr)((INTEGER)buf), n);
 				if (error != 0) {
 					ignore = Platform_Close(fdold);
 					ignore = Platform_Close(fdnew);
 					Files_Err((CHAR*)"cannot move file", (LONGINT)17, NIL, error);
 				}
-				error = Platform_Read(fdold, (SYSTEM_PTR)((INTEGER)buf), 4096, &n);
+				error = Platform_Read(fdold, (Platform_MemAdr)((INTEGER)buf), 4096, &n);
 			}
 			ignore = Platform_Close(fdold);
 			ignore = Platform_Close(fdnew);

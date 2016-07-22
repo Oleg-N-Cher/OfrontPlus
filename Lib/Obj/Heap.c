@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -spke */
+/*  Ofront 1.2 -xtspkae */
 #include "SYSTEM.h"
 
 struct Heap__1 {
@@ -105,7 +105,7 @@ export void Heap_Unlock (void);
 #define Heap_EqualOrLessThan(adr1, adr2)	((SYSTEM_ADR)(adr1) <= (SYSTEM_ADR)(adr2))
 extern void *Heap__init();
 extern SYSTEM_PTR Platform_MainStackFrame;
-extern SYSTEM_PTR Platform_OSAllocate(INTEGER size);
+#define Heap_ExternPlatformOSAllocate()	typedef CHAR (*__Platform_MemAdr)[1]; extern __Platform_MemAdr Platform_OSAllocate(INTEGER size);
 #define Heap_FetchAddress(pointer)	(Heap_ADR)(SYSTEM_ADR)(*((void**)((SYSTEM_ADR)(pointer))))
 #define Heap_GreaterThan(adr1, adr2)	((SYSTEM_ADR)(adr1) > (SYSTEM_ADR)(adr2))
 #define Heap_HeapModuleInit()	Heap__init()
@@ -233,18 +233,19 @@ SYSTEM_PTR Heap_NEWREC (SYSTEM_PTR tag)
 	SYSTEM_PTR new = NIL;
 	Heap_Lock();
 	__GET(tag, blksz, LONGINT);
-		i0 = __ASHR(blksz, 4, LONGINT);
+	__ASSERT(__MASK(blksz, -16) == 0, 0);
+	i0 = __ASHR(blksz, 4, LONGINT);
 	i = i0;
 	if (i < 9) {
-		adr = Heap_freeList[i];
+		adr = Heap_freeList[__X(i, 10)];
 		while (adr == NIL) {
 			i += 1;
-			adr = Heap_freeList[i];
+			adr = Heap_freeList[__X(i, 10)];
 		}
 	}
 	if (i < 9) {
 		next = Heap_FetchAddress(Heap_Offset(adr, 12));
-		Heap_freeList[i] = next;
+		Heap_freeList[__X(i, 10)] = next;
 		if (i != i0) {
 			di = i - i0;
 			restsize = __ASHL(di, 4, LONGINT);
@@ -253,8 +254,8 @@ SYSTEM_PTR Heap_NEWREC (SYSTEM_PTR tag)
 			__PUT(Heap_Offset(end, 8), -4, LONGINT);
 			__PUT(end, Heap_Offset(end, 4), Heap_ADR);
 			__PUT(Heap_Offset(adr, 4), restsize, LONGINT);
-			__PUT(Heap_Offset(adr, 12), Heap_freeList[di], Heap_ADR);
-			Heap_freeList[di] = adr;
+			__PUT(Heap_Offset(adr, 12), Heap_freeList[__X(di, 10)], Heap_ADR);
+			Heap_freeList[__X(di, 10)] = adr;
 			adr = Heap_Offset(adr, restsize);
 		}
 	} else {
@@ -306,8 +307,8 @@ SYSTEM_PTR Heap_NEWREC (SYSTEM_PTR tag)
 			if (restsize > 0) {
 				di = __ASHR(restsize, 4, LONGINT);
 				__PUT(Heap_Offset(adr, 4), restsize, LONGINT);
-				__PUT(Heap_Offset(adr, 12), Heap_freeList[di], Heap_ADR);
-				Heap_freeList[di] = adr;
+				__PUT(Heap_Offset(adr, 12), Heap_freeList[__X(di, 10)], Heap_ADR);
+				Heap_freeList[__X(di, 10)] = adr;
 			}
 		}
 		adr = Heap_Offset(adr, restsize);
@@ -407,7 +408,7 @@ static void Heap_Scan (void)
 	Heap_bigBlocks = NIL;
 	i = 1;
 	while (i < 9) {
-		Heap_freeList[i] = NIL;
+		Heap_freeList[__X(i, 10)] = NIL;
 		i += 1;
 	}
 	freesize = 0;
@@ -427,8 +428,8 @@ static void Heap_Scan (void)
 					i = __ASHR(freesize, 4, LONGINT);
 					freesize = 0;
 					if (i < 9) {
-						__PUT(Heap_Offset(start, 12), Heap_freeList[i], Heap_ADR);
-						Heap_freeList[i] = start;
+						__PUT(Heap_Offset(start, 12), Heap_freeList[__X(i, 10)], Heap_ADR);
+						Heap_freeList[__X(i, 10)] = start;
 					} else {
 						__PUT(Heap_Offset(start, 12), Heap_bigBlocks, Heap_ADR);
 						Heap_bigBlocks = start;
@@ -453,8 +454,8 @@ static void Heap_Scan (void)
 			i = __ASHR(freesize, 4, LONGINT);
 			freesize = 0;
 			if (i < 9) {
-				__PUT(Heap_Offset(start, 12), Heap_freeList[i], Heap_ADR);
-				Heap_freeList[i] = start;
+				__PUT(Heap_Offset(start, 12), Heap_freeList[__X(i, 10)], Heap_ADR);
+				Heap_freeList[__X(i, 10)] = start;
 			} else {
 				__PUT(Heap_Offset(start, 12), Heap_bigBlocks, Heap_ADR);
 				Heap_bigBlocks = start;
@@ -469,19 +470,19 @@ static void Heap_Sift (LONGINT l, LONGINT r, Heap_ADR *a, LONGINT a__len)
 	LONGINT i, j;
 	Heap_ADR x = NIL;
 	j = l;
-	x = a[j];
+	x = a[__X(j, a__len)];
 	for (;;) {
 		i = j;
 		j = __ASHL(j, 1, LONGINT) + 1;
-		if (j < r && Heap_LessThan(a[j], a[j + 1])) {
+		if (j < r && Heap_LessThan(a[__X(j, a__len)], a[__X(j + 1, a__len)])) {
 			j += 1;
 		}
-		if (j > r || Heap_EqualOrLessThan(a[j], x)) {
+		if (j > r || Heap_EqualOrLessThan(a[__X(j, a__len)], x)) {
 			break;
 		}
-		a[i] = a[j];
+		a[__X(i, a__len)] = a[__X(j, a__len)];
 	}
-	a[i] = x;
+	a[__X(i, a__len)] = x;
 }
 
 static void Heap_HeapSort (LONGINT n, Heap_ADR *a, LONGINT a__len)
@@ -496,8 +497,8 @@ static void Heap_HeapSort (LONGINT n, Heap_ADR *a, LONGINT a__len)
 	}
 	while (r > 0) {
 		x = a[0];
-		a[0] = a[r];
-		a[r] = x;
+		a[0] = a[__X(r, a__len)];
+		a[__X(r, a__len)] = x;
 		r -= 1;
 		Heap_Sift(l, r, (void*)a, a__len);
 	}
@@ -509,7 +510,7 @@ static void Heap_MarkCandidates (LONGINT n, Heap_ADR *cand, LONGINT cand__len)
 	Heap_ADR chnk = NIL, adr = NIL, tag = NIL, next = NIL, lim = NIL, lim1 = NIL, ptr = NIL;
 	chnk = Heap_heap;
 	i = 0;
-	lim = cand[n - 1];
+	lim = cand[__X(n - 1, cand__len)];
 	while (chnk != NIL && Heap_LessThan(chnk, lim)) {
 		adr = Heap_Offset(chnk, 12);
 		lim1 = Heap_FetchAddress(Heap_Offset(chnk, 4));
@@ -524,14 +525,14 @@ static void Heap_MarkCandidates (LONGINT n, Heap_ADR *cand, LONGINT cand__len)
 			} else {
 				__GET(tag, size, LONGINT);
 				ptr = Heap_Offset(adr, 4);
-				while (Heap_LessThan(cand[i], ptr)) {
+				while (Heap_LessThan(cand[__X(i, cand__len)], ptr)) {
 					i += 1;
 				}
 				if (i == n) {
 					return;
 				}
 				next = Heap_Offset(adr, size);
-				if (Heap_LessThan(cand[i], next)) {
+				if (Heap_LessThan(cand[__X(i, cand__len)], next)) {
 					Heap_Mark(ptr);
 				}
 				adr = next;
@@ -622,7 +623,7 @@ static void Heap_MarkStack (LONGINT n, Heap_ADR *cand, LONGINT cand__len)
 					Heap_MarkCandidates(nofcand, (void*)cand, cand__len);
 					nofcand = 0;
 				}
-				cand[nofcand] = p;
+				cand[__X(nofcand, cand__len)] = p;
 				nofcand += 1;
 			}
 			sp = Heap_Offset(sp, inc);
