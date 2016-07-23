@@ -62,6 +62,13 @@ VAR
   nl-:              ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
 
 
+(* Some unsigned arithmetic *)
+
+PROCEDURE -UBYTE*(b: BYTE): SHORTINT "((unsigned char)(b))";
+PROCEDURE -UWORD*(w: SHORTINT): INTEGER "((unsigned short)(w))";
+PROCEDURE -UINT*(i: INTEGER): LONGINT "((unsigned int)(i))";
+
+
 PROCEDURE -AAincludeWindowsWrapper '#include "_windows.h"';
 
 

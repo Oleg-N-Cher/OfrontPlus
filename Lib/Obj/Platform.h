@@ -91,5 +91,8 @@ import void *Platform__init(void);
 
 #define Platform_SetInterruptHandler(h)	SystemSetInterruptHandler((SYSTEM_ADR)h)
 #define Platform_SetQuitHandler(h)	SystemSetQuitHandler((SYSTEM_ADR)h)
+#define Platform_UBYTE(b)	((unsigned char)(b))
+#define Platform_UINT(i)	((unsigned int)(i))
+#define Platform_UWORD(w)	((unsigned short)(w))
 
 #endif

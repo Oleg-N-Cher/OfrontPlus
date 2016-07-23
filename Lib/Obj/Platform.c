@@ -112,6 +112,9 @@ extern void Heap_InitHeap();
 #define Platform_HeapInitHeap()	Heap_InitHeap()
 #define Platform_SetInterruptHandler(h)	SystemSetInterruptHandler((SYSTEM_ADR)h)
 #define Platform_SetQuitHandler(h)	SystemSetQuitHandler((SYSTEM_ADR)h)
+#define Platform_UBYTE(b)	((unsigned char)(b))
+#define Platform_UINT(i)	((unsigned int)(i))
+#define Platform_UWORD(w)	((unsigned short)(w))
 #define Platform_allocate(size)	((Platform_MemAdr)HeapAlloc(GetProcessHeap(), 0, (size_t)(unsigned)size))
 #define Platform_bhfiIndexHigh()	(INTEGER)bhfi.nFileIndexHigh
 #define Platform_bhfiIndexLow()	(INTEGER)bhfi.nFileIndexLow
