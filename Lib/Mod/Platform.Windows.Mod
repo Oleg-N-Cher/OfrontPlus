@@ -1,10 +1,11 @@
-MODULE Platform; (* Windows *)
+MODULE Platform; (** Windows *)
 IMPORT SYSTEM;
 
 (* TODO:
    Use Unicode APIs with manual UTF8 conversion and prepend "\\?\" to
    file paths in order to get 32768 character path length limit (as
-   opposed to 256 bytes. *)
+   opposed to 256 bytes.
+   Made compatible with older Windows (GetFileSizeEx). *)
 
 
 TYPE
@@ -57,16 +58,14 @@ VAR
   StdOut-:          FileHandle;
   StdErr-:          FileHandle;
 
-  InterruptHandler: SignalHandler;
-
-  nl-:              ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
+  nl-: ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
 
 
 (* Some unsigned arithmetic *)
 
-PROCEDURE -UBYTE*(b: BYTE): SHORTINT "((unsigned char)(b))";
-PROCEDURE -UWORD*(w: SHORTINT): INTEGER "((unsigned short)(w))";
-PROCEDURE -UINT*(i: INTEGER): LONGINT "((unsigned int)(i))";
+PROCEDURE -UBYTE*(b: BYTE): SHORTINT "((SHORTINT)(unsigned char)(b))";
+PROCEDURE -USHORT*(s: SHORTINT): INTEGER "((INTEGER)(unsigned short)(s))";
+PROCEDURE -UINT*(i: INTEGER): LONGINT "((LONGINT)(unsigned int)(i))";
 
 
 PROCEDURE -AAincludeWindowsWrapper '#include "_windows.h"';
@@ -87,7 +86,6 @@ PROCEDURE -ECONNREFUSED():          ErrorCode "WSAECONNREFUSED";
 PROCEDURE -ECONNABORTED():          ErrorCode "WSAECONNABORTED";
 PROCEDURE -ENETUNREACH():           ErrorCode "WSAENETUNREACH";
 PROCEDURE -EHOSTUNREACH():          ErrorCode "WSAEHOSTUNREACH";
-
 
 
 PROCEDURE TooManyFiles*(e: ErrorCode): BOOLEAN;
@@ -118,7 +116,7 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)HeapAlloc(GetProcessHeap(), 0, (size_t)(unsigned)size))";
+PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
 
 PROCEDURE ^ Halt*(code: INTEGER);
 
@@ -217,6 +215,7 @@ END ArgPos;
 (* Ctrl/c handling *)
 
 PROCEDURE -SetInterruptHandler*(h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADR)h)";
+
 PROCEDURE -SetQuitHandler*     (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADR)h)";
 
 PROCEDURE SetBadInstructionHandler*(handler: SignalHandler);
@@ -227,12 +226,12 @@ BEGIN (* TODO *) END SetBadInstructionHandler;
 (* Time of day *)
 
 PROCEDURE -getLocalTime  "SYSTEMTIME st; GetLocalTime(&st)";
-PROCEDURE -stsec():  INTEGER  "(INTEGER)(unsigned)st.wSecond";
-PROCEDURE -stmin():  INTEGER  "(INTEGER)(unsigned)st.wMinute";
-PROCEDURE -sthour(): INTEGER  "(INTEGER)(unsigned)st.wHour";
-PROCEDURE -stmday(): INTEGER  "(INTEGER)(unsigned)st.wDay";
-PROCEDURE -stmon():  INTEGER  "(INTEGER)(unsigned)st.wMonth";
-PROCEDURE -styear(): INTEGER  "(INTEGER)(unsigned)st.wYear";
+PROCEDURE -stsec():  INTEGER  "(INTEGER)st.wSecond";
+PROCEDURE -stmin():  INTEGER  "(INTEGER)st.wMinute";
+PROCEDURE -sthour(): INTEGER  "(INTEGER)st.wHour";
+PROCEDURE -stmday(): INTEGER  "(INTEGER)st.wDay";
+PROCEDURE -stmon():  INTEGER  "(INTEGER)st.wMonth";
+PROCEDURE -styear(): INTEGER  "(INTEGER)st.wYear";
 
 PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
@@ -292,7 +291,7 @@ PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 (* File system *)
 
-PROCEDURE -invalidHandleValue(): FileHandle "((Platform_FileHandle)(SYSTEM_ADR)INVALID_HANDLE_VALUE)";
+PROCEDURE -InvalidHandle*(h: FileHandle): BOOLEAN "((h) == (Platform_FileHandle)(SYSTEM_ADR)-1)";
 
 PROCEDURE -openrw (n: ARRAY OF CHAR): FileHandle
 "(Platform_FileHandle)(SYSTEM_ADR)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
@@ -310,21 +309,21 @@ PROCEDURE OldRO*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(n);
-  IF (fd = invalidHandleValue()) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
 PROCEDURE OldRW*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(n);
-  IF (fd = invalidHandleValue()) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
 PROCEDURE New*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
-  IF (fd = invalidHandleValue()) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END New;
 
 
