@@ -291,7 +291,7 @@ PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 (* File system *)
 
-PROCEDURE -InvalidHandle*(h: FileHandle): BOOLEAN "((h) == (Platform_FileHandle)(SYSTEM_ADR)-1)";
+PROCEDURE -InvalidHandleValue*(): FileHandle "((Platform_FileHandle)(SYSTEM_ADR)-1)";
 
 PROCEDURE -openrw (n: ARRAY OF CHAR): FileHandle
 "(Platform_FileHandle)(SYSTEM_ADR)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
@@ -309,21 +309,21 @@ PROCEDURE OldRO*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(n);
-  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
 PROCEDURE OldRW*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(n);
-  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
 PROCEDURE New*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
-  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END New;
 
 

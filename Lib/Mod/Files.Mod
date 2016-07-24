@@ -72,16 +72,14 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 
-  PROCEDURE -fdLongint(fd: Platform.FileHandle): LONGINT "((LONGINT)(SYSTEM_ADR)(fd))";
-
-  PROCEDURE -noDesc(): Platform.FileHandle "((Platform_FileHandle)(SYSTEM_ADR)-1)";
+  PROCEDURE -fdint(fd: Platform.FileHandle): INTEGER "((INTEGER)(SYSTEM_ADR)(fd))";
 
   PROCEDURE Err(s: ARRAY OF CHAR; f: File; errcode: Platform.ErrorCode);
   BEGIN
     Console.Ln; Console.String("-- "); Console.String(s); Console.String(": ");
     IF f # NIL THEN
       IF f.registerName # "" THEN Console.String(f.registerName) ELSE Console.String(f.workName) END;
-      IF fdLongint(f.fd) # 0 THEN Console.String("f.fd = "); Console.LongInt(fdLongint(f.fd),1) END
+      IF fdint(f.fd) # 0 THEN Console.String("f.fd = "); Console.Int(fdint(f.fd),1) END
     END;
     IF errcode # 0 THEN Console.String(" errcode = "); Console.Int(errcode, 1) END;
     Console.Ln;
@@ -130,7 +128,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     Console.String(", state = ");         Console.Int(f.state,1);
     Console.Ln;
     *)
-    IF f.fd = noDesc() THEN
+    IF f.fd = Platform.InvalidHandleValue() THEN
       IF f.state = create THEN
         GetTempName(f.registerName, f.workName); f.tempFile := TRUE
       ELSIF f.state = close THEN
@@ -202,7 +200,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       IF prev.next # NIL THEN prev.next := f.next END
     END;
     error := Platform.Close(f.fd);
-    f.fd := noDesc(); f.state := create; DEC(Heap.FileCount);
+    f.fd := Platform.InvalidHandleValue(); f.state := create; DEC(Heap.FileCount);
   END CloseOSFile;
 
 
@@ -227,7 +225,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR f: File;
   BEGIN
     NEW(f); f.workName := ""; COPY(name, f.registerName);
-    f.fd := noDesc(); f.state := create; f.len := 0; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
+    f.fd := Platform.InvalidHandleValue(); f.state := create; f.len := 0; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
     RETURN f
   END New;
 
@@ -341,7 +339,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       IF f.bufs[i] # NIL THEN f.bufs[i].org := -1; f.bufs[i] := NIL END;
       INC(i)
     END;
-    IF f.fd # noDesc() THEN
+    IF f.fd # Platform.InvalidHandleValue() THEN
       error := Platform.Truncate(f.fd, 0);
       error := Platform.Seek(f.fd, 0, Platform.SeekSet)
     END;
@@ -725,7 +723,7 @@ Especially Length would become fairly complex.
     Console.String(", f.registername = "); Console.String(f.registerName);
     Console.String(", f.workName = "); Console.String(f.workName); Console.Ln;
     *)
-    IF fdLongint(f.fd) >= 0 THEN
+    IF f.fd # Platform.InvalidHandleValue() THEN
       CloseOSFile(f);
       IF f.tempFile THEN res := Platform.Unlink(f.workName) END
     END
