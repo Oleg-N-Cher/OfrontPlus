@@ -296,7 +296,7 @@ PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 (* File system *)
 
-PROCEDURE -InvalidHandle*(h: FileHandle): BOOLEAN "((h) < 0)";
+PROCEDURE -InvalidHandleValue*(): FileHandle "(-1)";
 
 (* Note: Consider also using flags O_SYNC and O_DIRECT as we do buffering *)
 PROCEDURE -openrw (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDWR)";
@@ -309,21 +309,21 @@ PROCEDURE OldRO*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(n);
-  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
 PROCEDURE OldRW*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(n);
-  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
 PROCEDURE New*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
-  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END New;
 
 
