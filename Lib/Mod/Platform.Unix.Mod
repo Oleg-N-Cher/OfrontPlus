@@ -1,4 +1,4 @@
-MODULE Platform; (* Unix *)
+MODULE Platform; (** Unix *)
 IMPORT SYSTEM;
 
 
@@ -9,13 +9,14 @@ CONST
 
 
 TYPE
-  ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
-  SIZE_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
-  TIME_T = SIZE_T;  (* time_t type is used instead of long,
-    but which is also a 32-bit representation on some systems while
-    there are even 64-bit representations on other systems. *)
+  Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
+  MemAdr* = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
+  
+  TIME_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* time_t type is used
+    instead of long, but which is also a 32-bit representation on some systems
+    while there are even 64-bit representations on other systems. *)
   DEV_T = LONGINT;  (* 64 bit in Linux 2.2 *)
-  INO_T = SIZE_T;   (* 32 or 64 bit *)
+  INO_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
 
   HaltProcedure = PROCEDURE(n: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
@@ -32,42 +33,48 @@ TYPE
     mtime:  TIME_T;  (* File modification time, value is system dependent *)
   END;
 
-  EnvPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
-  ArgPtr    = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
-  ArgVec*   = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
+  EnvPtr  = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
+  ArgPtr  = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
+  ArgVec* = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
 
 
 VAR
   LittleEndian-:   BOOLEAN;
-  MainStackFrame-: ADR;
+  MainStackFrame-: MemAdr;
   HaltCode-:       INTEGER;
-  PID-:            INTEGER;    (* Note: Must be updated by Fork implementation *)
+  PID-:            INTEGER;  (* Note: Must be updated by Fork implementation *)
   CWD-:            ARRAY 256 OF CHAR;
   ArgCount-:       INTEGER;
 
   ArgVector-:      ArgVec;
   HaltHandler:     HaltProcedure;
-  TimeStart:       INTEGER; (* milliseconds *)
+  TimeStart:       INTEGER;  (* milliseconds *)
 
   SeekSet-:        INTEGER;
   SeekCur-:        INTEGER;
   SeekEnd-:        INTEGER;
 
-  nl-:             ARRAY 2 OF CHAR;  (* Platform specific newline representation *)
+  nl-:  ARRAY 2 OF CHAR;  (* Platform specific newline representation *)
+
+
+(* Some unsigned arithmetic *)
+
+PROCEDURE -UBYTE*(b: BYTE): SHORTINT "((SHORTINT)(unsigned char)(b))";
+PROCEDURE -USHORT*(s: SHORTINT): INTEGER "((INTEGER)(unsigned short)(s))";
+PROCEDURE -UINT*(i: INTEGER): LONGINT "((LONGINT)(unsigned int)(i))";
 
 
 (* Unix headers to be included *)
 
-PROCEDURE -AAincludesystime  "#include <sys/time.h>";  (* for gettimeofday *)
-PROCEDURE -AAincludetime     "#include <time.h>";      (* for localtime *)
-PROCEDURE -AAincludesystypes "#include <sys/types.h>";
-PROCEDURE -AAincludeunistd   "#include <unistd.h>";
-PROCEDURE -AAincludesysstat  "#include <sys/stat.h>";
-PROCEDURE -AAincludefcntl    "#include <fcntl.h>";
-PROCEDURE -AAincludeerrno    "#include <errno.h>";
-PROCEDURE -AAstdlib          "#include <stdlib.h>";
-PROCEDURE -AAstdio           "#include <stdio.h>";
-PROCEDURE -AAerrno           "#include <errno.h>";
+(*PROCEDURE -AAincludeSystime  "#include <sys/time.h>";  (* for gettimeofday *)*)
+PROCEDURE -AAincludeTime     "#include <time.h>";      (* for localtime *)
+PROCEDURE -AAincludeSystypes "#include <sys/types.h>";
+PROCEDURE -AAincludeUnistd   "#include <unistd.h>";
+PROCEDURE -AAincludeSysstat  "#include <sys/stat.h>";
+PROCEDURE -AAincludeFcntl    "#include <fcntl.h>";
+PROCEDURE -AAincludeErrno    "#include <errno.h>";
+PROCEDURE -AAincludeStdlib   "#include <stdlib.h>";
+PROCEDURE -AAincludeStdio    "#include <stdio.h>";
 
 
 (* Error code tests *)
@@ -111,11 +118,19 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: SIZE_T): ADR "((Platform_ADR)malloc((size_t)size))";
-PROCEDURE OSAllocate*(size: SIZE_T): ADR; BEGIN RETURN allocate(size) END OSAllocate;
+PROCEDURE ^ Halt*(code: INTEGER);
 
-PROCEDURE -free(address: ADR) "free((void*)address)";
-PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
+PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)malloc((size_t)(size)))";
+PROCEDURE OSAllocate*(size: INTEGER): MemAdr;
+BEGIN
+  IF size > 0 THEN
+    RETURN allocate(size)  (* malloc will return the null pointer when it fails. *)
+  END;
+  Halt(-25); RETURN NIL (* To remove __RETCHK *)
+END OSAllocate;
+
+PROCEDURE -free(address: MemAdr) "free((void*)address)";
+PROCEDURE OSFree*(address: MemAdr); BEGIN free(address) END OSFree;
 
 
 (* Program startup *)
@@ -123,13 +138,13 @@ PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
 PROCEDURE -ExternInitHeap  "extern void Heap_InitHeap();";
 PROCEDURE -HeapInitHeap()  "Heap_InitHeap()";
 
-PROCEDURE Init*(argc: INTEGER; argvadr: SYSTEM.PTR);
+PROCEDURE Init*(argc: INTEGER; argvadr: MemAdr);
 TYPE
   ArgVecPtr = POINTER [1] TO ARRAY [1] 1 OF ArgVec;
 VAR
   av: ArgVecPtr;
 BEGIN
-  MainStackFrame := SYSTEM.VAL(ADR, argvadr);
+  MainStackFrame := argvadr;
   ArgCount       := argc;
   av             := SYSTEM.VAL(ArgVecPtr, argvadr);
   ArgVector      := av[0];
@@ -159,7 +174,7 @@ BEGIN
   IF ~ getEnv(var, val) THEN val[0] := 0X END;
 END GetEnv;
 
-PROCEDURE GetArg*(n: SHORTINT; VAR val: ARRAY OF CHAR);
+PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
 BEGIN
   IF n < ArgCount THEN COPY(ArgVector[n]^, val) END
 END GetArg;
@@ -229,8 +244,6 @@ PROCEDURE -tmmday(): INTEGER   "time->tm_mday";
 PROCEDURE -tmmon():  INTEGER   "time->tm_mon";
 PROCEDURE -tmyear(): INTEGER   "time->tm_year";
 
-PROCEDURE -timeLongint(time: TIME_T): LONGINT "((LONGINT)(SYSTEM_ADR)(time))";
-
 PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
   d := ASH(ye MOD 100, 9) + ASH(mo+1, 5) + da;
@@ -243,20 +256,23 @@ BEGIN
   YMDHMStoClock(tmyear(), tmmon(), tmmday(), tmhour(), tmmin(), tmsec(), t, d);
 END GetClock;
 
-PROCEDURE GetTimeOfDay*(VAR sec: LONGINT; usec: INTEGER);
-BEGIN
-  gettimeval; sec := timeLongint(tvsec()); usec := tvusec();
-END GetTimeOfDay;
+PROCEDURE -timeint(time: TIME_T): INTEGER "((INTEGER)(time))";
 
 PROCEDURE Time*(): INTEGER;
 VAR ms: INTEGER;
 BEGIN
   gettimeval;
-  ms := (tvusec() DIV 1000) + (timeLongint(tvsec()) * 1000);
+  ms := (tvusec() DIV 1000) + (timeint(tvsec()) * 1000);
   RETURN (ms - TimeStart) MOD 7FFFFFFFH
 END Time;
 
-PROCEDURE -nanosleep(s: INTEGER; ns: INTEGER) "struct timespec req, rem; req.tv_sec = s; req.tv_nsec = ns; nanosleep(&req, &rem)";
+(* struct timespec
+   Structure holding an interval broken down into seconds and nanoseconds.
+
+      time_t tv_sec  whole seconds (valid values are >= 0)
+      long tv_nsec   nanoseconds (valid values are [0, 999999999])
+*)
+PROCEDURE -nanosleep(s, ns: INTEGER) "struct timespec req, rem; req.tv_sec = (time_t)s; req.tv_nsec = ns; nanosleep(&req, &rem)";
 
 PROCEDURE Delay*(ms: INTEGER);
 VAR s, ns: INTEGER;
@@ -269,51 +285,49 @@ END Delay;
 
 (* System call *)
 
-PROCEDURE -system(str: ARRAY OF CHAR): SHORTINT "system((char*)str)";
-PROCEDURE -err(): SHORTINT "errno";
+PROCEDURE -system(str: ARRAY OF CHAR): INTEGER "system((char*)str)";
+PROCEDURE -err(): INTEGER "errno";
 
-
-PROCEDURE System*(cmd : ARRAY OF CHAR): SHORTINT;
+PROCEDURE System*(cmd : ARRAY OF CHAR): INTEGER;
 BEGIN RETURN system(cmd) END System;
 
 PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 
-
-
 (* File system *)
 
+PROCEDURE -InvalidHandle*(h: FileHandle): BOOLEAN "((h) < 0)";
+
 (* Note: Consider also using flags O_SYNC and O_DIRECT as we do buffering *)
-PROCEDURE -openrw (n: ARRAY OF CHAR): SHORTINT "open((char*)n, O_RDWR)";
-PROCEDURE -openro (n: ARRAY OF CHAR): SHORTINT "open((char*)n, O_RDONLY)";
-PROCEDURE -opennew(n: ARRAY OF CHAR): SHORTINT "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
+PROCEDURE -openrw (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDWR)";
+PROCEDURE -openro (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDONLY)";
+PROCEDURE -opennew(n: ARRAY OF CHAR): INTEGER "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
 
 (* File APIs *)
 
 PROCEDURE OldRO*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
-VAR fd: SHORTINT;
+VAR fd: FileHandle;
 BEGIN
   fd := openro(n);
-  IF (fd < 0) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
 PROCEDURE OldRW*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
-VAR fd: SHORTINT;
+VAR fd: FileHandle;
 BEGIN
   fd := openrw(n);
-  IF (fd < 0) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
 PROCEDURE New*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
-VAR fd: SHORTINT;
+VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
-  IF (fd < 0) THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  IF InvalidHandle(fd) THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END New;
 
 
-
-PROCEDURE -closefile (fd: INTEGER): SHORTINT "close(fd)";
+PROCEDURE -closefile (fd: FileHandle): INTEGER "close(fd)";
 
 PROCEDURE Close*(h: FileHandle): ErrorCode;
 BEGIN
@@ -321,14 +335,13 @@ BEGIN
 END Close;
 
 
-
-PROCEDURE -fstat(fd: INTEGER):     SHORTINT "fstat(fd, &s)";
-PROCEDURE -stat(n: ARRAY OF CHAR): SHORTINT "stat((char*)n, &s)";
+PROCEDURE -fstat(fd: FileHandle):  INTEGER "fstat(fd, &s)";
+PROCEDURE -stat(n: ARRAY OF CHAR): INTEGER "stat((char*)n, &s)";
 PROCEDURE -structstats                     "struct stat s";
-PROCEDURE -statdev():              INTEGER "(INTEGER)s.st_dev";
-PROCEDURE -statino():              INTEGER "(INTEGER)s.st_ino";
-PROCEDURE -statmtime():            INTEGER "(INTEGER)s.st_mtime";
-PROCEDURE -statsize():             INTEGER "(INTEGER)s.st_size";
+PROCEDURE -statdev():              DEV_T   "(LONGINT)s.st_dev";
+PROCEDURE -statino():              INO_T   "(Platform_INO_T)s.st_ino";
+PROCEDURE -statmtime():            TIME_T  "(Platform_TIME_T)s.st_mtime";
+PROCEDURE -statsize():             LONGINT "(LONGINT)s.st_size";
 
 PROCEDURE Identify*(h: FileHandle; VAR identity: FileIdentity): ErrorCode;
 BEGIN
@@ -370,7 +383,7 @@ BEGIN
 END MTimeAsClock;
 
 
-PROCEDURE Size*(h: FileHandle; VAR l: INTEGER): ErrorCode;
+PROCEDURE Size*(h: FileHandle; VAR l: LONGINT): ErrorCode;
 BEGIN
   structstats;
   IF fstat(h) < 0 THEN RETURN err() END;
@@ -379,11 +392,10 @@ BEGIN
 END Size;
 
 
-
-PROCEDURE -readfile (fd: INTEGER; p: INTEGER; l: INTEGER): INTEGER
+PROCEDURE -readfile (fd: INTEGER; p: MemAdr; l: INTEGER): INTEGER
 "read(fd, (void*)(SYSTEM_ADR)(p), l)";
 
-PROCEDURE Read*(h: FileHandle; p: INTEGER; l: INTEGER; VAR n: INTEGER): ErrorCode;
+PROCEDURE Read*(h: FileHandle; p: MemAdr; l: INTEGER; VAR n: INTEGER): ErrorCode;
 BEGIN
   n := readfile(h, p, l);
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
@@ -391,7 +403,7 @@ END Read;
 
 PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCode;
 BEGIN
-  n := readfile(h, SYSTEM.ADR(b), LEN(b));
+  n := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), SHORT(LEN(b)));
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
@@ -549,7 +561,7 @@ BEGIN
 
   HaltCode    := -128;
   HaltHandler := NIL;
-  TimeStart   := Time();
+  TimeStart   := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
   CWD         := "";  getcwd(CWD);
   PID         := getpid();
 
