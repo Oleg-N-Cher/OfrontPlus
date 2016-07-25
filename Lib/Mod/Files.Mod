@@ -122,7 +122,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       err:   ARRAY 32 OF CHAR;
   BEGIN
     (*
-    Console.String("Files.Create fd = "); Console.Int(f.fd,1);
+    Console.String("Files.Create fd = "); Console.Int(fdint(f.fd),1);
     Console.String(", registerName = ");  Console.String(f.registerName);
     Console.String(", workName = ");      Console.String(f.workName);
     Console.String(", state = ");         Console.Int(f.state,1);
@@ -163,8 +163,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   BEGIN
     (*
     Console.String("Files.Flush buf.f.registername = "); Console.String(buf.f.registerName);
-    Console.String(", buf.f.fd = "); Console.Int(buf.f.fd,1);
-    Console.String(", buffer at $"); Console.Hex(SYSTEM.ADR(buf.data));
+    Console.String(", buf.f.fd = "); Console.Int(fdint(buf.f.fd),1);
+    Console.String(", buffer at $"); Console.LongHex(SYSTEM.ADR(buf.data));
     Console.String(", size "); Console.Int(buf.size,1); Console.Ln;
     *)
     IF buf.chg THEN f := buf.f; Create(f);
@@ -310,7 +310,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
           Console.String(" error = "); Console.Int(error, 0); Console.Ln;
         END;
         IF done THEN
-          (* Console.String("  fd = "); Console.Int(fd,1); Console.Ln; *)
+          (* Console.String("  fd = "); Console.Int(fdint(fd),1); Console.Ln; *)
           error := Platform.Identify(fd, identity);
           f := CacheEntry(identity);
           IF f # NIL THEN
@@ -364,7 +364,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   BEGIN
     IF f # NIL THEN
       (*
-      Console.String("Files.Set rider on fd = "); Console.Int(f.fd,1);
+      Console.String("Files.Set rider on fd = "); Console.Int(fdint(f.fd),1);
       Console.String(", registerName = ");  Console.String(f.registerName);
       Console.String(", workName = ");      Console.String(f.workName);
       Console.String(", state = ");         Console.Int(f.state,1);
@@ -569,14 +569,14 @@ Especially Length would become fairly complex.
   BEGIN
     (*
     Console.String("Files.Register f.registerName = "); Console.String(f.registerName);
-    Console.String(", fd = "); Console.Int(f.fd,1); Console.Ln;
+    Console.String(", fd = "); Console.Int(fdint(f.fd),1); Console.Ln;
     *)
     IF (f.state = create) & (f.registerName # "") THEN f.state := close (* shortcut renaming *) END;
     Close(f);
     IF f.registerName # "" THEN
       Rename(f.workName, f.registerName, errcode);
       (*
-      Console.String("Renamed (for register) f.fd = "); Console.Int(f.fd,1);
+      Console.String("Renamed (for register) f.fd = "); Console.Int(fdint(f.fd),1);
       Console.String(" from workname ");                Console.String(f.workName);
       Console.String(" to registerName ");              Console.String(f.registerName);
       Console.String(" errorcode = ");                  Console.Int(errcode,1); Console.Ln;
@@ -719,7 +719,7 @@ Especially Length would become fairly complex.
   BEGIN
     f := SYSTEM.VAL(File, o);
     (*
-    Console.String("Files.Finalize f.fd = "); Console.Int(f.fd,1);
+    Console.String("Files.Finalize f.fd = "); Console.Int(fdint(f.fd),1);
     Console.String(", f.registername = "); Console.String(f.registerName);
     Console.String(", f.workName = "); Console.String(f.workName); Console.Ln;
     *)
