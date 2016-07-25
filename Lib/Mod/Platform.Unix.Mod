@@ -518,6 +518,7 @@ BEGIN
   |-14: errstring("Invalid function argument.");
   |-15: errstring("Internal error, e.g. Type descriptor size mismatch.")
   |-20: errstring("Too many, or negative number of, elements in dynamic array.")
+  |-25: errstring("Memory allocation error.")
   ELSE
   END
 END DisplayHaltCode;
