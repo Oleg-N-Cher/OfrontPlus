@@ -92,24 +92,24 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		BYTEPTR = POINTER TO ARRAY MAX(INTEGER) OF BYTE;
 
 	VAR
-		ByteSize*, CharSize*, BoolSize*, SIntSize*, IntSize*,
-		LIntSize*, SetSize*, RealSize*, LRealSize*, PointerSize*, ProcSize*, RecSize*,
-		CharAlign*, BoolAlign*, SIntAlign*, IntAlign*,
-		LIntAlign*, SetAlign*, RealAlign*, LRealAlign*, PointerAlign*, ProcAlign*, RecAlign*,
-		ByteOrder*, BitOrder*, ForN-, MaxSet*: INTEGER;
-		MinSInt*, MinInt*, MaxSInt*, MaxInt*, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
-		MinReal*, MaxReal*, MinLReal*, MaxLReal*: REAL;
+		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
+		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-,
+		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
+		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
+		ByteOrder-, BitOrder-, ForN-, MaxSet-: INTEGER;
+		MinSInt-, MinInt-, MaxSInt-, MaxInt-, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
+		MinReal-, MaxReal-, MinLReal-, MaxLReal-: REAL;
 
-		noerr*: BOOLEAN;
-		curpos*, errpos*: INTEGER;	(* character and error position in source file *)
-		breakpc*: INTEGER;	(* set by OPV.Init *)
+		noerr-: BOOLEAN;
+		curpos-, errpos*: INTEGER;	(* character and error position in source file *)
+		breakpc-: INTEGER;	(* set by OPV.Init *)
 		currFile*: INTEGER;	(* current output file *)
 		level*: INTEGER;	(* procedure nesting level *)
-		pc*, entno*: INTEGER;  (* entry number *)
-		modName*: ARRAY 32 OF SHORTCHAR;
+		pc-, entno-: INTEGER;  (* entry number *)
+		modName-: ARRAY 32 OF SHORTCHAR;
 		objname*: ARRAY 64 OF SHORTCHAR;
 
-		opt*, glbopt*: SET;
+		opt-, glbopt-: SET;
 		
 		lasterrpos: INTEGER;
 		inR: TextModels.Reader;
@@ -664,7 +664,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		R[currFile].WriteByte(SYSTEM.VAL(BYTE, ch))
 	END Write;
 
-	PROCEDURE WriteString*(s: ARRAY OF SHORTCHAR);
+	PROCEDURE WriteString*(IN s: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0; ch := s[0];
 	WHILE ch # 0X DO Write(ch); INC(i); ch := s[i] END ;
