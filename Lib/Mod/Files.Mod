@@ -38,7 +38,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       identity: Platform.FileIdentity;
       fd-:      Platform.FileHandle;
       len, pos: INTEGER;
-      bufs: ARRAY nofbufs OF Buffer;
+      bufs:     ARRAY nofbufs OF Buffer;
       swapper, state: SHORTINT;
       next:     File;
     END;
@@ -61,7 +61,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   VAR
     files:      File;   (* List of files that have an OS file handle/descriptor assigned  *)
-    tempno:     SHORTINT;
+    tempno:     INTEGER;
     HOME:       ARRAY 1024 OF CHAR;
     SearchPath: POINTER TO ARRAY OF CHAR;
 
@@ -87,7 +87,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END Err;
 
   PROCEDURE MakeFileName(dir, name: ARRAY OF CHAR; VAR dest: ARRAY OF CHAR);
-    VAR i, j: SHORTINT;
+    VAR i, j: INTEGER;
   BEGIN i := 0; j := 0;
     WHILE dir[i] # 0X DO dest[i] := dir[i]; INC(i) END;
     IF dest[i-1] # "/" THEN dest[i] := "/"; INC(i) END;
@@ -229,11 +229,11 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     RETURN f
   END New;
 
-  PROCEDURE ScanPath(VAR pos: SHORTINT; VAR dir: ARRAY OF CHAR);
+  PROCEDURE ScanPath(VAR pos: INTEGER; VAR dir: ARRAY OF CHAR);
   (* Extract next individual directory from searchpath starting at pos,
      updating pos and returning dir.
      Supports ~, ~user and blanks inside path *)
-  VAR i: SHORTINT; ch: CHAR;
+  VAR i: INTEGER; ch: CHAR;
   BEGIN
     i := 0;
     IF SearchPath = NIL THEN
@@ -257,14 +257,14 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END ScanPath;
 
   PROCEDURE HasDir(VAR name: ARRAY OF CHAR): BOOLEAN;
-    VAR i: SHORTINT; ch: CHAR;
+    VAR i: INTEGER; ch: CHAR;
   BEGIN i := 0; ch := name[0];
     WHILE (ch # 0X) & (ch # "/") DO INC(i); ch := name[i] END;
     RETURN ch = "/"
   END HasDir;
 
   PROCEDURE CacheEntry(identity: Platform.FileIdentity): File;
-    VAR f: File;  i: SHORTINT;  error: Platform.ErrorCode; len: LONGINT;
+    VAR f: File; i: INTEGER; error: Platform.ErrorCode; len: LONGINT;
   BEGIN f := files;
     WHILE f # NIL DO
       IF Platform.SameFile(identity, f.identity) THEN
@@ -287,7 +287,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR
       f:         File;
       fd:        Platform.FileHandle;
-      pos:       SHORTINT;
+      pos:       INTEGER;
       done:      BOOLEAN;
       dir, path: ARRAY 256 OF CHAR;
       error:     Platform.ErrorCode;
@@ -333,7 +333,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   END Old;
 
   PROCEDURE Purge* (f: File);
-    VAR i: SHORTINT;  identity: Platform.FileIdentity;  error: Platform.ErrorCode;
+    VAR i: INTEGER; identity: Platform.FileIdentity; error: Platform.ErrorCode;
   BEGIN i := 0;
     WHILE i < nofbufs DO
       IF f.bufs[i] # NIL THEN f.bufs[i].org := -1; f.bufs[i] := NIL END;
@@ -604,16 +604,35 @@ Especially Length would become fairly complex.
   BEGIN Read(R, SYSTEM.VAL(CHAR, x))
   END ReadBool;
 
+  PROCEDURE ReadSInt* (VAR R: Rider; VAR x: SHORTINT);
+    VAR b: ARRAY SIZE(SHORTINT) OF CHAR;
+  BEGIN ReadBytes(R, b, SIZE(SHORTINT));
+    IF SIZE(SHORTINT) = 1 THEN
+      x := SHORT(ORD(b[0]))
+    ELSE
+      x := SHORT(ORD(b[0])) + SHORT(ORD(b[1])*256)
+    END
+  END ReadSInt;
+
   PROCEDURE ReadInt* (VAR R: Rider; VAR x: INTEGER);
-    VAR b: ARRAY 2 OF CHAR;
-  BEGIN ReadBytes(R, b, 2);
-    x := ORD(b[0]) + ORD(b[1])*256
+    VAR b: ARRAY SIZE(INTEGER) OF CHAR;
+  BEGIN ReadBytes(R, b, SIZE(INTEGER));
+    IF SIZE(INTEGER) = 2 THEN
+      x := ORD(b[0]) + ORD(b[1])*256
+    ELSE
+      x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
+    END
   END ReadInt;
 
   PROCEDURE ReadLInt* (VAR R: Rider; VAR x: LONGINT);
-    VAR b: ARRAY 4 OF CHAR;
-  BEGIN ReadBytes(R, b, 4);
-    x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
+    VAR b: ARRAY SIZE(LONGINT) OF CHAR; n: INTEGER; s: LONGINT;
+  BEGIN ReadBytes(R, b, SIZE(LONGINT));
+    IF SIZE(LONGINT) = 4 THEN
+      x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
+    ELSE
+      x := ORD(b[0]); s := 100H;
+      FOR n := 1 TO SIZE(LONGINT)-1 DO INC(x, ORD(b[n])*s); s := s*100H END
+    END
   END ReadLInt;
 
   PROCEDURE ReadSet* (VAR R: Rider; VAR x: SET);
@@ -633,13 +652,13 @@ Especially Length would become fairly complex.
   END ReadLReal;
 
   PROCEDURE ReadString* (VAR R: Rider; VAR x: ARRAY OF CHAR);
-    VAR i: SHORTINT; ch: CHAR;
+    VAR i: INTEGER; ch: CHAR;
   BEGIN i := 0;
     REPEAT Read(R, ch); x[i] := ch; INC(i) UNTIL ch = 0X
   END ReadString;
 
   PROCEDURE ReadLine* (VAR R: Rider; VAR x: ARRAY OF CHAR);
-    VAR i: SHORTINT; ch: CHAR; b : BOOLEAN;
+    VAR i: INTEGER; ch: CHAR; b: BOOLEAN;
   BEGIN
     i := 0;
     b := FALSE;
@@ -655,7 +674,7 @@ Especially Length would become fairly complex.
   END ReadLine;
 
   PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
-    VAR s: SHORTINT; ch: CHAR; n: LONGINT;
+    VAR s: INTEGER; ch: CHAR; n: LONGINT;
   BEGIN s := 0; n := 0; Read(R, ch);
     WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); Read(R, ch) END;
     INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
@@ -666,24 +685,47 @@ Especially Length would become fairly complex.
   BEGIN Write(R, SYSTEM.VAL(CHAR, x))
   END WriteBool;
 
+  PROCEDURE WriteSInt* (VAR R: Rider; x: SHORTINT);
+    VAR b: ARRAY SIZE(SHORTINT) OF CHAR;
+  BEGIN
+    IF SIZE(SHORTINT) = 1 THEN
+      b[0] := CHR(x)
+    ELSE
+      b[0] := CHR(x); b[1] := CHR(x DIV 256)
+    END;
+    WriteBytes(R, b, SIZE(SHORTINT))
+  END WriteSInt;
+
   PROCEDURE WriteInt* (VAR R: Rider; x: INTEGER);
-    VAR b: ARRAY 2 OF CHAR;
-  BEGIN b[0] := CHR(x); b[1] := CHR(x DIV 256);
-    WriteBytes(R, b, 2);
+    VAR b: ARRAY SIZE(INTEGER) OF CHAR;
+  BEGIN
+    IF SIZE(INTEGER) = 2 THEN
+      b[0] := CHR(x); b[1] := CHR(x DIV 256)
+    ELSE
+      b[0] := CHR(x); b[1] := CHR(x DIV 100H);
+      b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H)
+    END;
+    WriteBytes(R, b, SIZE(INTEGER))
   END WriteInt;
 
   PROCEDURE WriteLInt* (VAR R: Rider; x: LONGINT);
-    VAR b: ARRAY 4 OF CHAR;
+    VAR b: ARRAY SIZE(LONGINT) OF CHAR; n: INTEGER; s: LONGINT;
   BEGIN
-    b[0] := CHR(x); b[1] := CHR(x DIV 100H); b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H);
-    WriteBytes(R, b, 4);
+    IF SIZE(LONGINT) = 4 THEN
+      b[0] := CHR(x); b[1] := CHR(x DIV 100H);
+      b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H)
+    ELSE
+      b[0] := CHR(x); s := 100H;
+      FOR n := 0 TO SIZE(LONGINT)-1 DO b[n] := CHR(x DIV s); s := s*100H END
+    END;
+    WriteBytes(R, b, SIZE(LONGINT))
   END WriteLInt;
 
   PROCEDURE WriteSet* (VAR R: Rider; x: SET);
     VAR b: ARRAY 4 OF CHAR; i: INTEGER;
   BEGIN i := SYSTEM.VAL(INTEGER, x);
     b[0] := CHR(i); b[1] := CHR(i DIV 100H); b[2] := CHR(i DIV 10000H); b[3] := CHR(i DIV 1000000H);
-    WriteBytes(R, b, 4);
+    WriteBytes(R, b, 4)
   END WriteSet;
 
   PROCEDURE WriteReal* (VAR R: Rider; x: REAL);
@@ -697,7 +739,7 @@ Especially Length would become fairly complex.
   END WriteLReal;
 
   PROCEDURE WriteString* (VAR R: Rider; x: ARRAY [1] OF CHAR);
-    VAR i: SHORTINT;
+    VAR i: INTEGER;
   BEGIN i := 0;
     WHILE x[i] # 0X DO INC(i) END;
     WriteBytes(R, x, i+1)
@@ -705,8 +747,8 @@ Especially Length would become fairly complex.
 
   PROCEDURE WriteNum* (VAR R: Rider; x: LONGINT);
   BEGIN
-    WHILE (x < - 64) OR (x > 63) DO Write(R, CHR(x MOD 128 + 128)); x := x DIV 128 END;
-    Write(R, CHR(x MOD 128))
+    WHILE (x < - 64) OR (x > 63) DO Write(R, CHR(SHORT(x) MOD 128 + 128)); x := x DIV 128 END;
+    Write(R, CHR(SHORT(x) MOD 128))
   END WriteNum;
 
   PROCEDURE GetName*(f: File; VAR name: ARRAY OF CHAR);
