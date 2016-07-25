@@ -294,13 +294,13 @@ PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 PROCEDURE -InvalidHandleValue*(): FileHandle "((Platform_FileHandle)(SYSTEM_ADR)-1)";
 
 PROCEDURE -openrw (n: ARRAY OF CHAR): FileHandle
-"(Platform_FileHandle)(SYSTEM_ADR)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
+"(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
 PROCEDURE -openro (n: ARRAY OF CHAR): FileHandle
-"(Platform_FileHandle)(SYSTEM_ADR)CreateFile((char*)n, GENERIC_READ              , FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
+"(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ              , FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
 PROCEDURE -opennew(n: ARRAY OF CHAR): FileHandle
-"(Platform_FileHandle)(SYSTEM_ADR)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
+"(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
 
 
 (* File APIs *)
@@ -426,12 +426,13 @@ BEGIN
 END ReadBuf;
 
 
-PROCEDURE -writefile(fd: FileHandle; p: MemAdr; l: INTEGER): BOOL
-"(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, 0, 0)";
+PROCEDURE -writefile(fd: FileHandle; p: MemAdr; l: INTEGER; VAR tmp: DWORD): BOOL
+"(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)tmp, 0)";
 
 PROCEDURE Write*(h: FileHandle; p: MemAdr; l: INTEGER): ErrorCode;
+VAR tmp: DWORD;
 BEGIN
-  IF writefile(h, p, l) = 0 THEN RETURN err() ELSE RETURN 0 END
+  IF writefile(h, p, l, tmp) = 0 THEN RETURN err() ELSE RETURN 0 END
 END Write;
 
 
@@ -515,9 +516,9 @@ PROCEDURE Exit*(code: INTEGER);
 BEGIN exit(code) END Exit;
 
 
-PROCEDURE -errstring(s: ARRAY OF CHAR) "WriteFile((HANDLE)Platform_StdOut, s, s__len-1, 0, 0)";
-PROCEDURE -errc     (c: CHAR)          "WriteFile((HANDLE)Platform_StdOut, &c, 1, 0, 0)";
-PROCEDURE errch(c: CHAR); BEGIN errc(c) END errch;
+PROCEDURE -errstring(s: ARRAY OF CHAR) "WriteFile((HANDLE)Platform_StdOut, s, s__len-1, (LPDWORD)tmp, 0)";
+PROCEDURE -errc     (c: CHAR)          "WriteFile((HANDLE)Platform_StdOut, &c, 1, (LPDWORD)tmp, 0)";
+PROCEDURE errch(c: CHAR); VAR tmp: DWORD; BEGIN errc(c) END errch;
 PROCEDURE errln; BEGIN errch(0DX); errch(0AX) END errln;
 
 PROCEDURE errposint(l: INTEGER);
@@ -527,6 +528,7 @@ PROCEDURE errint(l: INTEGER);
 BEGIN IF l<0 THEN errch("-"); l := -l END; errposint(l) END errint;
 
 PROCEDURE DisplayHaltCode(code: INTEGER);
+VAR tmp: DWORD;
 BEGIN
   CASE code OF
   | -1: errstring("Rider ReadBuf/WriteBuf transfer size longer than buffer.")
@@ -546,7 +548,7 @@ BEGIN
 END DisplayHaltCode;
 
 PROCEDURE Halt*(code: INTEGER);
-VAR e: ErrorCode;
+VAR e: ErrorCode; tmp: DWORD;
 BEGIN
   HaltCode := code;
   IF HaltHandler # NIL THEN HaltHandler(code) END;
@@ -557,7 +559,7 @@ BEGIN
 END Halt;
 
 PROCEDURE AssertFail*(code: INTEGER);
-VAR e: ErrorCode;
+VAR e: ErrorCode; tmp: DWORD;
 BEGIN
   errstring("Assertion failure.");
   IF code # 0 THEN errstring(" ASSERT code "); errint(code); errstring("."); END;
