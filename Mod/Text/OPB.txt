@@ -1183,11 +1183,10 @@ avoid unnecessary intermediate variables in OFront
 				MOp(cap, x)
 		| ordfn: (*ORD*) 
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f = Char THEN Convert(x, OPT.inttyp)
-				ELSIF f = Set THEN Convert(x, OPT.inttyp)
+				ELSIF f = Char THEN IF OPM.SIntSize = 2 THEN Convert(x, OPT.sinttyp) ELSE Convert(x, OPT.inttyp) END
+				ELSIF f = Set THEN IF OPM.IntSize = 4 THEN Convert(x, OPT.inttyp) ELSE Convert(x, OPT.linttyp) END
 				ELSE err(111)
-				END ;
-				x^.typ := OPT.inttyp
+				END
 		| bitsfn: (*BITS*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN Convert(x, OPT.settyp)
