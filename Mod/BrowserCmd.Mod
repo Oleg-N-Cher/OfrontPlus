@@ -2,7 +2,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
-		Texts := CmdlnTexts, Console, Args;
+		Texts, Console, Args;
 
 	CONST
 		OptionChar = "-";
@@ -32,10 +32,10 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	PROCEDURE Ws(s: ARRAY OF CHAR); BEGIN Texts.WriteString(W, s) END Ws;
 	PROCEDURE Wch(ch: CHAR); BEGIN Texts.Write(W, ch) END Wch;
-	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteInt(W, i, 0) END Wi;
+	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLInt(W, i, 0) END Wi;
 	PROCEDURE Wln; BEGIN Texts.WriteLn(W) END Wln;
 
-	PROCEDURE Indent(i: INTEGER);
+	PROCEDURE Indent(i: SHORTINT);
 	BEGIN WHILE i > 0 DO Wch(" "); Wch(" "); DEC(i) END
 	END Indent;
 
@@ -60,7 +60,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	END Wsign;
 
 	PROCEDURE Objects(obj: OPT.Object; mode: SET);
-		VAR i: LONGINT; m: INTEGER; s: SET; ext: OPT.ConstExt;
+		VAR i: INTEGER; m: SHORTINT; s: SET; ext: OPT.ConstExt;
 	BEGIN
 		IF obj # NIL THEN
 			Objects(obj^.left, mode);
@@ -75,9 +75,9 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 								IF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
 									Wch(22X); Wch(CHR(obj^.conval^.intval)); Wch(22X)
 								ELSE
-									i := obj^.conval^.intval DIV 16;
+									i := SHORT(obj^.conval^.intval) DIV 16;
 									IF i > 9 THEN Wch(CHR(55 + i)) ELSE Wch(CHR(48 + i)) END ;
-									i := obj^.conval^.intval MOD 16;
+									i := SHORT(obj^.conval^.intval) MOD 16;
 									IF i > 9 THEN Wch(CHR(55 + i)) ELSE Wch(CHR(48 + i)) END ;
 									Wch("X")
 								END
@@ -222,8 +222,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	END Wtype;
 
 	PROCEDURE WModule(name: OPS.Name; T: Texts.Text);
-		VAR i: INTEGER;
-			beg, end: LONGINT; first, done: BOOLEAN;
+		VAR i: SHORTINT;
+			beg, end: INTEGER; first, done: BOOLEAN;
 
 		PROCEDURE Header(s: ARRAY OF CHAR);
 		BEGIN
@@ -231,7 +231,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		END Header;
 
 		PROCEDURE CheckHeader;
-		 	VAR len: LONGINT;
+		 	VAR len: INTEGER;
 		BEGIN
 			len := T.len;
 			IF end = W.buf.len THEN Texts.Append(T, W.buf); Texts.Delete(T, len+beg, len+end)
@@ -264,7 +264,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	END WModule;
 	
 	PROCEDURE Ident(VAR name, first: ARRAY OF CHAR);
-		VAR i, j: INTEGER; ch: CHAR;
+		VAR i, j: SHORTINT; ch: CHAR;
 	BEGIN i := 0;
 		WHILE name[i] # 0X DO INC(i) END ;
 		WHILE (i >= 0) & (name[i] # "/") DO DEC(i) END ;
@@ -275,7 +275,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	PROCEDURE ShowDef*;
 		VAR T, dummyT: Texts.Text; S, vname, name: OPS.Name; R: Texts.Reader; ch: CHAR;
-			s: ARRAY 1024 OF CHAR; i: INTEGER;
+			s: ARRAY 1024 OF CHAR; i: SHORTINT;
 	BEGIN
 		option := 0X; Args.Get(1, S);
 		IF Args.argc > 2 THEN

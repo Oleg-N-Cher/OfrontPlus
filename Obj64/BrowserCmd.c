@@ -6,18 +6,18 @@
 #include "OfrontOPS.h"
 #include "OfrontOPT.h"
 #include "OfrontOPV.h"
-#include "CmdlnTexts.h"
+#include "Texts.h"
 
 
-static CmdlnTexts_Writer BrowserCmd_W;
+static Texts_Writer BrowserCmd_W;
 static CHAR BrowserCmd_option;
 
 
 static void BrowserCmd_Ident (CHAR *name, LONGINT name__len, CHAR *first, LONGINT first__len);
-static void BrowserCmd_Indent (INTEGER i);
+static void BrowserCmd_Indent (SHORTINT i);
 static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode);
 export void BrowserCmd_ShowDef (void);
-static void BrowserCmd_WModule (OfrontOPS_Name name, CmdlnTexts_Text T);
+static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T);
 static void BrowserCmd_Wch (CHAR ch);
 static void BrowserCmd_Wi (LONGINT i);
 static void BrowserCmd_Wln (void);
@@ -33,26 +33,26 @@ static void BrowserCmd_Wtype (OfrontOPT_Struct typ);
 static void BrowserCmd_Ws (CHAR *s, LONGINT s__len)
 {
 	__DUP(s, s__len, CHAR);
-	CmdlnTexts_WriteString(&BrowserCmd_W, CmdlnTexts_Writer__typ, s, s__len);
+	Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, s, s__len);
 	__DEL(s);
 }
 
 static void BrowserCmd_Wch (CHAR ch)
 {
-	CmdlnTexts_Write(&BrowserCmd_W, CmdlnTexts_Writer__typ, ch);
+	Texts_Write(&BrowserCmd_W, Texts_Writer__typ, ch);
 }
 
 static void BrowserCmd_Wi (LONGINT i)
 {
-	CmdlnTexts_WriteInt(&BrowserCmd_W, CmdlnTexts_Writer__typ, i, 0);
+	Texts_WriteLInt(&BrowserCmd_W, Texts_Writer__typ, i, 0);
 }
 
 static void BrowserCmd_Wln (void)
 {
-	CmdlnTexts_WriteLn(&BrowserCmd_W, CmdlnTexts_Writer__typ);
+	Texts_WriteLn(&BrowserCmd_W, Texts_Writer__typ);
 }
 
-static void BrowserCmd_Indent (INTEGER i)
+static void BrowserCmd_Indent (SHORTINT i)
 {
 	while (i > 0) {
 		BrowserCmd_Wch(' ');
@@ -99,8 +99,8 @@ static void BrowserCmd_Wsign (OfrontOPT_Struct result, OfrontOPT_Object par)
 
 static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 {
-	LONGINT i;
-	INTEGER m;
+	INTEGER i;
+	SHORTINT m;
 	SET s;
 	OfrontOPT_ConstExt ext = NIL;
 	if (obj != NIL) {
@@ -125,13 +125,13 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 								BrowserCmd_Wch((CHAR)obj->conval->intval);
 								BrowserCmd_Wch('\"');
 							} else {
-								i = __ASHR(obj->conval->intval, 4, LONGINT);
+								i = __ASHR((INTEGER)obj->conval->intval, 4, INTEGER);
 								if (i > 9) {
 									BrowserCmd_Wch((CHAR)(55 + i));
 								} else {
 									BrowserCmd_Wch((CHAR)(48 + i));
 								}
-								i = __MASK(obj->conval->intval, -16);
+								i = __MASK((INTEGER)obj->conval->intval, -16);
 								if (i > 9) {
 									BrowserCmd_Wch((CHAR)(55 + i));
 								} else {
@@ -160,10 +160,10 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 							BrowserCmd_Wch('}');
 							break;
 						case 7: 
-							CmdlnTexts_WriteReal(&BrowserCmd_W, CmdlnTexts_Writer__typ, obj->conval->realval, 16);
+							Texts_WriteReal(&BrowserCmd_W, Texts_Writer__typ, obj->conval->realval, 16);
 							break;
 						case 8: 
-							CmdlnTexts_WriteLongReal(&BrowserCmd_W, CmdlnTexts_Writer__typ, obj->conval->realval, 23);
+							Texts_WriteLongReal(&BrowserCmd_W, Texts_Writer__typ, obj->conval->realval, 23);
 							break;
 						case 10: 
 							BrowserCmd_Ws(*obj->conval->ext, 256);
@@ -219,7 +219,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 						m = (INTEGER)(*ext)[0];
 						i = 1;
 						BrowserCmd_Ws((CHAR*)"  \"", (LONGINT)4);
-						while (i <= (LONGINT)m) {
+						while (i <= (INTEGER)m) {
 							BrowserCmd_Wch((*ext)[__X(i, 256)]);
 							i += 1;
 						}
@@ -394,8 +394,8 @@ static void BrowserCmd_Wtype (OfrontOPT_Struct typ)
 }
 
 static struct WModule__5 {
-	CmdlnTexts_Text *T;
-	LONGINT *beg, *end;
+	Texts_Text *T;
+	INTEGER *beg, *end;
 	struct WModule__5 *lnk;
 } *WModule__5_s;
 
@@ -415,20 +415,20 @@ static void Header__8 (CHAR *s, LONGINT s__len)
 
 static void CheckHeader__6 (void)
 {
-	LONGINT len;
+	INTEGER len;
 	len = (*WModule__5_s->T)->len;
 	if (*WModule__5_s->end == BrowserCmd_W.buf->len) {
-		CmdlnTexts_Append(*WModule__5_s->T, BrowserCmd_W.buf);
-		CmdlnTexts_Delete(*WModule__5_s->T, len + *WModule__5_s->beg, len + *WModule__5_s->end);
+		Texts_Append(*WModule__5_s->T, BrowserCmd_W.buf);
+		Texts_Delete(*WModule__5_s->T, len + *WModule__5_s->beg, len + *WModule__5_s->end);
 	} else {
 		BrowserCmd_Wln();
 	}
 }
 
-static void BrowserCmd_WModule (OfrontOPS_Name name, CmdlnTexts_Text T)
+static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T)
 {
-	INTEGER i;
-	LONGINT beg, end;
+	SHORTINT i;
+	INTEGER beg, end;
 	BOOLEAN first, done;
 	struct WModule__5 _s;
 	OfrontOPS_Name name__copy;
@@ -448,7 +448,7 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, CmdlnTexts_Text T)
 		Header__8((CHAR*)"IMPORT", (LONGINT)7);
 		i = 1;
 		first = 1;
-		while (i < (INTEGER)OfrontOPT_nofGmod) {
+		while (i < OfrontOPT_nofGmod) {
 			if (first) {
 				first = 0;
 				BrowserCmd_Indent(2);
@@ -478,19 +478,19 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, CmdlnTexts_Text T)
 		BrowserCmd_Ws(name, 32);
 		BrowserCmd_Wch('.');
 		BrowserCmd_Wln();
-		CmdlnTexts_Append(T, BrowserCmd_W.buf);
+		Texts_Append(T, BrowserCmd_W.buf);
 	} else {
-		CmdlnTexts_WriteString(&BrowserCmd_W, CmdlnTexts_Writer__typ, name, 32);
-		CmdlnTexts_WriteString(&BrowserCmd_W, CmdlnTexts_Writer__typ, (CHAR*)" -- symbol file not found", (LONGINT)26);
-		CmdlnTexts_WriteLn(&BrowserCmd_W, CmdlnTexts_Writer__typ);
-		CmdlnTexts_Append(T, BrowserCmd_W.buf);
+		Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, name, 32);
+		Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, (CHAR*)" -- symbol file not found", (LONGINT)26);
+		Texts_WriteLn(&BrowserCmd_W, Texts_Writer__typ);
+		Texts_Append(T, BrowserCmd_W.buf);
 	}
 	WModule__5_s = _s.lnk;
 }
 
 static void BrowserCmd_Ident (CHAR *name, LONGINT name__len, CHAR *first, LONGINT first__len)
 {
-	INTEGER i, j;
+	SHORTINT i, j;
 	CHAR ch;
 	i = 0;
 	while (name[__X(i, name__len)] != 0x00) {
@@ -513,12 +513,12 @@ static void BrowserCmd_Ident (CHAR *name, LONGINT name__len, CHAR *first, LONGIN
 
 void BrowserCmd_ShowDef (void)
 {
-	CmdlnTexts_Text T = NIL, dummyT = NIL;
+	Texts_Text T = NIL, dummyT = NIL;
 	OfrontOPS_Name S, vname, name;
-	CmdlnTexts_Reader R;
+	Texts_Reader R;
 	CHAR ch;
 	CHAR s[1024];
-	INTEGER i;
+	SHORTINT i;
 	BrowserCmd_option = 0x00;
 	Args_Get(1, (void*)S, 32);
 	if (Args_argc > 2) {
@@ -532,14 +532,14 @@ void BrowserCmd_ShowDef (void)
 	}
 	if (Args_argc >= 2) {
 		BrowserCmd_Ident((void*)S, 32, (void*)name, 32);
-		__NEW(T, CmdlnTexts_TextDesc);
-		CmdlnTexts_Open(T, (CHAR*)"", (LONGINT)1);
+		__NEW(T, Texts_TextDesc);
+		Texts_Open(T, (CHAR*)"", (LONGINT)1);
 		OfrontOPT_Init(name, 0x0);
 		__MOVE("AvoidErr154", OfrontOPT_SelfName, 12);
 		BrowserCmd_WModule(name, T);
 		OfrontOPT_Close();
-		CmdlnTexts_OpenReader(&R, CmdlnTexts_Reader__typ, T, 0);
-		CmdlnTexts_Read(&R, CmdlnTexts_Reader__typ, &ch);
+		Texts_OpenReader(&R, Texts_Reader__typ, T, 0);
+		Texts_Read(&R, Texts_Reader__typ, &ch);
 		i = 0;
 		while (!R.eot) {
 			if (ch == 0x0d) {
@@ -551,7 +551,7 @@ void BrowserCmd_ShowDef (void)
 				s[__X(i, 1024)] = ch;
 				i += 1;
 			}
-			CmdlnTexts_Read(&R, CmdlnTexts_Reader__typ, &ch);
+			Texts_Read(&R, Texts_Reader__typ, &ch);
 		}
 		s[__X(i, 1024)] = 0x00;
 		Console_String(s, 1024);
@@ -561,7 +561,7 @@ void BrowserCmd_ShowDef (void)
 /*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
-	__ENUMR(&BrowserCmd_W, CmdlnTexts_Writer__typ, 56, 1, P);
+	__ENUMR(&BrowserCmd_W, Texts_Writer__typ, 56, 1, P);
 }
 
 
@@ -574,12 +574,12 @@ int main(int argc, char **argv)
 	__IMPORT(OfrontOPS__init);
 	__IMPORT(OfrontOPT__init);
 	__IMPORT(OfrontOPV__init);
-	__IMPORT(CmdlnTexts__init);
+	__IMPORT(Texts__init);
 	__REGMAIN("BrowserCmd", EnumPtrs);
 	__REGCMD("ShowDef", BrowserCmd_ShowDef);
 /* BEGIN */
 	OfrontOPT_typSize = OfrontOPV_TypSize;
-	CmdlnTexts_OpenWriter(&BrowserCmd_W, CmdlnTexts_Writer__typ);
+	Texts_OpenWriter(&BrowserCmd_W, Texts_Writer__typ);
 	BrowserCmd_ShowDef();
 	__FINI;
 }
