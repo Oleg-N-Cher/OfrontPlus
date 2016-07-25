@@ -9,7 +9,7 @@ MODULE Reals;
 	PROCEDURE -Offset(adr: ADR; offset: INTEGER): ADR
 			"((Reals_ADR)((SYSTEM_ADR)adr + offset))"; 
 	PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
-	PROCEDURE -ecvt (x: LONGREAL; ndigit, decpt, sign: LONGINT): ADR
+	PROCEDURE -ecvt (x: LONGREAL; ndigit: INTEGER; VAR decpt, sign: INTEGER): ADR
 			"((Reals_ADR)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
 
 	PROCEDURE Ten*(e: INTEGER): REAL;
@@ -37,20 +37,20 @@ MODULE Reals;
 	
 	PROCEDURE Expo*(x: REAL): INTEGER;
 	BEGIN
-		RETURN SHORT(ASH(S.VAL(LONGINT, x), -23) MOD 256)
+		RETURN ASH(S.VAL(INTEGER, x), -23) MOD 256
 	END Expo;
 	
 	PROCEDURE ExpoL*(x: LONGREAL): INTEGER;
-		VAR h: LONGINT;
+		VAR h: INTEGER;
 	BEGIN
 		S.GET(S.ADR(x)+4, h);
-		RETURN SHORT(ASH(h, -20) MOD 2048)
+		RETURN ASH(h, -20) MOD 2048
 	END ExpoL;
 	
 	PROCEDURE SetExpo*(e: INTEGER; VAR x: REAL);
 		CONST expo = {1..8};
 	BEGIN
-		x := S.VAL(REAL, S.VAL(SET, x) - expo + S.VAL(SET, ASH(LONG(e), 23)))
+		x := S.VAL(REAL, S.VAL(SET, x) - expo + S.VAL(SET, ASH(e, 23)))
 	END SetExpo;
 	
 	PROCEDURE SetExpoL*(e: INTEGER; VAR x: LONGREAL);
@@ -58,14 +58,14 @@ MODULE Reals;
 		VAR h: SET;
 	BEGIN
 		S.GET(S.ADR(x)+4, h);
-		h := h - expo + S.VAL(SET, ASH(LONG(e), 20));
+		h := h - expo + S.VAL(SET, ASH(e, 20));
 		S.PUT(S.ADR(x)+4, h)
 	END SetExpoL;
 	
 	PROCEDURE Convert*(x: REAL; n: INTEGER; VAR d: ARRAY OF CHAR);
-		VAR i, k: LONGINT;
+		VAR i, k: INTEGER;
 	BEGIN
-		i := ENTIER(x); k := 0;
+		i := SHORT(ENTIER(x)); k := 0;
 		WHILE k < n DO
 			d[k] := CHR(i MOD 10 + 48); i := i DIV 10; INC(k)
 		END
@@ -75,7 +75,7 @@ MODULE Reals;
 		VAR decpt, sign, i: INTEGER; buf: ADR;
 	BEGIN
 		(*x := x - 0.5; already rounded in ecvt*)
-		buf := ecvt(x, n+2, S.ADR(decpt), S.ADR(sign));
+		buf := ecvt(x, n+2, decpt, sign);
 		i := 0;
 		WHILE i < decpt DO S.GET(Offset(buf, i), d[n - i -1]); INC(i) END ;
 		i := n - i - 1;
@@ -83,8 +83,8 @@ MODULE Reals;
 	END ConvertL;
 
 	PROCEDURE Unpack(VAR b, d: ARRAY OF BYTE);
-		VAR i, k: SHORTINT; len: LONGINT;
-	BEGIN i := 0; len := LEN(b);
+		VAR i, k: SHORTINT; len: INTEGER;
+	BEGIN i := 0; len := SHORT(LEN(b));
 		WHILE i < len DO
 			k := SHORT(ORD(S.VAL(CHAR, b[i])) DIV 16);
 			IF k > 9 THEN d[i*2] := k + 55 ELSE d[i*2] := k + 48 END ;
