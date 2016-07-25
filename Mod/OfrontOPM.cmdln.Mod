@@ -4,7 +4,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	31.1.2007 jt synchronized with BlackBox version, in particular PromoteIntConstToLInt added
 *)
 
-	IMPORT SYSTEM, Texts := CmdlnTexts, Files, Args, Console, OfrontErrors;
+	IMPORT SYSTEM, Texts := CmdlnTexts, Files, Platform, Args, Console, OfrontErrors;
 
 	CONST
 		OptionChar* = "-";
@@ -87,24 +87,24 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
-		ByteSize*, CharSize*, BoolSize*, SIntSize*, IntSize*,
-		LIntSize*, SetSize*, RealSize*, LRealSize*, PointerSize*, ProcSize*, RecSize*,
-		CharAlign*, BoolAlign*, SIntAlign*, IntAlign*,
-		LIntAlign*, SetAlign*, RealAlign*, LRealAlign*, PointerAlign*, ProcAlign*, RecAlign*,
-		ByteOrder*, BitOrder*, MaxSet*: INTEGER;
-		MinSInt*, MinInt*, MaxSInt*, MaxInt*, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
-		MinReal*, MaxReal*, MinLReal*, MaxLReal*: LONGREAL;
+		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
+		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-,
+		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
+		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
+		ByteOrder-, BitOrder-, MaxSet-: INTEGER;
+		MinSInt-, MinInt-, MaxSInt-, MaxInt-, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
+		MinReal-, MaxReal-, MinLReal-, MaxLReal-: LONGREAL;
 
-		noerr*: BOOLEAN;
-		curpos*: INTEGER; errpos*: LONGINT;	(* character and error position in source file *)
-		breakpc*: INTEGER;	(* set by OPV.Init *)
+		noerr-: BOOLEAN;
+		curpos-: INTEGER; errpos*: LONGINT;	(* character and error position in source file *)
+		breakpc-: INTEGER;	(* set by OPV.Init *)
 		currFile*: INTEGER;	(* current output file *)
 		level*: INTEGER;	(* procedure nesting level *)
-		pc*, entno*: INTEGER;  (* entry number *)
-		modName*: ARRAY 32 OF CHAR;
+		pc-, entno-: INTEGER;  (* entry number *)
+		modName-: ARRAY 32 OF CHAR;
 		objname*: ARRAY 64 OF CHAR;
 
-		opt*, glbopt*: SET;
+		opt-, glbopt-: SET;
 
 		lasterrpos: INTEGER;
 		inR: Texts.Reader;
@@ -117,6 +117,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		S: INTEGER;
 		stop, useLineNo: BOOLEAN;
 
+		OBERON:  ARRAY 1024 OF CHAR;
 
 	(* ------------------------- Log Output ------------------------- *)
 
@@ -629,5 +630,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
 
-BEGIN Texts.OpenWriter(W)
+BEGIN Texts.OpenWriter(W);
+  OBERON := "."; Platform.GetEnv("OBERON", OBERON);
+  Files.SetSearchPath(OBERON);
 END OfrontOPM.

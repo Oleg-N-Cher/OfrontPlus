@@ -4,20 +4,22 @@
 #include "Console.h"
 #include "Files.h"
 #include "OfrontErrors.h"
+#include "Platform.h"
 #include "CmdlnTexts.h"
 
 typedef
 	CHAR OfrontOPM_FileName[32];
 
 
-export INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet, OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt;
-export INTEGER OfrontOPM_MaxIndex;
+export INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet, OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt, OfrontOPM_MaxIndex;
 export LONGINT OfrontOPM_MinLInt, OfrontOPM_MaxLInt;
 export LONGREAL OfrontOPM_MinReal, OfrontOPM_MaxReal, OfrontOPM_MinLReal, OfrontOPM_MaxLReal;
 export BOOLEAN OfrontOPM_noerr;
 export INTEGER OfrontOPM_curpos;
 export LONGINT OfrontOPM_errpos;
-export INTEGER OfrontOPM_breakpc, OfrontOPM_currFile, OfrontOPM_level, OfrontOPM_pc, OfrontOPM_entno;
+export INTEGER OfrontOPM_breakpc;
+export INTEGER OfrontOPM_currFile, OfrontOPM_level;
+export INTEGER OfrontOPM_pc, OfrontOPM_entno;
 export CHAR OfrontOPM_modName[32];
 export CHAR OfrontOPM_objname[64];
 export SET OfrontOPM_opt, OfrontOPM_glbopt;
@@ -30,6 +32,7 @@ static Files_Rider OfrontOPM_R[3];
 static Files_File OfrontOPM_oldSFile, OfrontOPM_newSFile, OfrontOPM_HFile, OfrontOPM_BFile, OfrontOPM_HIFile;
 static INTEGER OfrontOPM_S;
 static BOOLEAN OfrontOPM_stop, OfrontOPM_useLineNo;
+static CHAR OfrontOPM_OBERON[1024];
 
 
 static void OfrontOPM_Append (Files_Rider *R, LONGINT *R__typ, Files_File F);
@@ -929,6 +932,7 @@ export void *OfrontOPM__init(void)
 	__IMPORT(Console__init);
 	__IMPORT(Files__init);
 	__IMPORT(OfrontErrors__init);
+	__IMPORT(Platform__init);
 	__IMPORT(CmdlnTexts__init);
 	__REGMOD("OfrontOPM", EnumPtrs);
 	__REGCMD("CloseFiles", OfrontOPM_CloseFiles);
@@ -942,5 +946,8 @@ export void *OfrontOPM__init(void)
 	__REGCMD("WriteLn", OfrontOPM_WriteLn);
 /* BEGIN */
 	CmdlnTexts_OpenWriter(&OfrontOPM_W, CmdlnTexts_Writer__typ);
+	__MOVE(".", OfrontOPM_OBERON, 2);
+	Platform_GetEnv((CHAR*)"OBERON", (LONGINT)7, (void*)OfrontOPM_OBERON, 1024);
+	Files_SetSearchPath(OfrontOPM_OBERON, 1024);
 	__ENDMOD;
 }

@@ -168,7 +168,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSIF level < 0 THEN (* use unaliased module name *)
 					OPM.WriteStringVar(OPT.GlbMod[-level].name);
 					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END ;
-				ELSE OPM.WriteStringVar(OPM.modName)
+				ELSE OPM.WriteString(OPM.modName)
 				END ;
 				OPM.Write(Underscore)
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
@@ -245,7 +245,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE Andent*(typ: OPT.Struct);	(* ident of possibly anonymous record type *)
 	BEGIN 
 		IF (typ^.strobj = NIL) OR (typ^.align >= 10000H) THEN
-			OPM.WriteStringVar(OPM.modName); Str1("__#", typ^.align DIV 10000H)
+			OPM.WriteString(OPM.modName); Str1("__#", typ^.align DIV 10000H)
 		ELSE Ident(typ^.strobj)
 		END
 	END Andent;
@@ -829,7 +829,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		GenDynTypes(n, external); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 1);
 		OPM.WriteString(Extern); OPM.WriteString("void *");
-		OPM.WriteStringVar(OPM.modName); OPM.WriteString(BodyNameExt);
+		OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
 		EndStat; OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn;
 		OPM.WriteString("#endif"); OPM.WriteLn
@@ -865,8 +865,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.currFile := OPM.HeaderInclude;
 		GenHeaderMsg;
 		OPM.WriteLn;
-		OPM.WriteString("#ifndef "); OPM.WriteStringVar(OPM.modName); OPM.WriteString(FlagExt); OPM.WriteLn;
-		OPM.WriteString("#define "); OPM.WriteStringVar(OPM.modName); OPM.WriteString(FlagExt); OPM.WriteLn;
+		OPM.WriteString("#ifndef "); OPM.WriteString(OPM.modName); OPM.WriteString(FlagExt); OPM.WriteLn;
+		OPM.WriteString("#define "); OPM.WriteString(OPM.modName); OPM.WriteString(FlagExt); OPM.WriteLn;
 		OPM.WriteLn;
 		Include(BasicIncludeFile);
 		IncludeImports(OPT.topScope^.right, 1); OPM.WriteLn
