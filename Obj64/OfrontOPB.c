@@ -1740,11 +1740,20 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
 			} else if (f == 3) {
-				OfrontOPB_Convert(&x, OfrontOPT_inttyp);
+				if (OfrontOPM_SIntSize == 2) {
+					OfrontOPB_Convert(&x, OfrontOPT_sinttyp);
+				} else {
+					OfrontOPB_Convert(&x, OfrontOPT_inttyp);
+				}
+			} else if (f == 9) {
+				if (OfrontOPM_IntSize == 4) {
+					OfrontOPB_Convert(&x, OfrontOPT_inttyp);
+				} else {
+					OfrontOPB_Convert(&x, OfrontOPT_linttyp);
+				}
 			} else {
 				OfrontOPB_err(111);
 			}
-			x->typ = OfrontOPT_inttyp;
 			break;
 		case 5: 
 			if (x->class == 8 || x->class == 9) {
