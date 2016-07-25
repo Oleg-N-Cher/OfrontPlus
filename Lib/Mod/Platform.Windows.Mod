@@ -516,9 +516,9 @@ PROCEDURE Exit*(code: INTEGER);
 BEGIN exit(code) END Exit;
 
 
-PROCEDURE -errstring(s: ARRAY OF CHAR) "WriteFile((HANDLE)Platform_StdOut, s, s__len-1, (LPDWORD)tmp, 0)";
-PROCEDURE -errc     (c: CHAR)          "WriteFile((HANDLE)Platform_StdOut, &c, 1, (LPDWORD)tmp, 0)";
-PROCEDURE errch(c: CHAR); VAR tmp: DWORD; BEGIN errc(c) END errch;
+PROCEDURE -errstring(s: ARRAY OF CHAR; VAR tmp: DWORD) "WriteFile((HANDLE)Platform_StdOut, s, s__len-1, (LPDWORD)tmp, 0)";
+PROCEDURE -errc     (c: CHAR; VAR tmp: DWORD)          "WriteFile((HANDLE)Platform_StdOut, &c, 1, (LPDWORD)tmp, 0)";
+PROCEDURE errch(c: CHAR); VAR tmp: DWORD; BEGIN errc(c, tmp) END errch;
 PROCEDURE errln; BEGIN errch(0DX); errch(0AX) END errln;
 
 PROCEDURE errposint(l: INTEGER);
@@ -531,18 +531,18 @@ PROCEDURE DisplayHaltCode(code: INTEGER);
 VAR tmp: DWORD;
 BEGIN
   CASE code OF
-  | -1: errstring("Rider ReadBuf/WriteBuf transfer size longer than buffer.")
-  | -2: errstring("Index out of range.")
-  | -3: errstring("Reached end of function without reaching RETURN.")
-  | -4: errstring("CASE statement: no matching label and no ELSE.")
-  | -5: errstring("Type guard failed.")
-  | -6: errstring("Type equality failed.")
-  | -7: errstring("WITH statement type guard failed.")
-  | -8: errstring("SHORT: Value too large for shorter type.")
-  | -9: errstring("Heap interrupted while locked, but lockdepth = 0 at unlock.")
-  |-15: errstring("Type descriptor size mismatch.")
-  |-20: errstring("Too many, or negative number of, elements in dynamic array.")
-  |-25: errstring("Memory allocation error.")
+  | -1: errstring("Rider ReadBuf/WriteBuf transfer size longer than buffer.", tmp)
+  | -2: errstring("Index out of range.", tmp)
+  | -3: errstring("Reached end of function without reaching RETURN.", tmp)
+  | -4: errstring("CASE statement: no matching label and no ELSE.", tmp)
+  | -5: errstring("Type guard failed.", tmp)
+  | -6: errstring("Type equality failed.", tmp)
+  | -7: errstring("WITH statement type guard failed.", tmp)
+  | -8: errstring("SHORT: Value too large for shorter type.", tmp)
+  | -9: errstring("Heap interrupted while locked, but lockdepth = 0 at unlock.", tmp)
+  |-15: errstring("Type descriptor size mismatch.", tmp)
+  |-20: errstring("Too many, or negative number of, elements in dynamic array.", tmp)
+  |-25: errstring("Memory allocation error.", tmp)
   ELSE
   END
 END DisplayHaltCode;
@@ -552,7 +552,7 @@ VAR e: ErrorCode; tmp: DWORD;
 BEGIN
   HaltCode := code;
   IF HaltHandler # NIL THEN HaltHandler(code) END;
-  errstring("Terminated by Halt("); errint(code); errstring("). ");
+  errstring("Terminated by Halt(", tmp); errint(code); errstring("). ", tmp);
   IF code < 0 THEN DisplayHaltCode(code) END;
   errln;
   exit(code)
@@ -561,8 +561,8 @@ END Halt;
 PROCEDURE AssertFail*(code: INTEGER);
 VAR e: ErrorCode; tmp: DWORD;
 BEGIN
-  errstring("Assertion failure.");
-  IF code # 0 THEN errstring(" ASSERT code "); errint(code); errstring("."); END;
+  errstring("Assertion failure.", tmp);
+  IF code # 0 THEN errstring(" ASSERT code ", tmp); errint(code); errstring(".", tmp); END;
   errln;
   exit(code)
 END AssertFail;
