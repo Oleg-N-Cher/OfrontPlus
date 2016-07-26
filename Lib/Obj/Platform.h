@@ -89,10 +89,11 @@ import INTEGER Platform_Write (Platform_FileHandle h, Platform_MemAdr p, INTEGER
 import BOOLEAN Platform_getEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len);
 import void *Platform__init(void);
 
+#define Platform_InvalidHandleValue()	((Platform_FileHandle)(SYSTEM_ADR)-1)
 #define Platform_SetInterruptHandler(h)	SystemSetInterruptHandler((SYSTEM_ADR)h)
 #define Platform_SetQuitHandler(h)	SystemSetQuitHandler((SYSTEM_ADR)h)
-#define Platform_UBYTE(b)	((unsigned char)(b))
-#define Platform_UINT(i)	((unsigned int)(i))
-#define Platform_UWORD(w)	((unsigned short)(w))
+#define Platform_UBYTE(b)	((SHORTINT)(unsigned char)(b))
+#define Platform_UINT(i)	((LONGINT)(unsigned int)(i))
+#define Platform_USHORT(s)	((INTEGER)(unsigned short)(s))
 
 #endif
