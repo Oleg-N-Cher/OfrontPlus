@@ -1256,15 +1256,24 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 						OfrontOPB_err(100);
 					}
 					break;
-				case 4: 
+				case 1: 
 					if (__IN(g, 0x01f0)) {
 						OfrontOPB_Convert(&z, y->typ);
 					} else {
 						OfrontOPB_err(100);
 					}
 					break;
+				case 4: 
+					if (g == 1) {
+						OfrontOPB_Convert(&y, z->typ);
+					} else if (__IN(g, 0x01f0)) {
+						OfrontOPB_Convert(&z, y->typ);
+					} else {
+						OfrontOPB_err(100);
+					}
+					break;
 				case 5: 
-					if (g == 4) {
+					if (__IN(g, 0x12)) {
 						OfrontOPB_Convert(&y, z->typ);
 					} else if (__IN(g, 0x01f0)) {
 						OfrontOPB_Convert(&z, y->typ);
