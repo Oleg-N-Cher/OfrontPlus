@@ -754,12 +754,17 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				CASE z^.typ^.form OF
 				   Char:
 						IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
-				| SInt:
+				| Byte:
 						IF g IN intSet + realSet THEN Convert(z, y^.typ)
 						ELSE  err(100)
 						END
+				| SInt:
+						IF g = Byte THEN Convert(y, z^.typ)
+						ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
+						ELSE  err(100)
+						END
 				| Int:
-						IF g = SInt THEN Convert(y, z^.typ)
+						IF g IN {Byte, SInt} THEN Convert(y, z^.typ)
 						ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
 						ELSE  err(100)
 						END
