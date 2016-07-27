@@ -1,5 +1,5 @@
 MODULE TestFiles;
-IMPORT Files, Texts := CmdlnTexts, Console;
+IMPORT Files, Texts, Console;
 
 CONST
   file="TestFiles.Mod";

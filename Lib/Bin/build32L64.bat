@@ -16,23 +16,23 @@
 
 :: Ofront+
 
-ofront+ -liapxe ..\Mod\Heap.Mod
+ofront+.exe -iapxe Heap0.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -liapxe ..\Mod\Platform.Windows.Mod
+ofront+ -iapxe ..\Mod\Platform.Windows.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Args.Mod
+ofront+ -se ..\Mod\Args.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Console.Mod
+ofront+ -se ..\Mod\Console.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Strings.Mod
+ofront+ -se ..\Mod\Strings.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Files.Mod
+ofront+ -se ..\Mod\Files.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Reals.Mod
+ofront+ -se ..\Mod\Reals.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\Modules.Mod
+ofront+ -se ..\Mod\Modules.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\CmdlnTexts.Mod
+ofront+ -se ..\Mod\Texts.Mod
 @IF errorlevel 1 PAUSE
 
 @CALL ..\Bin\mingw %Lib% SYSTEM -D_LONGINT64
@@ -44,17 +44,17 @@ ofront+ -lse ..\Mod\CmdlnTexts.Mod
 @CALL ..\Bin\mingw %Lib% Files -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Reals -D_LONGINT64
 @CALL ..\Bin\mingw %Lib% Modules -D_LONGINT64
-@CALL ..\Bin\mingw %Lib% CmdlnTexts -D_LONGINT64
+@CALL ..\Bin\mingw %Lib% Texts -D_LONGINT64
 
 :: OOC2
 
-ofront+ -lse ..\Mod\ooc2Ascii.Mod
+ofront+ -se ..\Mod\ooc2Ascii.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\ooc2ConvTypes.Mod
+ofront+ -se ..\Mod\ooc2ConvTypes.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\ooc2RandomNumbers.Mod
+ofront+ -se ..\Mod\ooc2RandomNumbers.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\ooc2Strings.Mod
+ofront+ -se ..\Mod\ooc2Strings.Mod
 @IF errorlevel 1 PAUSE
 
 @CALL ..\Bin\mingw %Lib% ooc2Ascii -D_LONGINT64
