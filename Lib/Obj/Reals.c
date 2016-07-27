@@ -62,21 +62,21 @@ LONGREAL Reals_TenL (INTEGER e)
 /*----------------------------------------------------------------------------*/
 INTEGER Reals_Expo (REAL x)
 {
-	return (INTEGER)__MASK(__ASHR(__VAL(LONGINT, x), 23, LONGINT), -256);
+	return __MASK(__ASHR(__VAL(INTEGER, x), 23, INTEGER), -256);
 }
 
 /*----------------------------------------------------------------------------*/
 INTEGER Reals_ExpoL (LONGREAL x)
 {
-	LONGINT h;
-	__GET((INTEGER)&x + 4, h, LONGINT);
-	return (INTEGER)__MASK(__ASHR(h, 20, LONGINT), -2048);
+	INTEGER h;
+	__GET((INTEGER)&x + 4, h, INTEGER);
+	return __MASK(__ASHR(h, 20, INTEGER), -2048);
 }
 
 /*----------------------------------------------------------------------------*/
 void Reals_SetExpo (INTEGER e, REAL *x)
 {
-	*x = (REAL)(__VAL(SET, *x) & ~0x01fe | (SET)__ASHL((LONGINT)e, 23, LONGINT));
+	*x = (REAL)(__VAL(SET, *x) & ~0x01fe | (SET)__ASHL(e, 23, INTEGER));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -84,18 +84,18 @@ void Reals_SetExpoL (INTEGER e, LONGREAL *x)
 {
 	SET h;
 	__GET((INTEGER)x + 4, h, SET);
-	h = h & ~0x0ffe | (SET)__ASHL((LONGINT)e, 20, LONGINT);
+	h = h & ~0x0ffe | (SET)__ASHL(e, 20, INTEGER);
 	__PUT((INTEGER)x + 4, h, SET);
 }
 
 /*----------------------------------------------------------------------------*/
 void Reals_Convert (REAL x, INTEGER n, CHAR *d, LONGINT d__len)
 {
-	LONGINT i, k;
-	i = __ENTIER(x);
+	INTEGER i, k;
+	i = (INTEGER)__ENTIER(x);
 	k = 0;
-	while (k < (LONGINT)n) {
-		d[__X(k, d__len)] = (CHAR)(__MOD(i, 10) + 48);
+	while (k < n) {
+		d[__X(k, d__len)] = (CHAR)((INTEGER)__MOD(i, 10) + 48);
 		i = __DIV(i, 10);
 		k += 1;
 	}
@@ -106,7 +106,7 @@ void Reals_ConvertL (LONGREAL x, INTEGER n, CHAR *d, LONGINT d__len)
 {
 	INTEGER decpt, sign, i;
 	Reals_ADR buf = NIL;
-	buf = Reals_ecvt(x, n + 2, (INTEGER)&decpt, (INTEGER)&sign);
+	buf = Reals_ecvt(x, n + 2, &decpt, &sign);
 	i = 0;
 	while (i < decpt) {
 		__GET(Reals_Offset(buf, i), d[__X((n - i) - 1, d__len)], CHAR);
@@ -123,17 +123,17 @@ void Reals_ConvertL (LONGREAL x, INTEGER n, CHAR *d, LONGINT d__len)
 static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
 {
 	SHORTINT i, k;
-	LONGINT len;
+	INTEGER len;
 	i = 0;
-	len = b__len;
-	while ((LONGINT)i < len) {
-		k = (INTEGER)__ASHR((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), 4, INTEGER);
+	len = (INTEGER)b__len;
+	while ((INTEGER)i < len) {
+		k = __ASHR((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), 4, SHORTINT);
 		if (k > 9) {
 			d[__X(__ASHL(i, 1, SHORTINT), d__len)] = k + 55;
 		} else {
 			d[__X(__ASHL(i, 1, SHORTINT), d__len)] = k + 48;
 		}
-		k = (INTEGER)__MASK((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), -16);
+		k = __MASK((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), -16);
 		if (k > 9) {
 			d[__X(__ASHL(i, 1, SHORTINT) + 1, d__len)] = k + 55;
 		} else {
