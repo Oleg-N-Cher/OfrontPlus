@@ -608,9 +608,9 @@ Especially Length would become fairly complex.
     VAR b: ARRAY SIZE(SHORTINT) OF CHAR;
   BEGIN ReadBytes(R, b, SIZE(SHORTINT));
     IF SIZE(SHORTINT) = 1 THEN
-      x := SHORT(ORD(b[0]))
+      x := ORD(b[0])
     ELSE
-      x := SHORT(ORD(b[0])) + SHORT(ORD(b[1])*256)
+      x := ORD(b[0]) + ORD(b[1])*256
     END
   END ReadSInt;
 
@@ -676,8 +676,8 @@ Especially Length would become fairly complex.
   PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
     VAR s: INTEGER; ch: CHAR; n: LONGINT;
   BEGIN s := 0; n := 0; Read(R, ch);
-    WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); Read(R, ch) END;
-    INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
+    WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(LONG(ORD(ch) - 128)), s) ); INC(s, 7); Read(R, ch) END;
+    INC(n, ASH(LONG(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64)), s) );
     x := n
   END ReadNum;
 

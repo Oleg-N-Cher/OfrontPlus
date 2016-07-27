@@ -44,7 +44,7 @@ typedef
 
 
 static Files_File Files_files;
-static SHORTINT Files_tempno;
+static INTEGER Files_tempno;
 static CHAR Files_HOME[1024];
 static struct {
 	LONGINT len[1];
@@ -86,11 +86,12 @@ export void Files_ReadLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL *x);
 export void Files_ReadLine (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len);
 export void Files_ReadNum (Files_Rider *R, LONGINT *R__typ, LONGINT *x);
 export void Files_ReadReal (Files_Rider *R, LONGINT *R__typ, REAL *x);
+export void Files_ReadSInt (Files_Rider *R, LONGINT *R__typ, SHORTINT *x);
 export void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x);
 export void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len);
 export void Files_Register (Files_File f);
 export void Files_Rename (CHAR *old, LONGINT old__len, CHAR *new, LONGINT new__len, INTEGER *res);
-static void Files_ScanPath (SHORTINT *pos, CHAR *dir, LONGINT dir__len);
+static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len);
 export void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, INTEGER pos);
 export void Files_SetSearchPath (CHAR *path, LONGINT path__len);
 export void Files_Write (Files_Rider *r, LONGINT *r__typ, BYTE x);
@@ -101,12 +102,12 @@ export void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x);
 export void Files_WriteLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL x);
 export void Files_WriteNum (Files_Rider *R, LONGINT *R__typ, LONGINT x);
 export void Files_WriteReal (Files_Rider *R, LONGINT *R__typ, REAL x);
+export void Files_WriteSInt (Files_Rider *R, LONGINT *R__typ, SHORTINT x);
 export void Files_WriteSet (Files_Rider *R, LONGINT *R__typ, SET x);
 export void Files_WriteString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len);
 
 #define Files_IdxTrap()	__HALT(-1)
-#define Files_fdLongint(fd)	((LONGINT)(SYSTEM_ADR)(fd))
-#define Files_noDesc()	((Platform_FileHandle)(SYSTEM_ADR)-1)
+#define Files_fdint(fd)	((INTEGER)(SYSTEM_ADR)(fd))
 
 /*============================================================================*/
 
@@ -123,9 +124,9 @@ static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, INTEGER errcode)
 		} else {
 			Console_String(f->workName, 101);
 		}
-		if (Files_fdLongint(f->fd) != 0) {
+		if (Files_fdint(f->fd) != 0) {
 			Console_String((CHAR*)"f.fd = ", (LONGINT)8);
-			Console_LongInt(Files_fdLongint(f->fd), 1);
+			Console_Int(Files_fdint(f->fd), 1);
 		}
 	}
 	if (errcode != 0) {
@@ -139,7 +140,7 @@ static void Files_Err (CHAR *s, LONGINT s__len, Files_File f, INTEGER errcode)
 
 static void Files_MakeFileName (CHAR *dir, LONGINT dir__len, CHAR *name, LONGINT name__len, CHAR *dest, LONGINT dest__len)
 {
-	SHORTINT i, j;
+	INTEGER i, j;
 	__DUP(dir, dir__len, CHAR);
 	__DUP(name, name__len, CHAR);
 	i = 0;
@@ -218,7 +219,7 @@ static void Files_Create (Files_File f)
 	BOOLEAN done;
 	INTEGER error;
 	CHAR err[32];
-	if (f->fd == Files_noDesc()) {
+	if (f->fd == Platform_InvalidHandleValue()) {
 		if (f->state == 1) {
 			Files_GetTempName(f->registerName, 101, (void*)f->workName, 101);
 			f->tempFile = 1;
@@ -290,7 +291,7 @@ static void Files_CloseOSFile (Files_File f)
 		}
 	}
 	error = Platform_Close(f->fd);
-	f->fd = Files_noDesc();
+	f->fd = Platform_InvalidHandleValue();
 	f->state = 1;
 	Heap_FileCount -= 1;
 }
@@ -327,7 +328,7 @@ Files_File Files_New (CHAR *name, LONGINT name__len)
 	__NEW(f, Files_FileDesc);
 	f->workName[0] = 0x00;
 	__COPY(name, f->registerName, 101);
-	f->fd = Files_noDesc();
+	f->fd = Platform_InvalidHandleValue();
 	f->state = 1;
 	f->len = 0;
 	f->pos = 0;
@@ -337,9 +338,9 @@ Files_File Files_New (CHAR *name, LONGINT name__len)
 }
 
 /*----------------------------------------------------------------------------*/
-static void Files_ScanPath (SHORTINT *pos, CHAR *dir, LONGINT dir__len)
+static void Files_ScanPath (INTEGER *pos, CHAR *dir, LONGINT dir__len)
 {
-	SHORTINT i;
+	INTEGER i;
 	CHAR ch;
 	i = 0;
 	if (Files_SearchPath == NIL) {
@@ -382,7 +383,7 @@ static void Files_ScanPath (SHORTINT *pos, CHAR *dir, LONGINT dir__len)
 
 static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len)
 {
-	SHORTINT i;
+	INTEGER i;
 	CHAR ch;
 	i = 0;
 	ch = name[0];
@@ -396,8 +397,7 @@ static BOOLEAN Files_HasDir (CHAR *name, LONGINT name__len)
 static Files_File Files_CacheEntry (Platform_FileIdentity identity)
 {
 	Files_File f = NIL;
-	SHORTINT i;
-	INTEGER error;
+	INTEGER i, error;
 	LONGINT len;
 	f = Files_files;
 	while (f != NIL) {
@@ -427,7 +427,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 {
 	Files_File f = NIL;
 	Platform_FileHandle fd = NIL;
-	SHORTINT pos;
+	INTEGER pos;
 	BOOLEAN done;
 	CHAR dir[256], path[256];
 	INTEGER error;
@@ -504,7 +504,7 @@ Files_File Files_Old (CHAR *name, LONGINT name__len)
 /*----------------------------------------------------------------------------*/
 void Files_Purge (Files_File f)
 {
-	SHORTINT i;
+	INTEGER i;
 	Platform_FileIdentity identity;
 	INTEGER error;
 	i = 0;
@@ -515,7 +515,7 @@ void Files_Purge (Files_File f)
 		}
 		i += 1;
 	}
-	if (f->fd != Files_noDesc()) {
+	if (f->fd != Platform_InvalidHandleValue()) {
 		error = Platform_Truncate(f->fd, 0);
 		error = Platform_Seek(f->fd, 0, Platform_SeekSet);
 	}
@@ -862,19 +862,29 @@ void Files_ReadBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN *x)
 }
 
 /*----------------------------------------------------------------------------*/
-void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x)
+void Files_ReadSInt (Files_Rider *R, LONGINT *R__typ, SHORTINT *x)
 {
 	CHAR b[2];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 2, 2);
-	*x = (INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER);
+	*x = (INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, SHORTINT);
+}
+
+/*----------------------------------------------------------------------------*/
+void Files_ReadInt (Files_Rider *R, LONGINT *R__typ, INTEGER *x)
+{
+	CHAR b[4];
+	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
+	*x = ((INTEGER)((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, SHORTINT)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER);
 }
 
 /*----------------------------------------------------------------------------*/
 void Files_ReadLInt (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 {
 	CHAR b[4];
+	INTEGER n;
+	LONGINT s;
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER);
+	*x = ((INTEGER)((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, SHORTINT)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -882,7 +892,7 @@ void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x)
 {
 	CHAR b[4];
 	Files_ReadBytes(&*R, R__typ, (void*)b, 4, 4);
-	*x = (SET)((((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, INTEGER)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER));
+	*x = (SET)(((INTEGER)((INTEGER)b[0] + __ASHL((INTEGER)b[1], 8, SHORTINT)) + __ASHL((INTEGER)b[2], 16, INTEGER)) + __ASHL((INTEGER)b[3], 24, INTEGER));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -904,7 +914,7 @@ void Files_ReadLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL *x)
 /*----------------------------------------------------------------------------*/
 void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 {
-	SHORTINT i;
+	INTEGER i;
 	CHAR ch;
 	i = 0;
 	do {
@@ -917,7 +927,7 @@ void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 /*----------------------------------------------------------------------------*/
 void Files_ReadLine (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 {
-	SHORTINT i;
+	INTEGER i;
 	CHAR ch;
 	BOOLEAN b;
 	i = 0;
@@ -936,7 +946,7 @@ void Files_ReadLine (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 /*----------------------------------------------------------------------------*/
 void Files_ReadNum (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 {
-	SHORTINT s;
+	INTEGER s;
 	CHAR ch;
 	LONGINT n;
 	s = 0;
@@ -947,7 +957,7 @@ void Files_ReadNum (Files_Rider *R, LONGINT *R__typ, LONGINT *x)
 		s += 7;
 		Files_Read(&*R, R__typ, (void*)&ch);
 	}
-	n += __ASH((LONGINT)(__MASK((INTEGER)ch, -64) - __ASHL(__ASHR((INTEGER)ch, 6, INTEGER), 6, INTEGER)), s, LONGINT);
+	n += __ASH((LONGINT)(__MASK((INTEGER)ch, -64) - __ASHL(__ASHR((INTEGER)ch, 6, SHORTINT), 6, SHORTINT)), s, LONGINT);
 	*x = n;
 }
 
@@ -958,18 +968,31 @@ void Files_WriteBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN x)
 }
 
 /*----------------------------------------------------------------------------*/
-void Files_WriteInt (Files_Rider *R, LONGINT *R__typ, INTEGER x)
+void Files_WriteSInt (Files_Rider *R, LONGINT *R__typ, SHORTINT x)
 {
 	CHAR b[2];
 	b[0] = (CHAR)x;
-	b[1] = (CHAR)__ASHR(x, 8, INTEGER);
+	b[1] = (CHAR)__ASHR(x, 8, SHORTINT);
 	Files_WriteBytes(&*R, R__typ, (void*)b, 2, 2);
+}
+
+/*----------------------------------------------------------------------------*/
+void Files_WriteInt (Files_Rider *R, LONGINT *R__typ, INTEGER x)
+{
+	CHAR b[4];
+	b[0] = (CHAR)x;
+	b[1] = (CHAR)__ASHR(x, 8, INTEGER);
+	b[2] = (CHAR)__ASHR(x, 16, INTEGER);
+	b[3] = (CHAR)__ASHR(x, 24, INTEGER);
+	Files_WriteBytes(&*R, R__typ, (void*)b, 4, 4);
 }
 
 /*----------------------------------------------------------------------------*/
 void Files_WriteLInt (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 {
 	CHAR b[4];
+	INTEGER n;
+	LONGINT s;
 	b[0] = (CHAR)x;
 	b[1] = (CHAR)__ASHR(x, 8, LONGINT);
 	b[2] = (CHAR)__ASHR(x, 16, LONGINT);
@@ -1009,7 +1032,7 @@ void Files_WriteLReal (Files_Rider *R, LONGINT *R__typ, LONGREAL x)
 /*----------------------------------------------------------------------------*/
 void Files_WriteString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len)
 {
-	SHORTINT i;
+	INTEGER i;
 	i = 0;
 	while (x[__X(i, x__len)] != 0x00) {
 		i += 1;
@@ -1021,10 +1044,10 @@ void Files_WriteString (Files_Rider *R, LONGINT *R__typ, CHAR *x, LONGINT x__len
 void Files_WriteNum (Files_Rider *R, LONGINT *R__typ, LONGINT x)
 {
 	while (x < -64 || x > 63) {
-		Files_Write(&*R, R__typ, (CHAR)(__MASK(x, -128) + 128));
+		Files_Write(&*R, R__typ, (CHAR)(__MASK((INTEGER)x, -128) + 128));
 		x = __ASHR(x, 7, LONGINT);
 	}
-	Files_Write(&*R, R__typ, (CHAR)__MASK(x, -128));
+	Files_Write(&*R, R__typ, (CHAR)__MASK((INTEGER)x, -128));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1039,7 +1062,7 @@ static void Files_Finalize (SYSTEM_PTR o)
 	Files_File f = NIL;
 	INTEGER res;
 	f = (Files_File)o;
-	if (Files_fdLongint(f->fd) >= 0) {
+	if (f->fd != Platform_InvalidHandleValue()) {
 		Files_CloseOSFile(f);
 		if (f->tempFile) {
 			res = Platform_Unlink((void*)f->workName, 101);
