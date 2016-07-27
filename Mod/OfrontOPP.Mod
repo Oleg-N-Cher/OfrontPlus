@@ -34,7 +34,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; ProcTyp = 14; Comp = 15;
-		intSet = {SInt..LInt};
+		intSet = {Byte, SInt..LInt};
 		
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -719,10 +719,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			IF f IN intSet + {Char} THEN  xval := x^.conval^.intval
 			ELSE err(61); xval := 1
 			END ;
-			IF f IN intSet THEN
-				IF LabelForm < f THEN err(60) END
-			ELSIF LabelForm # f THEN err(60)
-			END ;
+			IF (f IN intSet) # (LabelForm IN intSet) THEN err(60) END;
 			IF sym = upto THEN
 				OPS.Get(sym); ConstExpression(y); yval := y^.conval^.intval;
 				IF (y^.typ^.form # f) & ~((f IN intSet) & (y^.typ^.form IN intSet)) THEN err(60) END ;
