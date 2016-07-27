@@ -21,7 +21,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; ProcTyp = 14; Comp = 15;
-		intSet = {SInt..LInt}; realSet = {Real, LReal};
+		intSet = {Byte, SInt..LInt}; realSet = {Real, LReal};
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -870,7 +870,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSIF f # Undef THEN err(94); z^.typ := OPT.undftyp
 					END
 			| plus:
-					IF ~(f IN {Undef, SInt..Set}) THEN err(105); typ := OPT.undftyp END ;
+					IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(105); typ := OPT.undftyp END ;
 					do := TRUE;
 					IF f IN intSet THEN
 						IF (z^.class = Nconst) & (z^.conval^.intval = 0) THEN do := FALSE; z := y END ;
@@ -878,7 +878,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END ;
 					IF do THEN NewOp(op, typ, z, y) END
 			| minus:
-					IF ~(f IN {Undef, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
+					IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
 					IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
 			| or:
 					IF f = Bool THEN
@@ -897,7 +897,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END ;
 					NewOp(op, typ, z, y)
 			| lss, leq, gtr, geq:
-					IF (f IN {Undef, Char..LReal}) OR strings(z, y) THEN typ := OPT.booltyp
+					IF (f IN {Undef, Byte, Char..LReal}) OR strings(z, y) THEN typ := OPT.booltyp
 					ELSE err(108); typ := OPT.undftyp
 					END ;
 					NewOp(op, typ, z, y)
@@ -1104,6 +1104,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| shortfn: (*SHORT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f = SInt THEN Convert(x, OPT.bytetyp)
 				ELSIF f = Int THEN Convert(x, OPT.sinttyp)
 				ELSIF f = LInt THEN Convert(x, OPT.inttyp)
 				ELSIF f = LReal THEN Convert(x, OPT.realtyp)
@@ -1111,6 +1112,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| longfn: (*LONG*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f = Byte THEN Convert(x, OPT.sinttyp)
 				ELSIF f = SInt THEN Convert(x, OPT.inttyp)
 				ELSIF f = Int THEN Convert(x, OPT.linttyp)
 				ELSIF f = Real THEN Convert(x, OPT.lrltyp)

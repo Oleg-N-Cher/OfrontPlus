@@ -331,7 +331,7 @@ void OfrontOPB_Index (OfrontOPT_Node *x, OfrontOPT_Node y)
 	f = y->typ->form;
 	if ((*x)->class >= 7) {
 		OfrontOPB_err(79);
-	} else if (!__IN(f, 0x70) || __IN(y->class, 0x0300)) {
+	} else if (!__IN(f, 0x72) || __IN(y->class, 0x0300)) {
 		OfrontOPB_err(80);
 		y->typ = OfrontOPT_inttyp;
 	}
@@ -459,7 +459,7 @@ void OfrontOPB_In (OfrontOPT_Node *x, OfrontOPT_Node y)
 	f = (*x)->typ->form;
 	if ((((*x)->class == 8 || (*x)->class == 9) || y->class == 8) || y->class == 9) {
 		OfrontOPB_err(126);
-	} else if (__IN(f, 0x70) && y->typ->form == 9) {
+	} else if (__IN(f, 0x72) && y->typ->form == 9) {
 		if ((*x)->class == 7) {
 			k = (*x)->conval->intval;
 			if (k < 0 || k > (LONGINT)OfrontOPM_MaxSet) {
@@ -558,14 +558,14 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				}
 				break;
 			case 6: 
-				if (!__IN(f, 0x01f0)) {
+				if (!__IN(f, 0x01f2)) {
 					OfrontOPB_err(96);
 				}
 				break;
 			case 7: 
-				if (__IN(f, 0x03f0)) {
+				if (__IN(f, 0x03f2)) {
 					if (z->class == 7) {
-						if (__IN(f, 0x70)) {
+						if (__IN(f, 0x72)) {
 							if (z->conval->intval == (-9223372036854775807-1)) {
 								OfrontOPB_err(203);
 							} else {
@@ -586,9 +586,9 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				}
 				break;
 			case 21: 
-				if (__IN(f, 0x01f0)) {
+				if (__IN(f, 0x01f2)) {
 					if (z->class == 7) {
-						if (__IN(f, 0x70)) {
+						if (__IN(f, 0x72)) {
 							if (z->conval->intval == (-9223372036854775807-1)) {
 								OfrontOPB_err(203);
 							} else {
@@ -620,7 +620,7 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				}
 				break;
 			case 23: 
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (z->class == 7) {
 						z->conval->intval = OfrontOPB_BoolToInt(__ODD(z->conval->intval));
 						z->obj = NIL;
@@ -649,7 +649,7 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				}
 				break;
 			case 25: 
-				if (__IN(f, 0x70) && z->class == 7) {
+				if (__IN(f, 0x72) && z->class == 7) {
 					if (0 <= z->conval->intval && z->conval->intval <= -1) {
 						z = NewOp__29(op, typ, z);
 					} else {
@@ -852,7 +852,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 				}
 				break;
 			case 1: 
-				if (__IN(g, 0x70)) {
+				if (__IN(g, 0x72)) {
 					x->typ = y->typ;
 				} else if (g == 7) {
 					x->typ = OfrontOPT_realtyp;
@@ -869,7 +869,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			case 4: 
 				if (g == 1) {
 					y->typ = OfrontOPT_sinttyp;
-				} else if (__IN(g, 0x70)) {
+				} else if (__IN(g, 0x72)) {
 					x->typ = y->typ;
 				} else if (g == 7) {
 					x->typ = OfrontOPT_realtyp;
@@ -886,7 +886,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			case 5: 
 				if (__IN(g, 0x12)) {
 					y->typ = OfrontOPT_inttyp;
-				} else if (__IN(g, 0x70)) {
+				} else if (__IN(g, 0x72)) {
 					x->typ = y->typ;
 				} else if (g == 7) {
 					x->typ = OfrontOPT_realtyp;
@@ -901,7 +901,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 				}
 				break;
 			case 6: 
-				if (__IN(g, 0x70)) {
+				if (__IN(g, 0x72)) {
 					y->typ = OfrontOPT_linttyp;
 				} else if (g == 7) {
 					x->typ = OfrontOPT_realtyp;
@@ -916,7 +916,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 				}
 				break;
 			case 7: 
-				if (__IN(g, 0x70)) {
+				if (__IN(g, 0x72)) {
 					y->typ = x->typ;
 					yval->realval = yval->intval;
 				} else if (g == 8) {
@@ -928,7 +928,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 				}
 				break;
 			case 8: 
-				if (__IN(g, 0x70)) {
+				if (__IN(g, 0x72)) {
 					y->typ = x->typ;
 					yval->realval = yval->intval;
 				} else if (g == 7) {
@@ -972,7 +972,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 	}
 	switch (op) {
 		case 1: 
-			if (__IN(f, 0x70)) {
+			if (__IN(f, 0x72)) {
 				xv = xval->intval;
 				yv = yval->intval;
 				if (((((xv == 0 || yv == 0) || (xv > 0 && yv > 0) && yv <= __DIV(9223372036854775807, xv)) || (xv > 0 && yv < 0) && yv >= __DIV((-9223372036854775807-1), xv)) || (xv < 0 && yv > 0) && xv >= __DIV((-9223372036854775807-1), yv)) || (((xv < 0 && yv < 0) && xv != (-9223372036854775807-1)) && yv != (-9223372036854775807-1)) && -xv <= __DIV(9223372036854775807, -yv)) {
@@ -996,7 +996,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			}
 			break;
 		case 2: 
-			if (__IN(f, 0x70)) {
+			if (__IN(f, 0x72)) {
 				if (yval->intval != 0) {
 					xval->realval = xval->intval / (REAL)yval->intval;
 					OfrontOPB_CheckRealType(7, 205, xval);
@@ -1020,7 +1020,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			}
 			break;
 		case 3: 
-			if (__IN(f, 0x70)) {
+			if (__IN(f, 0x72)) {
 				if (yval->intval != 0) {
 					xval->intval = __DIV(xval->intval, yval->intval);
 					OfrontOPB_SetIntType(x);
@@ -1032,7 +1032,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			}
 			break;
 		case 4: 
-			if (__IN(f, 0x70)) {
+			if (__IN(f, 0x72)) {
 				if (yval->intval != 0) {
 					xval->intval = __MOD(xval->intval, yval->intval);
 					OfrontOPB_SetIntType(x);
@@ -1051,7 +1051,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			}
 			break;
 		case 6: 
-			if (__IN(f, 0x70)) {
+			if (__IN(f, 0x72)) {
 				temp = yval->intval >= 0 && xval->intval <= 9223372036854775807 - yval->intval;
 				if (temp || yval->intval < 0 && xval->intval >= (-9223372036854775807-1) - yval->intval) {
 					xval->intval += yval->intval;
@@ -1074,7 +1074,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			}
 			break;
 		case 7: 
-			if (__IN(f, 0x70)) {
+			if (__IN(f, 0x72)) {
 				if (yval->intval >= 0 && xval->intval >= (-9223372036854775807-1) + yval->intval || yval->intval < 0 && xval->intval <= 9223372036854775807 + yval->intval) {
 					xval->intval -= yval->intval;
 					OfrontOPB_SetIntType(x);
@@ -1150,8 +1150,8 @@ static void OfrontOPB_Convert (OfrontOPT_Node *x, OfrontOPT_Struct typ)
 	f = (*x)->typ->form;
 	g = typ->form;
 	if ((*x)->class == 7) {
-		if (__IN(f, 0x70)) {
-			if (__IN(g, 0x70)) {
+		if (__IN(f, 0x72)) {
+			if (__IN(g, 0x72)) {
 				if (f > g) {
 					OfrontOPB_SetIntType(*x);
 					if ((INTEGER)(*x)->typ->form > g) {
@@ -1274,7 +1274,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 					}
 					break;
 				case 1: 
-					if (__IN(g, 0x01f0)) {
+					if (__IN(g, 0x01f2)) {
 						OfrontOPB_Convert(&z, y->typ);
 					} else {
 						OfrontOPB_err(100);
@@ -1283,7 +1283,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				case 4: 
 					if (g == 1) {
 						OfrontOPB_Convert(&y, z->typ);
-					} else if (__IN(g, 0x01f0)) {
+					} else if (__IN(g, 0x01f2)) {
 						OfrontOPB_Convert(&z, y->typ);
 					} else {
 						OfrontOPB_err(100);
@@ -1292,14 +1292,14 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				case 5: 
 					if (__IN(g, 0x12)) {
 						OfrontOPB_Convert(&y, z->typ);
-					} else if (__IN(g, 0x01f0)) {
+					} else if (__IN(g, 0x01f2)) {
 						OfrontOPB_Convert(&z, y->typ);
 					} else {
 						OfrontOPB_err(100);
 					}
 					break;
 				case 6: 
-					if (__IN(g, 0x70)) {
+					if (__IN(g, 0x72)) {
 						OfrontOPB_Convert(&y, z->typ);
 					} else if (__IN(g, 0x0180)) {
 						OfrontOPB_Convert(&z, y->typ);
@@ -1308,7 +1308,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 					}
 					break;
 				case 7: 
-					if (__IN(g, 0x70)) {
+					if (__IN(g, 0x72)) {
 						OfrontOPB_Convert(&y, z->typ);
 					} else if (__IN(g, 0x0180)) {
 						OfrontOPB_Convert(&z, y->typ);
@@ -1317,7 +1317,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 					}
 					break;
 				case 8: 
-					if (__IN(g, 0x01f0)) {
+					if (__IN(g, 0x01f2)) {
 						OfrontOPB_Convert(&y, z->typ);
 					} else if (__IN(g, 0x0180)) {
 						OfrontOPB_Convert(&y, z->typ);
@@ -1356,7 +1356,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 		switch (op) {
 			case 1: 
 				do_ = 1;
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (z->class == 7) {
 						val = z->conval->intval;
 						if (val == 1) {
@@ -1396,7 +1396,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				}
 				break;
 			case 2: 
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (y->class == 7 && y->conval->intval == 0) {
 						OfrontOPB_err(205);
 					}
@@ -1415,7 +1415,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				break;
 			case 3: 
 				do_ = 1;
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (y->class == 7) {
 						val = y->conval->intval;
 						if (val == 0) {
@@ -1438,7 +1438,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				}
 				break;
 			case 4: 
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (y->class == 7) {
 						if (y->conval->intval == 0) {
 							OfrontOPB_err(205);
@@ -1470,12 +1470,12 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				}
 				break;
 			case 6: 
-				if (!__IN(f, 0x03f1)) {
+				if (!__IN(f, 0x03f3)) {
 					OfrontOPB_err(105);
 					typ = OfrontOPT_undftyp;
 				}
 				do_ = 1;
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (z->class == 7 && z->conval->intval == 0) {
 						do_ = 0;
 						z = y;
@@ -1489,11 +1489,11 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				}
 				break;
 			case 7: 
-				if (!__IN(f, 0x03f1)) {
+				if (!__IN(f, 0x03f3)) {
 					OfrontOPB_err(106);
 					typ = OfrontOPT_undftyp;
 				}
-				if ((!__IN(f, 0x70) || y->class != 7) || y->conval->intval != 0) {
+				if ((!__IN(f, 0x72) || y->class != 7) || y->conval->intval != 0) {
 					NewOp__39(op, typ, &z, y);
 				}
 				break;
@@ -1522,7 +1522,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 				NewOp__39(op, typ, &z, y);
 				break;
 			case 11: case 12: case 13: case 14: 
-				if (__IN(f, 0x01f9) || strings__41(&z, &y)) {
+				if (__IN(f, 0x01fb) || strings__41(&z, &y)) {
 					typ = OfrontOPT_booltyp;
 				} else {
 					OfrontOPB_err(108);
@@ -1543,7 +1543,7 @@ void OfrontOPB_SetRange (OfrontOPT_Node *x, OfrontOPT_Node y)
 	LONGINT k, l;
 	if ((((*x)->class == 8 || (*x)->class == 9) || y->class == 8) || y->class == 9) {
 		OfrontOPB_err(126);
-	} else if (__IN((*x)->typ->form, 0x70) && __IN(y->typ->form, 0x70)) {
+	} else if (__IN((*x)->typ->form, 0x72) && __IN(y->typ->form, 0x72)) {
 		if ((*x)->class == 7) {
 			k = (*x)->conval->intval;
 			if (0 > k || k > (LONGINT)OfrontOPM_MaxSet) {
@@ -1579,7 +1579,7 @@ void OfrontOPB_SetElem (OfrontOPT_Node *x)
 	LONGINT k;
 	if ((*x)->class == 8 || (*x)->class == 9) {
 		OfrontOPB_err(126);
-	} else if (!__IN((*x)->typ->form, 0x70)) {
+	} else if (!__IN((*x)->typ->form, 0x72)) {
 		OfrontOPB_err(93);
 	} else if ((*x)->class == 7) {
 		k = (*x)->conval->intval;
@@ -1625,7 +1625,7 @@ static void OfrontOPB_CheckAssign (OfrontOPT_Struct x, OfrontOPT_Node ynode)
 			}
 			break;
 		case 6: 
-			if (!__IN(g, 0x70)) {
+			if (!__IN(g, 0x72)) {
 				OfrontOPB_err(113);
 			}
 			break;
@@ -1722,7 +1722,7 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 	f = x->typ->form;
 	switch (fctno) {
 		case 0: 
-			if (__IN(f, 0x70) && x->class == 7) {
+			if (__IN(f, 0x72) && x->class == 7) {
 				if (0 <= x->conval->intval && x->conval->intval <= 255) {
 					OfrontOPB_BindNodes(28, OfrontOPT_notyp, &x, x);
 				} else {
@@ -1881,6 +1881,8 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 		case 10: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
+			} else if (f == 4) {
+				OfrontOPB_Convert(&x, OfrontOPT_bytetyp);
 			} else if (f == 5) {
 				OfrontOPB_Convert(&x, OfrontOPT_sinttyp);
 			} else if (f == 6) {
@@ -1894,6 +1896,8 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 		case 11: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
+			} else if (f == 1) {
+				OfrontOPB_Convert(&x, OfrontOPT_sinttyp);
 			} else if (f == 4) {
 				OfrontOPB_Convert(&x, OfrontOPT_inttyp);
 			} else if (f == 5) {
@@ -1909,7 +1913,7 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 		case 13: case 14: 
 			if (OfrontOPB_NotVar(x)) {
 				OfrontOPB_err(112);
-			} else if (!__IN(f, 0x70)) {
+			} else if (!__IN(f, 0x72)) {
 				OfrontOPB_err(111);
 			} else if (x->readonly) {
 				OfrontOPB_err(76);
@@ -1944,7 +1948,7 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 		case 19: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (__IN(f, 0x70)) {
+			} else if (__IN(f, 0x72)) {
 				if (f < 5) {
 					OfrontOPB_Convert(&x, OfrontOPT_inttyp);
 				}
@@ -2000,7 +2004,7 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 			}
 			break;
 		case 26: case 27: 
-			if (__IN(f, 0x70) && x->class == 7) {
+			if (__IN(f, 0x72) && x->class == 7) {
 				if (x->conval->intval < 0 || x->conval->intval > -1) {
 					OfrontOPB_err(220);
 				}
@@ -2075,7 +2079,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 				p->typ = OfrontOPT_notyp;
 			} else {
 				if (x->typ != p->typ) {
-					if (x->class == 7 && __IN(f, 0x70)) {
+					if (x->class == 7 && __IN(f, 0x72)) {
 						OfrontOPB_Convert(&x, p->typ);
 					} else {
 						OfrontOPB_err(111);
@@ -2088,7 +2092,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 		case 15: case 16: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (__IN(f, 0x70)) {
+			} else if (__IN(f, 0x72)) {
 				if (x->class == 7 && (0 > x->conval->intval || x->conval->intval > (LONGINT)OfrontOPM_MaxSet)) {
 					OfrontOPB_err(202);
 				}
@@ -2099,7 +2103,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 			p->typ = OfrontOPT_notyp;
 			break;
 		case 17: 
-			if (!__IN(f, 0x70) || x->class != 7) {
+			if (!__IN(f, 0x72) || x->class != 7) {
 				OfrontOPB_err(69);
 			} else if (f == 4) {
 				L = (INTEGER)x->conval->intval;
@@ -2148,7 +2152,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 		case 19: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (__IN(f, 0x70)) {
+			} else if (__IN(f, 0x72)) {
 				if (p->typ == OfrontOPT_linttyp) {
 					maxInt = OfrontOPM_MaxLInt;
 				} else {
@@ -2187,7 +2191,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
 			} else if (p->typ->comp == 3) {
-				if (__IN(f, 0x70)) {
+				if (__IN(f, 0x72)) {
 					if (x->class == 7 && (x->conval->intval <= 0 || x->conval->intval > (LONGINT)OfrontOPM_MaxIndex)) {
 						OfrontOPB_err(63);
 					}
@@ -2203,7 +2207,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 		case 22: case 23: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (!__IN(f, 0x70)) {
+			} else if (!__IN(f, 0x72)) {
 				OfrontOPB_err(111);
 			} else {
 				if (fctno == 22) {
@@ -2235,7 +2239,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 		case 28: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (__IN(f, 0x70)) {
+			} else if (__IN(f, 0x72)) {
 				p = NewOp__53(12, 26, p, x);
 			} else {
 				OfrontOPB_err(111);
@@ -2256,7 +2260,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 		case 30: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (__IN(f, 0x70)) {
+			} else if (__IN(f, 0x72)) {
 				p = NewOp__53(19, 30, p, x);
 			} else {
 				OfrontOPB_err(111);
@@ -2284,7 +2288,7 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 			p->link = x;
 			break;
 		case 32: 
-			if (__IN(f, 0x70) && x->class == 7) {
+			if (__IN(f, 0x72) && x->class == 7) {
 				if (0 <= x->conval->intval && x->conval->intval <= 255) {
 					OfrontOPB_BindNodes(28, OfrontOPT_notyp, &x, x);
 					x->conval = OfrontOPT_NewConst();
@@ -2328,7 +2332,7 @@ void OfrontOPB_StParN (OfrontOPT_Node *par0, OfrontOPT_Node x, INTEGER fctno, IN
 			OfrontOPB_err(126);
 		} else if (p->typ->comp != 3) {
 			OfrontOPB_err(64);
-		} else if (__IN(f, 0x70)) {
+		} else if (__IN(f, 0x72)) {
 			if (x->class == 7 && (x->conval->intval <= 0 || x->conval->intval > (LONGINT)OfrontOPM_MaxIndex)) {
 				OfrontOPB_err(63);
 			}
@@ -2344,7 +2348,7 @@ void OfrontOPB_StParN (OfrontOPT_Node *par0, OfrontOPT_Node x, INTEGER fctno, IN
 	} else if (fctno == 31 && n == 2) {
 		if (x->class == 8 || x->class == 9) {
 			OfrontOPB_err(126);
-		} else if (__IN(f, 0x70)) {
+		} else if (__IN(f, 0x72)) {
 			node = OfrontOPT_NewNode(19);
 			node->subcl = 31;
 			node->right = p;
