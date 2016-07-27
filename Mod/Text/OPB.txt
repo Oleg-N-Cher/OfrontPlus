@@ -652,15 +652,22 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			  Char:
 					IF g = String THEN CharToString(x)
 					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
-					END ;
-			| SInt:
+					END
+			| Byte:
 					IF g IN intSet THEN x^.typ := y^.typ
 					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
 					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
 					END
+			| SInt:
+					IF g = Byte THEN y^.typ := OPT.sinttyp
+					ELSIF g IN intSet THEN x^.typ := y^.typ
+					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
+					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
+					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					END
 			| Int:
-					IF g = SInt THEN y^.typ := OPT.inttyp
+					IF g IN {Byte, SInt} THEN y^.typ := OPT.inttyp
 					ELSIF g IN intSet THEN x^.typ := y^.typ
 					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
