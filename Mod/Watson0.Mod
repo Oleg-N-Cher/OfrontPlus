@@ -5,7 +5,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
 	IMPORT
 		OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM, OPV := OfrontOPV,
-		Modules, Files, Texts := CmdlnTexts, Out := Console;
+		Modules, Files, Texts, Out := Console;
 
 	CONST
 	(* CONST used to read symbol file *)
