@@ -1,11 +1,17 @@
 MODULE Reals;
   (* JT, 5.2.90 / RC 9.12.91 conversion between reals and strings for HP-700, MB 9.12.91, JT for Ofront, 16.3. 95*)
 
-  IMPORT S := SYSTEM;
+  IMPORT S := SYSTEM, P := Platform;
+
+  TYPE
+    SHORTINT = P.Int8; INTEGER = P.Int16; LONGINT = P.Int32; ADR = P.MemAdr;
 
 
-  PROCEDURE -ecvt (x: LONGREAL; ndigit, decpt, sign: LONGINT): LONGINT
-      "ecvt (x, ndigit, decpt, sign)";
+  PROCEDURE -Offset(adr: ADR; offset: LONGINT): ADR
+      "((Platform_MemAdr)((SYSTEM_ADR)adr + offset))"; 
+  PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
+  PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADR
+      "((Platform_MemAdr)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
 
   PROCEDURE Ten*(e: INTEGER): REAL;
     VAR r, power: LONGREAL;
@@ -60,24 +66,24 @@ MODULE Reals;
   PROCEDURE Convert*(x: REAL; n: INTEGER; VAR d: ARRAY OF CHAR);
     VAR i, k: LONGINT;
   BEGIN
-    i := ENTIER(x); k := 0;
+    i := SHORT(ENTIER(x)); k := 0;
     WHILE k < n DO
       d[k] := CHR(i MOD 10 + 48); i := i DIV 10; INC(k)
     END
   END Convert;
   
   PROCEDURE ConvertL*(x: LONGREAL; n: INTEGER; VAR d: ARRAY OF CHAR);
-    VAR decpt, sign, i: LONGINT; buf: LONGINT;
+    VAR decpt, sign, i: LONGINT; buf: ADR;
   BEGIN
     (*x := x - 0.5; already rounded in ecvt*)
-    buf := ecvt(x, n+2, S.ADR(decpt), S.ADR(sign));
+    buf := ecvt(x, n+2, decpt, sign);
     i := 0;
-    WHILE i < decpt DO S.GET(buf + i, d[n - i -1]); INC(i) END ;
+    WHILE i < decpt DO S.GET(Offset(buf, i), d[n - i -1]); INC(i) END ;
     i := n - i - 1;
     WHILE i >= 0 DO d[i] := "0"; DEC(i) END ;
   END ConvertL;
 
-  PROCEDURE Unpack(VAR b, d: ARRAY OF S.BYTE);
+  PROCEDURE Unpack(VAR b, d: ARRAY OF BYTE);
     VAR i, k: SHORTINT; len: LONGINT;
   BEGIN i := 0; len := LEN(b);
     WHILE i < len DO
