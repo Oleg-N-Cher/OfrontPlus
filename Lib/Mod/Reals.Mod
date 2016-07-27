@@ -86,9 +86,9 @@ MODULE Reals;
 		VAR i, k: SHORTINT; len: INTEGER;
 	BEGIN i := 0; len := SHORT(LEN(b));
 		WHILE i < len DO
-			k := SHORT(ORD(S.VAL(CHAR, b[i])) DIV 16);
+			k := ORD(S.VAL(CHAR, b[i])) DIV 16;
 			IF k > 9 THEN d[i*2] := k + 55 ELSE d[i*2] := k + 48 END ;
-			k := SHORT(ORD(S.VAL(CHAR, b[i])) MOD 16);
+			k := ORD(S.VAL(CHAR, b[i])) MOD 16;
 			IF k > 9 THEN d[i*2+1] := k + 55 ELSE d[i*2+1] := k + 48 END ;
 			INC(i)
 		END
