@@ -1,6 +1,9 @@
 MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**)  (* << RC, MB, JT *)
   IMPORT
-    Files, Modules, Reals;
+    Files, Modules, Reals, P := Platform;
+
+  TYPE
+    SHORTINT = P.Int8; INTEGER = P.Int16; LONGINT = P.Int32; HUGEINT = P.Int64;
 
   (*--- insert field e: Elem into Texts.Scanner and change Texts.Scan to set it in case of class=6 *)
 
@@ -570,9 +573,34 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     REPEAT DEC(i); Write(W, a[i]) UNTIL i = 0
   END WriteInt;
 
+  PROCEDURE WriteLongInt* (VAR W: Writer; x: HUGEINT; n: LONGINT);
+  VAR
+    i: LONGINT; x0: HUGEINT;
+    a: ARRAY 22 OF CHAR;
+  BEGIN i := 0;
+    IF x < 0 THEN
+      IF x = MIN(HUGEINT) THEN
+        IF SIZE(HUGEINT) = 4 THEN
+          WriteString(W, " -2147483648")
+        ELSE
+          WriteString(W, " -9223372036854775808")
+        END;
+        RETURN
+      ELSE DEC(n); x0 := -x
+      END
+    ELSE x0 := x
+    END;
+    REPEAT
+      a[i] := CHR(x0 MOD 10 + 30H); x0 := x0 DIV 10; INC(i)
+    UNTIL x0 = 0;
+    WHILE n > i DO Write(W, " "); DEC(n) END;
+    IF x < 0 THEN Write(W, "-") END;
+    REPEAT DEC(i); Write(W, a[i]) UNTIL i = 0
+  END WriteLongInt;
+
   PROCEDURE WriteHex* (VAR W: Writer; x: LONGINT);
     VAR i: INTEGER; y: LONGINT;
-      a: ARRAY 20 OF CHAR;
+      a: ARRAY 8 OF CHAR;
   BEGIN i := 0; Write(W, " ");
     REPEAT y := x MOD 10H;
       IF y < 10 THEN a[i] := CHR(y + 30H) ELSE a[i] := CHR(y + 37H) END;
@@ -580,6 +608,17 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     UNTIL i = 8;
     REPEAT DEC(i); Write(W, a[i]) UNTIL i = 0
   END WriteHex;
+
+  PROCEDURE WriteLongHex* (VAR W: Writer; x: HUGEINT);
+    VAR i: INTEGER; y: LONGINT;
+      a: ARRAY 16 OF CHAR;
+  BEGIN i := 0; Write(W, " ");
+    REPEAT y := SHORT(x) MOD 10H;
+      IF y < 10 THEN a[i] := CHR(y + 30H) ELSE a[i] := CHR(y + 37H) END;
+      x := x DIV 10H; INC(i)
+    UNTIL i = 16;
+    REPEAT DEC(i); Write(W, a[i]) UNTIL i = 0
+  END WriteLongHex;
 
   PROCEDURE WriteReal* (VAR W: Writer; x: REAL; n: INTEGER);
     VAR e: INTEGER; x0: REAL;
@@ -735,7 +774,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       VAR M: Modules.Module; Cmd: Modules.Command; a: Alien;
         org, ew, eh: LONGINT; eno: SHORTINT;
     BEGIN new := NIL;
-      Files.ReadLInt(r, ew); Files.ReadLInt(r, eh); Files.Read(r, eno);
+      Files.ReadInt(r, ew); Files.ReadInt(r, eh); Files.Read(r, eno);
       IF eno > ecnt THEN ecnt := eno; Files.ReadString(r, mods[eno]); Files.ReadString(r, procs[eno]) END;
       org := Files.Pos(r); M := Modules.ThisMod(mods[eno]);
       IF M # NIL THEN Cmd := Modules.ThisCommand(M, procs[eno]);
@@ -758,10 +797,10 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     NEW(u); u.len := MAX(LONGINT); (*u.fnt := FontsDefault;*)u.fnt := NIL; u.col := Displaywhite;
     T.head := u; ecnt := 0; fcnt := 0;
     msg.id := load; msg.r := r;
-    Files.ReadLInt(msg.r, hlen); (*!!!org := pos + hlen;*) org := pos -2 + hlen; pos := org; Files.Read(msg.r, fno);
+    Files.ReadInt(msg.r, hlen); (*!!!org := pos + hlen;*) org := pos -2 + hlen; pos := org; Files.Read(msg.r, fno);
     WHILE fno # 0 DO
       IF fno > fcnt THEN fcnt := fno; Files.ReadString(msg.r, name); fnts[fno] := FontsThis(name) END;
-      Files.Read(msg.r, col); Files.Read(msg.r, voff); Files.ReadLInt(msg.r, plen);
+      Files.Read(msg.r, col); Files.Read(msg.r, voff); Files.ReadInt(msg.r, plen);
       IF plen > 0 THEN NEW(p); p.file := f; p.org := pos; p.ascii := FALSE; un := p; un.len := plen
       ELSE LoadElem(msg.r, pos - org, -plen, e); un := e; un.len := 1
       END;
@@ -769,7 +808,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       INC(pos, un.len); u.next := un; un.prev := u; u := un; Files.Read(msg.r, fno)
     END;
     u.next := T.head; T.head.prev := u; T.cache := T.head; T.corg := 0;
-    Files.ReadLInt(msg.r, T.len); Files.Set(r, f, Files.Pos(msg.r) + T.len)
+    Files.ReadInt(msg.r, T.len); Files.Set(r, f, Files.Pos(msg.r) + T.len)
   END Load0;
 
   PROCEDURE Load* (VAR r: Files.Rider; T: Text);
@@ -777,7 +816,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     VAR tag: INTEGER;
   BEGIN
     (* for compatibility inner text tags are checked and skipped; remove this in a later version *)
-    Files.ReadInt(r, tag); IF tag # oldTag THEN Files.Set(r, Files.Base(r), Files.Pos(r)-2) END;
+    Files.ReadSInt(r, tag); IF tag # oldTag THEN Files.Set(r, Files.Base(r), Files.Pos(r)-2) END;
     Load0(r, T)
   END Load;
 
@@ -791,8 +830,8 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       NEW(u); u.len := MAX(LONGINT); u.fnt := NIL; u.col := Displaywhite;
       NEW(p);
       IF (tag = DocBlockId) & (version = 07X) THEN (* extract ascii text from System 3 text document *)
-        Files.Set(r, f, 28); Files.ReadLInt(r, hlen);
-        Files.Set(r, f, 22 + hlen); Files.ReadLInt(r, T.len); p.org := 26 + hlen
+        Files.Set(r, f, 28); Files.ReadInt(r, hlen);
+        Files.Set(r, f, 22 + hlen); Files.ReadInt(r, T.len); p.org := 26 + hlen
       ELSE
         T.len := Files.Length(f); p.org := 0
       END ;
@@ -873,7 +912,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   END Store;
 
   PROCEDURE Close* (T: Text; name: ARRAY OF CHAR);
-    VAR f: Files.File; r: Files.Rider; i, res: INTEGER; bak: ARRAY 64 OF CHAR;
+    VAR f: Files.File; r: Files.Rider; i, res: LONGINT; bak: ARRAY 64 OF CHAR;
   BEGIN
     f := Files.New(name); Files.Set(r, f, 0); Files.Write(r, textTag); Files.Write(r, version); Store(r, T);
     i := 0; WHILE name[i] # 0X DO INC(i) END;
