@@ -851,7 +851,7 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 					__GUARDEQP(yval, OfrontOPT_ConstDesc) = *xval;
 				}
 				break;
-			case 4: 
+			case 1: 
 				if (__IN(g, 0x70)) {
 					x->typ = y->typ;
 				} else if (g == 7) {
@@ -866,8 +866,25 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 					__GUARDEQP(yval, OfrontOPT_ConstDesc) = *xval;
 				}
 				break;
+			case 4: 
+				if (g == 1) {
+					y->typ = OfrontOPT_sinttyp;
+				} else if (__IN(g, 0x70)) {
+					x->typ = y->typ;
+				} else if (g == 7) {
+					x->typ = OfrontOPT_realtyp;
+					xval->realval = xval->intval;
+				} else if (g == 8) {
+					x->typ = OfrontOPT_lrltyp;
+					xval->realval = xval->intval;
+				} else {
+					OfrontOPB_err(100);
+					y->typ = x->typ;
+					__GUARDEQP(yval, OfrontOPT_ConstDesc) = *xval;
+				}
+				break;
 			case 5: 
-				if (g == 4) {
+				if (__IN(g, 0x12)) {
 					y->typ = OfrontOPT_inttyp;
 				} else if (__IN(g, 0x70)) {
 					x->typ = y->typ;
