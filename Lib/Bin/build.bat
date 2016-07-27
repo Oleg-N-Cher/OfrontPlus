@@ -19,7 +19,7 @@
 @CALL ..\Bin\mingw %Lib% Files
 @CALL ..\Bin\mingw %Lib% Reals
 @CALL ..\Bin\mingw %Lib% Modules
-@CALL ..\Bin\mingw %Lib% CmdlnTexts
+@CALL ..\Bin\mingw %Lib% Texts
 
 :: OOC2
 @CALL ..\Bin\mingw %Lib% ooc2Ascii

@@ -18,7 +18,7 @@ ofront+ -lse ..\Mod\Reals.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -lse ..\Mod\Modules.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -lse ..\Mod\CmdlnTexts.Mod
+ofront+ -lse ..\Mod\Texts.Mod
 @IF errorlevel 1 PAUSE
 
 :: OOC2
