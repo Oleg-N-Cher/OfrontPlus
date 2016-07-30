@@ -1,0 +1,9 @@
+@SET PATH=..\Bin;..\..\Bin64;%PATH%
+@SET OBERON=%CD%;%CD%\..\Sym64
+
+@ofront+ -m ..\Test\TestLONGINT.Mod
+@IF errorlevel 1 PAUSE
+@CALL gcc.bat TestLONGINT.c -o TestLONGINT.exe
+
+@IF EXIST TestLONGINT.exe TestLONGINT.exe
+@PAUSE

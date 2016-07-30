@@ -1,4 +1,4 @@
-@SET PATH=..\Bin;..\..\Bin;%PATH%
+@SET PATH=..\Bin;..\..\Bin64;%PATH%
 @SET OBERON=%CD%;%CD%\..\Sym64
 
 @ofront+ -m ..\Test\TestASH.Mod
