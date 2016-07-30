@@ -5,7 +5,7 @@
 #include "Files.h"
 #include "OfrontErrors.h"
 #include "Platform.h"
-#include "CmdlnTexts.h"
+#include "Texts.h"
 
 typedef
 	CHAR OfrontOPM_FileName[32];
@@ -24,9 +24,9 @@ export CHAR OfrontOPM_modName[32];
 export CHAR OfrontOPM_objname[64];
 export SET OfrontOPM_opt, OfrontOPM_glbopt;
 static INTEGER OfrontOPM_lasterrpos;
-static CmdlnTexts_Reader OfrontOPM_inR;
-static CmdlnTexts_Text OfrontOPM_Log;
-static CmdlnTexts_Writer OfrontOPM_W;
+static Texts_Reader OfrontOPM_inR;
+static Texts_Text OfrontOPM_Log;
+static Texts_Writer OfrontOPM_W;
 static Files_Rider OfrontOPM_oldSF, OfrontOPM_newSF;
 static Files_Rider OfrontOPM_R[3];
 static Files_File OfrontOPM_oldSFile, OfrontOPM_newSFile, OfrontOPM_HFile, OfrontOPM_BFile, OfrontOPM_HIFile;
@@ -45,7 +45,7 @@ export void OfrontOPM_FPrintReal (LONGINT *fp, REAL real);
 export void OfrontOPM_FPrintSet (LONGINT *fp, SET set);
 export void OfrontOPM_Get (CHAR *ch);
 static void OfrontOPM_GetProperties (void);
-static void OfrontOPM_GetProperty (CmdlnTexts_Scanner *S, LONGINT *S__typ, CHAR *name, LONGINT name__len, INTEGER *size, INTEGER *align);
+static void OfrontOPM_GetProperty (Texts_Scanner *S, LONGINT *S__typ, CHAR *name, LONGINT name__len, INTEGER *size, INTEGER *align);
 export void OfrontOPM_Init (BOOLEAN *done);
 export void OfrontOPM_InitOptions (void);
 static void OfrontOPM_LogErrMsg (INTEGER n);
@@ -227,7 +227,7 @@ void OfrontOPM_InitOptions (void)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_Init (BOOLEAN *done)
 {
-	CmdlnTexts_Text T = NIL;
+	Texts_Text T = NIL;
 	INTEGER beg, end, time;
 	CHAR s[256];
 	*done = 0;
@@ -237,14 +237,14 @@ void OfrontOPM_Init (BOOLEAN *done)
 	}
 	s[0] = 0x00;
 	Args_Get(OfrontOPM_S, (void*)s, 256);
-	__NEW(T, CmdlnTexts_TextDesc);
-	CmdlnTexts_Open(T, s, 256);
+	__NEW(T, Texts_TextDesc);
+	Texts_Open(T, s, 256);
 	OfrontOPM_LogWStr(s, 256);
 	if (T->len == 0) {
 		OfrontOPM_LogWStr((CHAR*)" not found", (LONGINT)11);
 		OfrontOPM_LogWLn();
 	} else {
-		CmdlnTexts_OpenReader(&OfrontOPM_inR, CmdlnTexts_Reader__typ, T, 0);
+		Texts_OpenReader(&OfrontOPM_inR, Texts_Reader__typ, T, 0);
 		OfrontOPM_LogWStr((CHAR*)"  translating", (LONGINT)14);
 		*done = 1;
 	}
@@ -258,7 +258,7 @@ void OfrontOPM_Init (BOOLEAN *done)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_Get (CHAR *ch)
 {
-	CmdlnTexts_Read(&OfrontOPM_inR, CmdlnTexts_Reader__typ, &*ch);
+	Texts_Read(&OfrontOPM_inR, Texts_Reader__typ, &*ch);
 	if (OfrontOPM_useLineNo) {
 		if (*ch == 0x0d) {
 			OfrontOPM_curpos = __ASHL(__ASHR(OfrontOPM_curpos, 8, INTEGER) + 1, 8, INTEGER);
@@ -266,7 +266,7 @@ void OfrontOPM_Get (CHAR *ch)
 			OfrontOPM_curpos += 1;
 		}
 	} else if (*ch == 0x0d) {
-		OfrontOPM_curpos = (INTEGER)CmdlnTexts_Pos(&OfrontOPM_inR, CmdlnTexts_Reader__typ);
+		OfrontOPM_curpos = (SHORTINT)Texts_Pos(&OfrontOPM_inR, Texts_Reader__typ);
 	} else {
 		OfrontOPM_curpos += 1;
 	}
@@ -456,20 +456,20 @@ void OfrontOPM_FPrintLReal (LONGINT *fp, LONGREAL lr)
 }
 
 /*----------------------------------------------------------------------------*/
-static void OfrontOPM_GetProperty (CmdlnTexts_Scanner *S, LONGINT *S__typ, CHAR *name, LONGINT name__len, INTEGER *size, INTEGER *align)
+static void OfrontOPM_GetProperty (Texts_Scanner *S, LONGINT *S__typ, CHAR *name, LONGINT name__len, INTEGER *size, INTEGER *align)
 {
 	__DUP(name, name__len, CHAR);
 	if ((*S).class == 1 && __STRCMP((*S).s, name) == 0) {
-		CmdlnTexts_Scan(&*S, S__typ);
+		Texts_Scan(&*S, S__typ);
 		if ((*S).class == 3) {
-			*size = (INTEGER)(*S).i;
-			CmdlnTexts_Scan(&*S, S__typ);
+			*size = (SHORTINT)(*S).i;
+			Texts_Scan(&*S, S__typ);
 		} else {
 			OfrontOPM_Mark(-157, -1);
 		}
 		if ((*S).class == 3) {
-			*align = (INTEGER)(*S).i;
-			CmdlnTexts_Scan(&*S, S__typ);
+			*align = (SHORTINT)(*S).i;
+			Texts_Scan(&*S, S__typ);
 		} else {
 			OfrontOPM_Mark(-157, -1);
 		}
@@ -481,8 +481,8 @@ static void OfrontOPM_GetProperty (CmdlnTexts_Scanner *S, LONGINT *S__typ, CHAR 
 
 static void OfrontOPM_GetProperties (void)
 {
-	CmdlnTexts_Text T = NIL;
-	CmdlnTexts_Scanner S;
+	Texts_Text T = NIL;
+	Texts_Scanner S;
 	OfrontOPM_ByteSize = 1;
 	OfrontOPM_CharSize = 1;
 	OfrontOPM_BoolSize = 1;
@@ -513,23 +513,23 @@ static void OfrontOPM_GetProperties (void)
 	OfrontOPM_MaxInt = 32767;
 	OfrontOPM_MaxLInt = 2147483647;
 	OfrontOPM_MaxSet = 31;
-	__NEW(T, CmdlnTexts_TextDesc);
-	CmdlnTexts_Open(T, (CHAR*)"Ofront.par", (LONGINT)11);
+	__NEW(T, Texts_TextDesc);
+	Texts_Open(T, (CHAR*)"Ofront.par", (LONGINT)11);
 	if (T->len != 0) {
-		CmdlnTexts_OpenScanner(&S, CmdlnTexts_Scanner__typ, T, 0);
-		CmdlnTexts_Scan(&S, CmdlnTexts_Scanner__typ);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"CHAR", (LONGINT)5, &OfrontOPM_CharSize, &OfrontOPM_CharAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"BOOLEAN", (LONGINT)8, &OfrontOPM_BoolSize, &OfrontOPM_BoolAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"SHORTINT", (LONGINT)9, &OfrontOPM_SIntSize, &OfrontOPM_SIntAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"INTEGER", (LONGINT)8, &OfrontOPM_IntSize, &OfrontOPM_IntAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"LONGINT", (LONGINT)8, &OfrontOPM_LIntSize, &OfrontOPM_LIntAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"SET", (LONGINT)4, &OfrontOPM_SetSize, &OfrontOPM_SetAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"REAL", (LONGINT)5, &OfrontOPM_RealSize, &OfrontOPM_RealAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"LONGREAL", (LONGINT)9, &OfrontOPM_LRealSize, &OfrontOPM_LRealAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"PTR", (LONGINT)4, &OfrontOPM_PointerSize, &OfrontOPM_PointerAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"PROC", (LONGINT)5, &OfrontOPM_ProcSize, &OfrontOPM_ProcAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"RECORD", (LONGINT)7, &OfrontOPM_RecSize, &OfrontOPM_RecAlign);
-		OfrontOPM_GetProperty(&S, CmdlnTexts_Scanner__typ, (CHAR*)"ENDIAN", (LONGINT)7, &OfrontOPM_ByteOrder, &OfrontOPM_BitOrder);
+		Texts_OpenScanner(&S, Texts_Scanner__typ, T, 0);
+		Texts_Scan(&S, Texts_Scanner__typ);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"CHAR", (LONGINT)5, &OfrontOPM_CharSize, &OfrontOPM_CharAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"BOOLEAN", (LONGINT)8, &OfrontOPM_BoolSize, &OfrontOPM_BoolAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"SHORTINT", (LONGINT)9, &OfrontOPM_SIntSize, &OfrontOPM_SIntAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"INTEGER", (LONGINT)8, &OfrontOPM_IntSize, &OfrontOPM_IntAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"LONGINT", (LONGINT)8, &OfrontOPM_LIntSize, &OfrontOPM_LIntAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"SET", (LONGINT)4, &OfrontOPM_SetSize, &OfrontOPM_SetAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"REAL", (LONGINT)5, &OfrontOPM_RealSize, &OfrontOPM_RealAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"LONGREAL", (LONGINT)9, &OfrontOPM_LRealSize, &OfrontOPM_LRealAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"PTR", (LONGINT)4, &OfrontOPM_PointerSize, &OfrontOPM_PointerAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"PROC", (LONGINT)5, &OfrontOPM_ProcSize, &OfrontOPM_ProcAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"RECORD", (LONGINT)7, &OfrontOPM_RecSize, &OfrontOPM_RecAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"ENDIAN", (LONGINT)7, &OfrontOPM_ByteOrder, &OfrontOPM_BitOrder);
 	} else {
 		OfrontOPM_Mark(-156, -1);
 	}
@@ -554,7 +554,7 @@ static void OfrontOPM_GetProperties (void)
 		OfrontOPM_MaxInt = 2147483647;
 	}
 	if (OfrontOPM_LIntSize == 8) {
-		OfrontOPM_MinLInt = __LSHL(1, 63, LONGINT);
+		OfrontOPM_MinLInt = __LSHL((LONGINT)1, 63, LONGINT);
 		OfrontOPM_MaxLInt = -(OfrontOPM_MinLInt + 1);
 	}
 	OfrontOPM_MaxSet = __ASHL(OfrontOPM_SetSize, 3, INTEGER) - 1;
@@ -563,7 +563,7 @@ static void OfrontOPM_GetProperties (void)
 
 void OfrontOPM_SymRCh (CHAR *ch)
 {
-	Files_Read(&OfrontOPM_oldSF, Files_Rider__typ, (void*)&*ch);
+	Files_ReadChar(&OfrontOPM_oldSF, Files_Rider__typ, &*ch);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -609,7 +609,7 @@ void OfrontOPM_OldSym (CHAR *modName, LONGINT modName__len, BOOLEAN *done)
 	*done = OfrontOPM_oldSFile != NIL;
 	if (*done) {
 		Files_Set(&OfrontOPM_oldSF, Files_Rider__typ, OfrontOPM_oldSFile, 0);
-		Files_Read(&OfrontOPM_oldSF, Files_Rider__typ, (void*)&ch);
+		Files_ReadChar(&OfrontOPM_oldSF, Files_Rider__typ, &ch);
 		if (ch != 0xf7) {
 			OfrontOPM_err(-306);
 			OfrontOPM_CloseOldSym();
@@ -627,7 +627,7 @@ BOOLEAN OfrontOPM_eofSF (void)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_SymWCh (CHAR ch)
 {
-	Files_Write(&OfrontOPM_newSF, Files_Rider__typ, ch);
+	Files_WriteChar(&OfrontOPM_newSF, Files_Rider__typ, ch);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -675,7 +675,7 @@ void OfrontOPM_NewSym (CHAR *modName, LONGINT modName__len)
 	OfrontOPM_newSFile = Files_New(fileName, 32);
 	if (OfrontOPM_newSFile != NIL) {
 		Files_Set(&OfrontOPM_newSF, Files_Rider__typ, OfrontOPM_newSFile, 0);
-		Files_Write(&OfrontOPM_newSF, Files_Rider__typ, 0xf7);
+		Files_WriteChar(&OfrontOPM_newSF, Files_Rider__typ, 0xf7);
 	} else {
 		OfrontOPM_err(153);
 	}
@@ -684,7 +684,7 @@ void OfrontOPM_NewSym (CHAR *modName, LONGINT modName__len)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_Write (CHAR ch)
 {
-	Files_Write(&OfrontOPM_R[__X(OfrontOPM_currFile, 3)], Files_Rider__typ, ch);
+	Files_WriteChar(&OfrontOPM_R[__X(OfrontOPM_currFile, 3)], Files_Rider__typ, ch);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -764,9 +764,9 @@ void OfrontOPM_WriteInt (LONGINT i)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 {
-	CmdlnTexts_Writer W;
-	CmdlnTexts_Text T = NIL;
-	CmdlnTexts_Reader R;
+	Texts_Writer W;
+	Texts_Text T = NIL;
+	Texts_Reader R;
 	CHAR s[32];
 	CHAR ch;
 	INTEGER i;
@@ -778,22 +778,22 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 		}
 		OfrontOPM_WriteInt(__ENTIER(r));
 	} else {
-		CmdlnTexts_OpenWriter(&W, CmdlnTexts_Writer__typ);
+		Texts_OpenWriter(&W, Texts_Writer__typ);
 		if (suffx == 'f') {
-			CmdlnTexts_WriteLongReal(&W, CmdlnTexts_Writer__typ, r, 16);
+			Texts_WriteLongReal(&W, Texts_Writer__typ, r, 16);
 		} else {
-			CmdlnTexts_WriteLongReal(&W, CmdlnTexts_Writer__typ, r, 23);
+			Texts_WriteLongReal(&W, Texts_Writer__typ, r, 23);
 		}
-		__NEW(T, CmdlnTexts_TextDesc);
-		CmdlnTexts_Open(T, (CHAR*)"", (LONGINT)1);
-		CmdlnTexts_Append(T, W.buf);
-		CmdlnTexts_OpenReader(&R, CmdlnTexts_Reader__typ, T, 0);
+		__NEW(T, Texts_TextDesc);
+		Texts_Open(T, (CHAR*)"", (LONGINT)1);
+		Texts_Append(T, W.buf);
+		Texts_OpenReader(&R, Texts_Reader__typ, T, 0);
 		i = 0;
-		CmdlnTexts_Read(&R, CmdlnTexts_Reader__typ, &ch);
+		Texts_Read(&R, Texts_Reader__typ, &ch);
 		while (ch != 0x00) {
 			s[__X(i, 32)] = ch;
 			i += 1;
-			CmdlnTexts_Read(&R, CmdlnTexts_Reader__typ, &ch);
+			Texts_Read(&R, Texts_Reader__typ, &ch);
 		}
 		s[__X(i, 32)] = 0x00;
 		i = 0;
@@ -812,7 +812,7 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_WriteLn (void)
 {
-	Files_Write(&OfrontOPM_R[__X(OfrontOPM_currFile, 3)], Files_Rider__typ, 0x0a);
+	OfrontOPM_WriteString(Platform_nl, 3);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -869,7 +869,7 @@ void OfrontOPM_CloseFiles (void)
 	INTEGER res;
 	if (OfrontOPM_noerr) {
 		OfrontOPM_LogWStr((CHAR*)"    ", (LONGINT)5);
-		OfrontOPM_LogWNum((INTEGER)Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
+		OfrontOPM_LogWNum((SHORTINT)Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
 	}
 	if (OfrontOPM_noerr) {
 		if (__STRCMP(OfrontOPM_modName, "SYSTEM") == 0) {
@@ -911,9 +911,9 @@ void OfrontOPM_PromoteIntConstToLInt (void)
 /*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
-	__ENUMR(&OfrontOPM_inR, CmdlnTexts_Reader__typ, 48, 1, P);
+	__ENUMR(&OfrontOPM_inR, Texts_Reader__typ, 48, 1, P);
 	P(OfrontOPM_Log);
-	__ENUMR(&OfrontOPM_W, CmdlnTexts_Writer__typ, 36, 1, P);
+	__ENUMR(&OfrontOPM_W, Texts_Writer__typ, 36, 1, P);
 	__ENUMR(&OfrontOPM_oldSF, Files_Rider__typ, 20, 1, P);
 	__ENUMR(&OfrontOPM_newSF, Files_Rider__typ, 20, 1, P);
 	__ENUMR(OfrontOPM_R, Files_Rider__typ, 20, 3, P);
@@ -933,7 +933,7 @@ export void *OfrontOPM__init(void)
 	__IMPORT(Files__init);
 	__IMPORT(OfrontErrors__init);
 	__IMPORT(Platform__init);
-	__IMPORT(CmdlnTexts__init);
+	__IMPORT(Texts__init);
 	__REGMOD("OfrontOPM", EnumPtrs);
 	__REGCMD("CloseFiles", OfrontOPM_CloseFiles);
 	__REGCMD("CloseOldSym", OfrontOPM_CloseOldSym);
@@ -945,7 +945,7 @@ export void *OfrontOPM__init(void)
 	__REGCMD("RegisterNewSym", OfrontOPM_RegisterNewSym);
 	__REGCMD("WriteLn", OfrontOPM_WriteLn);
 /* BEGIN */
-	CmdlnTexts_OpenWriter(&OfrontOPM_W, CmdlnTexts_Writer__typ);
+	Texts_OpenWriter(&OfrontOPM_W, Texts_Writer__typ);
 	__MOVE(".", OfrontOPM_OBERON, 2);
 	Platform_GetEnv((CHAR*)"OBERON", (LONGINT)7, (void*)OfrontOPM_OBERON, 1024);
 	Files_SetSearchPath(OfrontOPM_OBERON, 1024);
