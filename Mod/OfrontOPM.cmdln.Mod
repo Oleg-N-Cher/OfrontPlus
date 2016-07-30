@@ -403,7 +403,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
 		IF IntSize = 4 THEN MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
 		IF LIntSize = 8 THEN
-			MinLInt := SYSTEM.LSH(LONG(LONG(1)), 63);	(*-9223372036854775808*)
+			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), 63);	(*-9223372036854775808*)
 			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
@@ -413,7 +413,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- Read Symbol File ------------------------- *)
 
 	PROCEDURE SymRCh*(VAR ch: CHAR);
-	BEGIN Files.Read(oldSF, ch)
+	BEGIN Files.ReadChar(oldSF, ch)
 	END SymRCh;
 	
 	PROCEDURE SymRInt*(): LONGINT;
@@ -442,7 +442,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN MakeFileName(modName, fileName, SFext);
 		oldSFile := Files.Old(fileName); done := oldSFile # NIL;
 		IF done THEN
-			Files.Set(oldSF, oldSFile, 0); Files.Read(oldSF, ch);
+			Files.Set(oldSF, oldSFile, 0); Files.ReadChar(oldSF, ch);
 			IF ch # SFtag THEN err(-306);  (*possibly a symbol file from another Oberon implementation, e.g. HP-Oberon*)
 				CloseOldSym; done := FALSE
 			END
@@ -456,7 +456,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- Write Symbol File ------------------------- *)
 	
 	PROCEDURE SymWCh*(ch: CHAR);
-	BEGIN Files.Write(newSF, ch)
+	BEGIN Files.WriteChar(newSF, ch)
 	END SymWCh;
 
 	PROCEDURE SymWInt*(i: LONGINT);
@@ -487,7 +487,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		VAR fileName: FileName;
 	BEGIN MakeFileName(modName, fileName, SFext);
 		newSFile := Files.New(fileName);
-		IF newSFile # NIL THEN Files.Set(newSF, newSFile, 0); Files.Write(newSF, SFtag)
+		IF newSFile # NIL THEN Files.Set(newSF, newSFile, 0); Files.WriteChar(newSF, SFtag)
 		ELSE err(153)
 		END
 	END NewSym;
@@ -495,7 +495,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- Write Header & Body Files ------------------------- *)
 
 	PROCEDURE Write*(ch: CHAR);
-	BEGIN Files.Write(R[currFile], ch)
+	BEGIN Files.WriteChar(R[currFile], ch)
 	END Write;
 
 	PROCEDURE WriteString*(s: ARRAY [1] OF CHAR);
@@ -565,7 +565,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteReal;
 
 	PROCEDURE WriteLn* ();
-	BEGIN Files.Write(R[currFile], 0AX)
+	BEGIN WriteString(Platform.nl)
 	END WriteLn;
 
 	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);
