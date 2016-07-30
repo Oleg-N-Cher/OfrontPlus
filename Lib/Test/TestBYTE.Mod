@@ -1,7 +1,10 @@
 MODULE TestBYTE;
-CONST Max = MAX(LONGINT) + 100;
 VAR
-  v: LONGINT;
-BEGIN
-  v := 0FFFFFFFFFFFF;
+  b: BYTE; ch: CHAR; short: SHORTINT;
 
+BEGIN
+  b := b;
+  b := ch;
+  b := short;
+
+END TestBYTE.
