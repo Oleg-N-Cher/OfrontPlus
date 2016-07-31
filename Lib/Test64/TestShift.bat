@@ -3,7 +3,7 @@
 
 @ofront+ -m ..\Test\TestShift.Mod
 @IF errorlevel 1 PAUSE
-@CALL gcc.bat TestShift.c -o TestShift.exe
+@CALL gcc64.bat TestShift.c -o TestShift.exe
 
 TestShift.exe
 ECHO %errorlevel%

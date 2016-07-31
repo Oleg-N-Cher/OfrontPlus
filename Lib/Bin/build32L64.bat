@@ -28,7 +28,7 @@ ofront+ -se ..\Mod\Strings.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -se ..\Mod\Files.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Reals.Mod
+ofront+ -se ..\Mod\Reals0.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -se ..\Mod\Modules.Mod
 @IF errorlevel 1 PAUSE
