@@ -76,7 +76,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   BEGIN
     IF SIZE(INTEGER) = 4 THEN k := -28 ELSE k := -12 END;
     WHILE k <= 0 DO
-      n := SHORT(ASH(i, k) MOD 16);
+      n := ASH(i, k) MOD 16;
       IF n <= 9 THEN Char(CHR(ORD("0") + n)) ELSE Char(CHR(ORD("A") - 10 + n)) END ;
       INC(k, 4)
     END
@@ -87,7 +87,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   BEGIN
     IF SIZE(LONGINT) = 8 THEN k := -60 ELSE k := -28 END;
     WHILE k <= 0 DO
-      n := SHORT(ASH(i, k) MOD 16);
+      n := SHORT(ASH(i, k)) MOD 16;
       IF n <= 9 THEN Char(CHR(ORD("0") + n)) ELSE Char(CHR(ORD("A") - 10 + n)) END ;
       INC(k, 4)
     END
