@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPC.h"
 #include "OfrontOPM.h"
@@ -460,7 +460,7 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 				OfrontOPM_WriteInt(OfrontOPM_MaxSInt + 1);
 				OfrontOPM_Write(')');
 			} else {
-				OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
+				OfrontOPM_WriteString((CHAR*)"(SHORTINT)", (LONGINT)11);
 				OfrontOPV_Entier(n, 9);
 			}
 			break;
