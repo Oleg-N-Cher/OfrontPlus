@@ -883,7 +883,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IdentList(OPT.topScope^.scope, 0); OPM.WriteLn;
 		GenDynTypes(n, internal); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 0); OPM.WriteLn;
-		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn
+		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn;
+		OPM.WriteString("/*============================================================================*/");
+		OPM.WriteLn; OPM.WriteLn
 	END GenBdy;
 
 	PROCEDURE RegCmds(obj: OPT.Object);
@@ -1144,6 +1146,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END ;
 		IF eoBlock THEN EndBlk; OPM.WriteLn
 		ELSIF indent THEN BegStat
+		END;
+		IF eoBlock & (proc^.vis = external) THEN
+			OPM.WriteString("/*----------------------------------------------------------------------------*/"); OPM.WriteLn
 		END
 	END ExitProc;
 

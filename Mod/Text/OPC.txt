@@ -951,7 +951,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		ProcPredefs(OPT.topScope^.right, 0); OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn;
 		OPM.WriteString("/*============================================================================*/");
-		OPM.WriteLn; OPM.WriteLn;
+		OPM.WriteLn; OPM.WriteLn
 	END GenBdy;
 
 	PROCEDURE RegCmds(obj: OPT.Object);
@@ -1214,8 +1214,8 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		ELSIF indent THEN BegStat
 		END;
 		IF eoBlock & (proc^.vis = external) THEN
-			OPM.WriteString("/*----------------------------------------------------------------------------*/"); OPM.WriteLn;
-		END;
+			OPM.WriteString("/*----------------------------------------------------------------------------*/"); OPM.WriteLn
+		END
 	END ExitProc;
 
 	PROCEDURE CompleteIdent*(obj: OPT.Object);
