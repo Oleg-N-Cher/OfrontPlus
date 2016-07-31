@@ -398,7 +398,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     r.buf := buf; r.org := org; r.offset := offset; r.eof := FALSE; r.res := 0
   END Set;
 
-  PROCEDURE Read* (VAR r: Rider; VAR x: BYTE);
+  PROCEDURE ReadByte* (VAR r: Rider; VAR x: BYTE);
     VAR offset: INTEGER; buf: Buffer;
   BEGIN
     buf := r.buf; offset := r.offset;
@@ -409,9 +409,9 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       Set(r, r.buf.f, r.org + offset);
       x := r.buf.data[0]; r.offset := 1
     ELSE
-      x := 0X; r.eof := TRUE
+      x := 0; r.eof := TRUE
     END
-  END Read;
+  END ReadByte;
 
   PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
@@ -432,16 +432,16 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     r.res := 0; r.eof := FALSE
   END ReadBytes;
 
-  PROCEDURE ReadByte* (VAR r : Rider; VAR x : ARRAY OF BYTE);
+  PROCEDURE ReadChar* (VAR r: Rider; VAR x: CHAR);
   BEGIN
-     ReadBytes(r, x, 1);
-  END ReadByte;
+     ReadByte(r, SYSTEM.VAL(BYTE, x))
+  END ReadChar;
 
   PROCEDURE Base* (VAR r: Rider): File;
   BEGIN RETURN r.buf.f
   END Base;
 
-  PROCEDURE Write* (VAR r: Rider; x: BYTE);
+  PROCEDURE WriteByte* (VAR r: Rider; x: BYTE);
     VAR buf: Buffer; offset: INTEGER;
   BEGIN
     buf := r.buf; offset := r.offset;
@@ -455,7 +455,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       INC(buf.size); INC(buf.f.len)
     END;
     r.offset := offset + 1; r.res := 0
-  END Write;
+  END WriteByte;
 
   PROCEDURE WriteBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
@@ -601,7 +601,7 @@ Especially Length would become fairly complex.
   END FlipBytes;
 
   PROCEDURE ReadBool* (VAR R: Rider; VAR x: BOOLEAN);
-  BEGIN Read(R, SYSTEM.VAL(CHAR, x))
+  BEGIN ReadByte(R, SYSTEM.VAL(BYTE, x))
   END ReadBool;
 
   PROCEDURE ReadSInt* (VAR R: Rider; VAR x: SHORTINT);
@@ -654,7 +654,7 @@ Especially Length would become fairly complex.
   PROCEDURE ReadString* (VAR R: Rider; VAR x: ARRAY OF CHAR);
     VAR i: INTEGER; ch: CHAR;
   BEGIN i := 0;
-    REPEAT Read(R, ch); x[i] := ch; INC(i) UNTIL ch = 0X
+    REPEAT ReadChar(R, ch); x[i] := ch; INC(i) UNTIL ch = 0X
   END ReadString;
 
   PROCEDURE ReadLine* (VAR R: Rider; VAR x: ARRAY OF CHAR);
@@ -663,7 +663,7 @@ Especially Length would become fairly complex.
     i := 0;
     b := FALSE;
     REPEAT
-      Read(R, ch);
+      ReadChar(R, ch);
       IF ((ch = 0X) OR (ch = 0AX) OR (ch = 0DX)) THEN
         b := TRUE
       ELSE
@@ -675,15 +675,19 @@ Especially Length would become fairly complex.
 
   PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
     VAR s: INTEGER; ch: CHAR; n: LONGINT;
-  BEGIN s := 0; n := 0; Read(R, ch);
-    WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(LONG(ORD(ch) - 128)), s) ); INC(s, 7); Read(R, ch) END;
+  BEGIN s := 0; n := 0; ReadChar(R, ch);
+    WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(LONG(ORD(ch) - 128)), s) ); INC(s, 7); ReadChar(R, ch) END;
     INC(n, ASH(LONG(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64)), s) );
     x := n
   END ReadNum;
 
   PROCEDURE WriteBool* (VAR R: Rider; x: BOOLEAN);
-  BEGIN Write(R, SYSTEM.VAL(CHAR, x))
+  BEGIN WriteByte(R, SYSTEM.VAL(BYTE, x))
   END WriteBool;
+
+  PROCEDURE WriteChar* (VAR R: Rider; x: CHAR);
+  BEGIN WriteByte(R, SYSTEM.VAL(BYTE, x))
+  END WriteChar;
 
   PROCEDURE WriteSInt* (VAR R: Rider; x: SHORTINT);
     VAR b: ARRAY SIZE(SHORTINT) OF CHAR;
@@ -747,8 +751,8 @@ Especially Length would become fairly complex.
 
   PROCEDURE WriteNum* (VAR R: Rider; x: LONGINT);
   BEGIN
-    WHILE (x < - 64) OR (x > 63) DO Write(R, CHR(SHORT(x) MOD 128 + 128)); x := x DIV 128 END;
-    Write(R, CHR(SHORT(x) MOD 128))
+    WHILE (x < - 64) OR (x > 63) DO WriteChar(R, CHR(SHORT(x) MOD 128 + 128)); x := x DIV 128 END;
+    WriteChar(R, CHR(SHORT(x) MOD 128))
   END WriteNum;
 
   PROCEDURE GetName*(f: File; VAR name: ARRAY OF CHAR);
