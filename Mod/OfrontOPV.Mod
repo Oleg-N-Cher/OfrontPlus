@@ -344,7 +344,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				IF SideEffects(n) THEN OPM.Write("F") END ;
 				OPM.Write(OpenParen); Entier(n, MinPrec);
 				OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxSInt + 1); OPM.Write(CloseParen)
-			ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
+			ELSE OPM.WriteString("(SHORTINT)"); Entier(n, 9)
 			END
 		| Int:
 			IF from < Int THEN OPM.WriteString("(INTEGER)"); expr(n, 9)
