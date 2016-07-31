@@ -88,7 +88,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 									IF i > 9 THEN Wch(SHORT(CHR(55 + i))) ELSE Wch(SHORT(CHR(48 + i))) END ;
 									Wch("X")
 								END
-						| SInt, Int, LInt:
+						| Byte, SInt, Int, LInt:
 								Wi(obj^.conval^.intval)
 						| Set:
 								Wch("{"); i := 0; s := obj^.conval^.setval;
