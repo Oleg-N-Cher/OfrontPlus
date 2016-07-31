@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPT.h"
@@ -1225,7 +1225,7 @@ static void OfrontOPC_GenHeaderMsg (void)
 {
 	INTEGER i;
 	OfrontOPM_WriteString((CHAR*)"/*", (LONGINT)3);
-	OfrontOPM_WriteString((CHAR*)" Ofront 1.2 -", (LONGINT)14);
+	OfrontOPM_WriteString((CHAR*)" Ofront+ 1.0 -", (LONGINT)15);
 	i = 0;
 	while (i <= 31) {
 		if (__IN(i, OfrontOPM_glbopt)) {
@@ -1264,7 +1264,6 @@ static void OfrontOPC_GenHeaderMsg (void)
 					OfrontOPM_Write('i');
 					break;
 				case 11: 
-					OfrontOPM_Write('l');
 					break;
 				default: __CASECHK;
 			}
