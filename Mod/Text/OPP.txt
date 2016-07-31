@@ -961,7 +961,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					END ;
 					z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
 					y := OPB.NewLeaf(t)
-				ELSIF (y^.typ^.form < SInt) OR (y^.typ^.form > x^.left^.typ^.form) THEN err(113)
+				ELSIF (y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form) THEN err(113)
 				END ;
 				OPB.Link(stat, last, x);
 				IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
@@ -1093,7 +1093,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					obj := NIL;	(* ?? ????????? IF ?????*)
 					IF (y^.class = Nconst) THEN	(* ???? ? - ????????? *)
 						IF (x^.left^.typ^.form = Byte) & (( y^.conval^.intval < OPB.Min(Byte)) OR ( y^.conval^.intval > OPB.Max(Byte)))
-						 OR  (x^.left^.typ^.form # Byte)&((y^.typ^.form < SInt) OR (y^.typ^.form > x^.left^.typ^.form)) THEN
+						 OR (x^.left^.typ^.form # Byte)&((y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form)) THEN
 							err(113); y := OPB.NewIntConst(0) (* ?? ??? ? ? ????????? ???????????? ???? *)
 						END;
 						IF apar^.class = Nconst THEN (* ? ? ? - ?????????*)
@@ -1123,7 +1123,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF y^.class # Nconst THEN SetPos(y) END (* ????????? ??????? ? ??? *)
 					END;
 					pos := OPM.errpos;	(* ?????? ????????? ?????? ????????? ?? Step*)
-					IF (z^.conval^.intval = 0) OR (z^.typ^.form < SInt) OR (z^.typ^.form > x^.left^.typ^.form) THEN
+					IF (z^.conval^.intval = 0) OR (z^.typ^.form IN {Undef, Bool, Char}) OR (z^.typ^.form > x^.left^.typ^.form) THEN
 						IF (x^.left^.typ^.form # Byte) OR (z^.conval^.intval < OPB.Min(Byte)) OR ( z^.conval^.intval > OPB.Max(Byte))
 						THEN err(63); z := OPB.NewIntConst(1)
 						END;
@@ -1286,7 +1286,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					e := FALSE;  (* ? ????? ?????? IF ?? ?????????????*)
 					IF (y^.class = Nconst) THEN
 						obj := id; t := id;
-						IF (y^.typ^.form < SInt) OR (y^.typ^.form > x^.left^.typ^.form) THEN
+						IF (y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form) THEN
 									err(113); t :=  id; obj := NIL; (* ?? ??? ? ? ????????? ???????????? ???? *)
 						END;
 						IF obj # NIL THEN

@@ -152,7 +152,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	PROCEDURE SetIntType(node: OPT.Node);
 		VAR v: LONGINT;
 	BEGIN v := node^.conval^.intval;
-		IF (OPM.MinSInt <= v) & (v <= OPM.MaxSInt) THEN node^.typ := OPT.sinttyp
+		IF (-128 <= v) & (v <= 127) THEN node^.typ := OPT.bytetyp
+		ELSIF (OPM.MinSInt <= v) & (v <= OPM.MaxSInt) THEN node^.typ := OPT.sinttyp
 		ELSIF (OPM.MinInt <= v) & (v <= OPM.MaxInt) THEN node^.typ := OPT.inttyp
 		ELSIF (OPM.MinLInt <= v) & (v <= OPM.MaxLInt) (*bootstrap or cross*) THEN
 			node^.typ := OPT.linttyp
@@ -852,7 +853,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						IF y^.class = Nconst THEN
 							IF y^.conval^.intval = 0 THEN err(205)
 							ELSIF log(y^.conval^.intval) = 1 THEN
-								op := msk; y^.conval^.intval := ASH(LONG(LONG(-1)), exp); y^.obj := NIL
+								op := msk; y^.conval^.intval := ASH(LONG(LONG(LONG(-1))), exp); y^.obj := NIL
 							END
 						END
 					ELSIF f # Undef THEN err(104); typ := OPT.undftyp
@@ -955,18 +956,18 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		IF (ynode^.class = Ntype) OR (ynode^.class = Nproc) & (f # ProcTyp) THEN err(126) END ;
 		CASE f OF
 		  Undef, String:
-		| Byte:
-				IF ~(g IN {Byte, Char, SInt}) THEN err(113) END
-		| Bool, Char, SInt, Set:
+		| Byte, Bool, Char, Set:
 				IF g # f THEN err(113) END
+		| SInt:
+				IF ~(g IN {Byte, SInt}) THEN err(113) END
 		| Int:
-				IF ~(g IN {SInt, Int}) THEN err(113) END
+				IF ~(g IN {Byte, SInt, Int}) THEN err(113) END
 		| LInt:
 				IF ~(g IN intSet) THEN err(113) END
 		| Real:
-				IF ~(g IN {SInt..Real}) THEN err(113) END
+				IF ~(g IN {Byte, SInt..Real}) THEN err(113) END
 		| LReal:
-				IF ~(g IN {SInt..LReal}) THEN err(113) END
+				IF ~(g IN {Byte, SInt..LReal}) THEN err(113) END
 		| Pointer:
 				IF (x = y) OR (g = NilTyp) OR (x = OPT.sysptrtyp) & (g = Pointer) THEN (* ok *)
 				ELSIF g = Pointer THEN
@@ -1099,7 +1100,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| chrfn: (*CHR*) 
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN {Undef, SInt..LInt} THEN Convert(x, OPT.chartyp)
+				ELSIF f IN {Undef, Byte, SInt..LInt} THEN Convert(x, OPT.chartyp)
 				ELSE err(111); x^.typ := OPT.chartyp
 				END
 		| shortfn: (*SHORT*)
@@ -1255,8 +1256,8 @@ avoid unnecessary intermediate variables in OFront
 					IF (x^.class = Nconst) & ((-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						IF x^.conval^.intval >= 0 THEN
-							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(LONG(1)), SHORT(x^.conval^.intval)) THEN
-								p^.conval^.intval := p^.conval^.intval * ASH(LONG(LONG(1)), SHORT(x^.conval^.intval))
+							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(LONG(LONG(1))), SHORT(x^.conval^.intval)) THEN
+								p^.conval^.intval := p^.conval^.intval * ASH(LONG(LONG(LONG(1))), SHORT(x^.conval^.intval))
 							ELSE err(208); p^.conval^.intval := 1
 							END
 						ELSE p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))

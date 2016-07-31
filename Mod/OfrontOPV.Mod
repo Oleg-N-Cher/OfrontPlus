@@ -331,11 +331,22 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	PROCEDURE Convert(n: OPT.Node; form, prec: INTEGER);
 		VAR from: INTEGER;
 	BEGIN from := n^.typ^.form;
-		IF form = Set THEN OPM.WriteString(SetOfFunc); Entier(n, MinPrec); OPM.Write(CloseParen)
-		ELSIF form = LInt THEN
-			IF from < LInt THEN OPM.WriteString("(LONGINT)") END ;
-			Entier(n, 9)
-		ELSIF form = Int THEN
+		CASE form OF
+		| Byte:
+			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
+				IF SideEffects(n) THEN OPM.Write("F") END ;
+				OPM.Write(OpenParen); Entier(n, MinPrec);
+				OPM.WriteString(Comma); OPM.WriteInt(127 + 1); OPM.Write(CloseParen)
+			ELSE OPM.WriteString("(BYTE)"); Entier(n, 9)
+			END
+		| SInt:
+			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
+				IF SideEffects(n) THEN OPM.Write("F") END ;
+				OPM.Write(OpenParen); Entier(n, MinPrec);
+				OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxSInt + 1); OPM.Write(CloseParen)
+			ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
+			END
+		| Int:
 			IF from < Int THEN OPM.WriteString("(INTEGER)"); expr(n, 9)
 			ELSE
 				IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
@@ -345,19 +356,19 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
 				END
 			END
-		ELSIF form = SInt THEN
-			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
-				IF SideEffects(n) THEN OPM.Write("F") END ;
-				OPM.Write(OpenParen); Entier(n, MinPrec);
-				OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxSInt + 1); OPM.Write(CloseParen)
-			ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
-			END
-		ELSIF form = Char THEN
+		| LInt:
+			IF from < LInt THEN OPM.WriteString("(LONGINT)") END; Entier(n, 9)
+		| Char:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
 				IF SideEffects(n) THEN OPM.Write("F") END ;
 				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(CHAR)"); Entier(n, 9)
 			END
+		| Set: OPM.WriteString(SetOfFunc); Entier(n, MinPrec); OPM.Write(CloseParen)
+(*
+		| Real: OPM.WriteString("(REAL)"); expr(n, prec)
+		| LReal: OPM.WriteString("(LONGREAL)"); expr(n, prec)
+*)
 		ELSE expr(n, prec)
 		END
 	END Convert;

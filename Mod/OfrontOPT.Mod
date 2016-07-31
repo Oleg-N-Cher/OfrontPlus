@@ -394,7 +394,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF obj^.mode = Con THEN
 				f := obj^.typ^.form; OPM.FPrint(fprint, f);
 				CASE f OF
-				| Bool, Char, SInt, Int, LInt:
+				| Byte, Bool, Char, SInt, Int, LInt:
 					OPM.FPrint(fprint, obj^.conval^.intval)
 				| Set:
 					OPM.FPrintSet(fprint, obj^.conval^.setval)
@@ -509,9 +509,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR ch: CHAR; i: INTEGER; ext: ConstExt; rval: REAL;
 	BEGIN
 		CASE f OF
-		| Byte, Char, Bool:
+		| Char, Bool:
 			OPM.SymRCh(ch); conval^.intval := ORD(ch)
-		| SInt, Int, LInt:
+		| Byte, SInt, Int, LInt:
 			conval^.intval := OPM.SymRInt()
 		| Set:
 			OPM.SymRSet(conval^.setval)
@@ -919,7 +919,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		CASE f OF
 		| Bool, Char:
 			OPM.SymWCh(CHR(obj^.conval^.intval))
-		| SInt, Int, LInt:
+		| Byte, SInt, Int, LInt:
 			OPM.SymWInt(obj^.conval^.intval)
 		| Set:
 			OPM.SymWSet(obj^.conval^.setval)
