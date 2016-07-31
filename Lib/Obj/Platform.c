@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -spke */
+/*  Ofront+ 1.0 -ske */
 #include "SYSTEM.h"
 
 typedef
@@ -235,7 +235,7 @@ typedef
 
 void Platform_Init (INTEGER argc, Platform_MemAdr argvadr)
 {
-	ArgVecPtr__38 av = NIL;
+	ArgVecPtr__38 av;
 	Platform_MainStackFrame = argvadr;
 	Platform_ArgCount = argc;
 	av = (ArgVecPtr__38)argvadr;
@@ -388,7 +388,7 @@ INTEGER Platform_Error (void)
 /*----------------------------------------------------------------------------*/
 INTEGER Platform_OldRO (CHAR *n, LONGINT n__len, Platform_FileHandle *h)
 {
-	Platform_FileHandle fd = NIL;
+	Platform_FileHandle fd;
 	fd = Platform_openro(n, n__len);
 	if (fd == Platform_InvalidHandleValue()) {
 		return Platform_err();
@@ -402,7 +402,7 @@ INTEGER Platform_OldRO (CHAR *n, LONGINT n__len, Platform_FileHandle *h)
 /*----------------------------------------------------------------------------*/
 INTEGER Platform_OldRW (CHAR *n, LONGINT n__len, Platform_FileHandle *h)
 {
-	Platform_FileHandle fd = NIL;
+	Platform_FileHandle fd;
 	fd = Platform_openrw(n, n__len);
 	if (fd == Platform_InvalidHandleValue()) {
 		return Platform_err();
@@ -416,7 +416,7 @@ INTEGER Platform_OldRW (CHAR *n, LONGINT n__len, Platform_FileHandle *h)
 /*----------------------------------------------------------------------------*/
 INTEGER Platform_New (CHAR *n, LONGINT n__len, Platform_FileHandle *h)
 {
-	Platform_FileHandle fd = NIL;
+	Platform_FileHandle fd;
 	fd = Platform_opennew(n, n__len);
 	if (fd == Platform_InvalidHandleValue()) {
 		return Platform_err();
@@ -456,7 +456,7 @@ INTEGER Platform_Identify (Platform_FileHandle h, Platform_FileIdentity *identit
 /*----------------------------------------------------------------------------*/
 INTEGER Platform_IdentifyByName (CHAR *n, LONGINT n__len, Platform_FileIdentity *identity, LONGINT *identity__typ)
 {
-	Platform_FileHandle h = NIL;
+	Platform_FileHandle h;
 	INTEGER e, i;
 	__DUP(n, n__len, CHAR);
 	e = Platform_OldRO((void*)n, n__len, &h);
