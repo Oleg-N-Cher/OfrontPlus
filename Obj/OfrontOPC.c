@@ -1312,6 +1312,9 @@ void OfrontOPC_GenBdy (OfrontOPT_Node n)
 	OfrontOPM_WriteLn();
 	OfrontOPC_CProcDefs(OfrontOPT_topScope->right, 0);
 	OfrontOPM_WriteLn();
+	OfrontOPM_WriteString((CHAR*)"/*============================================================================*/", (LONGINT)81);
+	OfrontOPM_WriteLn();
+	OfrontOPM_WriteLn();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1737,6 +1740,10 @@ void OfrontOPC_ExitProc (OfrontOPT_Object proc, BOOLEAN eoBlock, BOOLEAN implici
 		OfrontOPM_WriteLn();
 	} else if (indent) {
 		OfrontOPC_BegStat();
+	}
+	if (eoBlock && proc->vis == 1) {
+		OfrontOPM_WriteString((CHAR*)"/*----------------------------------------------------------------------------*/", (LONGINT)81);
+		OfrontOPM_WriteLn();
 	}
 }
 
