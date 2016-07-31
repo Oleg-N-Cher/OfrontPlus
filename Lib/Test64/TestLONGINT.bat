@@ -3,7 +3,7 @@
 
 @ofront+ -m ..\Test\TestLONGINT.Mod
 @IF errorlevel 1 PAUSE
-@CALL gcc.bat TestLONGINT.c -o TestLONGINT.exe
+@CALL gcc64.bat TestLONGINT.c -o TestLONGINT.exe
 
 @IF EXIST TestLONGINT.exe TestLONGINT.exe
 @PAUSE

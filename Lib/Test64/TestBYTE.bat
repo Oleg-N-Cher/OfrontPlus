@@ -3,7 +3,7 @@
 
 @ofront+ -m ..\Test\TestBYTE.Mod
 @IF errorlevel 1 PAUSE
-@CALL gcc.bat TestBYTE.c -o TestBYTE.exe
+@CALL gcc64.bat TestBYTE.c -o TestBYTE.exe
 
 @IF EXIST TestBYTE.exe TestBYTE.exe
 @PAUSE
