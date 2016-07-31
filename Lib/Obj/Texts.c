@@ -414,8 +414,8 @@ static void Texts_HandleAlien (Texts_Elem E, Texts_ElemMsg *msg, LONGINT *msg__t
 					Files_Set(&r, Files_Rider__typ, ((Texts_Alien)E)->file, ((Texts_Alien)E)->org);
 					i = ((Texts_Alien)E)->span;
 					while (i > 0) {
-						Files_Read(&r, Files_Rider__typ, (void*)&ch);
-						Files_Write(&(*msg__).r, Files_Rider__typ, ch);
+						Files_ReadChar(&r, Files_Rider__typ, &ch);
+						Files_WriteChar(&(*msg__).r, Files_Rider__typ, ch);
 						i -= 1;
 					}
 				}
@@ -631,13 +631,13 @@ void Texts_Read (Texts_Reader *R, LONGINT *R__typ, CHAR *ch)
 	(*R).voff = u->voff;
 	(*R).off += 1;
 	if (__ISP(u, Texts_PieceDesc, 1)) {
-		Files_Read(&(*R).rider, Files_Rider__typ, (void*)&*ch);
+		Files_ReadChar(&(*R).rider, Files_Rider__typ, &*ch);
 		(*R).elem = NIL;
 		if (*ch == 0x0a && __GUARDP(u, Texts_PieceDesc, 1)->ascii) {
 			*ch = 0x0d;
 		} else if (*ch == 0x0d && __GUARDP(u, Texts_PieceDesc, 1)->ascii) {
 			pos = Files_Pos(&(*R).rider, Files_Rider__typ);
-			Files_Read(&(*R).rider, Files_Rider__typ, (void*)&nextch);
+			Files_ReadChar(&(*R).rider, Files_Rider__typ, &nextch);
 			if (nextch == 0x0a) {
 				(*R).off += 1;
 			} else {
@@ -756,7 +756,7 @@ static void ReadScaleFactor__32 (void)
 		}
 	}
 	while ('0' <= *Scan__31_s->ch && *Scan__31_s->ch <= '9') {
-		*Scan__31_s->e = (*Scan__31_s->e * 10 + (INTEGER)*Scan__31_s->ch) - 48;
+		*Scan__31_s->e = (*Scan__31_s->e * 10 + (SHORTINT)*Scan__31_s->ch) - 48;
 		Texts_Read((void*)&*Scan__31_s->S, Scan__31_s->S__typ, &*Scan__31_s->ch);
 	}
 }
@@ -793,19 +793,19 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 			(*S).s[__X(i, 64)] = ch;
 			i += 1;
 			Texts_Read((void*)&*S, S__typ, &ch);
-		} while (!(((__CAP(ch) > 'Z' && ch != '_' || 'A' > __CAP(ch) && ch > '9') || ('0' > ch && ch != '.') && ch != '/') || (INTEGER)i == 63));
+		} while (!(((__CAP(ch) > 'Z' && ch != '_' || 'A' > __CAP(ch) && ch > '9') || ('0' > ch && ch != '.') && ch != '/') || i == 63));
 		(*S).s[__X(i, 64)] = 0x00;
 		(*S).len = i;
 		(*S).class = 1;
 	} else if (ch == '\"') {
 		Texts_Read((void*)&*S, S__typ, &ch);
-		while ((ch != '\"' && ch >= ' ') && (INTEGER)i != 63) {
+		while ((ch != '\"' && ch >= ' ') && i != 63) {
 			(*S).s[__X(i, 64)] = ch;
 			i += 1;
 			Texts_Read((void*)&*S, S__typ, &ch);
 		}
 		(*S).s[__X(i, 64)] = 0x00;
-		(*S).len = (INTEGER)i + 1;
+		(*S).len = i + 1;
 		Texts_Read((void*)&*S, S__typ, &ch);
 		(*S).class = 2;
 	} else {
@@ -828,10 +828,10 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 				if ('9' < ch) {
 					if ('A' <= ch && ch <= 'F') {
 						hex = 1;
-						ch = (CHAR)((INTEGER)ch - 7);
+						ch = (CHAR)((SHORTINT)ch - 7);
 					} else if ('a' <= ch && ch <= 'f') {
 						hex = 1;
-						ch = (CHAR)((INTEGER)ch - 39);
+						ch = (CHAR)((SHORTINT)ch - 39);
 					} else {
 						break;
 					}
@@ -840,16 +840,16 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 			if (ch == 'H') {
 				Texts_Read((void*)&*S, S__typ, &ch);
 				(*S).class = 3;
-				if ((INTEGER)(i - j) > 8) {
-					j = (INTEGER)i - 8;
+				if (i - j > 8) {
+					j = i - 8;
 				}
-				k = (INTEGER)d[__X(j, 32)] - 48;
+				k = (SHORTINT)d[__X(j, 32)] - 48;
 				j += 1;
-				if ((INTEGER)(i - j) == 7 && k >= 8) {
+				if (i - j == 7 && k >= 8) {
 					k -= 16;
 				}
 				while (j < i) {
-					k = __ASHL(k, 4, INTEGER) + (INTEGER)((INTEGER)d[__X(j, 32)] - 48);
+					k = __ASHL(k, 4, INTEGER) + (INTEGER)((SHORTINT)d[__X(j, 32)] - 48);
 					j += 1;
 				}
 				if (neg) {
@@ -867,15 +867,15 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 				}
 				if (ch == 'D') {
 					e = 0;
-					y = (LONGREAL)0;
-					g = (LONGREAL)1;
+					y = 0;
+					g = 1;
 					do {
-						y = y * (LONGREAL)10 + ((INTEGER)d[__X(j, 32)] - 48);
+						y = y * (LONGREAL)10 + ((SHORTINT)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
 						g = g / (LONGREAL)(LONGREAL)10;
-						y = ((INTEGER)d[__X(j, 32)] - 48) * g + y;
+						y = ((SHORTINT)d[__X(j, 32)] - 48) * g + y;
 						j += 1;
 					}
 					ReadScaleFactor__32();
@@ -883,7 +883,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 						if (e <= 308) {
 							y = y / (LONGREAL)Reals_TenL(e);
 						} else {
-							y = (LONGREAL)0;
+							y = 0;
 						}
 					} else if (e > 0) {
 						if (e <= 308) {
@@ -899,15 +899,15 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 					(*S).y = y;
 				} else {
 					e = 0;
-					x = (REAL)0;
-					f = (REAL)1;
+					x = 0;
+					f = 1;
 					do {
-						x = x * (REAL)10 + ((INTEGER)d[__X(j, 32)] - 48);
+						x = x * (REAL)10 + ((SHORTINT)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
 						f = f / (REAL)(REAL)10;
-						x = ((INTEGER)d[__X(j, 32)] - 48) * f + x;
+						x = ((SHORTINT)d[__X(j, 32)] - 48) * f + x;
 						j += 1;
 					}
 					if (ch == 'E') {
@@ -917,7 +917,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 						if (e <= 38) {
 							x = x / (REAL)Reals_Ten(e);
 						} else {
-							x = (REAL)0;
+							x = 0;
 						}
 					} else if (e > 0) {
 						if (e <= 38) {
@@ -939,7 +939,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 				(*S).class = 3;
 				k = 0;
 				do {
-					k = k * 10 + (INTEGER)((INTEGER)d[__X(j, 32)] - 48);
+					k = k * 10 + (INTEGER)((SHORTINT)d[__X(j, 32)] - 48);
 					j += 1;
 				} while (!(j == i));
 				if (neg) {
@@ -1002,7 +1002,7 @@ void Texts_Write (Texts_Writer *W, LONGINT *W__typ, CHAR ch)
 {
 	Texts_Run u = NIL, un = NIL;
 	Texts_Piece p = NIL;
-	Files_Write(&(*W).rider, Files_Rider__typ, ch);
+	Files_WriteChar(&(*W).rider, Files_Rider__typ, ch);
 	(*W).buf->len += 1;
 	un = (*W).buf->head;
 	u = un->prev;
@@ -1403,7 +1403,7 @@ void Texts_WriteLongReal (Texts_Writer *W, LONGINT *W__typ, LONGREAL x, SHORTINT
 		} else {
 			Texts_Write(&*W, W__typ, ' ');
 		}
-		e = (INTEGER)__ASHR((INTEGER)(e - 1023) * 77, 8, INTEGER);
+		e = (SHORTINT)__ASHR((INTEGER)(e - 1023) * 77, 8, INTEGER);
 		if (e >= 0) {
 			x = x / (LONGREAL)Reals_TenL(e);
 		} else {
@@ -1507,7 +1507,7 @@ static void LoadElem__17 (Files_Rider *r, LONGINT *r__typ, INTEGER pos, INTEGER 
 	Texts_new = NIL;
 	Files_ReadInt(&*r, r__typ, &ew);
 	Files_ReadInt(&*r, r__typ, &eh);
-	Files_Read(&*r, r__typ, &eno);
+	Files_ReadByte(&*r, r__typ, &eno);
 	if (eno > *Load0__16_s->ecnt) {
 		*Load0__16_s->ecnt = eno;
 		Files_ReadString(&*r, r__typ, (void*)(*Load0__16_s->mods)[__X(eno, 64)], 32);
@@ -1583,15 +1583,15 @@ static void Texts_Load0 (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 	Files_ReadInt(&msg.r, Files_Rider__typ, &hlen);
 	org = (pos - 2) + hlen;
 	pos = org;
-	Files_Read(&msg.r, Files_Rider__typ, &fno);
-	while ((INTEGER)fno != 0) {
+	Files_ReadByte(&msg.r, Files_Rider__typ, &fno);
+	while (fno != 0) {
 		if (fno > fcnt) {
 			fcnt = fno;
 			Files_ReadString(&msg.r, Files_Rider__typ, (void*)name, 32);
 			fnts[__X(fno, 32)] = Texts_FontsThis((void*)name, 32);
 		}
-		Files_Read(&msg.r, Files_Rider__typ, &col);
-		Files_Read(&msg.r, Files_Rider__typ, &voff);
+		Files_ReadByte(&msg.r, Files_Rider__typ, &col);
+		Files_ReadByte(&msg.r, Files_Rider__typ, &voff);
 		Files_ReadInt(&msg.r, Files_Rider__typ, &plen);
 		if (plen > 0) {
 			__NEW(p, Texts_PieceDesc);
@@ -1611,7 +1611,7 @@ static void Texts_Load0 (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 		u->next = un;
 		un->prev = u;
 		u = un;
-		Files_Read(&msg.r, Files_Rider__typ, &fno);
+		Files_ReadByte(&msg.r, Files_Rider__typ, &fno);
 	}
 	u->next = T->head;
 	T->head->prev = u;
@@ -1647,8 +1647,8 @@ void Texts_Open (Texts_Text T, CHAR *name, LONGINT name__len)
 		f = Files_New((CHAR*)"", (LONGINT)1);
 	}
 	Files_Set(&r, Files_Rider__typ, f, 0);
-	Files_Read(&r, Files_Rider__typ, (void*)&tag);
-	Files_Read(&r, Files_Rider__typ, (void*)&version);
+	Files_ReadChar(&r, Files_Rider__typ, &tag);
+	Files_ReadChar(&r, Files_Rider__typ, &version);
 	if (tag == 0xf0 || tag == 0x01 && version == 0xf0) {
 		Texts_Load0(&r, Files_Rider__typ, T);
 	} else {
@@ -1712,10 +1712,10 @@ static void StoreElem__40 (Files_Rider *r, LONGINT *r__typ, INTEGER pos, Texts_E
 		eno += 1;
 	}
 	Files_Set(&r1, Files_Rider__typ, Files_Base(&*r, r__typ), Files_Pos(&*r, r__typ));
-	Files_WriteLInt(&*r, r__typ, 0);
-	Files_WriteLInt(&*r, r__typ, 0);
-	Files_WriteLInt(&*r, r__typ, 0);
-	Files_Write(&*r, r__typ, eno);
+	Files_WriteInt(&*r, r__typ, 0);
+	Files_WriteInt(&*r, r__typ, 0);
+	Files_WriteInt(&*r, r__typ, 0);
+	Files_WriteByte(&*r, r__typ, eno);
 	if (eno == *Store__39_s->ecnt) {
 		*Store__39_s->ecnt += 1;
 		Files_WriteString(&*r, r__typ, (*Store__39_s->iden).mod, 32);
@@ -1725,9 +1725,9 @@ static void StoreElem__40 (Files_Rider *r, LONGINT *r__typ, INTEGER pos, Texts_E
 	org = Files_Pos(&*r, r__typ);
 	(*e->handle)(e, (void*)&*Store__39_s->msg, Texts_FileMsg__typ);
 	span = Files_Pos(&*r, r__typ) - org;
-	Files_WriteLInt(&r1, Files_Rider__typ, -span);
-	Files_WriteLInt(&r1, Files_Rider__typ, e->W);
-	Files_WriteLInt(&r1, Files_Rider__typ, e->H);
+	Files_WriteInt(&r1, Files_Rider__typ, -span);
+	Files_WriteInt(&r1, Files_Rider__typ, e->W);
+	Files_WriteInt(&r1, Files_Rider__typ, e->H);
 }
 
 void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
@@ -1754,7 +1754,7 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 	org = Files_Pos(&*r, r__typ);
 	msg.id = 1;
 	msg.r = *r;
-	Files_WriteLInt(&msg.r, Files_Rider__typ, 0);
+	Files_WriteInt(&msg.r, Files_Rider__typ, 0);
 	u = T->head->next;
 	pos = 0;
 	delta = 0;
@@ -1773,13 +1773,13 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 			while (__STRCMP(fnts[__X(fno, 32)]->name, u->fnt->name) != 0) {
 				fno += 1;
 			}
-			Files_Write(&msg.r, Files_Rider__typ, fno);
+			Files_WriteByte(&msg.r, Files_Rider__typ, fno);
 			if (fno == fcnt) {
 				fcnt += 1;
 				Files_WriteString(&msg.r, Files_Rider__typ, u->fnt->name, 32);
 			}
-			Files_Write(&msg.r, Files_Rider__typ, u->col);
-			Files_Write(&msg.r, Files_Rider__typ, u->voff);
+			Files_WriteByte(&msg.r, Files_Rider__typ, u->col);
+			Files_WriteByte(&msg.r, Files_Rider__typ, u->voff);
 		}
 		if (__ISP(u, Texts_PieceDesc, 1)) {
 			rlen = u->len;
@@ -1788,7 +1788,7 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 				rlen += un->len;
 				un = un->next;
 			}
-			Files_WriteLInt(&msg.r, Files_Rider__typ, rlen);
+			Files_WriteInt(&msg.r, Files_Rider__typ, rlen);
 			pos += rlen;
 			u = un;
 		} else if (iden.mod[0] != 0x00) {
@@ -1800,11 +1800,11 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 			u = u->next;
 		}
 	}
-	Files_Write(&msg.r, Files_Rider__typ, 0);
-	Files_WriteLInt(&msg.r, Files_Rider__typ, T->len - delta);
+	Files_WriteByte(&msg.r, Files_Rider__typ, 0);
+	Files_WriteInt(&msg.r, Files_Rider__typ, T->len - delta);
 	hlen = (Files_Pos(&msg.r, Files_Rider__typ) - org) + 2;
 	Files_Set(&r1, Files_Rider__typ, Files_Base(&msg.r, Files_Rider__typ), org);
-	Files_WriteLInt(&r1, Files_Rider__typ, hlen);
+	Files_WriteInt(&r1, Files_Rider__typ, hlen);
 	u = T->head->next;
 	while (u != T->head) {
 		if (__ISP(u, Texts_PieceDesc, 1)) {
@@ -1813,12 +1813,12 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 					Files_Set(&r1, Files_Rider__typ, ((Texts_Piece)u)->file, ((Texts_Piece)u)->org);
 					delta = ((Texts_Piece)u)->len;
 					while (delta > 0) {
-						Files_Read(&r1, Files_Rider__typ, (void*)&ch);
+						Files_ReadChar(&r1, Files_Rider__typ, &ch);
 						delta -= 1;
 						if (ch == 0x0a) {
-							Files_Write(&msg.r, Files_Rider__typ, 0x0d);
+							Files_WriteChar(&msg.r, Files_Rider__typ, 0x0d);
 						} else {
-							Files_Write(&msg.r, Files_Rider__typ, ch);
+							Files_WriteChar(&msg.r, Files_Rider__typ, ch);
 						}
 					}
 				} else {
@@ -1837,7 +1837,7 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 			iden.mod[0] = 0x00;
 			(*__GUARDP(u, Texts_ElemDesc, 1)->handle)(__GUARDP(u, Texts_ElemDesc, 1), (void*)&iden, Texts_IdentifyMsg__typ);
 			if (iden.mod[0] != 0x00) {
-				Files_Write(&msg.r, Files_Rider__typ, 0x1c);
+				Files_WriteChar(&msg.r, Files_Rider__typ, 0x1c);
 			}
 		}
 		u = u->next;
@@ -1859,8 +1859,8 @@ void Texts_Close (Texts_Text T, CHAR *name, LONGINT name__len)
 	__DUP(name, name__len, CHAR);
 	f = Files_New(name, name__len);
 	Files_Set(&r, Files_Rider__typ, f, 0);
-	Files_Write(&r, Files_Rider__typ, 0xf0);
-	Files_Write(&r, Files_Rider__typ, 0x01);
+	Files_WriteChar(&r, Files_Rider__typ, 0xf0);
+	Files_WriteChar(&r, Files_Rider__typ, 0x01);
 	Texts_Store(&r, Files_Rider__typ, T);
 	i = 0;
 	while (name[__X(i, name__len)] != 0x00) {

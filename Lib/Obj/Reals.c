@@ -60,7 +60,7 @@ LONGREAL Reals_TenL (SHORTINT e)
 /*----------------------------------------------------------------------------*/
 SHORTINT Reals_Expo (REAL x)
 {
-	return (INTEGER)__MASK(__ASHR(__VAL(INTEGER, x), 23, INTEGER), -256);
+	return (SHORTINT)__MASK(__ASHR(__VAL(INTEGER, x), 23, INTEGER), -256);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ SHORTINT Reals_ExpoL (LONGREAL x)
 {
 	INTEGER h;
 	__GET((INTEGER)&x + 4, h, INTEGER);
-	return (INTEGER)__MASK(__ASHR(h, 20, INTEGER), -2048);
+	return (SHORTINT)__MASK(__ASHR(h, 20, INTEGER), -2048);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -125,17 +125,17 @@ static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
 	i = 0;
 	len = (INTEGER)b__len;
 	while ((INTEGER)i < len) {
-		k = __ASHR((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), 4, SHORTINT);
-		if ((INTEGER)k > 9) {
-			d[__X(__ASHL((INTEGER)i, 1, SHORTINT), d__len)] = (INTEGER)k + 55;
+		k = (BYTE)__ASHR((SHORTINT)(__VAL(CHAR, b[__X(i, b__len)])), 4, SHORTINT);
+		if (k > 9) {
+			d[__X(__ASHL(i, 1, BYTE), d__len)] = k + 55;
 		} else {
-			d[__X(__ASHL((INTEGER)i, 1, SHORTINT), d__len)] = (INTEGER)k + 48;
+			d[__X(__ASHL(i, 1, BYTE), d__len)] = k + 48;
 		}
-		k = __MASK((INTEGER)(__VAL(CHAR, b[__X(i, b__len)])), -16);
-		if ((INTEGER)k > 9) {
-			d[__X(__ASHL((INTEGER)i, 1, SHORTINT) + 1, d__len)] = (INTEGER)k + 55;
+		k = (BYTE)__MASK((SHORTINT)(__VAL(CHAR, b[__X(i, b__len)])), -16);
+		if (k > 9) {
+			d[__X(__ASHL(i, 1, BYTE) + 1, d__len)] = k + 55;
 		} else {
-			d[__X(__ASHL((INTEGER)i, 1, SHORTINT) + 1, d__len)] = (INTEGER)k + 48;
+			d[__X(__ASHL(i, 1, BYTE) + 1, d__len)] = k + 48;
 		}
 		i += 1;
 	}
