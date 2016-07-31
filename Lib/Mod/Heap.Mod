@@ -33,7 +33,7 @@ MODULE Heap;
     LongZero  = LONG(LONG(0));
 
   TYPE
-    ADR* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
+    ADR = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
 
     ModuleName = ARRAY ModNameLen OF CHAR;
     CmdName    = ARRAY CmdNameLen OF CHAR;
