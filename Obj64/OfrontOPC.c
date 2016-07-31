@@ -761,7 +761,7 @@ static void OfrontOPC_CProcDefs (OfrontOPT_Object obj, INTEGER vis)
 				OfrontOPC_DeclareParams(obj->link, 1);
 				OfrontOPM_Write(0x09);
 			}
-			_for__9 = (INTEGER)(*obj->conval->ext)[0];
+			_for__9 = (SHORTINT)(*obj->conval->ext)[0];
 			i = i;
 			while (i <= _for__9) {
 				OfrontOPM_Write((*obj->conval->ext)[__X(i, 256)]);

@@ -386,7 +386,7 @@ static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len)
 	i = 0;
 	do {
 		ch = name[__X(i, name__len)];
-		OfrontOPM_FPrint(&*fp, (INTEGER)ch);
+		OfrontOPM_FPrint(&*fp, (SHORTINT)ch);
 		i += 1;
 	} while (!(ch == 0x00));
 }
@@ -590,7 +590,8 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 			f = obj->typ->form;
 			OfrontOPM_FPrint(&fprint, f);
 			switch (f) {
-				case 2: case 3: case 4: case 5: case 6: 
+				case 1: case 2: case 3: case 4: case 5: 
+				case 6: 
 					OfrontOPM_FPrint(&fprint, obj->conval->intval);
 					break;
 				case 9: 
@@ -621,11 +622,11 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 		} else if (obj->mode == 9) {
 			OfrontOPT_FPrintSign(&fprint, obj->typ, obj->link);
 			ext = obj->conval->ext;
-			m = (INTEGER)(*ext)[0];
+			m = (SHORTINT)(*ext)[0];
 			f = 1;
 			OfrontOPM_FPrint(&fprint, m);
 			while (f <= m) {
-				OfrontOPM_FPrint(&fprint, (INTEGER)(*ext)[__X(f, 256)]);
+				OfrontOPM_FPrint(&fprint, (SHORTINT)(*ext)[__X(f, 256)]);
 				f += 1;
 			}
 		} else if (obj->mode == 5) {
@@ -790,11 +791,11 @@ static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval)
 	OfrontOPT_ConstExt ext = NIL;
 	REAL rval;
 	switch (f) {
-		case 1: case 3: case 2: 
+		case 3: case 2: 
 			OfrontOPM_SymRCh(&ch);
-			conval->intval = (INTEGER)ch;
+			conval->intval = (SHORTINT)ch;
 			break;
-		case 4: case 5: case 6: 
+		case 1: case 4: case 5: case 6: 
 			conval->intval = OfrontOPM_SymRInt();
 			break;
 		case 9: 
@@ -1440,7 +1441,7 @@ static void OfrontOPT_OutConstant (OfrontOPT_Object obj)
 		case 2: case 3: 
 			OfrontOPM_SymWCh((CHAR)obj->conval->intval);
 			break;
-		case 4: case 5: case 6: 
+		case 1: case 4: case 5: case 6: 
 			OfrontOPM_SymWInt(obj->conval->intval);
 			break;
 		case 9: 
@@ -1529,7 +1530,7 @@ static void OfrontOPT_OutObj (OfrontOPT_Object obj)
 						OfrontOPM_SymWInt(33);
 						OfrontOPT_OutSign(obj->typ, obj->link);
 						ext = obj->conval->ext;
-						j = (INTEGER)(*ext)[0];
+						j = (SHORTINT)(*ext)[0];
 						i = 1;
 						OfrontOPM_SymWInt(j);
 						while (i <= j) {

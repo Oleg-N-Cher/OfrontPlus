@@ -627,7 +627,7 @@ static void OfrontOPP_StandProcCall (OfrontOPT_Node *x)
 	OfrontOPT_Node y = NIL;
 	SHORTINT m;
 	INTEGER n;
-	m = (INTEGER)(*x)->obj->adr;
+	m = (SHORTINT)(*x)->obj->adr;
 	n = 0;
 	if (OfrontOPP_sym == 30) {
 		OfrontOPS_Get(&OfrontOPP_sym);
@@ -1462,7 +1462,7 @@ static void OfrontOPP_StatSeq (OfrontOPT_Node *stat)
 					SetPos__35(z);
 					OfrontOPB_Link(&*stat, &last, z);
 					y = OfrontOPB_NewLeaf(t);
-				} else if (y->typ->form < 4 || y->typ->form > x->left->typ->form) {
+				} else if (__IN(y->typ->form, 0x0d) || y->typ->form > x->left->typ->form) {
 					OfrontOPP_err(113);
 				}
 				OfrontOPB_Link(&*stat, &last, x);

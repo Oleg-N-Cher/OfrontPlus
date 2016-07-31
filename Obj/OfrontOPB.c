@@ -218,7 +218,9 @@ static void OfrontOPB_SetIntType (OfrontOPT_Node node)
 {
 	LONGINT v;
 	v = node->conval->intval;
-	if ((LONGINT)OfrontOPM_MinSInt <= v && v <= (LONGINT)OfrontOPM_MaxSInt) {
+	if (-128 <= v && v <= 127) {
+		node->typ = OfrontOPT_bytetyp;
+	} else if ((LONGINT)OfrontOPM_MinSInt <= v && v <= (LONGINT)OfrontOPM_MaxSInt) {
 		node->typ = OfrontOPT_sinttyp;
 	} else if ((LONGINT)OfrontOPM_MinInt <= v && v <= (LONGINT)OfrontOPM_MaxInt) {
 		node->typ = OfrontOPT_inttyp;
@@ -609,7 +611,7 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 			case 22: 
 				if (f == 3) {
 					if (z->class == 7) {
-						z->conval->intval = (INTEGER)__CAP((CHAR)z->conval->intval);
+						z->conval->intval = (SHORTINT)__CAP((CHAR)z->conval->intval);
 						z->obj = NIL;
 					} else {
 						z = NewOp__29(op, typ, z);
@@ -1175,7 +1177,7 @@ static void OfrontOPB_Convert (OfrontOPT_Node *x, OfrontOPT_Struct typ)
 				r = (*x)->conval->realval;
 				if (r < -2147483648.0 || r > 2147483647.0) {
 					OfrontOPB_err(203);
-					r = (LONGREAL)1;
+					r = 1;
 				}
 				(*x)->conval->intval = __ENTIER(r);
 				OfrontOPB_SetIntType(*x);
@@ -1609,18 +1611,18 @@ static void OfrontOPB_CheckAssign (OfrontOPT_Struct x, OfrontOPT_Node ynode)
 	switch (f) {
 		case 0: case 10: 
 			break;
-		case 1: 
-			if (!__IN(g, 0x1a)) {
-				OfrontOPB_err(113);
-			}
-			break;
-		case 2: case 3: case 4: case 9: 
+		case 1: case 2: case 3: case 9: 
 			if (g != f) {
 				OfrontOPB_err(113);
 			}
 			break;
+		case 4: 
+			if (!__IN(g, 0x12)) {
+				OfrontOPB_err(113);
+			}
+			break;
 		case 5: 
-			if (!__IN(g, 0x30)) {
+			if (!__IN(g, 0x32)) {
 				OfrontOPB_err(113);
 			}
 			break;
@@ -1630,12 +1632,12 @@ static void OfrontOPB_CheckAssign (OfrontOPT_Struct x, OfrontOPT_Node ynode)
 			}
 			break;
 		case 7: 
-			if (!__IN(g, 0xf0)) {
+			if (!__IN(g, 0xf2)) {
 				OfrontOPB_err(113);
 			}
 			break;
 		case 8: 
-			if (!__IN(g, 0x01f0)) {
+			if (!__IN(g, 0x01f2)) {
 				OfrontOPB_err(113);
 			}
 			break;
@@ -1871,7 +1873,7 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 		case 9: 
 			if (x->class == 8 || x->class == 9) {
 				OfrontOPB_err(126);
-			} else if (__IN(f, 0x71)) {
+			} else if (__IN(f, 0x73)) {
 				OfrontOPB_Convert(&x, OfrontOPT_chartyp);
 			} else {
 				OfrontOPB_err(111);

@@ -44,7 +44,7 @@ static void BrowserCmd_Wch (CHAR ch)
 
 static void BrowserCmd_Wi (LONGINT i)
 {
-	Texts_WriteLInt(&BrowserCmd_W, Texts_Writer__typ, i, 0);
+	Texts_WriteLongInt(&BrowserCmd_W, Texts_Writer__typ, i, 0);
 }
 
 static void BrowserCmd_Wln (void)
@@ -140,7 +140,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 								BrowserCmd_Wch('X');
 							}
 							break;
-						case 4: case 5: case 6: 
+						case 1: case 4: case 5: case 6: 
 							BrowserCmd_Wi(obj->conval->intval);
 							break;
 						case 9: 
@@ -216,7 +216,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 					BrowserCmd_Wsign(obj->typ, obj->link);
 					if (obj->mode == 9) {
 						ext = obj->conval->ext;
-						m = (INTEGER)(*ext)[0];
+						m = (SHORTINT)(*ext)[0];
 						i = 1;
 						BrowserCmd_Ws((CHAR*)"  \"", (LONGINT)4);
 						while (i <= (INTEGER)m) {

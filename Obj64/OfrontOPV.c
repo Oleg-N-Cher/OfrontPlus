@@ -431,20 +431,8 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 {
 	INTEGER from;
 	from = n->typ->form;
-	if (form == 9) {
-		OfrontOPM_WriteString((CHAR*)"__SETOF(", (LONGINT)9);
-		OfrontOPV_Entier(n, -1);
-		OfrontOPM_Write(')');
-	} else if (form == 6) {
-		if (from < 6) {
-			OfrontOPM_WriteString((CHAR*)"(LONGINT)", (LONGINT)10);
-		}
-		OfrontOPV_Entier(n, 9);
-	} else if (form == 5) {
-		if (from < 5) {
-			OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
-			OfrontOPV_expr(n, 9);
-		} else {
+	switch (form) {
+		case 1: 
 			if (__IN(2, OfrontOPM_opt)) {
 				OfrontOPM_WriteString((CHAR*)"__SHORT", (LONGINT)8);
 				if (OfrontOPV_SideEffects(n)) {
@@ -453,43 +441,78 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 				OfrontOPM_Write('(');
 				OfrontOPV_Entier(n, -1);
 				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
-				OfrontOPM_WriteInt(OfrontOPM_MaxInt + 1);
+				OfrontOPM_WriteInt(128);
+				OfrontOPM_Write(')');
+			} else {
+				OfrontOPM_WriteString((CHAR*)"(BYTE)", (LONGINT)7);
+				OfrontOPV_Entier(n, 9);
+			}
+			break;
+		case 4: 
+			if (__IN(2, OfrontOPM_opt)) {
+				OfrontOPM_WriteString((CHAR*)"__SHORT", (LONGINT)8);
+				if (OfrontOPV_SideEffects(n)) {
+					OfrontOPM_Write('F');
+				}
+				OfrontOPM_Write('(');
+				OfrontOPV_Entier(n, -1);
+				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteInt(OfrontOPM_MaxSInt + 1);
 				OfrontOPM_Write(')');
 			} else {
 				OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
 				OfrontOPV_Entier(n, 9);
 			}
-		}
-	} else if (form == 4) {
-		if (__IN(2, OfrontOPM_opt)) {
-			OfrontOPM_WriteString((CHAR*)"__SHORT", (LONGINT)8);
-			if (OfrontOPV_SideEffects(n)) {
-				OfrontOPM_Write('F');
+			break;
+		case 5: 
+			if (from < 5) {
+				OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
+				OfrontOPV_expr(n, 9);
+			} else {
+				if (__IN(2, OfrontOPM_opt)) {
+					OfrontOPM_WriteString((CHAR*)"__SHORT", (LONGINT)8);
+					if (OfrontOPV_SideEffects(n)) {
+						OfrontOPM_Write('F');
+					}
+					OfrontOPM_Write('(');
+					OfrontOPV_Entier(n, -1);
+					OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+					OfrontOPM_WriteInt(OfrontOPM_MaxInt + 1);
+					OfrontOPM_Write(')');
+				} else {
+					OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
+					OfrontOPV_Entier(n, 9);
+				}
 			}
-			OfrontOPM_Write('(');
-			OfrontOPV_Entier(n, -1);
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
-			OfrontOPM_WriteInt(OfrontOPM_MaxSInt + 1);
-			OfrontOPM_Write(')');
-		} else {
-			OfrontOPM_WriteString((CHAR*)"(INTEGER)", (LONGINT)10);
-			OfrontOPV_Entier(n, 9);
-		}
-	} else if (form == 3) {
-		if (__IN(2, OfrontOPM_opt)) {
-			OfrontOPM_WriteString((CHAR*)"__CHR", (LONGINT)6);
-			if (OfrontOPV_SideEffects(n)) {
-				OfrontOPM_Write('F');
+			break;
+		case 6: 
+			if (from < 6) {
+				OfrontOPM_WriteString((CHAR*)"(LONGINT)", (LONGINT)10);
 			}
-			OfrontOPM_Write('(');
+			OfrontOPV_Entier(n, 9);
+			break;
+		case 3: 
+			if (__IN(2, OfrontOPM_opt)) {
+				OfrontOPM_WriteString((CHAR*)"__CHR", (LONGINT)6);
+				if (OfrontOPV_SideEffects(n)) {
+					OfrontOPM_Write('F');
+				}
+				OfrontOPM_Write('(');
+				OfrontOPV_Entier(n, -1);
+				OfrontOPM_Write(')');
+			} else {
+				OfrontOPM_WriteString((CHAR*)"(CHAR)", (LONGINT)7);
+				OfrontOPV_Entier(n, 9);
+			}
+			break;
+		case 9: 
+			OfrontOPM_WriteString((CHAR*)"__SETOF(", (LONGINT)9);
 			OfrontOPV_Entier(n, -1);
 			OfrontOPM_Write(')');
-		} else {
-			OfrontOPM_WriteString((CHAR*)"(CHAR)", (LONGINT)7);
-			OfrontOPV_Entier(n, 9);
-		}
-	} else {
-		OfrontOPV_expr(n, prec);
+			break;
+		default: 
+			OfrontOPV_expr(n, prec);
+			break;
 	}
 }
 

@@ -61,7 +61,7 @@ static void OfrontOPS_Str (SHORTINT *sym)
 	if (OfrontOPS_intval == 2) {
 		*sym = 35;
 		OfrontOPS_numtyp = 1;
-		OfrontOPS_intval = (INTEGER)OfrontOPS_str[0];
+		OfrontOPS_intval = (SHORTINT)OfrontOPS_str[0];
 	} else {
 		*sym = 37;
 	}
@@ -94,8 +94,8 @@ static LONGREAL Ten__9 (INTEGER e);
 static LONGREAL Ten__9 (INTEGER e)
 {
 	LONGREAL x, p;
-	x = (LONGREAL)1;
-	p = (LONGREAL)10;
+	x = 1;
+	p = 10;
 	while (e > 0) {
 		if (__ODD(e)) {
 			x = x * p;
@@ -111,9 +111,9 @@ static LONGREAL Ten__9 (INTEGER e)
 static INTEGER Ord__7 (CHAR ch, BOOLEAN hex)
 {
 	if (ch <= '9') {
-		return (INTEGER)ch - 48;
+		return (SHORTINT)ch - 48;
 	} else if (hex) {
-		return ((INTEGER)ch - 65) + 10;
+		return ((SHORTINT)ch - 65) + 10;
 	} else {
 		OfrontOPS_err(2);
 		return 0;
@@ -205,7 +205,7 @@ static void OfrontOPS_Number (void)
 			OfrontOPS_err(203);
 		}
 	} else {
-		f = (LONGREAL)0;
+		f = 0;
 		e = 0;
 		expCh = 'E';
 		while (n > 0) {
