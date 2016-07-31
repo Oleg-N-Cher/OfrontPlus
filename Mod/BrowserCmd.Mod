@@ -32,7 +32,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	PROCEDURE Ws(s: ARRAY OF CHAR); BEGIN Texts.WriteString(W, s) END Ws;
 	PROCEDURE Wch(ch: CHAR); BEGIN Texts.Write(W, ch) END Wch;
-	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLInt(W, i, 0) END Wi;
+	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLongInt(W, i, 0) END Wi;
 	PROCEDURE Wln; BEGIN Texts.WriteLn(W) END Wln;
 
 	PROCEDURE Indent(i: SHORTINT);
@@ -81,7 +81,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 									IF i > 9 THEN Wch(CHR(55 + i)) ELSE Wch(CHR(48 + i)) END ;
 									Wch("X")
 								END
-						| SInt, Int, LInt:
+						| Byte, SInt, Int, LInt:
 								Wi(obj^.conval^.intval)
 						| Set:
 								Wch("{"); i := 0; s := obj^.conval^.setval;

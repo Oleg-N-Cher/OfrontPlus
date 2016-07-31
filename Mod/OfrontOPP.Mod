@@ -857,7 +857,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 						END ;
 						z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
 						y := OPB.NewLeaf(t)
-					ELSIF (y^.typ^.form < SInt) OR (y^.typ^.form > x^.left^.typ^.form) THEN err(113)
+					ELSIF (y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form) THEN err(113)
 					END ;
 					OPB.Link(stat, last, x);
 					IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
