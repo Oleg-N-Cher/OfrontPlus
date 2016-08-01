@@ -736,12 +736,10 @@ static void OfrontOPC_DefineType (OfrontOPT_Struct str)
 static BOOLEAN OfrontOPC_Prefixed (OfrontOPT_ConstExt x, CHAR *y, LONGINT y__len)
 {
 	INTEGER i;
-	__DUP(y, y__len, CHAR);
 	i = 0;
 	while ((*x)[__X(i + 1, 256)] == y[__X(i, y__len)]) {
 		i += 1;
 	}
-	__DEL(y);
 	return y[__X(i, y__len)] == 0x00;
 }
 

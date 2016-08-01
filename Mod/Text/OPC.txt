@@ -531,11 +531,11 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END
 	END DefineType;
 
-	PROCEDURE Prefixed(x: OPT.ConstExt;  y: ARRAY OF SHORTCHAR): BOOLEAN;
+	PROCEDURE Prefixed(x: OPT.ConstExt; IN y: ARRAY OF SHORTCHAR): BOOLEAN;
 		VAR i: SHORTINT;
-	BEGIN i := 0; 
+	BEGIN i := 0;
 		WHILE x[i+1] = y[i] DO INC(i) END ;
-		RETURN y[i] = 0X 
+		RETURN y[i] = 0X
 	END Prefixed;
 
 	PROCEDURE CProcDefs(obj: OPT.Object; vis: SHORTINT);
