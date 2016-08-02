@@ -539,7 +539,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				OPM.WriteString(", "); TypeOf(n)
 			ELSIF comp = DynArr THEN
 				IF n^.class = Nconst THEN (* ap is string constant *)
-					OPM.WriteString(Comma); OPM.WriteString("(LONGINT)"); OPM.WriteInt(n^.conval^.intval2)
+					OPM.WriteString(Comma);
+					IF OPM.ArrLenSize > OPM.IntSize THEN OPM.WriteString("(LONGINT)") END;
+					OPM.WriteInt(n^.conval^.intval2)
 				ELSE
 					aptyp := n^.typ; dim := 0;
 					WHILE (typ^.comp = DynArr) & (typ^.BaseTyp^.form # Byte) DO
@@ -864,7 +866,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			OPM.WriteString(", ");
 			IF typ^.comp = DynArr THEN
 				IF x^.class = Nconst THEN expr(x, MinPrec); OPM.PromoteIntConstToLInt()
-				ELSE OPM.WriteString("(LONGINT)"); expr(x, 10)
+				ELSE IF OPM.ArrLenSize > OPM.IntSize THEN OPM.WriteString("(LONGINT)") END; expr(x, 10)
 				END ;
 				x := x^.link
 			ELSE OPM.WriteInt(typ^.n); OPM.PromoteIntConstToLInt()
