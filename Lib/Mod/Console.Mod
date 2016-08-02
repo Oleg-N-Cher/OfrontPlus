@@ -101,7 +101,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   END Read;
 
   PROCEDURE ReadLine*(VAR line: ARRAY OF CHAR);
-    VAR i: LONGINT; ch: CHAR;
+    VAR i: INTEGER; ch: CHAR;
   BEGIN Flush();
     i := 0; Read(ch);
     WHILE (i < LEN(line) - 1) & (ch # 0AX) & (ch # 0X) DO line[i] := ch; INC(i); Read(ch) END ;
