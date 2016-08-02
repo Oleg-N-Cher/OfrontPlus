@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkaem */
+/* Ofront+ 1.0 -xtspkaem */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -68,11 +68,11 @@ static void BrowserCmd_Wsign (OfrontOPT_Struct result, OfrontOPT_Object par)
 	res = result != NIL && result != OfrontOPT_notyp;
 	paren = res || par != NIL;
 	if (paren) {
-		BrowserCmd_Ws((CHAR*)" (", (LONGINT)3);
+		BrowserCmd_Ws((CHAR*)" (", 3);
 	}
 	while (par != NIL) {
 		if (!first) {
-			BrowserCmd_Ws((CHAR*)"; ", (LONGINT)3);
+			BrowserCmd_Ws((CHAR*)"; ", 3);
 		} else {
 			first = 0;
 		}
@@ -81,10 +81,10 @@ static void BrowserCmd_Wsign (OfrontOPT_Struct result, OfrontOPT_Object par)
 			BrowserCmd_Wch(' ');
 		}
 		if (par->mode == 2) {
-			BrowserCmd_Ws((CHAR*)"VAR ", (LONGINT)5);
+			BrowserCmd_Ws((CHAR*)"VAR ", 5);
 		}
 		BrowserCmd_Ws(par->name, 32);
-		BrowserCmd_Ws((CHAR*)": ", (LONGINT)3);
+		BrowserCmd_Ws((CHAR*)": ", 3);
 		BrowserCmd_Wtype(par->typ);
 		par = par->link;
 	}
@@ -92,7 +92,7 @@ static void BrowserCmd_Wsign (OfrontOPT_Struct result, OfrontOPT_Object par)
 		BrowserCmd_Wch(')');
 	}
 	if (res) {
-		BrowserCmd_Ws((CHAR*)": ", (LONGINT)3);
+		BrowserCmd_Ws((CHAR*)": ", 3);
 		BrowserCmd_Wtype(result);
 	}
 }
@@ -110,13 +110,13 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 				case 3: 
 					BrowserCmd_Indent(2);
 					BrowserCmd_Ws(obj->name, 32);
-					BrowserCmd_Ws((CHAR*)" = ", (LONGINT)4);
+					BrowserCmd_Ws((CHAR*)" = ", 4);
 					switch (obj->typ->form) {
 						case 2: 
 							if (obj->conval->intval == 1) {
-								BrowserCmd_Ws((CHAR*)"TRUE", (LONGINT)5);
+								BrowserCmd_Ws((CHAR*)"TRUE", 5);
 							} else {
-								BrowserCmd_Ws((CHAR*)"FALSE", (LONGINT)6);
+								BrowserCmd_Ws((CHAR*)"FALSE", 6);
 							}
 							break;
 						case 3: 
@@ -152,7 +152,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 									BrowserCmd_Wi(i);
 									s &= ~__SETOF(i);
 									if (s != 0x0) {
-										BrowserCmd_Ws((CHAR*)", ", (LONGINT)3);
+										BrowserCmd_Ws((CHAR*)", ", 3);
 									}
 								}
 								i += 1;
@@ -169,7 +169,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 							BrowserCmd_Ws(*obj->conval->ext, 256);
 							break;
 						case 11: 
-							BrowserCmd_Ws((CHAR*)"NIL", (LONGINT)4);
+							BrowserCmd_Ws((CHAR*)"NIL", 4);
 							break;
 						default: __CASECHK;
 					}
@@ -181,11 +181,11 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 						BrowserCmd_Indent(2);
 						if (obj->typ->strobj == obj) {
 							BrowserCmd_Wtype(obj->typ);
-							BrowserCmd_Ws((CHAR*)" = ", (LONGINT)4);
+							BrowserCmd_Ws((CHAR*)" = ", 4);
 							BrowserCmd_Wstruct(obj->typ);
 						} else {
 							BrowserCmd_Ws(obj->name, 32);
-							BrowserCmd_Ws((CHAR*)" = ", (LONGINT)4);
+							BrowserCmd_Ws((CHAR*)" = ", 4);
 							BrowserCmd_Wtype(obj->typ);
 						}
 						BrowserCmd_Wch(';');
@@ -196,9 +196,9 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 					BrowserCmd_Indent(2);
 					BrowserCmd_Ws(obj->name, 32);
 					if (obj->vis == 2) {
-						BrowserCmd_Ws((CHAR*)"-: ", (LONGINT)4);
+						BrowserCmd_Ws((CHAR*)"-: ", 4);
 					} else {
-						BrowserCmd_Ws((CHAR*)": ", (LONGINT)3);
+						BrowserCmd_Ws((CHAR*)": ", 3);
 					}
 					BrowserCmd_Wtype(obj->typ);
 					BrowserCmd_Wch(';');
@@ -206,7 +206,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 					break;
 				case 7: case 9: case 10: 
 					BrowserCmd_Indent(1);
-					BrowserCmd_Ws((CHAR*)"PROCEDURE ", (LONGINT)11);
+					BrowserCmd_Ws((CHAR*)"PROCEDURE ", 11);
 					if (obj->mode == 10) {
 						BrowserCmd_Wch('+');
 					} else if (obj->mode == 9) {
@@ -218,7 +218,7 @@ static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode)
 						ext = obj->conval->ext;
 						m = (SHORTINT)(*ext)[0];
 						i = 1;
-						BrowserCmd_Ws((CHAR*)"  \"", (LONGINT)4);
+						BrowserCmd_Ws((CHAR*)"  \"", 4);
 						while (i <= (INTEGER)m) {
 							BrowserCmd_Wch((*ext)[__X(i, 256)]);
 							i += 1;
@@ -241,24 +241,24 @@ static void BrowserCmd_Wmthd (OfrontOPT_Object obj)
 		BrowserCmd_Wmthd(obj->left);
 		if (obj->mode == 13 && (__STRCMP(obj->name, "@tproc") != 0 || BrowserCmd_option == 'x')) {
 			BrowserCmd_Indent(3);
-			BrowserCmd_Ws((CHAR*)"PROCEDURE (", (LONGINT)12);
+			BrowserCmd_Ws((CHAR*)"PROCEDURE (", 12);
 			if (__STRCMP(obj->name, "@tproc") != 0) {
 				if (obj->link->mode == 2) {
-					BrowserCmd_Ws((CHAR*)"VAR ", (LONGINT)5);
+					BrowserCmd_Ws((CHAR*)"VAR ", 5);
 				}
 				BrowserCmd_Ws(obj->link->name, 32);
-				BrowserCmd_Ws((CHAR*)": ", (LONGINT)3);
+				BrowserCmd_Ws((CHAR*)": ", 3);
 				BrowserCmd_Wtype(obj->link->typ);
 			}
-			BrowserCmd_Ws((CHAR*)") ", (LONGINT)3);
+			BrowserCmd_Ws((CHAR*)") ", 3);
 			BrowserCmd_Ws(obj->name, 32);
 			BrowserCmd_Wsign(obj->typ, obj->link->link);
 			BrowserCmd_Wch(';');
 			if (BrowserCmd_option == 'x') {
 				BrowserCmd_Indent(1);
-				BrowserCmd_Ws((CHAR*)"(* methno: ", (LONGINT)12);
+				BrowserCmd_Ws((CHAR*)"(* methno: ", 12);
 				BrowserCmd_Wi(__ASHR(obj->adr, 16, LONGINT));
-				BrowserCmd_Ws((CHAR*)" *)", (LONGINT)4);
+				BrowserCmd_Ws((CHAR*)" *)", 4);
 			}
 			BrowserCmd_Wln();
 		}
@@ -278,7 +278,7 @@ static void SysFlag__17 (void)
 	if ((*Wstruct__16_s->typ)->sysflag != 0) {
 		BrowserCmd_Wch('[');
 		BrowserCmd_Wi((*Wstruct__16_s->typ)->sysflag);
-		BrowserCmd_Ws((CHAR*)"] ", (LONGINT)3);
+		BrowserCmd_Ws((CHAR*)"] ", 3);
 	}
 }
 
@@ -291,36 +291,36 @@ static void BrowserCmd_Wstruct (OfrontOPT_Struct typ)
 	Wstruct__16_s = &_s;
 	switch (typ->form) {
 		case 0: 
-			BrowserCmd_Ws((CHAR*)"Undef", (LONGINT)6);
+			BrowserCmd_Ws((CHAR*)"Undef", 6);
 			break;
 		case 13: 
-			BrowserCmd_Ws((CHAR*)"POINTER ", (LONGINT)9);
+			BrowserCmd_Ws((CHAR*)"POINTER ", 9);
 			SysFlag__17();
-			BrowserCmd_Ws((CHAR*)"TO ", (LONGINT)4);
+			BrowserCmd_Ws((CHAR*)"TO ", 4);
 			BrowserCmd_Wtype(typ->BaseTyp);
 			break;
 		case 14: 
-			BrowserCmd_Ws((CHAR*)"PROCEDURE ", (LONGINT)11);
+			BrowserCmd_Ws((CHAR*)"PROCEDURE ", 11);
 			SysFlag__17();
 			BrowserCmd_Wsign(typ->BaseTyp, typ->link);
 			break;
 		case 15: 
 			switch (typ->comp) {
 				case 2: 
-					BrowserCmd_Ws((CHAR*)"ARRAY ", (LONGINT)7);
+					BrowserCmd_Ws((CHAR*)"ARRAY ", 7);
 					SysFlag__17();
 					BrowserCmd_Wi(typ->n);
-					BrowserCmd_Ws((CHAR*)" OF ", (LONGINT)5);
+					BrowserCmd_Ws((CHAR*)" OF ", 5);
 					BrowserCmd_Wtype(typ->BaseTyp);
 					break;
 				case 3: 
-					BrowserCmd_Ws((CHAR*)"ARRAY ", (LONGINT)7);
+					BrowserCmd_Ws((CHAR*)"ARRAY ", 7);
 					SysFlag__17();
-					BrowserCmd_Ws((CHAR*)"OF ", (LONGINT)4);
+					BrowserCmd_Ws((CHAR*)"OF ", 4);
 					BrowserCmd_Wtype(typ->BaseTyp);
 					break;
 				case 4: 
-					BrowserCmd_Ws((CHAR*)"RECORD ", (LONGINT)8);
+					BrowserCmd_Ws((CHAR*)"RECORD ", 8);
 					SysFlag__17();
 					if (typ->BaseTyp != NIL) {
 						BrowserCmd_Wch('(');
@@ -340,7 +340,7 @@ static void BrowserCmd_Wstruct (OfrontOPT_Struct typ)
 							if (fld->vis == 2) {
 								BrowserCmd_Wch('-');
 							}
-							BrowserCmd_Ws((CHAR*)": ", (LONGINT)3);
+							BrowserCmd_Ws((CHAR*)": ", 3);
 							BrowserCmd_Wtype(fld->typ);
 							BrowserCmd_Wch(';');
 							BrowserCmd_Wln();
@@ -349,16 +349,16 @@ static void BrowserCmd_Wstruct (OfrontOPT_Struct typ)
 					}
 					BrowserCmd_Wmthd(typ->link);
 					BrowserCmd_Indent(2);
-					BrowserCmd_Ws((CHAR*)"END ", (LONGINT)5);
+					BrowserCmd_Ws((CHAR*)"END ", 5);
 					if (BrowserCmd_option == 'x') {
 						BrowserCmd_Indent(1);
-						BrowserCmd_Ws((CHAR*)"(* size: ", (LONGINT)10);
+						BrowserCmd_Ws((CHAR*)"(* size: ", 10);
 						BrowserCmd_Wi(typ->size);
-						BrowserCmd_Ws((CHAR*)" align: ", (LONGINT)9);
+						BrowserCmd_Ws((CHAR*)" align: ", 9);
 						BrowserCmd_Wi(typ->align);
-						BrowserCmd_Ws((CHAR*)" nofm: ", (LONGINT)8);
+						BrowserCmd_Ws((CHAR*)" nofm: ", 8);
 						BrowserCmd_Wi(typ->n);
-						BrowserCmd_Ws((CHAR*)" *)", (LONGINT)4);
+						BrowserCmd_Ws((CHAR*)" *)", 4);
 					}
 					break;
 				default: __CASECHK;
@@ -378,7 +378,7 @@ static void BrowserCmd_Wtype (OfrontOPT_Struct typ)
 			BrowserCmd_Ws(OfrontOPT_GlbMod[__X(typ->mno, 64)]->name, 32);
 			BrowserCmd_Wch('.');
 		} else if (typ == OfrontOPT_sysptrtyp) {
-			BrowserCmd_Ws((CHAR*)"SYSTEM.", (LONGINT)8);
+			BrowserCmd_Ws((CHAR*)"SYSTEM.", 8);
 		} else if (obj->vis == 0) {
 			BrowserCmd_Wch('#');
 		}
@@ -440,12 +440,12 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T)
 	WModule__5_s = &_s;
 	OfrontOPT_Import((CHAR*)"@notself", name, &done);
 	if (done) {
-		BrowserCmd_Ws((CHAR*)"DEFINITION ", (LONGINT)12);
+		BrowserCmd_Ws((CHAR*)"DEFINITION ", 12);
 		BrowserCmd_Ws(name, 32);
 		BrowserCmd_Wch(';');
 		BrowserCmd_Wln();
 		BrowserCmd_Wln();
-		Header__8((CHAR*)"IMPORT", (LONGINT)7);
+		Header__8((CHAR*)"IMPORT", 7);
 		i = 1;
 		first = 1;
 		while (i < OfrontOPT_nofGmod) {
@@ -453,7 +453,7 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T)
 				first = 0;
 				BrowserCmd_Indent(2);
 			} else {
-				BrowserCmd_Ws((CHAR*)", ", (LONGINT)3);
+				BrowserCmd_Ws((CHAR*)", ", 3);
 			}
 			BrowserCmd_Ws(OfrontOPT_GlbMod[__X(i, 64)]->name, 32);
 			i += 1;
@@ -463,25 +463,25 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T)
 			BrowserCmd_Wln();
 		}
 		CheckHeader__6();
-		Header__8((CHAR*)"CONST", (LONGINT)6);
+		Header__8((CHAR*)"CONST", 6);
 		BrowserCmd_Objects(OfrontOPT_GlbMod[0]->right, 0x08);
 		CheckHeader__6();
-		Header__8((CHAR*)"TYPE", (LONGINT)5);
+		Header__8((CHAR*)"TYPE", 5);
 		BrowserCmd_Objects(OfrontOPT_GlbMod[0]->right, 0x20);
 		CheckHeader__6();
-		Header__8((CHAR*)"VAR", (LONGINT)4);
+		Header__8((CHAR*)"VAR", 4);
 		BrowserCmd_Objects(OfrontOPT_GlbMod[0]->right, 0x02);
 		CheckHeader__6();
 		BrowserCmd_Objects(OfrontOPT_GlbMod[0]->right, 0x0680);
 		BrowserCmd_Wln();
-		BrowserCmd_Ws((CHAR*)"END ", (LONGINT)5);
+		BrowserCmd_Ws((CHAR*)"END ", 5);
 		BrowserCmd_Ws(name, 32);
 		BrowserCmd_Wch('.');
 		BrowserCmd_Wln();
 		Texts_Append(T, BrowserCmd_W.buf);
 	} else {
 		Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, name, 32);
-		Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, (CHAR*)" -- symbol file not found", (LONGINT)26);
+		Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, (CHAR*)" -- symbol file not found", 26);
 		Texts_WriteLn(&BrowserCmd_W, Texts_Writer__typ);
 		Texts_Append(T, BrowserCmd_W.buf);
 	}
@@ -533,7 +533,7 @@ void BrowserCmd_ShowDef (void)
 	if (Args_argc >= 2) {
 		BrowserCmd_Ident((void*)S, 32, (void*)name, 32);
 		__NEW(T, Texts_TextDesc);
-		Texts_Open(T, (CHAR*)"", (LONGINT)1);
+		Texts_Open(T, (CHAR*)"", 1);
 		OfrontOPT_Init(name, 0x0);
 		__MOVE("AvoidErr154", OfrontOPT_SelfName, 12);
 		BrowserCmd_WModule(name, T);

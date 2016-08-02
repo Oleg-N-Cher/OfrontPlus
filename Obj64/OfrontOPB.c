@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPS.h"
@@ -2124,7 +2124,13 @@ void OfrontOPB_StPar1 (OfrontOPT_Node *par0, OfrontOPT_Node x, SHORTINT fctno)
 							x->conval->intval += 1;
 						}
 						p = NewOp__53(12, 19, p, x);
-						p->typ = OfrontOPT_linttyp;
+						if (OfrontOPM_ArrLenSize == OfrontOPM_SIntSize) {
+							p->typ = OfrontOPT_sinttyp;
+						} else if (OfrontOPM_ArrLenSize == OfrontOPM_IntSize) {
+							p->typ = OfrontOPT_inttyp;
+						} else {
+							p->typ = OfrontOPT_linttyp;
+						}
 					} else {
 						p = x;
 						p->conval->intval = typ->n;
@@ -2395,7 +2401,13 @@ void OfrontOPB_StFct (OfrontOPT_Node *par0, SHORTINT fctno, INTEGER parno)
 						p = p->left;
 						dim += 1;
 					}
-					OfrontOPB_BindNodes(12, OfrontOPT_linttyp, &p, OfrontOPB_NewIntConst(dim));
+					if (OfrontOPM_ArrLenSize == OfrontOPM_SIntSize) {
+						OfrontOPB_BindNodes(12, OfrontOPT_sinttyp, &p, OfrontOPB_NewIntConst(dim));
+					} else if (OfrontOPM_ArrLenSize == OfrontOPM_IntSize) {
+						OfrontOPB_BindNodes(12, OfrontOPT_inttyp, &p, OfrontOPB_NewIntConst(dim));
+					} else {
+						OfrontOPB_BindNodes(12, OfrontOPT_linttyp, &p, OfrontOPB_NewIntConst(dim));
+					}
 					p->subcl = 19;
 				} else {
 					p = OfrontOPB_NewIntConst(p->typ->n);

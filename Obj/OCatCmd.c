@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkaem */
+/* Ofront+ 1.0 -xtspkaem */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -82,7 +82,7 @@ void OCatCmd_Cat (void)
 			buf[__X(bufpos, 1024)] = 0x00;
 			Console_String(buf, 1024);
 		} else {
-			Console_String((CHAR*)"OCat: cannot open ", (LONGINT)19);
+			Console_String((CHAR*)"OCat: cannot open ", 19);
 			Console_String(path, 128);
 			Console_Ln();
 		}

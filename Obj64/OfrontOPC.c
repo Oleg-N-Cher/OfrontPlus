@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPT.h"
@@ -213,7 +213,7 @@ void OfrontOPC_Ident (OfrontOPT_Object obj)
 			}
 			OfrontOPM_Write('_');
 		} else if (obj == OfrontOPT_sysptrtyp->strobj) {
-			OfrontOPM_WriteString((CHAR*)"SYSTEM_", (LONGINT)8);
+			OfrontOPM_WriteString((CHAR*)"SYSTEM_", 8);
 		}
 		OfrontOPM_WriteStringVar((void*)obj->name, 32);
 	}
@@ -292,7 +292,7 @@ static void OfrontOPC_DeclareObj (OfrontOPT_Object dcl, BOOLEAN scopeDef)
 					OfrontOPM_Write(')');
 					OfrontOPC_AnsiParamList(typ->link, 0);
 				} else {
-					OfrontOPM_WriteString((CHAR*)")()", (LONGINT)4);
+					OfrontOPM_WriteString((CHAR*)")()", 4);
 				}
 				break;
 			} else if (comp == 2) {
@@ -311,7 +311,7 @@ void OfrontOPC_Andent (OfrontOPT_Struct typ)
 {
 	if (typ->strobj == NIL || typ->align >= 65536) {
 		OfrontOPM_WriteString(OfrontOPM_modName, 32);
-		OfrontOPC_Str1((CHAR*)"__#", (LONGINT)4, __ASHR(typ->align, 16, LONGINT));
+		OfrontOPC_Str1((CHAR*)"__#", 4, __ASHR(typ->align, 16, LONGINT));
 	} else {
 		OfrontOPC_Ident(typ->strobj);
 	}
@@ -337,17 +337,17 @@ static void OfrontOPC_DeclareBase (OfrontOPT_Object dcl)
 	}
 	obj = typ->strobj;
 	if (typ->form == 12) {
-		OfrontOPM_WriteString((CHAR*)"void", (LONGINT)5);
+		OfrontOPM_WriteString((CHAR*)"void", 5);
 	} else if (obj != NIL && !OfrontOPC_Undefined(obj)) {
 		OfrontOPC_Ident(obj);
 	} else if (typ->comp == 4) {
-		OfrontOPM_WriteString((CHAR*)"struct ", (LONGINT)8);
+		OfrontOPM_WriteString((CHAR*)"struct ", 8);
 		OfrontOPC_Andent(typ);
 		if (prev->form != 13 && (obj != NIL || dcl->name[0] == 0x00)) {
 			if (typ->BaseTyp != NIL && typ->BaseTyp->strobj->vis != 0) {
-				OfrontOPM_WriteString((CHAR*)" { /* ", (LONGINT)7);
+				OfrontOPM_WriteString((CHAR*)" { /* ", 7);
 				OfrontOPC_Ident(typ->BaseTyp->strobj);
-				OfrontOPM_WriteString((CHAR*)" */", (LONGINT)4);
+				OfrontOPM_WriteString((CHAR*)" */", 4);
 				OfrontOPM_WriteLn();
 				OfrontOPC_Indent(1);
 			} else {
@@ -364,10 +364,10 @@ static void OfrontOPC_DeclareBase (OfrontOPT_Object dcl)
 			nofdims += 1;
 			typ = typ->BaseTyp;
 		}
-		OfrontOPM_WriteString((CHAR*)"struct ", (LONGINT)8);
+		OfrontOPM_WriteString((CHAR*)"struct ", 8);
 		OfrontOPC_BegBlk();
 		OfrontOPC_BegStat();
-		OfrontOPC_Str1((CHAR*)"LONGINT len[#]", (LONGINT)15, nofdims);
+		OfrontOPC_Str1((CHAR*)"LONGINT len[#]", 15, nofdims);
 		OfrontOPC_EndStat();
 		OfrontOPC_BegStat();
 		__NEW(obj, OfrontOPT_ObjDesc);
@@ -433,7 +433,7 @@ static void OfrontOPC_PutPtrOffsets (OfrontOPT_Struct typ, LONGINT adr, LONGINT 
 	LONGINT n, i;
 	if (typ->form == 13 && typ->sysflag == 0) {
 		OfrontOPM_WriteInt(adr);
-		OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)", ", 3);
 		*cnt += 1;
 		if (__MASK(*cnt, -16) == 0) {
 			OfrontOPM_WriteLn();
@@ -450,7 +450,7 @@ static void OfrontOPC_PutPtrOffsets (OfrontOPT_Struct typ, LONGINT adr, LONGINT 
 				OfrontOPC_PutPtrOffsets(fld->typ, adr + fld->adr, &*cnt);
 			} else {
 				OfrontOPM_WriteInt(adr + fld->adr);
-				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)", ", 3);
 				*cnt += 1;
 				if (__MASK(*cnt, -16) == 0) {
 					OfrontOPM_WriteLn();
@@ -482,11 +482,11 @@ static void OfrontOPC_InitTProcs (OfrontOPT_Object typ, OfrontOPT_Object obj)
 		OfrontOPC_InitTProcs(typ, obj->left);
 		if (obj->mode == 13) {
 			OfrontOPC_BegStat();
-			OfrontOPM_WriteString((CHAR*)"__INITBP(", (LONGINT)10);
+			OfrontOPM_WriteString((CHAR*)"__INITBP(", 10);
 			OfrontOPC_Ident(typ);
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 			OfrontOPC_Ident(obj);
-			OfrontOPC_Str1((CHAR*)", #)", (LONGINT)5, __ASHR(obj->adr, 16, LONGINT));
+			OfrontOPC_Str1((CHAR*)", #)", 5, __ASHR(obj->adr, 16, LONGINT));
 			OfrontOPC_EndStat();
 		}
 		OfrontOPC_InitTProcs(typ, obj->right);
@@ -498,8 +498,8 @@ static void OfrontOPC_PutBase (OfrontOPT_Struct typ)
 	if (typ != NIL) {
 		OfrontOPC_PutBase(typ->BaseTyp);
 		OfrontOPC_Ident(typ->strobj);
-		OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
-		OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)"__typ", 6);
+		OfrontOPM_WriteString((CHAR*)", ", 3);
 	}
 }
 
@@ -509,19 +509,19 @@ static void OfrontOPC_LenList (OfrontOPT_Object par, BOOLEAN ansiDefine, BOOLEAN
 	INTEGER dim;
 	if (showParamName) {
 		OfrontOPC_Ident(par);
-		OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+		OfrontOPM_WriteString((CHAR*)"__len", 6);
 	}
 	dim = 1;
 	typ = par->typ->BaseTyp;
 	while (typ->comp == 3) {
 		if (ansiDefine) {
-			OfrontOPM_WriteString((CHAR*)", INTEGER ", (LONGINT)11);
+			OfrontOPM_WriteString((CHAR*)", INTEGER ", 11);
 		} else {
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 		}
 		if (showParamName) {
 			OfrontOPC_Ident(par);
-			OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+			OfrontOPM_WriteString((CHAR*)"__len", 6);
 			OfrontOPM_WriteInt(dim);
 		}
 		typ = typ->BaseTyp;
@@ -542,16 +542,16 @@ static void OfrontOPC_DeclareParams (OfrontOPT_Object par, BOOLEAN macro)
 			OfrontOPC_Ident(par);
 		}
 		if (par->typ->comp == 3) {
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 			OfrontOPC_LenList(par, 0, 1);
 		} else if (par->mode == 2 && par->typ->comp == 4) {
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 			OfrontOPM_WriteStringVar((void*)par->name, 32);
-			OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+			OfrontOPM_WriteString((CHAR*)"__typ", 6);
 		}
 		par = par->link;
 		if (par != NIL) {
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 		}
 	}
 	OfrontOPM_Write(')');
@@ -583,7 +583,7 @@ static void OfrontOPC_DeclareTProcs (OfrontOPT_Object obj, BOOLEAN *empty)
 			if (OfrontOPM_currFile == 0) {
 				if (obj->vis == 1) {
 					OfrontOPC_DefineTProcTypes(obj);
-					OfrontOPM_WriteString((CHAR*)"import ", (LONGINT)8);
+					OfrontOPM_WriteString((CHAR*)"import ", 8);
 					*empty = 0;
 					OfrontOPC_ProcHeader(obj, 0);
 				}
@@ -591,9 +591,9 @@ static void OfrontOPC_DeclareTProcs (OfrontOPT_Object obj, BOOLEAN *empty)
 				*empty = 0;
 				OfrontOPC_DefineTProcTypes(obj);
 				if (obj->vis == 0) {
-					OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
+					OfrontOPM_WriteString((CHAR*)"static ", 8);
 				} else {
-					OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
+					OfrontOPM_WriteString((CHAR*)"export ", 8);
 				}
 				OfrontOPC_ProcHeader(obj, 0);
 			}
@@ -626,33 +626,33 @@ static void OfrontOPC_DefineTProcMacros (OfrontOPT_Object obj, BOOLEAN *empty)
 	if (obj != NIL) {
 		OfrontOPC_DefineTProcMacros(obj->left, &*empty);
 		if ((obj->mode == 13 && obj == OfrontOPC_BaseTProc(obj)) && (OfrontOPM_currFile != 0 || obj->vis == 1)) {
-			OfrontOPM_WriteString((CHAR*)"#define __", (LONGINT)11);
+			OfrontOPM_WriteString((CHAR*)"#define __", 11);
 			OfrontOPC_Ident(obj);
 			OfrontOPC_DeclareParams(obj->link, 1);
-			OfrontOPM_WriteString((CHAR*)" __SEND(", (LONGINT)9);
+			OfrontOPM_WriteString((CHAR*)" __SEND(", 9);
 			if (obj->link->typ->form == 13) {
-				OfrontOPM_WriteString((CHAR*)"__TYPEOF(", (LONGINT)10);
+				OfrontOPM_WriteString((CHAR*)"__TYPEOF(", 10);
 				OfrontOPC_Ident(obj->link);
 				OfrontOPM_Write(')');
 			} else {
 				OfrontOPC_Ident(obj->link);
-				OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+				OfrontOPM_WriteString((CHAR*)"__typ", 6);
 			}
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 			OfrontOPC_Ident(obj);
-			OfrontOPC_Str1((CHAR*)", #, ", (LONGINT)6, __ASHR(obj->adr, 16, LONGINT));
+			OfrontOPC_Str1((CHAR*)", #, ", 6, __ASHR(obj->adr, 16, LONGINT));
 			if (obj->typ == OfrontOPT_notyp) {
-				OfrontOPM_WriteString((CHAR*)"void", (LONGINT)5);
+				OfrontOPM_WriteString((CHAR*)"void", 5);
 			} else {
 				OfrontOPC_Ident(obj->typ->strobj);
 			}
-			OfrontOPM_WriteString((CHAR*)"(*)", (LONGINT)4);
+			OfrontOPM_WriteString((CHAR*)"(*)", 4);
 			if (OfrontOPC_ansi) {
 				OfrontOPC_AnsiParamList(obj->link, 0);
 			} else {
-				OfrontOPM_WriteString((CHAR*)"()", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)"()", 3);
 			}
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 			OfrontOPC_DeclareParams(obj->link, 1);
 			OfrontOPM_Write(')');
 			OfrontOPM_WriteLn();
@@ -707,7 +707,7 @@ static void OfrontOPC_DefineType (OfrontOPT_Struct str)
 			}
 		}
 		if (obj != NIL && OfrontOPC_Undefined(obj)) {
-			OfrontOPM_WriteString((CHAR*)"typedef", (LONGINT)8);
+			OfrontOPM_WriteString((CHAR*)"typedef", 8);
 			OfrontOPM_WriteLn();
 			OfrontOPM_Write(0x09);
 			OfrontOPC_Indent(1);
@@ -753,8 +753,8 @@ static void OfrontOPC_CProcDefs (OfrontOPT_Object obj, INTEGER vis)
 		if ((obj->mode == 9 && (INTEGER)obj->vis >= vis) && obj->adr == 1) {
 			ext = obj->conval->ext;
 			i = 1;
-			if ((*ext)[1] != '#' && !(OfrontOPC_Prefixed(ext, (CHAR*)"extern ", (LONGINT)8) || OfrontOPC_Prefixed(ext, (CHAR*)"import ", (LONGINT)8))) {
-				OfrontOPM_WriteString((CHAR*)"#define ", (LONGINT)9);
+			if ((*ext)[1] != '#' && !(OfrontOPC_Prefixed(ext, (CHAR*)"extern ", 8) || OfrontOPC_Prefixed(ext, (CHAR*)"import ", 8))) {
+				OfrontOPM_WriteString((CHAR*)"#define ", 9);
 				OfrontOPC_Ident(obj);
 				OfrontOPC_DeclareParams(obj->link, 1);
 				OfrontOPM_Write(0x09);
@@ -807,19 +807,19 @@ void OfrontOPC_TDescDecl (OfrontOPT_Struct typ)
 	LONGINT nofptrs;
 	OfrontOPT_Object o = NIL;
 	OfrontOPC_BegStat();
-	OfrontOPM_WriteString((CHAR*)"__TDESC(", (LONGINT)9);
+	OfrontOPM_WriteString((CHAR*)"__TDESC(", 9);
 	OfrontOPC_Andent(typ);
-	OfrontOPM_WriteString((CHAR*)"__desc", (LONGINT)7);
-	OfrontOPC_Str1((CHAR*)", #", (LONGINT)4, typ->n + 1);
-	OfrontOPC_Str1((CHAR*)", #) = {__TDFLDS(", (LONGINT)18, OfrontOPC_NofPtrs(typ));
+	OfrontOPM_WriteString((CHAR*)"__desc", 7);
+	OfrontOPC_Str1((CHAR*)", #", 4, typ->n + 1);
+	OfrontOPC_Str1((CHAR*)", #) = {__TDFLDS(", 18, OfrontOPC_NofPtrs(typ));
 	OfrontOPM_Write('\"');
 	if (typ->strobj != NIL) {
 		OfrontOPM_WriteStringVar((void*)typ->strobj->name, 32);
 	}
-	OfrontOPC_Str1((CHAR*)"\", #), {", (LONGINT)9, typ->size);
+	OfrontOPC_Str1((CHAR*)"\", #), {", 9, typ->size);
 	nofptrs = 0;
 	OfrontOPC_PutPtrOffsets(typ, 0, &nofptrs);
-	OfrontOPC_Str1((CHAR*)"#}}", (LONGINT)4, -((nofptrs + 1) * (LONGINT)OfrontOPM_LIntSize));
+	OfrontOPC_Str1((CHAR*)"#}}", 4, -((nofptrs + 1) * (LONGINT)OfrontOPM_LIntSize));
 	OfrontOPC_EndStat();
 }
 
@@ -827,15 +827,15 @@ void OfrontOPC_TDescDecl (OfrontOPT_Struct typ)
 void OfrontOPC_InitTDesc (OfrontOPT_Struct typ)
 {
 	OfrontOPC_BegStat();
-	OfrontOPM_WriteString((CHAR*)"__INITYP(", (LONGINT)10);
+	OfrontOPM_WriteString((CHAR*)"__INITYP(", 10);
 	OfrontOPC_Andent(typ);
-	OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+	OfrontOPM_WriteString((CHAR*)", ", 3);
 	if (typ->BaseTyp != NIL) {
 		OfrontOPC_Andent(typ->BaseTyp);
 	} else {
 		OfrontOPC_Andent(typ);
 	}
-	OfrontOPC_Str1((CHAR*)", #)", (LONGINT)5, typ->extlev);
+	OfrontOPC_Str1((CHAR*)", #)", 5, typ->extlev);
 	OfrontOPC_EndStat();
 	if (typ->strobj != NIL) {
 		OfrontOPC_InitTProcs(typ->strobj, typ->link);
@@ -922,22 +922,22 @@ static void OfrontOPC_FillGap (LONGINT gap, LONGINT off, LONGINT align, LONGINT 
 		gap -= (adr - off) + align;
 		OfrontOPC_BegStat();
 		if (align == (LONGINT)OfrontOPM_IntSize) {
-			OfrontOPM_WriteString((CHAR*)"INTEGER", (LONGINT)8);
+			OfrontOPM_WriteString((CHAR*)"INTEGER", 8);
 		} else if (align == (LONGINT)OfrontOPM_LIntSize) {
-			OfrontOPM_WriteString((CHAR*)"LONGINT", (LONGINT)8);
+			OfrontOPM_WriteString((CHAR*)"LONGINT", 8);
 		} else if (align == (LONGINT)OfrontOPM_LRealSize) {
-			OfrontOPM_WriteString((CHAR*)"LONGREAL", (LONGINT)9);
+			OfrontOPM_WriteString((CHAR*)"LONGREAL", 9);
 		}
-		OfrontOPC_Str1((CHAR*)" _prvt#", (LONGINT)8, *n);
+		OfrontOPC_Str1((CHAR*)" _prvt#", 8, *n);
 		*n += 1;
 		OfrontOPC_EndStat();
 		*curAlign = align;
 	}
 	if (gap > 0) {
 		OfrontOPC_BegStat();
-		OfrontOPC_Str1((CHAR*)"char _prvt#", (LONGINT)12, *n);
+		OfrontOPC_Str1((CHAR*)"char _prvt#", 12, *n);
 		*n += 1;
-		OfrontOPC_Str1((CHAR*)"[#]", (LONGINT)4, gap);
+		OfrontOPC_Str1((CHAR*)"[#]", 4, gap);
 		OfrontOPC_EndStat();
 	}
 }
@@ -981,7 +981,7 @@ static void OfrontOPC_FieldList (OfrontOPT_Struct typ, BOOLEAN last, LONGINT *of
 			base = fld->typ;
 			fld = fld->link;
 			while ((((fld != NIL && fld->mode == 4) && fld->typ == base) && fld->adr == *off) && ((OfrontOPM_currFile == 1 || fld->vis != 0) || fld->typ->strobj == NIL)) {
-				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)", ", 3);
 				OfrontOPC_DeclareObj(fld, 0);
 				*off = fld->adr + fld->typ->size;
 				fld = fld->link;
@@ -1020,16 +1020,16 @@ static void OfrontOPC_IdentList (OfrontOPT_Object obj, INTEGER vis)
 				lastvis = obj->vis;
 				OfrontOPC_BegStat();
 				if (vis == 1 && obj->vis != 0) {
-					OfrontOPM_WriteString((CHAR*)"import ", (LONGINT)8);
+					OfrontOPM_WriteString((CHAR*)"import ", 8);
 				} else if (obj->mnolev == 0 && vis == 0) {
 					if (obj->vis == 0) {
-						OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
+						OfrontOPM_WriteString((CHAR*)"static ", 8);
 					} else {
-						OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
+						OfrontOPM_WriteString((CHAR*)"export ", 8);
 					}
 				}
 				if ((vis == 2 && obj->mode == 1) && base->form == 7) {
-					OfrontOPM_WriteString((CHAR*)"double", (LONGINT)7);
+					OfrontOPM_WriteString((CHAR*)"double", 7);
 				} else {
 					OfrontOPC_DeclareBase(obj);
 				}
@@ -1045,17 +1045,17 @@ static void OfrontOPC_IdentList (OfrontOPT_Object obj, INTEGER vis)
 				OfrontOPC_EndStat();
 				OfrontOPC_BegStat();
 				base = OfrontOPT_linttyp;
-				OfrontOPM_WriteString((CHAR*)"LONGINT ", (LONGINT)9);
+				OfrontOPM_WriteString((CHAR*)"LONGINT ", 9);
 				OfrontOPC_LenList(obj, 0, 1);
 			} else if (obj->mode == 2 && obj->typ->comp == 4) {
 				OfrontOPC_EndStat();
 				OfrontOPC_BegStat();
-				OfrontOPM_WriteString((CHAR*)"LONGINT *", (LONGINT)10);
+				OfrontOPM_WriteString((CHAR*)"LONGINT *", 10);
 				OfrontOPC_Ident(obj);
-				OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+				OfrontOPM_WriteString((CHAR*)"__typ", 6);
 				base = NIL;
 			} else if (((OfrontOPC_ptrinit && vis == 0) && obj->mnolev > 0) && obj->typ->form == 13) {
-				OfrontOPM_WriteString((CHAR*)" = NIL", (LONGINT)7);
+				OfrontOPM_WriteString((CHAR*)" = NIL", 7);
 			}
 		}
 		obj = obj->link;
@@ -1070,7 +1070,7 @@ static void OfrontOPC_AnsiParamList (OfrontOPT_Object obj, BOOLEAN showParamName
 	CHAR name[32];
 	OfrontOPM_Write('(');
 	if (obj == NIL || obj->mode == 13) {
-		OfrontOPM_WriteString((CHAR*)"void", (LONGINT)5);
+		OfrontOPM_WriteString((CHAR*)"void", 5);
 	} else {
 		for (;;) {
 			OfrontOPC_DeclareBase(obj);
@@ -1084,19 +1084,19 @@ static void OfrontOPC_AnsiParamList (OfrontOPT_Object obj, BOOLEAN showParamName
 				__COPY(name, obj->name, 32);
 			}
 			if (obj->typ->comp == 3) {
-				OfrontOPM_WriteString((CHAR*)", LONGINT ", (LONGINT)11);
+				OfrontOPM_WriteString((CHAR*)", LONGINT ", 11);
 				OfrontOPC_LenList(obj, 1, showParamNames);
 			} else if (obj->mode == 2 && obj->typ->comp == 4) {
-				OfrontOPM_WriteString((CHAR*)", LONGINT *", (LONGINT)12);
+				OfrontOPM_WriteString((CHAR*)", LONGINT *", 12);
 				if (showParamNames) {
 					OfrontOPC_Ident(obj);
-					OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+					OfrontOPM_WriteString((CHAR*)"__typ", 6);
 				}
 			}
 			if (obj->link == NIL || obj->link->mode == 13) {
 				break;
 			}
-			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)", ", 3);
 			obj = obj->link;
 		}
 	}
@@ -1106,7 +1106,7 @@ static void OfrontOPC_AnsiParamList (OfrontOPT_Object obj, BOOLEAN showParamName
 static void OfrontOPC_ProcHeader (OfrontOPT_Object proc, BOOLEAN define)
 {
 	if (proc->typ == OfrontOPT_notyp) {
-		OfrontOPM_WriteString((CHAR*)"void", (LONGINT)5);
+		OfrontOPM_WriteString((CHAR*)"void", 5);
 	} else {
 		OfrontOPC_Ident(proc->typ->strobj);
 	}
@@ -1126,7 +1126,7 @@ static void OfrontOPC_ProcHeader (OfrontOPT_Object proc, BOOLEAN define)
 		OfrontOPC_IdentList(proc->link, 2);
 		OfrontOPC_Indent(-1);
 	} else {
-		OfrontOPM_WriteString((CHAR*)"();", (LONGINT)4);
+		OfrontOPM_WriteString((CHAR*)"();", 4);
 		OfrontOPM_WriteLn();
 	}
 }
@@ -1137,11 +1137,11 @@ static void OfrontOPC_ProcPredefs (OfrontOPT_Object obj, SHORTINT vis)
 		OfrontOPC_ProcPredefs(obj->left, vis);
 		if ((__IN(obj->mode, 0xc0) && obj->vis >= vis) && (obj->history != 4 || obj->mode == 6)) {
 			if (vis == 1) {
-				OfrontOPM_WriteString((CHAR*)"import ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"import ", 8);
 			} else if (obj->vis == 0) {
-				OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"static ", 8);
 			} else {
-				OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"export ", 8);
 			}
 			OfrontOPC_ProcHeader(obj, 0);
 		}
@@ -1152,10 +1152,10 @@ static void OfrontOPC_ProcPredefs (OfrontOPT_Object obj, SHORTINT vis)
 static void OfrontOPC_Include (CHAR *name, INTEGER name__len)
 {
 	__DUP(name, name__len, CHAR);
-	OfrontOPM_WriteString((CHAR*)"#include ", (LONGINT)10);
+	OfrontOPM_WriteString((CHAR*)"#include ", 10);
 	OfrontOPM_Write('\"');
 	OfrontOPM_WriteStringVar((void*)name, name__len);
-	OfrontOPM_WriteString((CHAR*)".h", (LONGINT)3);
+	OfrontOPM_WriteString((CHAR*)".h", 3);
 	OfrontOPM_Write('\"');
 	OfrontOPM_WriteLn();
 	__DEL(name);
@@ -1180,15 +1180,15 @@ static void OfrontOPC_GenDynTypes (OfrontOPT_Node n, INTEGER vis)
 		if (vis == 0 || typ->ref < 255) {
 			OfrontOPC_BegStat();
 			if (vis == 1) {
-				OfrontOPM_WriteString((CHAR*)"import ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"import ", 8);
 			} else if (typ->strobj != NIL && typ->strobj->mnolev > 0) {
-				OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"static ", 8);
 			} else {
-				OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"export ", 8);
 			}
-			OfrontOPM_WriteString((CHAR*)"LONGINT *", (LONGINT)10);
+			OfrontOPM_WriteString((CHAR*)"LONGINT *", 10);
 			OfrontOPC_Andent(typ);
-			OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+			OfrontOPM_WriteString((CHAR*)"__typ", 6);
 			OfrontOPC_EndStat();
 		}
 		n = n->link;
@@ -1206,15 +1206,15 @@ void OfrontOPC_GenHdr (OfrontOPT_Node n)
 	OfrontOPC_GenDynTypes(n, 1);
 	OfrontOPM_WriteLn();
 	OfrontOPC_ProcPredefs(OfrontOPT_topScope->right, 1);
-	OfrontOPM_WriteString((CHAR*)"import ", (LONGINT)8);
-	OfrontOPM_WriteString((CHAR*)"void *", (LONGINT)7);
+	OfrontOPM_WriteString((CHAR*)"import ", 8);
+	OfrontOPM_WriteString((CHAR*)"void *", 7);
 	OfrontOPM_WriteString(OfrontOPM_modName, 32);
 	OfrontOPM_WriteString(OfrontOPC_BodyNameExt, 13);
 	OfrontOPC_EndStat();
 	OfrontOPM_WriteLn();
 	OfrontOPC_CProcDefs(OfrontOPT_topScope->right, 1);
 	OfrontOPM_WriteLn();
-	OfrontOPM_WriteString((CHAR*)"#endif", (LONGINT)7);
+	OfrontOPM_WriteString((CHAR*)"#endif", 7);
 	OfrontOPM_WriteLn();
 }
 
@@ -1222,8 +1222,8 @@ void OfrontOPC_GenHdr (OfrontOPT_Node n)
 static void OfrontOPC_GenHeaderMsg (void)
 {
 	INTEGER i;
-	OfrontOPM_WriteString((CHAR*)"/*", (LONGINT)3);
-	OfrontOPM_WriteString((CHAR*)" Ofront+ 1.0 -", (LONGINT)15);
+	OfrontOPM_WriteString((CHAR*)"/*", 3);
+	OfrontOPM_WriteString((CHAR*)"Ofront+ 1.0 -", 14);
 	i = 0;
 	while (i <= 31) {
 		if (__IN(i, OfrontOPM_glbopt)) {
@@ -1268,7 +1268,7 @@ static void OfrontOPC_GenHeaderMsg (void)
 		}
 		i += 1;
 	}
-	OfrontOPM_WriteString((CHAR*)" */", (LONGINT)4);
+	OfrontOPM_WriteString((CHAR*)" */", 4);
 	OfrontOPM_WriteLn();
 }
 
@@ -1277,16 +1277,16 @@ void OfrontOPC_GenHdrIncludes (void)
 	OfrontOPM_currFile = 2;
 	OfrontOPC_GenHeaderMsg();
 	OfrontOPM_WriteLn();
-	OfrontOPM_WriteString((CHAR*)"#ifndef ", (LONGINT)9);
+	OfrontOPM_WriteString((CHAR*)"#ifndef ", 9);
 	OfrontOPM_WriteString(OfrontOPM_modName, 32);
-	OfrontOPM_WriteString((CHAR*)"__h", (LONGINT)4);
+	OfrontOPM_WriteString((CHAR*)"__h", 4);
 	OfrontOPM_WriteLn();
-	OfrontOPM_WriteString((CHAR*)"#define ", (LONGINT)9);
+	OfrontOPM_WriteString((CHAR*)"#define ", 9);
 	OfrontOPM_WriteString(OfrontOPM_modName, 32);
-	OfrontOPM_WriteString((CHAR*)"__h", (LONGINT)4);
+	OfrontOPM_WriteString((CHAR*)"__h", 4);
 	OfrontOPM_WriteLn();
 	OfrontOPM_WriteLn();
-	OfrontOPC_Include((CHAR*)"SYSTEM", (LONGINT)7);
+	OfrontOPC_Include((CHAR*)"SYSTEM", 7);
 	OfrontOPC_IncludeImports(OfrontOPT_topScope->right, 1);
 	OfrontOPM_WriteLn();
 }
@@ -1296,7 +1296,7 @@ void OfrontOPC_GenBdy (OfrontOPT_Node n)
 {
 	OfrontOPM_currFile = 1;
 	OfrontOPC_GenHeaderMsg();
-	OfrontOPC_Include((CHAR*)"SYSTEM", (LONGINT)7);
+	OfrontOPC_Include((CHAR*)"SYSTEM", 7);
 	OfrontOPC_IncludeImports(OfrontOPT_topScope->right, 0);
 	OfrontOPM_WriteLn();
 	OfrontOPC_DefAnonRecs(n);
@@ -1310,7 +1310,7 @@ void OfrontOPC_GenBdy (OfrontOPT_Node n)
 	OfrontOPM_WriteLn();
 	OfrontOPC_CProcDefs(OfrontOPT_topScope->right, 0);
 	OfrontOPM_WriteLn();
-	OfrontOPM_WriteString((CHAR*)"/*============================================================================*/", (LONGINT)81);
+	OfrontOPM_WriteString((CHAR*)"/*============================================================================*/", 81);
 	OfrontOPM_WriteLn();
 	OfrontOPM_WriteLn();
 }
@@ -1323,9 +1323,9 @@ static void OfrontOPC_RegCmds (OfrontOPT_Object obj)
 		if (obj->mode == 7 && obj->history != 4) {
 			if ((obj->vis != 0 && obj->link == NIL) && obj->typ == OfrontOPT_notyp) {
 				OfrontOPC_BegStat();
-				OfrontOPM_WriteString((CHAR*)"__REGCMD(\"", (LONGINT)11);
+				OfrontOPM_WriteString((CHAR*)"__REGCMD(\"", 11);
 				OfrontOPM_WriteStringVar((void*)obj->name, 32);
-				OfrontOPM_WriteString((CHAR*)"\", ", (LONGINT)4);
+				OfrontOPM_WriteString((CHAR*)"\", ", 4);
 				OfrontOPC_Ident(obj);
 				OfrontOPM_Write(')');
 				OfrontOPC_EndStat();
@@ -1341,9 +1341,9 @@ static void OfrontOPC_InitImports (OfrontOPT_Object obj)
 		OfrontOPC_InitImports(obj->left);
 		if (obj->mode == 11 && obj->mnolev != 0) {
 			OfrontOPC_BegStat();
-			OfrontOPM_WriteString((CHAR*)"__IMPORT(", (LONGINT)10);
+			OfrontOPM_WriteString((CHAR*)"__IMPORT(", 10);
 			OfrontOPM_WriteStringVar((void*)OfrontOPT_GlbMod[__X(-obj->mnolev, 64)]->name, 32);
-			OfrontOPM_WriteString((CHAR*)"__init", (LONGINT)7);
+			OfrontOPM_WriteString((CHAR*)"__init", 7);
 			OfrontOPM_Write(')');
 			OfrontOPC_EndStat();
 		}
@@ -1361,31 +1361,31 @@ void OfrontOPC_GenEnumPtrs (OfrontOPT_Object var)
 		if (OfrontOPC_NofPtrs(typ) > 0) {
 			if (!OfrontOPC_GlbPtrs) {
 				OfrontOPC_GlbPtrs = 1;
-				OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"static ", 8);
 				if (OfrontOPC_ansi) {
-					OfrontOPM_WriteString((CHAR*)"void EnumPtrs(void (*P)(void*))", (LONGINT)32);
+					OfrontOPM_WriteString((CHAR*)"void EnumPtrs(void (*P)(void*))", 32);
 				} else {
-					OfrontOPM_WriteString((CHAR*)"void EnumPtrs(P)", (LONGINT)17);
+					OfrontOPM_WriteString((CHAR*)"void EnumPtrs(P)", 17);
 					OfrontOPM_WriteLn();
 					OfrontOPM_Write(0x09);
-					OfrontOPM_WriteString((CHAR*)"void (*P)();", (LONGINT)13);
+					OfrontOPM_WriteString((CHAR*)"void (*P)();", 13);
 				}
 				OfrontOPM_WriteLn();
 				OfrontOPC_BegBlk();
 			}
 			OfrontOPC_BegStat();
 			if (typ->form == 13) {
-				OfrontOPM_WriteString((CHAR*)"P(", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)"P(", 3);
 				OfrontOPC_Ident(var);
 				OfrontOPM_Write(')');
 			} else if (typ->comp == 4) {
-				OfrontOPM_WriteString((CHAR*)"__ENUMR(&", (LONGINT)10);
+				OfrontOPM_WriteString((CHAR*)"__ENUMR(&", 10);
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)", ", 3);
 				OfrontOPC_Andent(typ);
-				OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
-				OfrontOPC_Str1((CHAR*)", #", (LONGINT)4, typ->size);
-				OfrontOPM_WriteString((CHAR*)", 1, P)", (LONGINT)8);
+				OfrontOPM_WriteString((CHAR*)"__typ", 6);
+				OfrontOPC_Str1((CHAR*)", #", 4, typ->size);
+				OfrontOPM_WriteString((CHAR*)", 1, P)", 8);
 			} else if (typ->comp == 2) {
 				n = typ->n;
 				typ = typ->BaseTyp;
@@ -1394,17 +1394,17 @@ void OfrontOPC_GenEnumPtrs (OfrontOPT_Object var)
 					typ = typ->BaseTyp;
 				}
 				if (typ->form == 13) {
-					OfrontOPM_WriteString((CHAR*)"__ENUMP(", (LONGINT)9);
+					OfrontOPM_WriteString((CHAR*)"__ENUMP(", 9);
 					OfrontOPC_Ident(var);
-					OfrontOPC_Str1((CHAR*)", #, P)", (LONGINT)8, n);
+					OfrontOPC_Str1((CHAR*)", #, P)", 8, n);
 				} else if (typ->comp == 4) {
-					OfrontOPM_WriteString((CHAR*)"__ENUMR(", (LONGINT)9);
+					OfrontOPM_WriteString((CHAR*)"__ENUMR(", 9);
 					OfrontOPC_Ident(var);
-					OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+					OfrontOPM_WriteString((CHAR*)", ", 3);
 					OfrontOPC_Andent(typ);
-					OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
-					OfrontOPC_Str1((CHAR*)", #", (LONGINT)4, typ->size);
-					OfrontOPC_Str1((CHAR*)", #, P)", (LONGINT)8, n);
+					OfrontOPM_WriteString((CHAR*)"__typ", 6);
+					OfrontOPC_Str1((CHAR*)", #", 4, typ->size);
+					OfrontOPC_Str1((CHAR*)", #, P)", 8, n);
 				}
 			}
 			OfrontOPC_EndStat();
@@ -1423,18 +1423,18 @@ void OfrontOPC_EnterBody (void)
 	OfrontOPM_WriteLn();
 	if (OfrontOPC_mainprog) {
 		if (OfrontOPC_ansi) {
-			OfrontOPM_WriteString((CHAR*)"int main(int argc, char **argv)", (LONGINT)32);
+			OfrontOPM_WriteString((CHAR*)"int main(int argc, char **argv)", 32);
 			OfrontOPM_WriteLn();
 		} else {
-			OfrontOPM_WriteString((CHAR*)"main(argc, argv)", (LONGINT)17);
+			OfrontOPM_WriteString((CHAR*)"main(argc, argv)", 17);
 			OfrontOPM_WriteLn();
 			OfrontOPM_Write(0x09);
-			OfrontOPM_WriteString((CHAR*)"int argc; char **argv;", (LONGINT)23);
+			OfrontOPM_WriteString((CHAR*)"int argc; char **argv;", 23);
 			OfrontOPM_WriteLn();
 		}
 	} else {
-		OfrontOPM_WriteString((CHAR*)"export ", (LONGINT)8);
-		OfrontOPM_WriteString((CHAR*)"void *", (LONGINT)7);
+		OfrontOPM_WriteString((CHAR*)"export ", 8);
+		OfrontOPM_WriteString((CHAR*)"void *", 7);
 		OfrontOPM_WriteString(OfrontOPM_modName, 32);
 		OfrontOPM_WriteString(OfrontOPC_BodyNameExt, 13);
 		OfrontOPM_WriteLn();
@@ -1442,28 +1442,28 @@ void OfrontOPC_EnterBody (void)
 	OfrontOPC_BegBlk();
 	OfrontOPC_BegStat();
 	if (OfrontOPC_mainprog) {
-		OfrontOPM_WriteString((CHAR*)"__INIT(argc, argv)", (LONGINT)19);
+		OfrontOPM_WriteString((CHAR*)"__INIT(argc, argv)", 19);
 	} else {
-		OfrontOPM_WriteString((CHAR*)"__DEFMOD", (LONGINT)9);
+		OfrontOPM_WriteString((CHAR*)"__DEFMOD", 9);
 	}
 	OfrontOPC_EndStat();
 	if (OfrontOPC_mainprog && 0) {
 		OfrontOPC_BegStat();
-		OfrontOPM_WriteString((CHAR*)"/*don`t do it!*/ printf(\"DEMO VERSION: DO NOT USE THIS PROGRAM FOR ANY COMMERCIAL PURPOSE\\n\")", (LONGINT)94);
+		OfrontOPM_WriteString((CHAR*)"/*don`t do it!*/ printf(\"DEMO VERSION: DO NOT USE THIS PROGRAM FOR ANY COMMERCIAL PURPOSE\\n\")", 94);
 		OfrontOPC_EndStat();
 	}
 	OfrontOPC_InitImports(OfrontOPT_topScope->right);
 	OfrontOPC_BegStat();
 	if (OfrontOPC_mainprog) {
-		OfrontOPM_WriteString((CHAR*)"__REGMAIN(\"", (LONGINT)12);
+		OfrontOPM_WriteString((CHAR*)"__REGMAIN(\"", 12);
 	} else {
-		OfrontOPM_WriteString((CHAR*)"__REGMOD(\"", (LONGINT)11);
+		OfrontOPM_WriteString((CHAR*)"__REGMOD(\"", 11);
 	}
 	OfrontOPM_WriteString(OfrontOPM_modName, 32);
 	if (OfrontOPC_GlbPtrs) {
-		OfrontOPM_WriteString((CHAR*)"\", EnumPtrs)", (LONGINT)13);
+		OfrontOPM_WriteString((CHAR*)"\", EnumPtrs)", 13);
 	} else {
-		OfrontOPM_WriteString((CHAR*)"\", 0)", (LONGINT)6);
+		OfrontOPM_WriteString((CHAR*)"\", 0)", 6);
 	}
 	OfrontOPC_EndStat();
 	if (__STRCMP(OfrontOPM_modName, "SYSTEM") != 0) {
@@ -1476,9 +1476,9 @@ void OfrontOPC_ExitBody (void)
 {
 	OfrontOPC_BegStat();
 	if (OfrontOPC_mainprog) {
-		OfrontOPM_WriteString((CHAR*)"__FINI;", (LONGINT)8);
+		OfrontOPM_WriteString((CHAR*)"__FINI;", 8);
 	} else {
-		OfrontOPM_WriteString((CHAR*)"__ENDMOD;", (LONGINT)10);
+		OfrontOPM_WriteString((CHAR*)"__ENDMOD;", 10);
 	}
 	OfrontOPM_WriteLn();
 	OfrontOPC_EndBlk();
@@ -1489,25 +1489,25 @@ void OfrontOPC_DefineInter (OfrontOPT_Object proc)
 {
 	OfrontOPT_Object scope = NIL;
 	scope = proc->scope;
-	OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
-	OfrontOPM_WriteString((CHAR*)"struct ", (LONGINT)8);
+	OfrontOPM_WriteString((CHAR*)"static ", 8);
+	OfrontOPM_WriteString((CHAR*)"struct ", 8);
 	OfrontOPM_WriteStringVar((void*)scope->name, 32);
 	OfrontOPM_Write(' ');
 	OfrontOPC_BegBlk();
 	OfrontOPC_IdentList(proc->link, 3);
 	OfrontOPC_IdentList(scope->scope, 3);
 	OfrontOPC_BegStat();
-	OfrontOPM_WriteString((CHAR*)"struct ", (LONGINT)8);
+	OfrontOPM_WriteString((CHAR*)"struct ", 8);
 	OfrontOPM_WriteStringVar((void*)scope->name, 32);
 	OfrontOPM_Write(' ');
 	OfrontOPM_Write('*');
-	OfrontOPM_WriteString((CHAR*)"lnk", (LONGINT)4);
+	OfrontOPM_WriteString((CHAR*)"lnk", 4);
 	OfrontOPC_EndStat();
 	OfrontOPC_EndBlk0();
 	OfrontOPM_Write(' ');
 	OfrontOPM_Write('*');
 	OfrontOPM_WriteStringVar((void*)scope->name, 32);
-	OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+	OfrontOPM_WriteString((CHAR*)"_s", 3);
 	OfrontOPC_EndStat();
 	OfrontOPM_WriteLn();
 	OfrontOPC_ProcPredefs(scope->right, 0);
@@ -1521,7 +1521,7 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 	OfrontOPT_Struct typ = NIL;
 	INTEGER dim;
 	if (proc->vis != 1) {
-		OfrontOPM_WriteString((CHAR*)"static ", (LONGINT)8);
+		OfrontOPM_WriteString((CHAR*)"static ", 8);
 	}
 	OfrontOPC_ProcHeader(proc, 1);
 	OfrontOPC_BegBlk();
@@ -1529,10 +1529,10 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 	OfrontOPC_IdentList(scope->scope, 0);
 	if (!scope->leaf) {
 		OfrontOPC_BegStat();
-		OfrontOPM_WriteString((CHAR*)"struct ", (LONGINT)8);
+		OfrontOPM_WriteString((CHAR*)"struct ", 8);
 		OfrontOPM_WriteStringVar((void*)scope->name, 32);
 		OfrontOPM_Write(' ');
-		OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)"_s", 3);
 		OfrontOPC_EndStat();
 	}
 	var = proc->link;
@@ -1546,7 +1546,7 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 			}
 			OfrontOPM_Write(' ');
 			OfrontOPC_Ident(var);
-			OfrontOPM_WriteString((CHAR*)"__copy", (LONGINT)7);
+			OfrontOPM_WriteString((CHAR*)"__copy", 7);
 			OfrontOPC_EndStat();
 		}
 		var = var->link;
@@ -1559,7 +1559,7 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 				OfrontOPC_Ident(var->typ->strobj);
 				OfrontOPM_Write(' ');
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)" = _", (LONGINT)5);
+				OfrontOPM_WriteString((CHAR*)" = _", 5);
 				OfrontOPC_Ident(var);
 				OfrontOPC_EndStat();
 			}
@@ -1571,31 +1571,31 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 		if ((__IN(var->typ->comp, 0x0c) && var->mode == 1) && var->typ->sysflag == 0) {
 			OfrontOPC_BegStat();
 			if (var->typ->comp == 2) {
-				OfrontOPM_WriteString((CHAR*)"__DUPARR(", (LONGINT)10);
+				OfrontOPM_WriteString((CHAR*)"__DUPARR(", 10);
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)", ", 3);
 				if (var->typ->strobj == NIL) {
 					OfrontOPM_Mark(200, var->typ->txtpos);
 				} else {
 					OfrontOPC_Ident(var->typ->strobj);
 				}
 			} else {
-				OfrontOPM_WriteString((CHAR*)"__DUP(", (LONGINT)7);
+				OfrontOPM_WriteString((CHAR*)"__DUP(", 7);
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)", ", 3);
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+				OfrontOPM_WriteString((CHAR*)"__len", 6);
 				typ = var->typ->BaseTyp;
 				dim = 1;
 				while (typ->comp == 3) {
-					OfrontOPM_WriteString((CHAR*)" * ", (LONGINT)4);
+					OfrontOPM_WriteString((CHAR*)" * ", 4);
 					OfrontOPC_Ident(var);
-					OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+					OfrontOPM_WriteString((CHAR*)"__len", 6);
 					OfrontOPM_WriteInt(dim);
 					typ = typ->BaseTyp;
 					dim += 1;
 				}
-				OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)", ", 3);
 				if (typ->strobj == NIL) {
 					OfrontOPM_Mark(200, typ->txtpos);
 				} else {
@@ -1612,12 +1612,12 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 		while (var != NIL) {
 			if (!var->leaf) {
 				OfrontOPC_BegStat();
-				OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)"_s", 3);
 				OfrontOPM_Write('.');
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
+				OfrontOPM_WriteString((CHAR*)" = ", 4);
 				if (__IN(var->typ->comp, 0x0c)) {
-					OfrontOPM_WriteString((CHAR*)"(void*)", (LONGINT)8);
+					OfrontOPM_WriteString((CHAR*)"(void*)", 8);
 				} else if (var->mode != 2) {
 					OfrontOPM_Write('&');
 				}
@@ -1626,31 +1626,31 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 					typ = var->typ;
 					dim = 0;
 					do {
-						OfrontOPM_WriteString((CHAR*)"; ", (LONGINT)3);
-						OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+						OfrontOPM_WriteString((CHAR*)"; ", 3);
+						OfrontOPM_WriteString((CHAR*)"_s", 3);
 						OfrontOPM_Write('.');
 						OfrontOPC_Ident(var);
-						OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+						OfrontOPM_WriteString((CHAR*)"__len", 6);
 						if (dim != 0) {
 							OfrontOPM_WriteInt(dim);
 						}
-						OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
+						OfrontOPM_WriteString((CHAR*)" = ", 4);
 						OfrontOPC_Ident(var);
-						OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+						OfrontOPM_WriteString((CHAR*)"__len", 6);
 						if (dim != 0) {
 							OfrontOPM_WriteInt(dim);
 						}
 						typ = typ->BaseTyp;
 					} while (!(typ->comp != 3));
 				} else if (var->mode == 2 && var->typ->comp == 4) {
-					OfrontOPM_WriteString((CHAR*)"; ", (LONGINT)3);
-					OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+					OfrontOPM_WriteString((CHAR*)"; ", 3);
+					OfrontOPM_WriteString((CHAR*)"_s", 3);
 					OfrontOPM_Write('.');
 					OfrontOPC_Ident(var);
-					OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
-					OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
+					OfrontOPM_WriteString((CHAR*)"__typ", 6);
+					OfrontOPM_WriteString((CHAR*)" = ", 4);
 					OfrontOPC_Ident(var);
-					OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+					OfrontOPM_WriteString((CHAR*)"__typ", 6);
 				}
 				OfrontOPC_EndStat();
 			}
@@ -1660,14 +1660,14 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 		while (var != NIL) {
 			if (!var->leaf) {
 				OfrontOPC_BegStat();
-				OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)"_s", 3);
 				OfrontOPM_Write('.');
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
+				OfrontOPM_WriteString((CHAR*)" = ", 4);
 				if (var->typ->comp != 2) {
 					OfrontOPM_Write('&');
 				} else {
-					OfrontOPM_WriteString((CHAR*)"(void*)", (LONGINT)8);
+					OfrontOPM_WriteString((CHAR*)"(void*)", 8);
 				}
 				OfrontOPC_Ident(var);
 				OfrontOPC_EndStat();
@@ -1675,19 +1675,19 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 			var = var->link;
 		}
 		OfrontOPC_BegStat();
-		OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)"_s", 3);
 		OfrontOPM_Write('.');
-		OfrontOPM_WriteString((CHAR*)"lnk", (LONGINT)4);
-		OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
+		OfrontOPM_WriteString((CHAR*)"lnk", 4);
+		OfrontOPM_WriteString((CHAR*)" = ", 4);
 		OfrontOPM_WriteStringVar((void*)scope->name, 32);
-		OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)"_s", 3);
 		OfrontOPC_EndStat();
 		OfrontOPC_BegStat();
 		OfrontOPM_WriteStringVar((void*)scope->name, 32);
-		OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
-		OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
+		OfrontOPM_WriteString((CHAR*)"_s", 3);
+		OfrontOPM_WriteString((CHAR*)" = ", 4);
 		OfrontOPM_Write('&');
-		OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)"_s", 3);
 		OfrontOPC_EndStat();
 	}
 }
@@ -1700,7 +1700,7 @@ void OfrontOPC_ExitProc (OfrontOPT_Object proc, BOOLEAN eoBlock, BOOLEAN implici
 	indent = eoBlock;
 	if (implicitRet && proc->typ != OfrontOPT_notyp) {
 		OfrontOPM_Write(0x09);
-		OfrontOPM_WriteString((CHAR*)"__RETCHK;", (LONGINT)10);
+		OfrontOPM_WriteString((CHAR*)"__RETCHK;", 10);
 		OfrontOPM_WriteLn();
 	} else if (!eoBlock || implicitRet) {
 		if (!proc->scope->leaf) {
@@ -1710,11 +1710,11 @@ void OfrontOPC_ExitProc (OfrontOPT_Object proc, BOOLEAN eoBlock, BOOLEAN implici
 				indent = 1;
 			}
 			OfrontOPM_WriteStringVar((void*)proc->scope->name, 32);
-			OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
-			OfrontOPM_WriteString((CHAR*)" = ", (LONGINT)4);
-			OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)"_s", 3);
+			OfrontOPM_WriteString((CHAR*)" = ", 4);
+			OfrontOPM_WriteString((CHAR*)"_s", 3);
 			OfrontOPM_Write('.');
-			OfrontOPM_WriteString((CHAR*)"lnk", (LONGINT)4);
+			OfrontOPM_WriteString((CHAR*)"lnk", 4);
 			OfrontOPC_EndStat();
 		}
 		var = proc->link;
@@ -1725,7 +1725,7 @@ void OfrontOPC_ExitProc (OfrontOPT_Object proc, BOOLEAN eoBlock, BOOLEAN implici
 				} else {
 					indent = 1;
 				}
-				OfrontOPM_WriteString((CHAR*)"__DEL(", (LONGINT)7);
+				OfrontOPM_WriteString((CHAR*)"__DEL(", 7);
 				OfrontOPC_Ident(var);
 				OfrontOPM_Write(')');
 				OfrontOPC_EndStat();
@@ -1740,7 +1740,7 @@ void OfrontOPC_ExitProc (OfrontOPT_Object proc, BOOLEAN eoBlock, BOOLEAN implici
 		OfrontOPC_BegStat();
 	}
 	if (eoBlock && proc->vis == 1) {
-		OfrontOPM_WriteString((CHAR*)"/*----------------------------------------------------------------------------*/", (LONGINT)81);
+		OfrontOPM_WriteString((CHAR*)"/*----------------------------------------------------------------------------*/", 81);
 		OfrontOPM_WriteLn();
 	}
 }
@@ -1753,9 +1753,9 @@ void OfrontOPC_CompleteIdent (OfrontOPT_Object obj)
 	if (obj->adr == 1) {
 		if (obj->typ->comp == 4) {
 			OfrontOPC_Ident(obj);
-			OfrontOPM_WriteString((CHAR*)"__", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)"__", 3);
 		} else {
-			OfrontOPM_WriteString((CHAR*)"((", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)"((", 3);
 			OfrontOPC_Ident(obj->typ->strobj);
 			OfrontOPM_Write(')');
 			OfrontOPC_Ident(obj);
@@ -1767,8 +1767,8 @@ void OfrontOPC_CompleteIdent (OfrontOPT_Object obj)
 			OfrontOPM_Write('*');
 		}
 		OfrontOPM_WriteStringVar((void*)obj->scope->name, 32);
-		OfrontOPM_WriteString((CHAR*)"_s", (LONGINT)3);
-		OfrontOPM_WriteString((CHAR*)"->", (LONGINT)3);
+		OfrontOPM_WriteString((CHAR*)"_s", 3);
+		OfrontOPM_WriteString((CHAR*)"->", 3);
 		OfrontOPC_Ident(obj);
 	} else {
 		OfrontOPC_Ident(obj);
@@ -1783,15 +1783,15 @@ void OfrontOPC_TypeOf (OfrontOPT_Object ap)
 	if (ap->mode == 2) {
 		if ((INTEGER)ap->mnolev != OfrontOPM_level) {
 			OfrontOPM_WriteStringVar((void*)ap->scope->name, 32);
-			OfrontOPM_WriteString((CHAR*)"_s->", (LONGINT)5);
+			OfrontOPM_WriteString((CHAR*)"_s->", 5);
 			OfrontOPC_Ident(ap);
 		} else {
 			OfrontOPC_Ident(ap);
 		}
-		OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+		OfrontOPM_WriteString((CHAR*)"__typ", 6);
 	} else if (ap->typ->strobj != NIL) {
 		OfrontOPC_Ident(ap->typ->strobj);
-		OfrontOPM_WriteString((CHAR*)"__typ", (LONGINT)6);
+		OfrontOPM_WriteString((CHAR*)"__typ", 6);
 	} else {
 		OfrontOPC_Andent(ap->typ);
 	}
@@ -1802,22 +1802,22 @@ void OfrontOPC_Cmp (INTEGER rel)
 {
 	switch (rel) {
 		case 9: 
-			OfrontOPM_WriteString((CHAR*)" == ", (LONGINT)5);
+			OfrontOPM_WriteString((CHAR*)" == ", 5);
 			break;
 		case 10: 
-			OfrontOPM_WriteString((CHAR*)" != ", (LONGINT)5);
+			OfrontOPM_WriteString((CHAR*)" != ", 5);
 			break;
 		case 11: 
-			OfrontOPM_WriteString((CHAR*)" < ", (LONGINT)4);
+			OfrontOPM_WriteString((CHAR*)" < ", 4);
 			break;
 		case 12: 
-			OfrontOPM_WriteString((CHAR*)" <= ", (LONGINT)5);
+			OfrontOPM_WriteString((CHAR*)" <= ", 5);
 			break;
 		case 13: 
-			OfrontOPM_WriteString((CHAR*)" > ", (LONGINT)4);
+			OfrontOPM_WriteString((CHAR*)" > ", 4);
 			break;
 		case 14: 
-			OfrontOPM_WriteString((CHAR*)" >= ", (LONGINT)5);
+			OfrontOPM_WriteString((CHAR*)" >= ", 5);
 			break;
 		default: __CASECHK;
 	}
@@ -1827,7 +1827,7 @@ void OfrontOPC_Cmp (INTEGER rel)
 void OfrontOPC_Case (LONGINT caseVal, INTEGER form)
 {
 	CHAR ch;
-	OfrontOPM_WriteString((CHAR*)"case ", (LONGINT)6);
+	OfrontOPM_WriteString((CHAR*)"case ", 6);
 	switch (form) {
 		case 3: 
 			ch = (CHAR)caseVal;
@@ -1841,7 +1841,7 @@ void OfrontOPC_Case (LONGINT caseVal, INTEGER form)
 				}
 				OfrontOPM_Write('\'');
 			} else {
-				OfrontOPM_WriteString((CHAR*)"0x", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)"0x", 3);
 				OfrontOPM_WriteHex(caseVal);
 			}
 			break;
@@ -1850,16 +1850,16 @@ void OfrontOPC_Case (LONGINT caseVal, INTEGER form)
 			break;
 		default: __CASECHK;
 	}
-	OfrontOPM_WriteString((CHAR*)": ", (LONGINT)3);
+	OfrontOPM_WriteString((CHAR*)": ", 3);
 }
 
 /*----------------------------------------------------------------------------*/
 void OfrontOPC_SetInclude (BOOLEAN exclude)
 {
 	if (exclude) {
-		OfrontOPM_WriteString((CHAR*)" &= ~", (LONGINT)6);
+		OfrontOPM_WriteString((CHAR*)" &= ~", 6);
 	} else {
-		OfrontOPM_WriteString((CHAR*)" |= ", (LONGINT)5);
+		OfrontOPM_WriteString((CHAR*)" |= ", 5);
 	}
 }
 
@@ -1867,16 +1867,16 @@ void OfrontOPC_SetInclude (BOOLEAN exclude)
 void OfrontOPC_Increment (BOOLEAN decrement)
 {
 	if (decrement) {
-		OfrontOPM_WriteString((CHAR*)" -= ", (LONGINT)5);
+		OfrontOPM_WriteString((CHAR*)" -= ", 5);
 	} else {
-		OfrontOPM_WriteString((CHAR*)" += ", (LONGINT)5);
+		OfrontOPM_WriteString((CHAR*)" += ", 5);
 	}
 }
 
 /*----------------------------------------------------------------------------*/
 void OfrontOPC_Halt (LONGINT n)
 {
-	OfrontOPC_Str1((CHAR*)"__HALT(#)", (LONGINT)10, n);
+	OfrontOPC_Str1((CHAR*)"__HALT(#)", 10, n);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1884,7 +1884,7 @@ void OfrontOPC_Len (OfrontOPT_Object obj, OfrontOPT_Struct array, LONGINT dim)
 {
 	if (array->comp == 3) {
 		OfrontOPC_CompleteIdent(obj);
-		OfrontOPM_WriteString((CHAR*)"__len", (LONGINT)6);
+		OfrontOPM_WriteString((CHAR*)"__len", 6);
 		if (dim != 0) {
 			OfrontOPM_WriteInt(dim);
 		}
@@ -1923,7 +1923,7 @@ void OfrontOPC_Constant (OfrontOPT_Const con, INTEGER form)
 				OfrontOPM_Write(ch);
 				OfrontOPM_Write('\'');
 			} else {
-				OfrontOPM_WriteString((CHAR*)"0x", (LONGINT)3);
+				OfrontOPM_WriteString((CHAR*)"0x", 3);
 				OfrontOPM_WriteHex(con->intval);
 			}
 			break;
@@ -1937,7 +1937,7 @@ void OfrontOPC_Constant (OfrontOPT_Const con, INTEGER form)
 			OfrontOPM_WriteReal(con->realval, 0x00);
 			break;
 		case 9: 
-			OfrontOPM_WriteString((CHAR*)"0x", (LONGINT)3);
+			OfrontOPM_WriteString((CHAR*)"0x", 3);
 			skipLeading = 1;
 			s = con->setval;
 			i = 32;
@@ -1974,7 +1974,7 @@ void OfrontOPC_Constant (OfrontOPT_Const con, INTEGER form)
 			OfrontOPM_Write('\"');
 			break;
 		case 11: 
-			OfrontOPM_WriteString((CHAR*)"NIL", (LONGINT)4);
+			OfrontOPM_WriteString((CHAR*)"NIL", 4);
 			break;
 		default: __CASECHK;
 	}
@@ -2012,42 +2012,42 @@ static void OfrontOPC_InitKeywords (void)
 		OfrontOPC_hashtab[__X(i, 105)] = -1;
 		i += 1;
 	}
-	Enter__48((CHAR*)"asm", (LONGINT)4);
-	Enter__48((CHAR*)"auto", (LONGINT)5);
-	Enter__48((CHAR*)"break", (LONGINT)6);
-	Enter__48((CHAR*)"case", (LONGINT)5);
-	Enter__48((CHAR*)"char", (LONGINT)5);
-	Enter__48((CHAR*)"const", (LONGINT)6);
-	Enter__48((CHAR*)"continue", (LONGINT)9);
-	Enter__48((CHAR*)"default", (LONGINT)8);
-	Enter__48((CHAR*)"do", (LONGINT)3);
-	Enter__48((CHAR*)"double", (LONGINT)7);
-	Enter__48((CHAR*)"else", (LONGINT)5);
-	Enter__48((CHAR*)"enum", (LONGINT)5);
-	Enter__48((CHAR*)"extern", (LONGINT)7);
-	Enter__48((CHAR*)"export", (LONGINT)7);
-	Enter__48((CHAR*)"float", (LONGINT)6);
-	Enter__48((CHAR*)"for", (LONGINT)4);
-	Enter__48((CHAR*)"fortran", (LONGINT)8);
-	Enter__48((CHAR*)"goto", (LONGINT)5);
-	Enter__48((CHAR*)"if", (LONGINT)3);
-	Enter__48((CHAR*)"import", (LONGINT)7);
-	Enter__48((CHAR*)"int", (LONGINT)4);
-	Enter__48((CHAR*)"long", (LONGINT)5);
-	Enter__48((CHAR*)"register", (LONGINT)9);
-	Enter__48((CHAR*)"return", (LONGINT)7);
-	Enter__48((CHAR*)"short", (LONGINT)6);
-	Enter__48((CHAR*)"signed", (LONGINT)7);
-	Enter__48((CHAR*)"sizeof", (LONGINT)7);
-	Enter__48((CHAR*)"static", (LONGINT)7);
-	Enter__48((CHAR*)"struct", (LONGINT)7);
-	Enter__48((CHAR*)"switch", (LONGINT)7);
-	Enter__48((CHAR*)"typedef", (LONGINT)8);
-	Enter__48((CHAR*)"union", (LONGINT)6);
-	Enter__48((CHAR*)"unsigned", (LONGINT)9);
-	Enter__48((CHAR*)"void", (LONGINT)5);
-	Enter__48((CHAR*)"volatile", (LONGINT)9);
-	Enter__48((CHAR*)"while", (LONGINT)6);
+	Enter__48((CHAR*)"asm", 4);
+	Enter__48((CHAR*)"auto", 5);
+	Enter__48((CHAR*)"break", 6);
+	Enter__48((CHAR*)"case", 5);
+	Enter__48((CHAR*)"char", 5);
+	Enter__48((CHAR*)"const", 6);
+	Enter__48((CHAR*)"continue", 9);
+	Enter__48((CHAR*)"default", 8);
+	Enter__48((CHAR*)"do", 3);
+	Enter__48((CHAR*)"double", 7);
+	Enter__48((CHAR*)"else", 5);
+	Enter__48((CHAR*)"enum", 5);
+	Enter__48((CHAR*)"extern", 7);
+	Enter__48((CHAR*)"export", 7);
+	Enter__48((CHAR*)"float", 6);
+	Enter__48((CHAR*)"for", 4);
+	Enter__48((CHAR*)"fortran", 8);
+	Enter__48((CHAR*)"goto", 5);
+	Enter__48((CHAR*)"if", 3);
+	Enter__48((CHAR*)"import", 7);
+	Enter__48((CHAR*)"int", 4);
+	Enter__48((CHAR*)"long", 5);
+	Enter__48((CHAR*)"register", 9);
+	Enter__48((CHAR*)"return", 7);
+	Enter__48((CHAR*)"short", 6);
+	Enter__48((CHAR*)"signed", 7);
+	Enter__48((CHAR*)"sizeof", 7);
+	Enter__48((CHAR*)"static", 7);
+	Enter__48((CHAR*)"struct", 7);
+	Enter__48((CHAR*)"switch", 7);
+	Enter__48((CHAR*)"typedef", 8);
+	Enter__48((CHAR*)"union", 6);
+	Enter__48((CHAR*)"unsigned", 9);
+	Enter__48((CHAR*)"void", 5);
+	Enter__48((CHAR*)"volatile", 9);
+	Enter__48((CHAR*)"while", 6);
 	InitKeywords__47_s = _s.lnk;
 }
 

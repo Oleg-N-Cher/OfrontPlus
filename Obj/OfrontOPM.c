@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -11,7 +11,7 @@ typedef
 	CHAR OfrontOPM_FileName[32];
 
 
-export INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_LenSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet, OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt, OfrontOPM_MaxIndex;
+export INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_ArrLenSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet, OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt, OfrontOPM_MaxIndex;
 export LONGINT OfrontOPM_MinLInt, OfrontOPM_MaxLInt;
 export LONGREAL OfrontOPM_MinReal, OfrontOPM_MaxReal, OfrontOPM_MinLReal, OfrontOPM_MaxLReal;
 export BOOLEAN OfrontOPM_noerr;
@@ -155,10 +155,10 @@ static void OfrontOPM_ScanOptions (CHAR *s, INTEGER s__len, SET *opt)
 				*opt = *opt ^ 0x0800;
 				break;
 			default: 
-				OfrontOPM_LogWStr((CHAR*)"  warning: option ", (LONGINT)19);
+				OfrontOPM_LogWStr((CHAR*)"  warning: option ", 19);
 				OfrontOPM_LogW('-');
 				OfrontOPM_LogW(s[__X(i, s__len)]);
-				OfrontOPM_LogWStr((CHAR*)" ignored", (LONGINT)9);
+				OfrontOPM_LogWStr((CHAR*)" ignored", 9);
 				OfrontOPM_LogWLn();
 				break;
 		}
@@ -172,18 +172,18 @@ void OfrontOPM_OpenPar (void)
 	if (Args_argc == 1) {
 		OfrontOPM_stop = 1;
 		Console_Ln();
-		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0 #2", (LONGINT)46);
+		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0 #2", 46);
 		Console_Ln();
-		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016", (LONGINT)78);
+		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016", 78);
 		Console_Ln();
 		Console_Ln();
-		Console_String((CHAR*)"SYNOPSIS", (LONGINT)9);
+		Console_String((CHAR*)"SYNOPSIS", 9);
 		Console_Ln();
-		Console_String((CHAR*)"  command = \"ofront+\" options {file options}.", (LONGINT)46);
+		Console_String((CHAR*)"  command = \"ofront+\" options {file options}.", 46);
 		Console_Ln();
-		Console_String((CHAR*)"  options = [\"-\" {option} ].", (LONGINT)29);
+		Console_String((CHAR*)"  options = [\"-\" {option} ].", 29);
 		Console_Ln();
-		Console_String((CHAR*)"  option  = \"m\" | \"s\" | \"e\" | \"i\" | \"l\" | \"k\" | \"r\" | \"x\" | \"a\" | \"p\" | \"t\".", (LONGINT)77);
+		Console_String((CHAR*)"  option  = \"m\" | \"s\" | \"e\" | \"i\" | \"l\" | \"k\" | \"r\" | \"x\" | \"a\" | \"p\" | \"t\".", 77);
 		Console_Ln();
 		Console_Ln();
 	} else {
@@ -242,11 +242,11 @@ void OfrontOPM_Init (BOOLEAN *done)
 	Texts_Open(T, s, 256);
 	OfrontOPM_LogWStr(s, 256);
 	if (T->len == 0) {
-		OfrontOPM_LogWStr((CHAR*)" not found", (LONGINT)11);
+		OfrontOPM_LogWStr((CHAR*)" not found", 11);
 		OfrontOPM_LogWLn();
 	} else {
 		Texts_OpenReader(&OfrontOPM_inR, Texts_Reader__typ, T, 0);
-		OfrontOPM_LogWStr((CHAR*)"  translating", (LONGINT)14);
+		OfrontOPM_LogWStr((CHAR*)"  translating", 14);
 		*done = 1;
 	}
 	OfrontOPM_S += 1;
@@ -304,13 +304,13 @@ static void OfrontOPM_MakeFileName (CHAR *name, INTEGER name__len, CHAR *FName, 
 static void OfrontOPM_LogErrMsg (INTEGER n)
 {
 	if (n >= 0) {
-		OfrontOPM_LogWStr((CHAR*)"  err ", (LONGINT)7);
+		OfrontOPM_LogWStr((CHAR*)"  err ", 7);
 	} else {
-		OfrontOPM_LogWStr((CHAR*)"  warning ", (LONGINT)11);
+		OfrontOPM_LogWStr((CHAR*)"  warning ", 11);
 		n = -n;
 	}
 	OfrontOPM_LogWNum(n, 1);
-	OfrontOPM_LogWStr((CHAR*)"  ", (LONGINT)3);
+	OfrontOPM_LogWStr((CHAR*)"  ", 3);
 	OfrontErrors_LogErrMsg(n);
 }
 
@@ -324,43 +324,43 @@ void OfrontOPM_Mark (INTEGER n, LONGINT pos1)
 			if (pos < OfrontOPM_lasterrpos || OfrontOPM_lasterrpos + 9 < pos) {
 				OfrontOPM_lasterrpos = pos;
 				OfrontOPM_LogWLn();
-				OfrontOPM_LogWStr((CHAR*)"  ", (LONGINT)3);
+				OfrontOPM_LogWStr((CHAR*)"  ", 3);
 				if (n < 249) {
-					OfrontOPM_LogWStr((CHAR*)"  line ", (LONGINT)8);
+					OfrontOPM_LogWStr((CHAR*)"  line ", 8);
 					OfrontOPM_LogWNum(__ASHR(pos, 8, INTEGER), 1);
-					OfrontOPM_LogWStr((CHAR*)"  pos ", (LONGINT)7);
+					OfrontOPM_LogWStr((CHAR*)"  pos ", 7);
 					OfrontOPM_LogWNum(__MASK(pos, -256), 1);
 					OfrontOPM_LogErrMsg(n);
 				} else if (n == 255) {
-					OfrontOPM_LogWStr((CHAR*)"  line ", (LONGINT)8);
+					OfrontOPM_LogWStr((CHAR*)"  line ", 8);
 					OfrontOPM_LogWNum(__ASHR(pos, 8, INTEGER), 1);
-					OfrontOPM_LogWStr((CHAR*)"  pos ", (LONGINT)7);
+					OfrontOPM_LogWStr((CHAR*)"  pos ", 7);
 					OfrontOPM_LogWNum(__MASK(pos, -256), 1);
-					OfrontOPM_LogWStr((CHAR*)"  pc ", (LONGINT)6);
+					OfrontOPM_LogWStr((CHAR*)"  pc ", 6);
 					OfrontOPM_LogWNum(OfrontOPM_breakpc, 1);
 				} else if (n == 254) {
-					OfrontOPM_LogWStr((CHAR*)"pc not found", (LONGINT)13);
+					OfrontOPM_LogWStr((CHAR*)"pc not found", 13);
 				} else {
 					OfrontOPM_LogWStr(OfrontOPM_objname, 64);
 					if (n == 253) {
-						OfrontOPM_LogWStr((CHAR*)" is new, compile with option e", (LONGINT)31);
+						OfrontOPM_LogWStr((CHAR*)" is new, compile with option e", 31);
 					} else if (n == 252) {
-						OfrontOPM_LogWStr((CHAR*)" is redefined, compile with option s", (LONGINT)37);
+						OfrontOPM_LogWStr((CHAR*)" is redefined, compile with option s", 37);
 					} else if (n == 251) {
-						OfrontOPM_LogWStr((CHAR*)" is redefined (private part only), compile with option s", (LONGINT)57);
+						OfrontOPM_LogWStr((CHAR*)" is redefined (private part only), compile with option s", 57);
 					} else if (n == 250) {
-						OfrontOPM_LogWStr((CHAR*)" is no longer visible, compile with option s", (LONGINT)45);
+						OfrontOPM_LogWStr((CHAR*)" is no longer visible, compile with option s", 45);
 					} else if (n == 249) {
-						OfrontOPM_LogWStr((CHAR*)" is not consistently imported, recompile imports", (LONGINT)49);
+						OfrontOPM_LogWStr((CHAR*)" is not consistently imported, recompile imports", 49);
 					}
 				}
 			}
 		} else {
 			if (pos >= 0) {
 				OfrontOPM_LogWLn();
-				OfrontOPM_LogWStr((CHAR*)"  line ", (LONGINT)8);
+				OfrontOPM_LogWStr((CHAR*)"  line ", 8);
 				OfrontOPM_LogWNum(__ASHR(pos, 8, INTEGER), 1);
-				OfrontOPM_LogWStr((CHAR*)"  pos ", (LONGINT)7);
+				OfrontOPM_LogWStr((CHAR*)"  pos ", 7);
 				OfrontOPM_LogWNum(__MASK(pos, -256), 1);
 			}
 			OfrontOPM_LogErrMsg(n);
@@ -374,37 +374,37 @@ void OfrontOPM_Mark (INTEGER n, LONGINT pos1)
 			if (pos < OfrontOPM_lasterrpos || OfrontOPM_lasterrpos + 9 < pos) {
 				OfrontOPM_lasterrpos = pos;
 				OfrontOPM_LogWLn();
-				OfrontOPM_LogWStr((CHAR*)"  ", (LONGINT)3);
+				OfrontOPM_LogWStr((CHAR*)"  ", 3);
 				if (n < 249) {
-					OfrontOPM_LogWStr((CHAR*)"  pos", (LONGINT)6);
+					OfrontOPM_LogWStr((CHAR*)"  pos", 6);
 					OfrontOPM_LogWNum(pos, 6);
 					OfrontOPM_LogErrMsg(n);
 				} else if (n == 255) {
-					OfrontOPM_LogWStr((CHAR*)"pos", (LONGINT)4);
+					OfrontOPM_LogWStr((CHAR*)"pos", 4);
 					OfrontOPM_LogWNum(pos, 6);
-					OfrontOPM_LogWStr((CHAR*)"  pc ", (LONGINT)6);
+					OfrontOPM_LogWStr((CHAR*)"  pc ", 6);
 					OfrontOPM_LogWNum(OfrontOPM_breakpc, 1);
 				} else if (n == 254) {
-					OfrontOPM_LogWStr((CHAR*)"pc not found", (LONGINT)13);
+					OfrontOPM_LogWStr((CHAR*)"pc not found", 13);
 				} else {
 					OfrontOPM_LogWStr(OfrontOPM_objname, 64);
 					if (n == 253) {
-						OfrontOPM_LogWStr((CHAR*)" is new, compile with option e", (LONGINT)31);
+						OfrontOPM_LogWStr((CHAR*)" is new, compile with option e", 31);
 					} else if (n == 252) {
-						OfrontOPM_LogWStr((CHAR*)" is redefined, compile with option s", (LONGINT)37);
+						OfrontOPM_LogWStr((CHAR*)" is redefined, compile with option s", 37);
 					} else if (n == 251) {
-						OfrontOPM_LogWStr((CHAR*)" is redefined (private part only), compile with option s", (LONGINT)57);
+						OfrontOPM_LogWStr((CHAR*)" is redefined (private part only), compile with option s", 57);
 					} else if (n == 250) {
-						OfrontOPM_LogWStr((CHAR*)" is no longer visible, compile with option s", (LONGINT)45);
+						OfrontOPM_LogWStr((CHAR*)" is no longer visible, compile with option s", 45);
 					} else if (n == 249) {
-						OfrontOPM_LogWStr((CHAR*)" is not consistently imported, recompile imports", (LONGINT)49);
+						OfrontOPM_LogWStr((CHAR*)" is not consistently imported, recompile imports", 49);
 					}
 				}
 			}
 		} else {
 			if (pos >= 0) {
 				OfrontOPM_LogWLn();
-				OfrontOPM_LogWStr((CHAR*)"  pos", (LONGINT)6);
+				OfrontOPM_LogWStr((CHAR*)"  pos", 6);
 				OfrontOPM_LogWNum(pos, 6);
 			}
 			OfrontOPM_LogErrMsg(n);
@@ -532,23 +532,23 @@ static void OfrontOPM_GetProperties (void)
 	OfrontOPM_MaxLInt = 2147483647;
 	OfrontOPM_MaxSet = 31;
 	__NEW(T, Texts_TextDesc);
-	Texts_Open(T, (CHAR*)"Ofront.par", (LONGINT)11);
+	Texts_Open(T, (CHAR*)"Ofront.par", 11);
 	if (T->len != 0) {
 		Texts_OpenScanner(&S, Texts_Scanner__typ, T, 0);
 		Texts_Scan(&S, Texts_Scanner__typ);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"CHAR", (LONGINT)5, &OfrontOPM_CharSize, &OfrontOPM_CharAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"BOOLEAN", (LONGINT)8, &OfrontOPM_BoolSize, &OfrontOPM_BoolAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"SHORTINT", (LONGINT)9, &OfrontOPM_SIntSize, &OfrontOPM_SIntAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"INTEGER", (LONGINT)8, &OfrontOPM_IntSize, &OfrontOPM_IntAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"LONGINT", (LONGINT)8, &OfrontOPM_LIntSize, &OfrontOPM_LIntAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"SET", (LONGINT)4, &OfrontOPM_SetSize, &OfrontOPM_SetAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"REAL", (LONGINT)5, &OfrontOPM_RealSize, &OfrontOPM_RealAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"LONGREAL", (LONGINT)9, &OfrontOPM_LRealSize, &OfrontOPM_LRealAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"PTR", (LONGINT)4, &OfrontOPM_PointerSize, &OfrontOPM_PointerAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"PROC", (LONGINT)5, &OfrontOPM_ProcSize, &OfrontOPM_ProcAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"RECORD", (LONGINT)7, &OfrontOPM_RecSize, &OfrontOPM_RecAlign);
-		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"ENDIAN", (LONGINT)7, &OfrontOPM_ByteOrder, &OfrontOPM_BitOrder);
-		OfrontOPM_GetProperty1(&S, Texts_Scanner__typ, (CHAR*)"LEN", (LONGINT)4, &OfrontOPM_LenSize, -1);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"CHAR", 5, &OfrontOPM_CharSize, &OfrontOPM_CharAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"BOOLEAN", 8, &OfrontOPM_BoolSize, &OfrontOPM_BoolAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"SHORTINT", 9, &OfrontOPM_SIntSize, &OfrontOPM_SIntAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"INTEGER", 8, &OfrontOPM_IntSize, &OfrontOPM_IntAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"LONGINT", 8, &OfrontOPM_LIntSize, &OfrontOPM_LIntAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"SET", 4, &OfrontOPM_SetSize, &OfrontOPM_SetAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"REAL", 5, &OfrontOPM_RealSize, &OfrontOPM_RealAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"LONGREAL", 9, &OfrontOPM_LRealSize, &OfrontOPM_LRealAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"PTR", 4, &OfrontOPM_PointerSize, &OfrontOPM_PointerAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"PROC", 5, &OfrontOPM_ProcSize, &OfrontOPM_ProcAlign);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"RECORD", 7, &OfrontOPM_RecSize, &OfrontOPM_RecAlign);
+		OfrontOPM_GetProperty1(&S, Texts_Scanner__typ, (CHAR*)"ARRLEN", 7, &OfrontOPM_ArrLenSize, -1);
+		OfrontOPM_GetProperty(&S, Texts_Scanner__typ, (CHAR*)"ENDIAN", 7, &OfrontOPM_ByteOrder, &OfrontOPM_BitOrder);
 	} else {
 		OfrontOPM_Mark(-156, -1);
 	}
@@ -578,8 +578,8 @@ static void OfrontOPM_GetProperties (void)
 	}
 	OfrontOPM_MaxSet = __ASHL(OfrontOPM_SetSize, 3, INTEGER) - 1;
 	OfrontOPM_MaxIndex = OfrontOPM_MaxInt;
-	if (OfrontOPM_LenSize == -1) {
-		OfrontOPM_LenSize = OfrontOPM_LIntSize;
+	if (OfrontOPM_ArrLenSize == -1) {
+		OfrontOPM_ArrLenSize = OfrontOPM_LIntSize;
 	}
 }
 
@@ -626,7 +626,7 @@ void OfrontOPM_OldSym (CHAR *modName, INTEGER modName__len, BOOLEAN *done)
 {
 	CHAR ch;
 	OfrontOPM_FileName fileName;
-	OfrontOPM_MakeFileName((void*)modName, modName__len, (void*)fileName, 32, (CHAR*)".sym", (LONGINT)5);
+	OfrontOPM_MakeFileName((void*)modName, modName__len, (void*)fileName, 32, (CHAR*)".sym", 5);
 	OfrontOPM_oldSFile = Files_Old(fileName, 32);
 	*done = OfrontOPM_oldSFile != NIL;
 	if (*done) {
@@ -693,7 +693,7 @@ void OfrontOPM_DeleteNewSym (void)
 void OfrontOPM_NewSym (CHAR *modName, INTEGER modName__len)
 {
 	OfrontOPM_FileName fileName;
-	OfrontOPM_MakeFileName((void*)modName, modName__len, (void*)fileName, 32, (CHAR*)".sym", (LONGINT)5);
+	OfrontOPM_MakeFileName((void*)modName, modName__len, (void*)fileName, 32, (CHAR*)".sym", 5);
 	OfrontOPM_newSFile = Files_New(fileName, 32);
 	if (OfrontOPM_newSFile != NIL) {
 		Files_Set(&OfrontOPM_newSF, Files_Rider__typ, OfrontOPM_newSFile, 0);
@@ -761,7 +761,7 @@ void OfrontOPM_WriteInt (LONGINT i)
 	if (i == (-2147483647-1) || i == (-2147483647-1)) {
 		OfrontOPM_Write('(');
 		OfrontOPM_WriteInt(i + 1);
-		OfrontOPM_WriteString((CHAR*)"-1)", (LONGINT)4);
+		OfrontOPM_WriteString((CHAR*)"-1)", 4);
 	} else {
 		i1 = __ABS(i);
 		s[0] = (CHAR)(__MOD(i1, 10) + 48);
@@ -794,9 +794,9 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 	INTEGER i;
 	if ((r < OfrontOPM_MaxLInt && r > OfrontOPM_MinLInt) && r == (__ENTIER(r))) {
 		if (suffx == 'f') {
-			OfrontOPM_WriteString((CHAR*)"(REAL)", (LONGINT)7);
+			OfrontOPM_WriteString((CHAR*)"(REAL)", 7);
 		} else {
-			OfrontOPM_WriteString((CHAR*)"(LONGREAL)", (LONGINT)11);
+			OfrontOPM_WriteString((CHAR*)"(LONGREAL)", 11);
 		}
 		OfrontOPM_WriteInt(__ENTIER(r));
 	} else {
@@ -807,7 +807,7 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 			Texts_WriteLongReal(&W, Texts_Writer__typ, r, 23);
 		}
 		__NEW(T, Texts_TextDesc);
-		Texts_Open(T, (CHAR*)"", (LONGINT)1);
+		Texts_Open(T, (CHAR*)"", 1);
 		Texts_Append(T, W.buf);
 		Texts_OpenReader(&R, Texts_Reader__typ, T, 0);
 		i = 0;
@@ -856,20 +856,20 @@ void OfrontOPM_OpenFiles (CHAR *moduleName, INTEGER moduleName__len)
 {
 	CHAR FName[32];
 	__COPY(moduleName, OfrontOPM_modName, 32);
-	OfrontOPM_HFile = Files_New((CHAR*)"", (LONGINT)1);
+	OfrontOPM_HFile = Files_New((CHAR*)"", 1);
 	if (OfrontOPM_HFile != NIL) {
 		Files_Set(&OfrontOPM_R[0], Files_Rider__typ, OfrontOPM_HFile, 0);
 	} else {
 		OfrontOPM_err(153);
 	}
-	OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".c", (LONGINT)3);
+	OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".c", 3);
 	OfrontOPM_BFile = Files_New(FName, 32);
 	if (OfrontOPM_BFile != NIL) {
 		Files_Set(&OfrontOPM_R[1], Files_Rider__typ, OfrontOPM_BFile, 0);
 	} else {
 		OfrontOPM_err(153);
 	}
-	OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".h", (LONGINT)3);
+	OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".h", 3);
 	OfrontOPM_HIFile = Files_New(FName, 32);
 	if (OfrontOPM_HIFile != NIL) {
 		Files_Set(&OfrontOPM_R[2], Files_Rider__typ, OfrontOPM_HIFile, 0);
@@ -877,9 +877,9 @@ void OfrontOPM_OpenFiles (CHAR *moduleName, INTEGER moduleName__len)
 		OfrontOPM_err(153);
 	}
 	if (__IN(8, OfrontOPM_opt)) {
-		OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".h0", (LONGINT)4);
+		OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".h0", 4);
 		OfrontOPM_Append(&OfrontOPM_R[2], Files_Rider__typ, Files_Old(FName, 32));
-		OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".c0", (LONGINT)4);
+		OfrontOPM_MakeFileName((void*)moduleName, moduleName__len, (void*)FName, 32, (CHAR*)".c0", 4);
 		OfrontOPM_Append(&OfrontOPM_R[1], Files_Rider__typ, Files_Old(FName, 32));
 	}
 }
@@ -890,7 +890,7 @@ void OfrontOPM_CloseFiles (void)
 	CHAR FName[32];
 	INTEGER res;
 	if (OfrontOPM_noerr) {
-		OfrontOPM_LogWStr((CHAR*)"    ", (LONGINT)5);
+		OfrontOPM_LogWStr((CHAR*)"    ", 5);
 		OfrontOPM_LogWNum((SHORTINT)Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
 	}
 	if (OfrontOPM_noerr) {
@@ -903,9 +903,9 @@ void OfrontOPM_CloseFiles (void)
 			Files_Register(OfrontOPM_HIFile);
 			Files_Register(OfrontOPM_BFile);
 		} else {
-			OfrontOPM_MakeFileName((void*)OfrontOPM_modName, 32, (void*)FName, 32, (CHAR*)".h", (LONGINT)3);
+			OfrontOPM_MakeFileName((void*)OfrontOPM_modName, 32, (void*)FName, 32, (CHAR*)".h", 3);
 			Files_Delete(FName, 32, &res);
-			OfrontOPM_MakeFileName((void*)OfrontOPM_modName, 32, (void*)FName, 32, (CHAR*)".sym", (LONGINT)5);
+			OfrontOPM_MakeFileName((void*)OfrontOPM_modName, 32, (void*)FName, 32, (CHAR*)".sym", 5);
 			Files_Delete(FName, 32, &res);
 			Files_Register(OfrontOPM_BFile);
 		}
@@ -969,7 +969,7 @@ export void *OfrontOPM__init(void)
 /* BEGIN */
 	Texts_OpenWriter(&OfrontOPM_W, Texts_Writer__typ);
 	__MOVE(".", OfrontOPM_OBERON, 2);
-	Platform_GetEnv((CHAR*)"OBERON", (LONGINT)7, (void*)OfrontOPM_OBERON, 1024);
+	Platform_GetEnv((CHAR*)"OBERON", 7, (void*)OfrontOPM_OBERON, 1024);
 	Files_SetSearchPath(OfrontOPM_OBERON, 1024);
 	__ENDMOD;
 }

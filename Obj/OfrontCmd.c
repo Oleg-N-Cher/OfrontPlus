@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkaem */
+/* Ofront+ 1.0 -xtspkaem */
 #include "SYSTEM.h"
 #include "Heap.h"
 #include "OfrontOPB.h"
@@ -35,13 +35,13 @@ void OfrontCmd_Module (BOOLEAN *done)
 			if (OfrontOPM_noerr) {
 				if (__IN(10, OfrontOPM_opt) && __STRCMP(OfrontOPM_modName, "SYSTEM") != 0) {
 					OfrontOPM_DeleteNewSym();
-					OfrontOPM_LogWStr((CHAR*)"  main program", (LONGINT)15);
+					OfrontOPM_LogWStr((CHAR*)"  main program", 15);
 				} else {
 					if (new) {
-						OfrontOPM_LogWStr((CHAR*)"  new symbol file", (LONGINT)18);
+						OfrontOPM_LogWStr((CHAR*)"  new symbol file", 18);
 						OfrontOPM_RegisterNewSym();
 					} else if (ext) {
-						OfrontOPM_LogWStr((CHAR*)"  extended symbol file", (LONGINT)23);
+						OfrontOPM_LogWStr((CHAR*)"  extended symbol file", 23);
 						OfrontOPM_RegisterNewSym();
 					}
 				}
@@ -93,7 +93,7 @@ static void OfrontCmd_Trap (INTEGER sig)
 		Platform_Exit(0);
 	} else {
 		if (sig == 4 && Platform_HaltCode == -15) {
-			OfrontOPM_LogWStr((CHAR*)" --- Ofront+: internal error", (LONGINT)29);
+			OfrontOPM_LogWStr((CHAR*)" --- Ofront+: internal error", 29);
 			OfrontOPM_LogWLn();
 		}
 		Platform_Exit(2);
