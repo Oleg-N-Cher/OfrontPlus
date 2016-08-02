@@ -93,7 +93,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 	VAR
 		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
-		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-,
+		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
 		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
 		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
 		ByteOrder-, BitOrder-, ForN-, MaxSet-: INTEGER;
@@ -459,7 +459,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 	(* ------------------------- initialization ------------------------- *)
 
-	PROCEDURE GetProperty(R: Files.Reader; name: ARRAY OF CHAR; VAR size, align: INTEGER);
+	PROCEDURE GetProperty(R: Files.Reader; IN name: ARRAY OF CHAR; VAR size, align: INTEGER);
 		VAR ch: SHORTCHAR; i: INTEGER; s: ARRAY 32 OF CHAR;
 	BEGIN
 		ch := " "; i := 0;
@@ -483,10 +483,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END
 	END GetProperty;
 
-	PROCEDURE GetProperty1(R: Files.Reader; name: ARRAY OF CHAR; VAR par: INTEGER; defval: INTEGER);
-		VAR ch: SHORTCHAR; i: INTEGER; s: ARRAY 32 OF CHAR;
+	PROCEDURE GetProperty1(R: Files.Reader; IN name: ARRAY OF CHAR; VAR par: INTEGER; defval: INTEGER);
+		VAR ch: SHORTCHAR; i, oldpos: INTEGER; s: ARRAY 32 OF CHAR;
 	BEGIN
-		ch := " "; i := 0;
+		ch := " "; i := 0; oldpos := R.Pos();
 		WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
 		WHILE (~R.eof) & (ch >" ") DO s[i] := ch; INC(i); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
 		s[i] := 0X;
@@ -495,9 +495,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			IF (~R.eof) & (ch >= "0") & (ch <= "9") THEN
 				WHILE (~R.eof) & (ch >= "0") & (ch <= "9") DO i := i * 10 + ORD(ch) - ORD("0"); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
 				par := i;
-			ELSE par := defval
+			ELSE Mark(-157, -1); par := defval
 			END
-		ELSE par := defval
+		ELSE par := defval; R.SetPos(oldpos)
 		END
 	END GetProperty1;
 
@@ -531,6 +531,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			(* Size = 0: natural size aligned to next power of 2 up to RecAlign; e.g. i960
 				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
 			*)
+			GetProperty1(R, "ARRLEN", ArrLenSize, -1);	(* Size of the type of array length *)
 			GetProperty(R, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
 			GetProperty1(R, "FOR", ForN, 0);	(* 0: Original (default); 1: Extended; 2: Experimenal *)
 			IF (ForN >= 0) & (ForN <= 2) THEN (* Ok *) ELSE ForN := 0; Mark(-157, -1) END
@@ -551,6 +552,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			MaxLInt := 7FFFFFFFFFFFFFFFL	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
+		IF ArrLenSize = -1 THEN ArrLenSize := LIntSize
+		ELSIF ~ ((ArrLenSize = SIntSize) OR (ArrLenSize = IntSize) OR (ArrLenSize = LIntSize)) THEN Mark(-157, -1)
+		END;
 		MaxIndex := 7FFFFFFFH	(*2147483647*)
 	END GetProperties;
 
