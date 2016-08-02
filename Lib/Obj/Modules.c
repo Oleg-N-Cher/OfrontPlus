@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Console.h"
 #include "Heap.h"
@@ -87,7 +87,7 @@ Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len)
 		__COPY(name, Modules_importing, 20);
 		__MOVE(" module \"", Modules_resMsg, 10);
 		Modules_Append((void*)Modules_resMsg, 256, name, name__len);
-		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", (LONGINT)12);
+		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", 12);
 	}
 	__DEL(name);
 	return m;
@@ -112,9 +112,9 @@ Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER nam
 		__MOVE(" command \"", Modules_resMsg, 11);
 		__COPY(name, Modules_importing, 20);
 		Modules_Append((void*)Modules_resMsg, 256, mod->name, 20);
-		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)".", (LONGINT)2);
+		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)".", 2);
 		Modules_Append((void*)Modules_resMsg, 256, name, name__len);
-		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", (LONGINT)12);
+		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", 12);
 		__DEL(name);
 		return NIL;
 	}

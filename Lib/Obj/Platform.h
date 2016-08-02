@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -ske */
+/* Ofront+ 1.0 -ske */
 
 #ifndef Platform__h
 #define Platform__h

@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Console.h"
 #include "Heap.h"
@@ -116,9 +116,9 @@ static void Files_Err (CHAR *s, INTEGER s__len, Files_File f, INTEGER errcode)
 {
 	__DUP(s, s__len, CHAR);
 	Console_Ln();
-	Console_String((CHAR*)"-- ", (LONGINT)4);
+	Console_String((CHAR*)"-- ", 4);
 	Console_String(s, s__len);
-	Console_String((CHAR*)": ", (LONGINT)3);
+	Console_String((CHAR*)": ", 3);
 	if (f != NIL) {
 		if (f->registerName[0] != 0x00) {
 			Console_String(f->registerName, 101);
@@ -126,12 +126,12 @@ static void Files_Err (CHAR *s, INTEGER s__len, Files_File f, INTEGER errcode)
 			Console_String(f->workName, 101);
 		}
 		if (Files_fdint(f->fd) != 0) {
-			Console_String((CHAR*)"f.fd = ", (LONGINT)8);
+			Console_String((CHAR*)"f.fd = ", 8);
 			Console_Int(Files_fdint(f->fd), 1);
 		}
 	}
 	if (errcode != 0) {
-		Console_String((CHAR*)" errcode = ", (LONGINT)12);
+		Console_String((CHAR*)" errcode = ", 12);
 		Console_Int(errcode, 1);
 	}
 	Console_Ln();
@@ -265,13 +265,13 @@ static void Files_Flush (Files_Buffer buf)
 		}
 		error = Platform_Write(f->fd, (Platform_MemAdr)((INTEGER)buf->data), buf->size);
 		if (error != 0) {
-			Files_Err((CHAR*)"error writing file", (LONGINT)19, f, error);
+			Files_Err((CHAR*)"error writing file", 19, f, error);
 		}
 		f->pos = buf->org + buf->size;
 		buf->chg = 0;
 		error = Platform_Identify(f->fd, &f->identity, Platform_FileIdentity__typ);
 		if (error != 0) {
-			Files_Err((CHAR*)"error identifying file", (LONGINT)23, f, error);
+			Files_Err((CHAR*)"error identifying file", 23, f, error);
 		}
 	}
 }
@@ -309,7 +309,7 @@ void Files_Close (Files_File f)
 		}
 		error = Platform_Sync(f->fd);
 		if (error != 0) {
-			Files_Err((CHAR*)"error writing file", (LONGINT)19, f, error);
+			Files_Err((CHAR*)"error writing file", 19, f, error);
 		}
 		Files_CloseOSFile(f);
 	}
@@ -449,16 +449,16 @@ Files_File Files_Old (CHAR *name, INTEGER name__len)
 			error = Platform_OldRW((void*)path, 256, &fd);
 			done = error == 0;
 			if (!done && Platform_TooManyFiles(error)) {
-				Files_Err((CHAR*)"too many files open", (LONGINT)20, f, error);
+				Files_Err((CHAR*)"too many files open", 20, f, error);
 			}
 			if (!done && Platform_Inaccessible(error)) {
 				error = Platform_OldRO((void*)path, 256, &fd);
 				done = error == 0;
 			}
 			if (!done && !Platform_Absent(error)) {
-				Console_String((CHAR*)"Warning: Files.Old ", (LONGINT)20);
+				Console_String((CHAR*)"Warning: Files.Old ", 20);
 				Console_String(name, name__len);
-				Console_String((CHAR*)" error = ", (LONGINT)10);
+				Console_String((CHAR*)" error = ", 10);
 				Console_Int(error, 0);
 				Console_Ln();
 			}
@@ -586,7 +586,7 @@ void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, INTEGER pos)
 				}
 				error = Platform_ReadBuf(f->fd, (void*)buf->data, 4096, &n);
 				if (error != 0) {
-					Files_Err((CHAR*)"read from file not done", (LONGINT)24, f, error);
+					Files_Err((CHAR*)"read from file not done", 24, f, error);
 				}
 				f->pos = org + n;
 				buf->size = n;
@@ -790,7 +790,7 @@ void Files_Rename (CHAR *old, INTEGER old__len, CHAR *new, INTEGER new__len, INT
 				if (error != 0) {
 					ignore = Platform_Close(fdold);
 					ignore = Platform_Close(fdnew);
-					Files_Err((CHAR*)"cannot move file", (LONGINT)17, NIL, error);
+					Files_Err((CHAR*)"cannot move file", 17, NIL, error);
 				}
 				error = Platform_Read(fdold, (Platform_MemAdr)((INTEGER)buf), 4096, &n);
 			}
@@ -800,7 +800,7 @@ void Files_Rename (CHAR *old, INTEGER old__len, CHAR *new, INTEGER new__len, INT
 				error = Platform_Unlink((void*)old, old__len);
 				*res = 0;
 			} else {
-				Files_Err((CHAR*)"cannot move file", (LONGINT)17, NIL, error);
+				Files_Err((CHAR*)"cannot move file", 17, NIL, error);
 			}
 		}
 	} else {
@@ -1081,7 +1081,7 @@ void Files_SetSearchPath (CHAR *path, INTEGER path__len)
 {
 	__DUP(path, path__len, CHAR);
 	if (Strings_Length(path, path__len) != 0) {
-		Files_SearchPath = __NEWARR(NIL, 1, 1, 1, 1, (LONGINT)(Strings_Length(path, path__len) + 1));
+		Files_SearchPath = __NEWARR(NIL, 1, 1, 1, 1, (Strings_Length(path, path__len) + 1));
 		__COPY(path, Files_SearchPath->data, Files_SearchPath->len[0]);
 	} else {
 		Files_SearchPath = NIL;
@@ -1115,6 +1115,6 @@ export void *Files__init(void)
 	Files_tempno = -1;
 	Heap_FileCount = 0;
 	Files_HOME[0] = 0x00;
-	Platform_GetEnv((CHAR*)"HOME", (LONGINT)5, (void*)Files_HOME, 1024);
+	Platform_GetEnv((CHAR*)"HOME", 5, (void*)Files_HOME, 1024);
 	__ENDMOD;
 }

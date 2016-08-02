@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Platform.h"
 
@@ -132,9 +132,9 @@ void Console_Ln (void)
 void Console_Bool (BOOLEAN b)
 {
 	if (b) {
-		Console_String((CHAR*)"TRUE", (LONGINT)5);
+		Console_String((CHAR*)"TRUE", 5);
 	} else {
-		Console_String((CHAR*)"FALSE", (LONGINT)6);
+		Console_String((CHAR*)"FALSE", 6);
 	}
 }
 

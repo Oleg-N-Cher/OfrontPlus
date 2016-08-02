@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -xtspkae */
+/* Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Files.h"
 #include "Modules.h"
@@ -975,7 +975,7 @@ void Texts_OpenWriter (Texts_Writer *W, LONGINT *W__typ)
 	(*W).fnt = Texts_FontsDefault;
 	(*W).col = 15;
 	(*W).voff = 0;
-	(*W).file = Files_New((CHAR*)"", (LONGINT)1);
+	(*W).file = Files_New((CHAR*)"", 1);
 	Files_Set(&(*W).rider, Files_Rider__typ, (*W).file, 0);
 }
 
@@ -1072,7 +1072,7 @@ void Texts_WriteInt (Texts_Writer *W, LONGINT *W__typ, INTEGER x, INTEGER n)
 	i = 0;
 	if (x < 0) {
 		if (x == (-2147483647-1)) {
-			Texts_WriteString(&*W, W__typ, (CHAR*)" -2147483648", (LONGINT)13);
+			Texts_WriteString(&*W, W__typ, (CHAR*)" -2147483648", 13);
 			return;
 		} else {
 			n -= 1;
@@ -1108,7 +1108,7 @@ void Texts_WriteLongInt (Texts_Writer *W, LONGINT *W__typ, LONGINT x, INTEGER n)
 	i = 0;
 	if (x < 0) {
 		if (x == (-2147483647-1)) {
-			Texts_WriteString(&*W, W__typ, (CHAR*)" -2147483648", (LONGINT)13);
+			Texts_WriteString(&*W, W__typ, (CHAR*)" -2147483648", 13);
 			return;
 		} else {
 			n -= 1;
@@ -1191,13 +1191,13 @@ void Texts_WriteReal (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n)
 	CHAR d[9];
 	e = Reals_Expo(x);
 	if (e == 0) {
-		Texts_WriteString(&*W, W__typ, (CHAR*)"  0", (LONGINT)4);
+		Texts_WriteString(&*W, W__typ, (CHAR*)"  0", 4);
 		do {
 			Texts_Write(&*W, W__typ, ' ');
 			n -= 1;
 		} while (!(n <= 3));
 	} else if (e == 255) {
-		Texts_WriteString(&*W, W__typ, (CHAR*)" NaN", (LONGINT)5);
+		Texts_WriteString(&*W, W__typ, (CHAR*)" NaN", 5);
 		while (n > 4) {
 			Texts_Write(&*W, W__typ, ' ');
 			n -= 1;
@@ -1304,7 +1304,7 @@ void Texts_WriteRealFix (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n, S
 		Texts_Write(&*W, W__typ, '0');
 		seq__58(' ', k + 1);
 	} else if (e == 255) {
-		Texts_WriteString(&*W, W__typ, (CHAR*)" NaN", (LONGINT)5);
+		Texts_WriteString(&*W, W__typ, (CHAR*)" NaN", 5);
 		seq__58(' ', n - 4);
 	} else {
 		e = __ASHR((e - 127) * 77, 8, SHORTINT);
@@ -1376,13 +1376,13 @@ void Texts_WriteLongReal (Texts_Writer *W, LONGINT *W__typ, LONGREAL x, SHORTINT
 	CHAR d[16];
 	e = Reals_ExpoL(x);
 	if (e == 0) {
-		Texts_WriteString(&*W, W__typ, (CHAR*)"  0", (LONGINT)4);
+		Texts_WriteString(&*W, W__typ, (CHAR*)"  0", 4);
 		do {
 			Texts_Write(&*W, W__typ, ' ');
 			n -= 1;
 		} while (!(n <= 3));
 	} else if (e == 2047) {
-		Texts_WriteString(&*W, W__typ, (CHAR*)" NaN", (LONGINT)5);
+		Texts_WriteString(&*W, W__typ, (CHAR*)" NaN", 5);
 		while (n > 4) {
 			Texts_Write(&*W, W__typ, ' ');
 			n -= 1;
@@ -1644,7 +1644,7 @@ void Texts_Open (Texts_Text T, CHAR *name, INTEGER name__len)
 	__DUP(name, name__len, CHAR);
 	f = Files_Old(name, name__len);
 	if (f == NIL) {
-		f = Files_New((CHAR*)"", (LONGINT)1);
+		f = Files_New((CHAR*)"", 1);
 	}
 	Files_Set(&r, Files_Rider__typ, f, 0);
 	Files_ReadChar(&r, Files_Rider__typ, &tag);

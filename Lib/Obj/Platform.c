@@ -1,4 +1,4 @@
-/*  Ofront+ 1.0 -ske */
+/* Ofront+ 1.0 -ske */
 #include "SYSTEM.h"
 
 typedef
@@ -672,40 +672,40 @@ static void Platform_DisplayHaltCode (INTEGER code)
 {
 	switch (code) {
 		case -1: 
-			Platform_errstring((CHAR*)"Rider ReadBuf/WriteBuf transfer size longer than buffer.", (LONGINT)57);
+			Platform_errstring((CHAR*)"Rider ReadBuf/WriteBuf transfer size longer than buffer.", 57);
 			break;
 		case -2: 
-			Platform_errstring((CHAR*)"Index out of range.", (LONGINT)20);
+			Platform_errstring((CHAR*)"Index out of range.", 20);
 			break;
 		case -3: 
-			Platform_errstring((CHAR*)"Reached end of function without reaching RETURN.", (LONGINT)49);
+			Platform_errstring((CHAR*)"Reached end of function without reaching RETURN.", 49);
 			break;
 		case -4: 
-			Platform_errstring((CHAR*)"CASE statement: no matching label and no ELSE.", (LONGINT)47);
+			Platform_errstring((CHAR*)"CASE statement: no matching label and no ELSE.", 47);
 			break;
 		case -5: 
-			Platform_errstring((CHAR*)"Type guard failed.", (LONGINT)19);
+			Platform_errstring((CHAR*)"Type guard failed.", 19);
 			break;
 		case -6: 
-			Platform_errstring((CHAR*)"Type equality failed.", (LONGINT)22);
+			Platform_errstring((CHAR*)"Type equality failed.", 22);
 			break;
 		case -7: 
-			Platform_errstring((CHAR*)"WITH statement type guard failed.", (LONGINT)34);
+			Platform_errstring((CHAR*)"WITH statement type guard failed.", 34);
 			break;
 		case -8: 
-			Platform_errstring((CHAR*)"SHORT: Value too large for shorter type.", (LONGINT)41);
+			Platform_errstring((CHAR*)"SHORT: Value too large for shorter type.", 41);
 			break;
 		case -9: 
-			Platform_errstring((CHAR*)"Heap interrupted while locked, but lockdepth = 0 at unlock.", (LONGINT)60);
+			Platform_errstring((CHAR*)"Heap interrupted while locked, but lockdepth = 0 at unlock.", 60);
 			break;
 		case -15: 
-			Platform_errstring((CHAR*)"Type descriptor size mismatch.", (LONGINT)31);
+			Platform_errstring((CHAR*)"Type descriptor size mismatch.", 31);
 			break;
 		case -20: 
-			Platform_errstring((CHAR*)"Too many, or negative number of, elements in dynamic array.", (LONGINT)60);
+			Platform_errstring((CHAR*)"Too many, or negative number of, elements in dynamic array.", 60);
 			break;
 		case -25: 
-			Platform_errstring((CHAR*)"Memory allocation error.", (LONGINT)25);
+			Platform_errstring((CHAR*)"Memory allocation error.", 25);
 			break;
 		default: 
 			break;
@@ -719,9 +719,9 @@ void Platform_Halt (INTEGER code)
 	if (Platform_HaltHandler != NIL) {
 		(*Platform_HaltHandler)(code);
 	}
-	Platform_errstring((CHAR*)"Terminated by Halt(", (LONGINT)20);
+	Platform_errstring((CHAR*)"Terminated by Halt(", 20);
 	Platform_errint(code);
-	Platform_errstring((CHAR*)"). ", (LONGINT)4);
+	Platform_errstring((CHAR*)"). ", 4);
 	if (code < 0) {
 		Platform_DisplayHaltCode(code);
 	}
@@ -733,11 +733,11 @@ void Platform_Halt (INTEGER code)
 void Platform_AssertFail (INTEGER code)
 {
 	INTEGER e;
-	Platform_errstring((CHAR*)"Assertion failure.", (LONGINT)19);
+	Platform_errstring((CHAR*)"Assertion failure.", 19);
 	if (code != 0) {
-		Platform_errstring((CHAR*)" ASSERT code ", (LONGINT)14);
+		Platform_errstring((CHAR*)" ASSERT code ", 14);
 		Platform_errint(code);
-		Platform_errstring((CHAR*)".", (LONGINT)2);
+		Platform_errstring((CHAR*)".", 2);
 	}
 	Platform_errln();
 	Platform_exit(code);
