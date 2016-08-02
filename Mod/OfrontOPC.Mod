@@ -43,7 +43,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		DefinedInBdy = 3+OPM.BodyFile; (* named type has been defined in body file *)
 
 
-		HeaderMsg = " Ofront+ 1.0 -";
+		HeaderMsg = "Ofront+ 1.0 -";
 		BasicIncludeFile = "SYSTEM";
 		Static = "static ";
 		Export = "export ";	(* particularily introduced for VC++ declspec() *)
@@ -286,7 +286,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			typ := typ^.BaseTyp^.BaseTyp; nofdims := 1;
 			WHILE typ^.comp = DynArr DO INC(nofdims); typ := typ^.BaseTyp END ;
 			OPM.WriteString(Struct); BegBlk;
-			BegStat; Str1("LONGINT len[#]", nofdims); EndStat;
+			BegStat;
+			IF OPM.ArrLenSize = OPM.SIntSize THEN Str1("SHORTINT len[#]", nofdims)
+			ELSIF OPM.ArrLenSize = OPM.IntSize THEN Str1("INTEGER len[#]", nofdims)
+			ELSE Str1("LONGINT len[#]", nofdims)
+			END;
+			EndStat;
 			BegStat; NEW(obj); NEW(obj.typ);	(* aux. object for easy declaration *)
 			obj.typ.form := Comp; obj.typ.comp := Array; obj.typ.n := 1; obj.typ.BaseTyp := typ; obj.mode := Fld; obj.name := "data"; 
 			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank);  DeclareObj(obj, FALSE);
@@ -373,7 +378,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF showParamName THEN Ident(par); OPM.WriteString(LenExt) END ;
 		dim := 1; typ := par^.typ^.BaseTyp;
 		WHILE typ^.comp = DynArr DO
-			IF ansiDefine THEN OPM.WriteString(", LONGINT ") ELSE OPM.WriteString(Comma) END ;
+			IF ansiDefine THEN
+				IF OPM.ArrLenSize = OPM.SIntSize THEN OPM.WriteString(", SHORTINT ")
+				ELSIF OPM.ArrLenSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+				ELSE OPM.WriteString(", LONGINT ")
+				END
+			ELSE OPM.WriteString(Comma)
+			END ;
 			IF showParamName THEN Ident(par); OPM.WriteString(LenExt); OPM.WriteInt(dim) END ;
 			typ := typ^.BaseTyp; INC(dim)
 		END
@@ -710,7 +721,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF obj^.typ^.comp = DynArr THEN (* declare len parameter(s) *)
 					EndStat; BegStat;
 					base := OPT.linttyp;
-					OPM.WriteString("LONGINT "); LenList(obj, FALSE, TRUE)
+					IF OPM.ArrLenSize = OPM.SIntSize THEN OPM.WriteString("SHORTINT ")
+					ELSIF OPM.ArrLenSize = OPM.IntSize THEN OPM.WriteString("INTEGER ")
+					ELSE OPM.WriteString("LONGINT ")
+					END;
+					LenList(obj, FALSE, TRUE)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
 					EndStat; BegStat;
 					OPM.WriteString("LONGINT *"); Ident(obj); OPM.WriteString(TagExt);
@@ -738,7 +753,10 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					COPY(obj^.name, name);  obj^.name := ""; DeclareObj(obj, FALSE); COPY(name, obj^.name)
 				END ;
 				IF obj^.typ^.comp = DynArr THEN
-					OPM.WriteString(", LONGINT ");
+					IF OPM.ArrLenSize = OPM.SIntSize THEN OPM.WriteString(", SHORTINT ")
+					ELSIF OPM.ArrLenSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+					ELSE OPM.WriteString(", LONGINT ")
+					END;
 					LenList(obj, TRUE, showParamNames)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
 					OPM.WriteString(", LONGINT *");

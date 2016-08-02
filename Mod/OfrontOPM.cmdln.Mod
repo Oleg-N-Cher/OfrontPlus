@@ -88,7 +88,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	VAR
 		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
-		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-,
+		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
 		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
 		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
 		ByteOrder-, BitOrder-, MaxSet-: INTEGER;
@@ -170,7 +170,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		IF Args.argc = 1 THEN stop := TRUE;
 			Console.Ln;
-			Console.String("OfrontPlus - Oberon-2 to C Translator v1.0 #2"); Console.Ln;
+			Console.String("OfrontPlus - Oberon-2 to C Translator v1.0"); Console.Ln;
 			Console.String("Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016"); Console.Ln; Console.Ln;
 			Console.String("SYNOPSIS"); Console.Ln;
 				Console.String('  command = "ofront+" options {file options}.'); Console.Ln;
@@ -352,11 +352,19 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE GetProperty(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR size, align: INTEGER);
 	BEGIN
 		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
-			IF S.class = Texts.Int THEN size := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END ;
-			IF S.class = Texts.Int THEN align := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END
+			IF S.class = Texts.Int THEN size := S.i; Texts.Scan(S) ELSE Mark(-157, -1) END ;
+			IF S.class = Texts.Int THEN align := S.i; Texts.Scan(S) ELSE Mark(-157, -1) END
 		ELSE Mark(-157, -1)
 		END
 	END GetProperty;
+
+	PROCEDURE GetProperty1(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR par: INTEGER; defval: INTEGER);
+	BEGIN
+		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
+			IF S.class = Texts.Int THEN par := S.i; Texts.Scan(S) ELSE Mark(-157, -1); par := defval END
+		ELSE par := defval
+		END
+	END GetProperty1;
 
 	PROCEDURE GetProperties();
 		VAR T: Texts.Text; S: Texts.Scanner;
@@ -387,6 +395,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			(* Size = 0: natural size aligned to next power of 2 up to RecAlign; e.g. i960
 				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
 			*)
+			GetProperty1(S, "ARRLEN", ArrLenSize, -1);	(* Size of the type of array length *)
 			GetProperty(S, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
 		ELSE Mark(-156, -1)
 		END ;
@@ -407,6 +416,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
+		IF ArrLenSize = -1 THEN ArrLenSize := LIntSize
+		ELSIF ~ ((ArrLenSize = SIntSize) OR (ArrLenSize = IntSize) OR (ArrLenSize = LIntSize)) THEN Mark(-157, -1)
+		END;
 		MaxIndex := 7FFFFFFFH	(*2147483647*)
 	END GetProperties;
 
