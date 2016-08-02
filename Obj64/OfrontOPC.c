@@ -51,7 +51,7 @@ static void OfrontOPC_GenHeaderMsg (void);
 export void OfrontOPC_Halt (LONGINT n);
 export void OfrontOPC_Ident (OfrontOPT_Object obj);
 static void OfrontOPC_IdentList (OfrontOPT_Object obj, INTEGER vis);
-static void OfrontOPC_Include (CHAR *name, LONGINT name__len);
+static void OfrontOPC_Include (CHAR *name, INTEGER name__len);
 static void OfrontOPC_IncludeImports (OfrontOPT_Object obj, INTEGER vis);
 export void OfrontOPC_Increment (BOOLEAN decrement);
 export void OfrontOPC_Indent (INTEGER count);
@@ -62,10 +62,10 @@ export void OfrontOPC_InitTDesc (OfrontOPT_Struct typ);
 static void OfrontOPC_InitTProcs (OfrontOPT_Object typ, OfrontOPT_Object obj);
 export void OfrontOPC_Len (OfrontOPT_Object obj, OfrontOPT_Struct array, LONGINT dim);
 static void OfrontOPC_LenList (OfrontOPT_Object par, BOOLEAN ansiDefine, BOOLEAN showParamName);
-static INTEGER OfrontOPC_Length (CHAR *s, LONGINT s__len);
+static INTEGER OfrontOPC_Length (CHAR *s, INTEGER s__len);
 export LONGINT OfrontOPC_NofPtrs (OfrontOPT_Struct typ);
-static INTEGER OfrontOPC_PerfectHash (CHAR *s, LONGINT s__len);
-static BOOLEAN OfrontOPC_Prefixed (OfrontOPT_ConstExt x, CHAR *y, LONGINT y__len);
+static INTEGER OfrontOPC_PerfectHash (CHAR *s, INTEGER s__len);
+static BOOLEAN OfrontOPC_Prefixed (OfrontOPT_ConstExt x, CHAR *y, INTEGER y__len);
 static void OfrontOPC_ProcHeader (OfrontOPT_Object proc, BOOLEAN define);
 static void OfrontOPC_ProcPredefs (OfrontOPT_Object obj, SHORTINT vis);
 static void OfrontOPC_PutBase (OfrontOPT_Struct typ);
@@ -73,7 +73,7 @@ static void OfrontOPC_PutPtrOffsets (OfrontOPT_Struct typ, LONGINT adr, LONGINT 
 static void OfrontOPC_RegCmds (OfrontOPT_Object obj);
 export void OfrontOPC_SetInclude (BOOLEAN exclude);
 static void OfrontOPC_Stars (OfrontOPT_Struct typ, BOOLEAN *openClause);
-static void OfrontOPC_Str1 (CHAR *s, LONGINT s__len, LONGINT x);
+static void OfrontOPC_Str1 (CHAR *s, INTEGER s__len, LONGINT x);
 export void OfrontOPC_TDescDecl (OfrontOPT_Struct typ);
 export void OfrontOPC_TypeDefs (OfrontOPT_Object obj, INTEGER vis);
 export void OfrontOPC_TypeOf (OfrontOPT_Object ap);
@@ -145,7 +145,7 @@ void OfrontOPC_EndBlk0 (void)
 }
 
 /*----------------------------------------------------------------------------*/
-static void OfrontOPC_Str1 (CHAR *s, LONGINT s__len, LONGINT x)
+static void OfrontOPC_Str1 (CHAR *s, INTEGER s__len, LONGINT x)
 {
 	CHAR ch;
 	INTEGER i;
@@ -164,7 +164,7 @@ static void OfrontOPC_Str1 (CHAR *s, LONGINT s__len, LONGINT x)
 	__DEL(s);
 }
 
-static INTEGER OfrontOPC_Length (CHAR *s, LONGINT s__len)
+static INTEGER OfrontOPC_Length (CHAR *s, INTEGER s__len)
 {
 	INTEGER i;
 	i = 0;
@@ -174,7 +174,7 @@ static INTEGER OfrontOPC_Length (CHAR *s, LONGINT s__len)
 	return i;
 }
 
-static INTEGER OfrontOPC_PerfectHash (CHAR *s, LONGINT s__len)
+static INTEGER OfrontOPC_PerfectHash (CHAR *s, INTEGER s__len)
 {
 	INTEGER i, h;
 	i = 0;
@@ -515,7 +515,7 @@ static void OfrontOPC_LenList (OfrontOPT_Object par, BOOLEAN ansiDefine, BOOLEAN
 	typ = par->typ->BaseTyp;
 	while (typ->comp == 3) {
 		if (ansiDefine) {
-			OfrontOPM_WriteString((CHAR*)", LONGINT ", (LONGINT)11);
+			OfrontOPM_WriteString((CHAR*)", INTEGER ", (LONGINT)11);
 		} else {
 			OfrontOPM_WriteString((CHAR*)", ", (LONGINT)3);
 		}
@@ -733,7 +733,7 @@ static void OfrontOPC_DefineType (OfrontOPT_Struct str)
 	}
 }
 
-static BOOLEAN OfrontOPC_Prefixed (OfrontOPT_ConstExt x, CHAR *y, LONGINT y__len)
+static BOOLEAN OfrontOPC_Prefixed (OfrontOPT_ConstExt x, CHAR *y, INTEGER y__len)
 {
 	INTEGER i;
 	i = 0;
@@ -1149,7 +1149,7 @@ static void OfrontOPC_ProcPredefs (OfrontOPT_Object obj, SHORTINT vis)
 	}
 }
 
-static void OfrontOPC_Include (CHAR *name, LONGINT name__len)
+static void OfrontOPC_Include (CHAR *name, INTEGER name__len)
 {
 	__DUP(name, name__len, CHAR);
 	OfrontOPM_WriteString((CHAR*)"#include ", (LONGINT)10);
@@ -1986,9 +1986,9 @@ static struct InitKeywords__47 {
 	struct InitKeywords__47 *lnk;
 } *InitKeywords__47_s;
 
-static void Enter__48 (CHAR *s, LONGINT s__len);
+static void Enter__48 (CHAR *s, INTEGER s__len);
 
-static void Enter__48 (CHAR *s, LONGINT s__len)
+static void Enter__48 (CHAR *s, INTEGER s__len)
 {
 	INTEGER h;
 	__DUP(s, s__len, CHAR);

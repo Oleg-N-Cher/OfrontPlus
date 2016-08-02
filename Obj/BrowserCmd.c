@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkaem */
+/*  Ofront+ 1.0 -xtspkaem */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -13,7 +13,7 @@ static Texts_Writer BrowserCmd_W;
 static CHAR BrowserCmd_option;
 
 
-static void BrowserCmd_Ident (CHAR *name, LONGINT name__len, CHAR *first, LONGINT first__len);
+static void BrowserCmd_Ident (CHAR *name, INTEGER name__len, CHAR *first, INTEGER first__len);
 static void BrowserCmd_Indent (SHORTINT i);
 static void BrowserCmd_Objects (OfrontOPT_Object obj, SET mode);
 export void BrowserCmd_ShowDef (void);
@@ -22,7 +22,7 @@ static void BrowserCmd_Wch (CHAR ch);
 static void BrowserCmd_Wi (LONGINT i);
 static void BrowserCmd_Wln (void);
 static void BrowserCmd_Wmthd (OfrontOPT_Object obj);
-static void BrowserCmd_Ws (CHAR *s, LONGINT s__len);
+static void BrowserCmd_Ws (CHAR *s, INTEGER s__len);
 static void BrowserCmd_Wsign (OfrontOPT_Struct result, OfrontOPT_Object par);
 static void BrowserCmd_Wstruct (OfrontOPT_Struct typ);
 static void BrowserCmd_Wtype (OfrontOPT_Struct typ);
@@ -30,7 +30,7 @@ static void BrowserCmd_Wtype (OfrontOPT_Struct typ);
 
 /*============================================================================*/
 
-static void BrowserCmd_Ws (CHAR *s, LONGINT s__len)
+static void BrowserCmd_Ws (CHAR *s, INTEGER s__len)
 {
 	__DUP(s, s__len, CHAR);
 	Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, s, s__len);
@@ -400,9 +400,9 @@ static struct WModule__5 {
 } *WModule__5_s;
 
 static void CheckHeader__6 (void);
-static void Header__8 (CHAR *s, LONGINT s__len);
+static void Header__8 (CHAR *s, INTEGER s__len);
 
-static void Header__8 (CHAR *s, LONGINT s__len)
+static void Header__8 (CHAR *s, INTEGER s__len)
 {
 	__DUP(s, s__len, CHAR);
 	*WModule__5_s->beg = BrowserCmd_W.buf->len;
@@ -488,7 +488,7 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T)
 	WModule__5_s = _s.lnk;
 }
 
-static void BrowserCmd_Ident (CHAR *name, LONGINT name__len, CHAR *first, LONGINT first__len)
+static void BrowserCmd_Ident (CHAR *name, INTEGER name__len, CHAR *first, INTEGER first__len)
 {
 	SHORTINT i, j;
 	CHAR ch;

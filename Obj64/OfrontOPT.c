@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPS.h"
@@ -108,7 +108,7 @@ static void OfrontOPT_EnterProc (OfrontOPS_Name name, INTEGER num);
 static void OfrontOPT_EnterTyp (OfrontOPS_Name name, SHORTINT form, INTEGER size, OfrontOPT_Struct *res);
 export void OfrontOPT_Export (BOOLEAN *ext, BOOLEAN *new);
 export void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno);
-static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len);
+static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, INTEGER name__len);
 export void OfrontOPT_FPrintObj (OfrontOPT_Object obj);
 static void OfrontOPT_FPrintSign (LONGINT *fp, OfrontOPT_Struct result, OfrontOPT_Object par);
 export void OfrontOPT_FPrintStr (OfrontOPT_Struct typ);
@@ -120,7 +120,7 @@ export void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOO
 static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval);
 static OfrontOPT_Object OfrontOPT_InFld (void);
 static void OfrontOPT_InMod (SHORTINT *mno);
-static void OfrontOPT_InName (CHAR *name, LONGINT name__len);
+static void OfrontOPT_InName (CHAR *name, INTEGER name__len);
 static OfrontOPT_Object OfrontOPT_InObj (SHORTINT mno);
 static void OfrontOPT_InSign (SHORTINT mno, OfrontOPT_Struct *res, OfrontOPT_Object *par);
 static void OfrontOPT_InStruct (OfrontOPT_Struct *typ);
@@ -139,7 +139,7 @@ static void OfrontOPT_OutConstant (OfrontOPT_Object obj);
 static void OfrontOPT_OutFlds (OfrontOPT_Object fld, LONGINT adr, BOOLEAN visible);
 static void OfrontOPT_OutHdFld (OfrontOPT_Struct typ, OfrontOPT_Object fld, LONGINT adr);
 static void OfrontOPT_OutMod (INTEGER mno);
-static void OfrontOPT_OutName (CHAR *name, LONGINT name__len);
+static void OfrontOPT_OutName (CHAR *name, INTEGER name__len);
 static void OfrontOPT_OutObj (OfrontOPT_Object obj);
 static void OfrontOPT_OutSign (OfrontOPT_Struct result, OfrontOPT_Object par);
 static void OfrontOPT_OutStr (OfrontOPT_Struct typ);
@@ -379,7 +379,7 @@ void OfrontOPT_Insert (OfrontOPS_Name name, OfrontOPT_Object *obj)
 }
 
 /*----------------------------------------------------------------------------*/
-static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len)
+static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
@@ -730,7 +730,7 @@ void OfrontOPT_InsertImport (OfrontOPT_Object obj, OfrontOPT_Object *root, Ofron
 }
 
 /*----------------------------------------------------------------------------*/
-static void OfrontOPT_InName (CHAR *name, LONGINT name__len)
+static void OfrontOPT_InName (CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
@@ -1233,7 +1233,7 @@ void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOOLEAN *d
 }
 
 /*----------------------------------------------------------------------------*/
-static void OfrontOPT_OutName (CHAR *name, LONGINT name__len)
+static void OfrontOPT_OutName (CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
