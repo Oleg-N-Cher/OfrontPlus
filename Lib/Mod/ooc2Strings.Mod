@@ -101,13 +101,13 @@ PROCEDURE Extract* (source: ARRAY OF CHAR; startPos, numberToExtract: INTEGER;
     IF (startPos > sourceLength) THEN
       startPos := sourceLength
     END;
-    
+
     (* make sure that `numberToExtract' doesn't exceed the capacity 
        of `destination' *)
     IF (numberToExtract >= LEN (destination)) THEN
-      numberToExtract := SHORT (LEN (destination))-1
+      numberToExtract := LEN (destination)-1
     END;
-    
+
     (* copy up to `numberToExtract' characters to `destination' *)
     i := 0;
     WHILE (i < numberToExtract) & (source[startPos+i] # 0X) DO
@@ -161,7 +161,7 @@ PROCEDURE Insert* (source: ARRAY OF CHAR; startPos: INTEGER;
   BEGIN
     destLength := Length (destination);
     sourceLength := Length (source);
-    destMax := SHORT (LEN (destination))-1;
+    destMax := LEN (destination)-1;
     IF (startPos+sourceLength < destMax) THEN
       (* `source' is inserted inside of `destination' *)
       IF (destLength+sourceLength > destMax) THEN

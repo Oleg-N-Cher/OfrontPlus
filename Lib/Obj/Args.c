@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Platform.h"
 
@@ -7,15 +7,15 @@ export INTEGER Args_argc;
 export Platform_ArgVec Args_argv;
 
 
-export void Args_Get (INTEGER n, CHAR *val, LONGINT val__len);
-export void Args_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len);
+export void Args_Get (INTEGER n, CHAR *val, INTEGER val__len);
+export void Args_GetEnv (CHAR *var, INTEGER var__len, CHAR *val, INTEGER val__len);
 export void Args_GetInt (INTEGER n, INTEGER *val);
-export INTEGER Args_Pos (CHAR *s, LONGINT s__len);
+export INTEGER Args_Pos (CHAR *s, INTEGER s__len);
 
 
 /*============================================================================*/
 
-void Args_Get (INTEGER n, CHAR *val, LONGINT val__len)
+void Args_Get (INTEGER n, CHAR *val, INTEGER val__len)
 {
 	Platform_GetArg(n, (void*)val, val__len);
 }
@@ -27,13 +27,13 @@ void Args_GetInt (INTEGER n, INTEGER *val)
 }
 
 /*----------------------------------------------------------------------------*/
-INTEGER Args_Pos (CHAR *s, LONGINT s__len)
+INTEGER Args_Pos (CHAR *s, INTEGER s__len)
 {
 	return Platform_ArgPos(s, s__len);
 }
 
 /*----------------------------------------------------------------------------*/
-void Args_GetEnv (CHAR *var, LONGINT var__len, CHAR *val, LONGINT val__len)
+void Args_GetEnv (CHAR *var, INTEGER var__len, CHAR *val, INTEGER val__len)
 {
 	Platform_GetEnv(var, var__len, (void*)val, val__len);
 }

@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Console.h"
 #include "Heap.h"
@@ -41,17 +41,17 @@ export Modules_ModuleName Modules_imported, Modules_importing;
 export LONGINT *Modules_ModuleDesc__typ;
 export LONGINT *Modules_CmdDesc__typ;
 
-static void Modules_Append (CHAR *a, LONGINT a__len, CHAR *b, LONGINT b__len);
-export void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all);
-export Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT name__len);
-export Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len);
+static void Modules_Append (CHAR *a, INTEGER a__len, CHAR *b, INTEGER b__len);
+export void Modules_Free (CHAR *name, INTEGER name__len, BOOLEAN all);
+export Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER name__len);
+export Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len);
 
 #define Modules_modules()	(Modules_Module)Heap_modules
 #define Modules_setmodules(m)	Heap_modules = m
 
 /*============================================================================*/
 
-static void Modules_Append (CHAR *a, LONGINT a__len, CHAR *b, LONGINT b__len)
+static void Modules_Append (CHAR *a, INTEGER a__len, CHAR *b, INTEGER b__len)
 {
 	INTEGER i, j;
 	__DUP(b, b__len, CHAR);
@@ -69,7 +69,7 @@ static void Modules_Append (CHAR *a, LONGINT a__len, CHAR *b, LONGINT b__len)
 	__DEL(b);
 }
 
-Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len)
+Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len)
 {
 	Modules_Module m = NIL;
 	CHAR bodyname[64];
@@ -94,7 +94,7 @@ Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len)
 }
 
 /*----------------------------------------------------------------------------*/
-Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT name__len)
+Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER name__len)
 {
 	Modules_Cmd c = NIL;
 	__DUP(name, name__len, CHAR);
@@ -122,7 +122,7 @@ Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT nam
 }
 
 /*----------------------------------------------------------------------------*/
-void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all)
+void Modules_Free (CHAR *name, INTEGER name__len, BOOLEAN all)
 {
 	Modules_Module m = NIL, p = NIL;
 	__DUP(name, name__len, CHAR);

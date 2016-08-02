@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Files.h"
 #include "Modules.h"
@@ -182,20 +182,20 @@ export void Texts_Append (Texts_Text T, Texts_Buffer B);
 export void Texts_ChangeLooks (Texts_Text T, INTEGER beg, INTEGER end, SET sel, Texts_FontsFont fnt, BYTE col, BYTE voff);
 static Texts_Elem Texts_CloneElem (Texts_Elem e);
 static Texts_Piece Texts_ClonePiece (Texts_Piece p);
-export void Texts_Close (Texts_Text T, CHAR *name, LONGINT name__len);
+export void Texts_Close (Texts_Text T, CHAR *name, INTEGER name__len);
 export void Texts_Copy (Texts_Buffer SB, Texts_Buffer DB);
 export void Texts_CopyElem (Texts_Elem SE, Texts_Elem DE);
 export void Texts_Delete (Texts_Text T, INTEGER beg, INTEGER end);
 export Texts_Text Texts_ElemBase (Texts_Elem E);
 export INTEGER Texts_ElemPos (Texts_Elem E);
 static void Texts_Find (Texts_Text T, INTEGER *pos, Texts_Run *u, INTEGER *org, INTEGER *off);
-static Texts_FontsFont Texts_FontsThis (CHAR *name, LONGINT name__len);
+static Texts_FontsFont Texts_FontsThis (CHAR *name, INTEGER name__len);
 static void Texts_HandleAlien (Texts_Elem E, Texts_ElemMsg *msg, LONGINT *msg__typ);
 export void Texts_Insert (Texts_Text T, INTEGER pos, Texts_Buffer B);
 export void Texts_Load (Files_Rider *r, LONGINT *r__typ, Texts_Text T);
 static void Texts_Load0 (Files_Rider *r, LONGINT *r__typ, Texts_Text T);
 static void Texts_Merge (Texts_Text T, Texts_Run u, Texts_Run *v);
-export void Texts_Open (Texts_Text T, CHAR *name, LONGINT name__len);
+export void Texts_Open (Texts_Text T, CHAR *name, INTEGER name__len);
 export void Texts_OpenBuf (Texts_Buffer B);
 export void Texts_OpenReader (Texts_Reader *R, LONGINT *R__typ, Texts_Text T, INTEGER pos);
 export void Texts_OpenScanner (Texts_Scanner *S, LONGINT *S__typ, Texts_Text T, INTEGER pos);
@@ -226,12 +226,12 @@ export void Texts_WriteLongRealHex (Texts_Writer *W, LONGINT *W__typ, LONGREAL x
 export void Texts_WriteReal (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n);
 export void Texts_WriteRealFix (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n, SHORTINT k);
 export void Texts_WriteRealHex (Texts_Writer *W, LONGINT *W__typ, REAL x);
-export void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, LONGINT s__len);
+export void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, INTEGER s__len);
 
 
 /*============================================================================*/
 
-static Texts_FontsFont Texts_FontsThis (CHAR *name, LONGINT name__len)
+static Texts_FontsFont Texts_FontsThis (CHAR *name, INTEGER name__len)
 {
 	Texts_FontsFont F = NIL;
 	__NEW(F, Texts_FontDesc);
@@ -1051,7 +1051,7 @@ void Texts_WriteLn (Texts_Writer *W, LONGINT *W__typ)
 }
 
 /*----------------------------------------------------------------------------*/
-void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, LONGINT s__len)
+void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, INTEGER s__len)
 {
 	SHORTINT i;
 	__DUP(s, s__len, CHAR);
@@ -1633,7 +1633,7 @@ void Texts_Load (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 }
 
 /*----------------------------------------------------------------------------*/
-void Texts_Open (Texts_Text T, CHAR *name, LONGINT name__len)
+void Texts_Open (Texts_Text T, CHAR *name, INTEGER name__len)
 {
 	Files_File f = NIL;
 	Files_Rider r;
@@ -1850,7 +1850,7 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 }
 
 /*----------------------------------------------------------------------------*/
-void Texts_Close (Texts_Text T, CHAR *name, LONGINT name__len)
+void Texts_Close (Texts_Text T, CHAR *name, INTEGER name__len)
 {
 	Files_File f = NIL;
 	Files_Rider r;

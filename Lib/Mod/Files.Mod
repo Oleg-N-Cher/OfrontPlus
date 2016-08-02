@@ -594,7 +594,7 @@ Especially Length would become fairly complex.
   PROCEDURE FlipBytes(VAR src, dest: ARRAY OF BYTE);
     VAR i, j: INTEGER;
   BEGIN
-    IF ~Platform.LittleEndian THEN i := SHORT(LEN(src)); j := 0;
+    IF ~Platform.LittleEndian THEN i := LEN(src); j := 0;
       WHILE i > 0 DO DEC(i); dest[j] := src[i]; INC(j) END
     ELSE SYSTEM.MOVE(SYSTEM.ADR(src), SYSTEM.ADR(dest), LEN(src))
     END

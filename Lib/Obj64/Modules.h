@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 
 #ifndef Modules__h
 #define Modules__h
@@ -43,9 +43,9 @@ import Modules_ModuleName Modules_imported, Modules_importing;
 import LONGINT *Modules_ModuleDesc__typ;
 import LONGINT *Modules_CmdDesc__typ;
 
-import void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all);
-import Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT name__len);
-import Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len);
+import void Modules_Free (CHAR *name, INTEGER name__len, BOOLEAN all);
+import Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER name__len);
+import Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len);
 import void *Modules__init(void);
 
 #define Modules_modules()	(Modules_Module)Heap_modules

@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Platform.h"
 
@@ -16,8 +16,8 @@ export void Console_Ln (void);
 export void Console_LongHex (LONGINT i);
 export void Console_LongInt (LONGINT i, INTEGER n);
 export void Console_Read (CHAR *ch);
-export void Console_ReadLine (CHAR *line, LONGINT line__len);
-export void Console_String (CHAR *s, LONGINT s__len);
+export void Console_ReadLine (CHAR *line, INTEGER line__len);
+export void Console_String (CHAR *s, INTEGER s__len);
 
 
 /*============================================================================*/
@@ -43,7 +43,7 @@ void Console_Char (CHAR ch)
 }
 
 /*----------------------------------------------------------------------------*/
-void Console_String (CHAR *s, LONGINT s__len)
+void Console_String (CHAR *s, INTEGER s__len)
 {
 	INTEGER i;
 	__DUP(s, s__len, CHAR);
@@ -182,9 +182,9 @@ void Console_Read (CHAR *ch)
 }
 
 /*----------------------------------------------------------------------------*/
-void Console_ReadLine (CHAR *line, LONGINT line__len)
+void Console_ReadLine (CHAR *line, INTEGER line__len)
 {
-	LONGINT i;
+	INTEGER i;
 	CHAR ch;
 	Console_Flush();
 	i = 0;

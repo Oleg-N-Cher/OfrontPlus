@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 
 #ifndef Texts__h
 #define Texts__h
@@ -131,7 +131,7 @@ import LONGINT *Texts_Writer__typ;
 
 import void Texts_Append (Texts_Text T, Texts_Buffer B);
 import void Texts_ChangeLooks (Texts_Text T, INTEGER beg, INTEGER end, SET sel, Texts_FontsFont fnt, BYTE col, BYTE voff);
-import void Texts_Close (Texts_Text T, CHAR *name, LONGINT name__len);
+import void Texts_Close (Texts_Text T, CHAR *name, INTEGER name__len);
 import void Texts_Copy (Texts_Buffer SB, Texts_Buffer DB);
 import void Texts_CopyElem (Texts_Elem SE, Texts_Elem DE);
 import void Texts_Delete (Texts_Text T, INTEGER beg, INTEGER end);
@@ -139,7 +139,7 @@ import Texts_Text Texts_ElemBase (Texts_Elem E);
 import INTEGER Texts_ElemPos (Texts_Elem E);
 import void Texts_Insert (Texts_Text T, INTEGER pos, Texts_Buffer B);
 import void Texts_Load (Files_Rider *r, LONGINT *r__typ, Texts_Text T);
-import void Texts_Open (Texts_Text T, CHAR *name, LONGINT name__len);
+import void Texts_Open (Texts_Text T, CHAR *name, INTEGER name__len);
 import void Texts_OpenBuf (Texts_Buffer B);
 import void Texts_OpenReader (Texts_Reader *R, LONGINT *R__typ, Texts_Text T, INTEGER pos);
 import void Texts_OpenScanner (Texts_Scanner *S, LONGINT *S__typ, Texts_Text T, INTEGER pos);
@@ -168,7 +168,7 @@ import void Texts_WriteLongRealHex (Texts_Writer *W, LONGINT *W__typ, LONGREAL x
 import void Texts_WriteReal (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n);
 import void Texts_WriteRealFix (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n, SHORTINT k);
 import void Texts_WriteRealHex (Texts_Writer *W, LONGINT *W__typ, REAL x);
-import void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, LONGINT s__len);
+import void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, INTEGER s__len);
 import void *Texts__init(void);
 
 

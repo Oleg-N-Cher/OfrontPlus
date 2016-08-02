@@ -1,4 +1,4 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 
 #ifndef Reals__h
 #define Reals__h
@@ -8,10 +8,10 @@
 
 
 
-import void Reals_Convert (REAL x, SHORTINT n, CHAR *d, LONGINT d__len);
-import void Reals_ConvertH (REAL y, CHAR *d, LONGINT d__len);
-import void Reals_ConvertHL (LONGREAL x, CHAR *d, LONGINT d__len);
-import void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, LONGINT d__len);
+import void Reals_Convert (REAL x, SHORTINT n, CHAR *d, INTEGER d__len);
+import void Reals_ConvertH (REAL y, CHAR *d, INTEGER d__len);
+import void Reals_ConvertHL (LONGREAL x, CHAR *d, INTEGER d__len);
+import void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, INTEGER d__len);
 import SHORTINT Reals_Expo (REAL x);
 import SHORTINT Reals_ExpoL (LONGREAL x);
 import void Reals_SetExpo (SHORTINT e, REAL *x);

@@ -1,21 +1,21 @@
-/*  Ofront 1.2 -xtspkae */
+/*  Ofront+ 1.0 -xtspkae */
 #include "SYSTEM.h"
 #include "Platform.h"
 
 
 
 
-export void Reals_Convert (REAL x, SHORTINT n, CHAR *d, LONGINT d__len);
-export void Reals_ConvertH (REAL y, CHAR *d, LONGINT d__len);
-export void Reals_ConvertHL (LONGREAL x, CHAR *d, LONGINT d__len);
-export void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, LONGINT d__len);
+export void Reals_Convert (REAL x, SHORTINT n, CHAR *d, INTEGER d__len);
+export void Reals_ConvertH (REAL y, CHAR *d, INTEGER d__len);
+export void Reals_ConvertHL (LONGREAL x, CHAR *d, INTEGER d__len);
+export void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, INTEGER d__len);
 export SHORTINT Reals_Expo (REAL x);
 export SHORTINT Reals_ExpoL (LONGREAL x);
 export void Reals_SetExpo (SHORTINT e, REAL *x);
 export void Reals_SetExpoL (SHORTINT e, LONGREAL *x);
 export REAL Reals_Ten (SHORTINT e);
 export LONGREAL Reals_TenL (SHORTINT e);
-static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len);
+static void Reals_Unpack (BYTE *b, INTEGER b__len, BYTE *d, INTEGER d__len);
 
 #include <stdlib.h>
 #define Reals_Offset(adr, offset)	((Platform_MemAdr)((SYSTEM_ADR)adr + offset))
@@ -87,7 +87,7 @@ void Reals_SetExpoL (SHORTINT e, LONGREAL *x)
 }
 
 /*----------------------------------------------------------------------------*/
-void Reals_Convert (REAL x, SHORTINT n, CHAR *d, LONGINT d__len)
+void Reals_Convert (REAL x, SHORTINT n, CHAR *d, INTEGER d__len)
 {
 	INTEGER i, k;
 	i = (INTEGER)__ENTIER(x);
@@ -100,7 +100,7 @@ void Reals_Convert (REAL x, SHORTINT n, CHAR *d, LONGINT d__len)
 }
 
 /*----------------------------------------------------------------------------*/
-void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, LONGINT d__len)
+void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, INTEGER d__len)
 {
 	INTEGER decpt, sign, i;
 	Platform_MemAdr buf = NIL;
@@ -118,12 +118,12 @@ void Reals_ConvertL (LONGREAL x, SHORTINT n, CHAR *d, LONGINT d__len)
 }
 
 /*----------------------------------------------------------------------------*/
-static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
+static void Reals_Unpack (BYTE *b, INTEGER b__len, BYTE *d, INTEGER d__len)
 {
 	BYTE i, k;
 	INTEGER len;
 	i = 0;
-	len = (INTEGER)b__len;
+	len = b__len;
 	while ((INTEGER)i < len) {
 		k = (BYTE)__ASHR((SHORTINT)(__VAL(CHAR, b[__X(i, b__len)])), 4, SHORTINT);
 		if (k > 9) {
@@ -141,13 +141,13 @@ static void Reals_Unpack (BYTE *b, LONGINT b__len, BYTE *d, LONGINT d__len)
 	}
 }
 
-void Reals_ConvertH (REAL y, CHAR *d, LONGINT d__len)
+void Reals_ConvertH (REAL y, CHAR *d, INTEGER d__len)
 {
 	Reals_Unpack((void*)&y, 4, (void*)d, d__len * 1);
 }
 
 /*----------------------------------------------------------------------------*/
-void Reals_ConvertHL (LONGREAL x, CHAR *d, LONGINT d__len)
+void Reals_ConvertHL (LONGREAL x, CHAR *d, INTEGER d__len)
 {
 	Reals_Unpack((void*)&x, 8, (void*)d, d__len * 1);
 }
