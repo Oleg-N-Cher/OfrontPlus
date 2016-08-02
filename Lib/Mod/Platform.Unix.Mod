@@ -403,7 +403,7 @@ END Read;
 
 PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCode;
 BEGIN
-  n := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), SHORT(LEN(b)));
+  n := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), LEN(b));
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 

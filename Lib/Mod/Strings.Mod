@@ -88,7 +88,7 @@ END Replace;
 PROCEDURE Extract* (source: ARRAY OF CHAR; pos, n: INTEGER; VAR dest: ARRAY OF CHAR);
   VAR len, destLen, i: INTEGER;
 BEGIN
-  len := Length(source); destLen := SHORT(LEN(dest)) - 1;
+  len := Length(source); destLen := LEN(dest) - 1;
   IF pos < 0 THEN pos := 0 END ;
   IF pos >= len THEN dest[0] := 0X; RETURN END ;
   i := 0;

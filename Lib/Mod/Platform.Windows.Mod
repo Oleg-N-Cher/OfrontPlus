@@ -421,7 +421,7 @@ PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCo
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
-  result := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), SHORT(LEN(b)), n);
+  result := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), LEN(b), n);
   IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
