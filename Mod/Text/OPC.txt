@@ -1345,9 +1345,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			hex: INTEGER; skipLeading: BOOLEAN;
 	BEGIN
 		CASE form OF
-			Byte:
-					OPM.WriteInt(con^.intval)
-		|	Bool:
+		|	Bool, Byte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
 		|	Char:
 					ch := SHORT(CHR(con^.intval));
@@ -1359,8 +1357,6 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					ELSE
 						OPM.WriteString("0x"); OPM.WriteHex(SHORT(con^.intval))
 					END
-		|	SInt, Int, LInt:
-					OPM.WriteInt(con^.intval)
 		|	Real:
 					OPM.WriteReal(con^.realval, "f")
 		|	LReal:
