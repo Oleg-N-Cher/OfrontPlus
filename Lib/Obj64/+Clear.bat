@@ -1,4 +1,4 @@
 @DEL *.o
-@DEL *_???.c
+@DEL *.sym
 @ATTRIB -H *.sbm
 @DEL *.sbm
