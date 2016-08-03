@@ -1,2 +1,2 @@
-ofront+.exe -iapxe Heap0.Mod
+..\..\Bin64\ofront+.exe -apxe Heap0.Mod
 @PAUSE
