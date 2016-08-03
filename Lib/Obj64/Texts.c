@@ -867,8 +867,8 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 				}
 				if (ch == 'D') {
 					e = 0;
-					y = 0;
-					g = 1;
+					y = (LONGREAL)0;
+					g = (LONGREAL)1;
 					do {
 						y = y * (LONGREAL)10 + ((SHORTINT)d[__X(j, 32)] - 48);
 						j += 1;
@@ -883,7 +883,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 						if (e <= 308) {
 							y = y / (LONGREAL)Reals_TenL(e);
 						} else {
-							y = 0;
+							y = (LONGREAL)0;
 						}
 					} else if (e > 0) {
 						if (e <= 308) {
@@ -899,8 +899,8 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 					(*S).y = y;
 				} else {
 					e = 0;
-					x = 0;
-					f = 1;
+					x = (REAL)0;
+					f = (REAL)1;
 					do {
 						x = x * (REAL)10 + ((SHORTINT)d[__X(j, 32)] - 48);
 						j += 1;
@@ -917,7 +917,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 						if (e <= 38) {
 							x = x / (REAL)Reals_Ten(e);
 						} else {
-							x = 0;
+							x = (REAL)0;
 						}
 					} else if (e > 0) {
 						if (e <= 38) {
