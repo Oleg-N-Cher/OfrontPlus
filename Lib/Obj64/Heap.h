@@ -1,4 +1,4 @@
-/* Ofront 1.2 -tkiel */
+/* Ofront+ 1.0 -tke */
 
 #ifndef Heap__h
 #define Heap__h

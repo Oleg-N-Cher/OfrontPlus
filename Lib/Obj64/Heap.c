@@ -1,4 +1,4 @@
-/* Ofront 1.2 -tkiel */
+/* Ofront+ 1.0 -tke */
 #include "SYSTEM.h"
 
 struct Heap__1 {
@@ -79,14 +79,14 @@ static void Heap_ExtendHeap (LONGINT blksz);
 export void Heap_FINALL (void);
 static void Heap_Finalize (void);
 export void Heap_GC (BOOLEAN markStack);
-static void Heap_HeapSort (LONGINT n, LONGINT *a, LONGINT a__len);
+static void Heap_HeapSort (LONGINT n, LONGINT *a, INTEGER a__len);
 export void Heap_INCREF (Heap_Module m);
 export void Heap_InitHeap (void);
 export void Heap_Lock (void);
 static void Heap_Mark (LONGINT q);
-static void Heap_MarkCandidates (LONGINT n, LONGINT *cand, LONGINT cand__len);
+static void Heap_MarkCandidates (LONGINT n, LONGINT *cand, INTEGER cand__len);
 static void Heap_MarkP (SYSTEM_PTR p);
-static void Heap_MarkStack (LONGINT n, LONGINT *cand, LONGINT cand__len);
+static void Heap_MarkStack (LONGINT n, LONGINT *cand, INTEGER cand__len);
 export SYSTEM_PTR Heap_NEWBLK (INTEGER size);
 export SYSTEM_PTR Heap_NEWREC (LONGINT tag);
 static LONGINT Heap_NewChunk (LONGINT blksz);
@@ -95,7 +95,7 @@ export SYSTEM_PTR Heap_REGMOD (Heap_ModuleName name, Heap_EnumProc enumPtrs);
 export void Heap_REGTYP (Heap_Module m, LONGINT typ);
 export void Heap_RegisterFinalizer (SYSTEM_PTR obj, Heap_Finalizer finalize);
 static void Heap_Scan (void);
-static void Heap_Sift (LONGINT l, LONGINT r, LONGINT *a, LONGINT a__len);
+static void Heap_Sift (LONGINT l, LONGINT r, LONGINT *a, INTEGER a__len);
 export void Heap_Unlock (void);
 
 extern void *Heap__init();
@@ -107,11 +107,14 @@ extern __Platform_MemAdr Platform_OSAllocate(INTEGER size);
 #define Heap_PlatformHalt(code)	Platform_Halt(code)
 #define Heap_PlatformMainStackFrame()	Platform_MainStackFrame
 
+/*============================================================================*/
+
 void Heap_Lock (void)
 {
 	Heap_lockdepth += 1;
 }
 
+/*----------------------------------------------------------------------------*/
 void Heap_Unlock (void)
 {
 	Heap_lockdepth -= 1;
@@ -120,6 +123,7 @@ void Heap_Unlock (void)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 SYSTEM_PTR Heap_REGMOD (Heap_ModuleName name, Heap_EnumProc enumPtrs)
 {
 	Heap_Module m;
@@ -138,6 +142,7 @@ SYSTEM_PTR Heap_REGMOD (Heap_ModuleName name, Heap_EnumProc enumPtrs)
 	return (void*)m;
 }
 
+/*----------------------------------------------------------------------------*/
 void Heap_REGCMD (Heap_Module m, Heap_CmdName name, Heap_Command cmd)
 {
 	Heap_Cmd c;
@@ -152,17 +157,20 @@ void Heap_REGCMD (Heap_Module m, Heap_CmdName name, Heap_Command cmd)
 	m->cmds = c;
 }
 
+/*----------------------------------------------------------------------------*/
 void Heap_REGTYP (Heap_Module m, LONGINT typ)
 {
 	__PUT(typ, m->types, LONGINT);
 	m->types = typ;
 }
 
+/*----------------------------------------------------------------------------*/
 void Heap_INCREF (Heap_Module m)
 {
 	m->refcnt += 1;
 }
 
+/*----------------------------------------------------------------------------*/
 static LONGINT Heap_NewChunk (LONGINT blksz)
 {
 	LONGINT chnk;
@@ -311,6 +319,7 @@ SYSTEM_PTR Heap_NEWREC (LONGINT tag)
 	return (SYSTEM_PTR)(adr + 8);
 }
 
+/*----------------------------------------------------------------------------*/
 SYSTEM_PTR Heap_NEWBLK (INTEGER size)
 {
 	LONGINT blksz, tag;
@@ -327,6 +336,7 @@ SYSTEM_PTR Heap_NEWBLK (INTEGER size)
 	return new;
 }
 
+/*----------------------------------------------------------------------------*/
 static void Heap_Mark (LONGINT q)
 {
 	LONGINT p, tag, fld, n, offset, tagbits;
@@ -440,7 +450,7 @@ static void Heap_Scan (void)
 	}
 }
 
-static void Heap_Sift (LONGINT l, LONGINT r, LONGINT *a, LONGINT a__len)
+static void Heap_Sift (LONGINT l, LONGINT r, LONGINT *a, INTEGER a__len)
 {
 	LONGINT i, j, x;
 	j = l;
@@ -459,7 +469,7 @@ static void Heap_Sift (LONGINT l, LONGINT r, LONGINT *a, LONGINT a__len)
 	a[i] = x;
 }
 
-static void Heap_HeapSort (LONGINT n, LONGINT *a, LONGINT a__len)
+static void Heap_HeapSort (LONGINT n, LONGINT *a, INTEGER a__len)
 {
 	LONGINT l, r, x;
 	l = __ASHR(n, 1, LONGINT);
@@ -477,7 +487,7 @@ static void Heap_HeapSort (LONGINT n, LONGINT *a, LONGINT a__len)
 	}
 }
 
-static void Heap_MarkCandidates (LONGINT n, LONGINT *cand, LONGINT cand__len)
+static void Heap_MarkCandidates (LONGINT n, LONGINT *cand, INTEGER cand__len)
 {
 	LONGINT chnk, adr, tag, next, lim, lim1, i, ptr, size;
 	chnk = Heap_heap;
@@ -566,7 +576,8 @@ void Heap_FINALL (void)
 	}
 }
 
-static void Heap_MarkStack (LONGINT n, LONGINT *cand, LONGINT cand__len)
+/*----------------------------------------------------------------------------*/
+static void Heap_MarkStack (LONGINT n, LONGINT *cand, INTEGER cand__len)
 {
 	SYSTEM_PTR frame;
 	LONGINT inc, nofcand, sp, p, stack0, ptr;
@@ -588,7 +599,7 @@ static void Heap_MarkStack (LONGINT n, LONGINT *cand, LONGINT cand__len)
 		while (sp != stack0) {
 			__GET(sp, p, LONGINT);
 			if (p > Heap_heap && p < Heap_heapend) {
-				if (nofcand == cand__len) {
+				if (nofcand == (LONGINT)cand__len) {
 					Heap_HeapSort(nofcand, (void*)cand, cand__len);
 					Heap_MarkCandidates(nofcand, (void*)cand, cand__len);
 					nofcand = 0;
@@ -685,6 +696,7 @@ void Heap_GC (BOOLEAN markStack)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void Heap_RegisterFinalizer (SYSTEM_PTR obj, Heap_Finalizer finalize)
 {
 	Heap_FinNode f;
@@ -696,6 +708,7 @@ void Heap_RegisterFinalizer (SYSTEM_PTR obj, Heap_Finalizer finalize)
 	Heap_fin = f;
 }
 
+/*----------------------------------------------------------------------------*/
 void Heap_InitHeap (void)
 {
 	Heap_heap = Heap_NewChunk(256000);
@@ -714,6 +727,7 @@ void Heap_InitHeap (void)
 	Heap_HeapModuleInit();
 }
 
+/*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
 	P(Heap_modules);
