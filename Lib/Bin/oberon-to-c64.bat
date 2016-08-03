@@ -1,6 +1,6 @@
-@SET PATH=%CD%\..\..\Bin;%PATH%
-@CD ..\Obj
-@SET OBERON=%CD%;%CD%\..\Sym
+@SET PATH=%CD%\..\..\Bin64;%PATH%
+@CD ..\Obj64
+@SET OBERON=%CD%;%CD%\..\Sym64
 
 :: Ofront+
 ::ofront+ -apxe Heap0.Mod
