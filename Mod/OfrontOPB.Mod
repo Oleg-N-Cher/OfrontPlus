@@ -1006,7 +1006,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSE (*DynArr*) err(113)
 				END
 		END ;
-		IF (ynode^.class = Nconst) & (g < f) & (g IN {SInt..Real}) & (f IN {Int..LReal}) THEN
+		IF (ynode^.class = Nconst) & (g < f) & (g IN {Byte, SInt..Real}) & (f IN {SInt..LReal}) THEN
 			Convert(ynode, x)
 		END
 	END CheckAssign;
@@ -1073,6 +1073,7 @@ avoid unnecessary intermediate variables in OFront
 					CASE f OF
 					  Bool:  x := NewBoolConst(FALSE)
 					| Char:  x := NewIntConst(0); x^.typ := OPT.chartyp
+					| Byte:  x := NewIntConst(-128)
 					| SInt:  x := NewIntConst(OPM.MinSInt)
 					| Int:   x := NewIntConst(OPM.MinInt)
 					| LInt:  x := NewIntConst(OPM.MinLInt)
@@ -1088,6 +1089,7 @@ avoid unnecessary intermediate variables in OFront
 					CASE f OF
 					  Bool:  x := NewBoolConst(TRUE)
 					| Char:  x := NewIntConst(0FFH); x^.typ := OPT.chartyp
+					| Byte:  x := NewIntConst(127)
 					| SInt:  x := NewIntConst(OPM.MaxSInt)
 					| Int:   x := NewIntConst(OPM.MaxInt)
 					| LInt:  x := NewIntConst(OPM.MaxLInt)
@@ -1487,7 +1489,7 @@ avoid unnecessary intermediate variables in OFront
 					WHILE (q # fp^.typ) & (q # NIL) & (q # OPT.undftyp) DO q := q^.BaseTyp END ;
 					IF q = NIL THEN err(111) END
 				ELSIF (fp^.typ = OPT.sysptrtyp) & (ap^.typ^.form = Pointer) THEN (* ok *)
-				ELSIF (ap^.typ # fp^.typ) & ~((fp^.typ^.form = Byte) & (ap^.typ^.form IN {Char, SInt})) THEN err(123)
+				ELSIF (ap^.typ # fp^.typ) THEN err(123)
 				ELSIF (fp^.typ^.form = Pointer) & (ap^.class = Nguard) THEN err(123)
 				END
 			ELSIF fp^.typ^.comp = DynArr THEN

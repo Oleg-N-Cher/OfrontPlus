@@ -727,7 +727,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						|	slash:
 									IF form = Set THEN OPM.WriteString(" ^ ")
 									ELSE OPM.WriteString(" / ");
-										IF (r^.obj = NIL) OR (r^.obj^.typ^.form IN {SInt, Int, LInt}) THEN
+										IF (r^.obj = NIL) OR (r^.obj^.typ^.form IN {Byte, SInt, Int, LInt}) THEN
 											OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.Write(CloseParen)
 										END
 									END
