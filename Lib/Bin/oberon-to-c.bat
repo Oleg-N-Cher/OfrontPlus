@@ -21,6 +21,8 @@ ofront+ -se ..\Mod\Modules.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -se ..\Mod\Texts.Mod
 @IF errorlevel 1 PAUSE
+ofront+ -se ..\Mod\Oberon.Mod
+@IF errorlevel 1 PAUSE
 
 :: OOC2
 ofront+ -se ..\Mod\ooc2Ascii.Mod
