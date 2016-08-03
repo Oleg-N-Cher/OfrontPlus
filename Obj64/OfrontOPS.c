@@ -94,8 +94,8 @@ static LONGREAL Ten__9 (INTEGER e);
 static LONGREAL Ten__9 (INTEGER e)
 {
 	LONGREAL x, p;
-	x = 1;
-	p = 10;
+	x = (LONGREAL)1;
+	p = (LONGREAL)10;
 	while (e > 0) {
 		if (__ODD(e)) {
 			x = x * p;
@@ -205,7 +205,7 @@ static void OfrontOPS_Number (void)
 			OfrontOPS_err(203);
 		}
 	} else {
-		f = 0;
+		f = (LONGREAL)0;
 		e = 0;
 		expCh = 'E';
 		while (n > 0) {

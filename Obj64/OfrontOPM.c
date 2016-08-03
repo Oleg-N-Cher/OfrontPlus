@@ -172,7 +172,7 @@ void OfrontOPM_OpenPar (void)
 	if (Args_argc == 1) {
 		OfrontOPM_stop = 1;
 		Console_Ln();
-		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0 #2", 46);
+		Console_String((CHAR*)"OfrontPlus - Oberon-2 to C Translator v1.0", 43);
 		Console_Ln();
 		Console_String((CHAR*)"Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016", 78);
 		Console_Ln();
@@ -463,13 +463,13 @@ static void OfrontOPM_GetProperty (Texts_Scanner *S, LONGINT *S__typ, CHAR *name
 	if ((*S).class == 1 && __STRCMP((*S).s, name) == 0) {
 		Texts_Scan(&*S, S__typ);
 		if ((*S).class == 3) {
-			*size = (SHORTINT)(*S).i;
+			*size = (*S).i;
 			Texts_Scan(&*S, S__typ);
 		} else {
 			OfrontOPM_Mark(-157, -1);
 		}
 		if ((*S).class == 3) {
-			*align = (SHORTINT)(*S).i;
+			*align = (*S).i;
 			Texts_Scan(&*S, S__typ);
 		} else {
 			OfrontOPM_Mark(-157, -1);
@@ -486,9 +486,10 @@ static void OfrontOPM_GetProperty1 (Texts_Scanner *S, LONGINT *S__typ, CHAR *nam
 	if ((*S).class == 1 && __STRCMP((*S).s, name) == 0) {
 		Texts_Scan(&*S, S__typ);
 		if ((*S).class == 3) {
-			*par = (SHORTINT)(*S).i;
+			*par = (*S).i;
 			Texts_Scan(&*S, S__typ);
 		} else {
+			OfrontOPM_Mark(-157, -1);
 			*par = defval;
 		}
 	} else {
@@ -577,10 +578,12 @@ static void OfrontOPM_GetProperties (void)
 		OfrontOPM_MaxLInt = -(OfrontOPM_MinLInt + 1);
 	}
 	OfrontOPM_MaxSet = __ASHL(OfrontOPM_SetSize, 3, INTEGER) - 1;
-	OfrontOPM_MaxIndex = OfrontOPM_MaxInt;
 	if (OfrontOPM_ArrLenSize == -1) {
 		OfrontOPM_ArrLenSize = OfrontOPM_LIntSize;
+	} else if (!((OfrontOPM_ArrLenSize == OfrontOPM_SIntSize || OfrontOPM_ArrLenSize == OfrontOPM_IntSize) || OfrontOPM_ArrLenSize == OfrontOPM_LIntSize)) {
+		OfrontOPM_Mark(-157, -1);
 	}
+	OfrontOPM_MaxIndex = 2147483647;
 }
 
 void OfrontOPM_SymRCh (CHAR *ch)

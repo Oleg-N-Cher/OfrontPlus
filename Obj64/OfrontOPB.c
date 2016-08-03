@@ -1177,7 +1177,7 @@ static void OfrontOPB_Convert (OfrontOPT_Node *x, OfrontOPT_Struct typ)
 				r = (*x)->conval->realval;
 				if (r < -9.223372036854776E+18 || r > 9.223372036854776E+18) {
 					OfrontOPB_err(203);
-					r = 1;
+					r = (LONGREAL)1;
 				}
 				(*x)->conval->intval = __ENTIER(r);
 				OfrontOPB_SetIntType(*x);
@@ -1706,7 +1706,7 @@ static void OfrontOPB_CheckAssign (OfrontOPT_Struct x, OfrontOPT_Node ynode)
 			break;
 		default: __CASECHK;
 	}
-	if (((ynode->class == 7 && g < f) && __IN(g, 0xf0)) && __IN(f, 0x01e0)) {
+	if (((ynode->class == 7 && g < f) && __IN(g, 0xf2)) && __IN(f, 0x01f0)) {
 		OfrontOPB_Convert(&ynode, x);
 	}
 }
@@ -1806,6 +1806,9 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 						x = OfrontOPB_NewIntConst(0);
 						x->typ = OfrontOPT_chartyp;
 						break;
+					case 1: 
+						x = OfrontOPB_NewIntConst(-128);
+						break;
 					case 4: 
 						x = OfrontOPB_NewIntConst(OfrontOPM_MinSInt);
 						break;
@@ -1842,6 +1845,9 @@ void OfrontOPB_StPar0 (OfrontOPT_Node *par0, INTEGER fctno)
 					case 3: 
 						x = OfrontOPB_NewIntConst(255);
 						x->typ = OfrontOPT_chartyp;
+						break;
+					case 1: 
+						x = OfrontOPB_NewIntConst(127);
 						break;
 					case 4: 
 						x = OfrontOPB_NewIntConst(OfrontOPM_MaxSInt);
@@ -2534,7 +2540,7 @@ void OfrontOPB_Param (OfrontOPT_Node ap, OfrontOPT_Object fp)
 					OfrontOPB_err(111);
 				}
 			} else if (fp->typ == OfrontOPT_sysptrtyp && ap->typ->form == 13) {
-			} else if (ap->typ != fp->typ && !(fp->typ->form == 1 && __IN(ap->typ->form, 0x18))) {
+			} else if (ap->typ != fp->typ) {
 				OfrontOPB_err(123);
 			} else if (fp->typ->form == 13 && ap->class == 5) {
 				OfrontOPB_err(123);
