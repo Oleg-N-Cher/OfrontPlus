@@ -519,7 +519,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						OPM.WriteString("(void*)")	(* type extension *)
 					END
 				ELSE
-					IF (form IN {Real, LReal}) & (n^.typ^.form IN {SInt, Int, LInt}) THEN (* real promotion *)
+					IF (form IN {Real, LReal}) & (n^.typ^.form IN {Byte, SInt, Int, LInt}) THEN (* real promotion *)
 						OPM.WriteString("(double)"); prec := 9
 					ELSIF (form = LInt) & (n^.typ^.form < LInt) THEN (* integral promotion *)
 						OPM.WriteString("(LONGINT)"); prec := 9
