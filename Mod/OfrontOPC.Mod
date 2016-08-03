@@ -856,7 +856,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE GenHeaderMsg;
 		VAR i: INTEGER;
 	BEGIN
-		OPM.WriteString("/*"); OPM.WriteString(HeaderMsg); 
+		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg); 
 		FOR i := 0 TO 31 DO
 			IF i IN OPM.glbopt THEN
 				CASE i OF	(* c.f. ScanOptions in OPM *)
@@ -1279,9 +1279,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			hex: LONGINT; skipLeading: BOOLEAN;
 	BEGIN
 		CASE form OF
-			Byte:
-					OPM.WriteInt(con^.intval)
-		|	Bool:
+		|	Bool, Byte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
 		|	Char:
 					ch := CHR(con^.intval);
@@ -1293,8 +1291,6 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					ELSE
 						OPM.WriteString("0x"); OPM.WriteHex(con^.intval)
 					END
-		|	SInt, Int, LInt:
-					OPM.WriteInt(con^.intval)
 		|	Real:
 					OPM.WriteReal(con^.realval, "f")
 		|	LReal:
