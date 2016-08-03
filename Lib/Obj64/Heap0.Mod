@@ -20,17 +20,17 @@ MODULE Heap;
   *)
 
   (* heap chunks *)
-    nextChnkOff = LONG(LONG(0));      (* next heap chunk, sorted ascendingly! *)
-    endOff      = LONG(LONG(SZL));    (* end of heap chunk *)
-    blkOff      = LONG(LONG(3*SZL));  (* first block in a chunk *)
+    nextChnkOff = LONG(LONG(LONG(0)));      (* next heap chunk, sorted ascendingly! *)
+    endOff      = LONG(LONG(LONG(SZL)));    (* end of heap chunk *)
+    blkOff      = LONG(LONG(LONG(3*SZL)));  (* first block in a chunk *)
 
   (* heap blocks *)
-    tagOff    = LONG(LONG(0));        (* block starts with tag *)
-    sizeOff   = LONG(LONG(SZL));      (* block size in free block relative to block start *)
-    sntlOff   = LONG(LONG(2*SZL));    (* pointer offset table sentinel in free block relative to block start *)
-    nextOff   = LONG(LONG(3*SZL));    (* next pointer in free block relative to block start *)
-    NoPtrSntl = LONG(LONG(-SZL));
-    LongZero  = LONG(LONG(0));
+    tagOff    = LONG(LONG(LONG(0)));        (* block starts with tag *)
+    sizeOff   = LONG(LONG(LONG(SZL)));      (* block size in free block relative to block start *)
+    sntlOff   = LONG(LONG(LONG(2*SZL)));    (* pointer offset table sentinel in free block relative to block start *)
+    nextOff   = LONG(LONG(LONG(3*SZL)));    (* next pointer in free block relative to block start *)
+    NoPtrSntl = LONG(LONG(LONG(-SZL)));
+    LongZero  = LONG(LONG(LONG(0)));
 
   TYPE
     ModuleName = ARRAY ModNameLen OF CHAR;
