@@ -20,6 +20,7 @@
 @CALL ..\Bin\mingw %Lib% Reals
 @CALL ..\Bin\mingw %Lib% Modules
 @CALL ..\Bin\mingw %Lib% Texts
+@CALL ..\Bin\mingw %Lib% Oberon
 
 :: OOC2
 @CALL ..\Bin\mingw %Lib% ooc2Ascii
