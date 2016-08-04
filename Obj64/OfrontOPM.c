@@ -532,6 +532,7 @@ static void OfrontOPM_GetProperties (void)
 	OfrontOPM_MaxInt = 32767;
 	OfrontOPM_MaxLInt = 2147483647;
 	OfrontOPM_MaxSet = 31;
+	OfrontOPM_ArrLenSize = -1;
 	__NEW(T, Texts_TextDesc);
 	Texts_Open(T, (CHAR*)"Ofront.par", 11);
 	if (T->len != 0) {

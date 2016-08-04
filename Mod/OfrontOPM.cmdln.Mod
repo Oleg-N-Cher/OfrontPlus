@@ -376,7 +376,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		SetAlign := 4; RealAlign := 4; LRealAlign := 8; ProcAlign := 4; PointerAlign := 4; RecAlign := 1;
 		MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
 		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		MaxSet := 31;
+		MaxSet := 31; ArrLenSize := -1;
 		(* read Ofront.par *)
 		NEW(T); Texts.Open(T, "Ofront.par");
 		IF T.len # 0 THEN
