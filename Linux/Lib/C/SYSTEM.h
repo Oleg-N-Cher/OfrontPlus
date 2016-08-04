@@ -68,6 +68,8 @@ typedef U_INTEGER SET;   // SET is 32 bit.
   typedef unsigned int SYSTEM_ADR;
 #endif
 
+typedef CHAR (*__Platform_MemAdr)[1];   // non-GC pointer type compatible with Platform.MemAdr
+
 
 // Run time system routines in SYSTEM.c
 
@@ -195,27 +197,26 @@ extern void       Heap_INCREF();
 
 // Main module initialisation, registration and finalisation
 
-extern void Platform_Init(INTEGER argc, SYSTEM_PTR argv);
-extern void *Platform_MainModule;
+extern void Platform_Init(INTEGER argc, __Platform_MemAdr argv);
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; Platform_Init((INTEGER)argc, (SYSTEM_PTR)&argv);
+#define __INIT(argc, argv)    static void *m; Platform_Init(argc, (__Platform_MemAdr)&argv);
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,enum)
 #define __FINI                Heap_FINALL(); return 0
 
 
 // Assertions and Halts
 
-extern void Platform_Halt(LONGINT x);
-extern void Platform_AssertFail(LONGINT x);
+extern void Platform_Halt(INTEGER code);
+extern void Platform_AssertFail(INTEGER code);
 
-#define __HALT(x)         Platform_Halt(x)
-#define __ASSERT(cond, x) if (!(cond)) Platform_AssertFail((LONGINT)(x))
+#define __HALT(code)         Platform_Halt(code)
+#define __ASSERT(cond, code) if (!(cond)) Platform_AssertFail(code)
 
 
 // Memory allocation
 
-extern SYSTEM_PTR Heap_NEWBLK (LONGINT size);
+extern SYSTEM_PTR Heap_NEWBLK (INTEGER size);
 extern SYSTEM_PTR Heap_NEWREC (LONGINT tag);
 extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
 
