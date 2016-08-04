@@ -32,6 +32,7 @@ static BOOLEAN OfrontOPV_ImplicitReturn (OfrontOPT_Node n);
 static void OfrontOPV_Index (OfrontOPT_Node n, OfrontOPT_Node d, INTEGER prec, INTEGER dim);
 export void OfrontOPV_Init (void);
 static void OfrontOPV_InitTDescs (OfrontOPT_Node n);
+static void OfrontOPV_LEntier (OfrontOPT_Node n, SHORTINT prec);
 static void OfrontOPV_Len (OfrontOPT_Node n, LONGINT dim);
 export void OfrontOPV_Module (OfrontOPT_Node prog);
 static LONGINT OfrontOPV_NaturalAlignment (LONGINT size, LONGINT max);
@@ -427,6 +428,17 @@ static void OfrontOPV_Entier (OfrontOPT_Node n, INTEGER prec)
 	}
 }
 
+static void OfrontOPV_LEntier (OfrontOPT_Node n, SHORTINT prec)
+{
+	if (__IN(n->typ->form, 0x0180)) {
+		OfrontOPM_WriteString((CHAR*)"__ENTIERL(", 11);
+		OfrontOPV_expr(n, -1);
+		OfrontOPM_Write(')');
+	} else {
+		OfrontOPV_expr(n, prec);
+	}
+}
+
 static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 {
 	INTEGER from;
@@ -489,7 +501,7 @@ static void OfrontOPV_Convert (OfrontOPT_Node n, INTEGER form, INTEGER prec)
 			if (from < 6) {
 				OfrontOPM_WriteString((CHAR*)"(LONGINT)", 10);
 			}
-			OfrontOPV_Entier(n, 9);
+			OfrontOPV_LEntier(n, 9);
 			break;
 		case 3: 
 			if (__IN(2, OfrontOPM_opt)) {
@@ -561,7 +573,7 @@ static void OfrontOPV_design (OfrontOPT_Node n, INTEGER prec)
 	OfrontOPT_Struct typ = NIL;
 	INTEGER class, designPrec, comp;
 	OfrontOPT_Node d = NIL, x = NIL;
-	INTEGER dims, i, _for__26;
+	INTEGER dims, i, _for__27;
 	comp = n->typ->comp;
 	obj = n->obj;
 	class = n->class;
@@ -637,9 +649,9 @@ static void OfrontOPV_design (OfrontOPT_Node n, INTEGER prec)
 					}
 					x = x->left;
 				}
-				_for__26 = dims;
+				_for__27 = dims;
 				i = 1;
-				while (i <= _for__26) {
+				while (i <= _for__27) {
 					OfrontOPM_Write(')');
 					i += 1;
 				}

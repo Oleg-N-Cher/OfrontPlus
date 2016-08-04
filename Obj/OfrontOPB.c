@@ -1179,7 +1179,7 @@ static void OfrontOPB_Convert (OfrontOPT_Node *x, OfrontOPT_Struct typ)
 					OfrontOPB_err(203);
 					r = (LONGREAL)1;
 				}
-				(*x)->conval->intval = __ENTIER(r);
+				(*x)->conval->intval = __ENTIERL(r);
 				OfrontOPB_SetIntType(*x);
 			}
 		}

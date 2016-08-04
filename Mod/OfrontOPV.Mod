@@ -328,6 +328,14 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		END
 	END Entier;
 
+	PROCEDURE LEntier(n: OPT.Node; prec: SHORTINT);
+	BEGIN
+		IF n^.typ^.form IN {Real, LReal} THEN
+			OPM.WriteString("__ENTIERL("); expr(n, MinPrec); OPM.Write(CloseParen)
+		ELSE expr(n, prec)
+		END
+	END LEntier;
+
 	PROCEDURE Convert(n: OPT.Node; form, prec: INTEGER);
 		VAR from: INTEGER;
 	BEGIN from := n^.typ^.form;
@@ -357,7 +365,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				END
 			END
 		| LInt:
-			IF from < LInt THEN OPM.WriteString("(LONGINT)") END; Entier(n, 9)
+			IF from < LInt THEN OPM.WriteString("(LONGINT)") END; LEntier(n, 9)
 		| Char:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
 				IF SideEffects(n) THEN OPM.Write("F") END ;
