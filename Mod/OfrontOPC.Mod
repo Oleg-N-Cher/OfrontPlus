@@ -1068,8 +1068,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				BegStat; 
 				IF var^.typ^.comp = Array THEN
 					OPM.WriteString(DupArrFunc);
-					Ident(var); OPM.WriteString(Comma);
-					IF var^.typ^.strobj = NIL THEN OPM.Mark(200, var^.typ^.txtpos) ELSE Ident(var^.typ^.strobj) END
+					Ident(var)
 				ELSE
 					OPM.WriteString(DupFunc);
 					Ident(var); OPM.WriteString(Comma); Ident(var); OPM.WriteString(LenExt);
@@ -1077,16 +1076,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					WHILE typ^.comp = DynArr DO
 						OPM.WriteString(" * "); Ident(var); OPM.WriteString(LenExt); OPM.WriteInt(dim);
 						typ := typ^.BaseTyp; INC(dim)
-					END ;
-					OPM.WriteString(Comma);
-					IF (typ^.strobj = NIL) THEN OPM.Mark(200, typ^.txtpos)
-					ELSE Ident(typ^.strobj)
 					END
-				END ;
+				END;
 				OPM.Write(CloseParen); EndStat
-			END ;
+			END;
 			var := var^.link
-		END ;
+		END;
 		IF ~scope^.leaf THEN
 			var := proc^.link; (* copy addresses of parameters into local scope record *)
 			WHILE var # NIL DO

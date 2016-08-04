@@ -9,6 +9,14 @@
 */
 
 
+#if defined __linux__ || defined __unix__
+#  include <alloca.h>
+#else
+#  define errno __errno__ /* to avoid of implicit inclusion "errno" */
+#  include <malloc.h>
+#  undef errno
+#endif
+
 // The compiler uses 'import' and 'export' which translate to 'extern' and
 // nothing respectively.
 
@@ -61,12 +69,6 @@ typedef U_INTEGER SET;   // SET is 32 bit.
 #endif
 
 
-// OS Memory allocation interfaces are in PlatformXXX.Mod
-
-extern LONGINT Platform_OSAllocate (LONGINT size);
-extern void    Platform_OSFree     (LONGINT addr);
-
-
 // Run time system routines in SYSTEM.c
 
 extern int     SYSTEM_STRCMP (CHAR *x, CHAR *y);
@@ -96,22 +98,18 @@ extern LONGINT SYSTEM_ENTIERL(LONGREAL x);
 #endif
 
 
-
 // String comparison
 
 #define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
 
 
-
 // Inline string, record and array copy
 
-#define __COPY(s, d, n) {char*_a=(void*)s,*_b=(void*)d; LONGINT _i=0,_t=n-1; \
+#define __COPY(s, d, n) {char*_a=(void*)s,*_b=(void*)d; INTEGER _i=0,_t=n-1; \
                          while(_i<_t&&((_b[_i]=_a[_i])!=0)){_i++;};_b[_i]=0;}
-#define __DUP(x, l, t)  x=(void*)__MEMCPY((void*)(SYSTEM_ADR)Platform_OSAllocate(l*sizeof(t)),x,l*sizeof(t))
-#define __DUPARR(v, t)  v=(void*)__MEMCPY(v##__copy,v,sizeof(t))
-#define __DEL(x)        Platform_OSFree((LONGINT)(SYSTEM_ADR)x)
-
-
+#define __DUP(x, l)     x=(void*)__MEMCPY(alloca(l*sizeof(*x)),x,l*sizeof(*x))
+#define __DUPARR(v)     v=(void*)__MEMCPY(v##__copy,v,sizeof(v##__copy))
+#define __DEL(x)        /* DUP with alloca frees storage automatically */
 
 
 /* SYSTEM ops */
