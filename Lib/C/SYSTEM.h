@@ -84,7 +84,8 @@ extern void    SYSTEM_ENUMP  (void *adr, LONGINT n, void (*P)());
 extern void    SYSTEM_ENUMR  (void *adr, LONGINT *typ, LONGINT size, LONGINT n, void (*P)());
 extern LONGINT SYSTEM_DIV    (U_LONGINT x, U_LONGINT y);
 extern LONGINT SYSTEM_MOD    (U_LONGINT x, U_LONGINT y);
-extern LONGINT SYSTEM_ENTIER (double x);
+extern INTEGER SYSTEM_ENTIER (LONGREAL x);
+extern LONGINT SYSTEM_ENTIERL(LONGREAL x);
 
 
 // Signal handling in SYSTEM.c
@@ -149,6 +150,7 @@ extern LONGINT SYSTEM_ENTIER (double x);
 #define __MOD(x, y)     ((x)>=0?(x)%(y):__MODF(x,y))
 #define __MODF(x, y)    SYSTEM_MOD((LONGINT)(x),(LONGINT)(y))
 #define __ENTIER(x)     SYSTEM_ENTIER(x)
+#define __ENTIERL(x)    SYSTEM_ENTIERL(x)
 #define __ABS(x)        (((x)<0)?-(x):(x))
 #define __ABSF(x)       SYSTEM_ABS((LONGINT)(x))
 #define __ABSFD(x)      SYSTEM_ABSD((double)(x))

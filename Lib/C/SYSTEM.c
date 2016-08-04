@@ -68,15 +68,20 @@ LONGINT SYSTEM_MOD(U_LONGINT x, U_LONGINT y)
     }
 }
 
-LONGINT SYSTEM_ENTIER(double x)
+INTEGER SYSTEM_ENTIER(LONGREAL x)
 {
-    LONGINT y;
-    if (x >= 0)
-        return (LONGINT)x;
-    else {
-        y = (LONGINT)x;
-        if (y <= x) return y; else return y - 1;
-    }
+    INTEGER i;
+    i = (INTEGER)x;
+    if (i > x) i--;
+    return i;
+}
+
+LONGINT SYSTEM_ENTIERL(LONGREAL x)
+{
+    LONGINT i;
+    i = (LONGINT)x;
+    if (i > x) i--;
+    return i;
 }
 
 extern void Heap_Lock();
