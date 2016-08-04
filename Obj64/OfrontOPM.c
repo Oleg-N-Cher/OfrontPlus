@@ -94,7 +94,7 @@ void OfrontOPM_LogW (CHAR ch)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_LogWStr (CHAR *s, INTEGER s__len)
 {
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	Console_String(s, s__len);
 	__DEL(s);
 }
@@ -281,7 +281,7 @@ static void OfrontOPM_MakeFileName (CHAR *name, INTEGER name__len, CHAR *FName, 
 {
 	INTEGER i, j;
 	CHAR ch;
-	__DUP(ext, ext__len, CHAR);
+	__DUP(ext, ext__len);
 	i = 0;
 	for (;;) {
 		ch = name[__X(i, name__len)];
@@ -459,7 +459,7 @@ void OfrontOPM_FPrintLReal (LONGINT *fp, LONGREAL lr)
 /*----------------------------------------------------------------------------*/
 static void OfrontOPM_GetProperty (Texts_Scanner *S, LONGINT *S__typ, CHAR *name, INTEGER name__len, INTEGER *size, INTEGER *align)
 {
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	if ((*S).class == 1 && __STRCMP((*S).s, name) == 0) {
 		Texts_Scan(&*S, S__typ);
 		if ((*S).class == 3) {
@@ -482,7 +482,7 @@ static void OfrontOPM_GetProperty (Texts_Scanner *S, LONGINT *S__typ, CHAR *name
 
 static void OfrontOPM_GetProperty1 (Texts_Scanner *S, LONGINT *S__typ, CHAR *name, INTEGER name__len, INTEGER *par, INTEGER defval)
 {
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	if ((*S).class == 1 && __STRCMP((*S).s, name) == 0) {
 		Texts_Scan(&*S, S__typ);
 		if ((*S).class == 3) {

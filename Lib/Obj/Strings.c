@@ -20,7 +20,7 @@ export void Strings_Replace (CHAR *source, INTEGER source__len, INTEGER pos, CHA
 INTEGER Strings_Length (CHAR *s, INTEGER s__len)
 {
 	INTEGER i;
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	i = 0;
 	while (i < s__len && s[__X(i, s__len)] != 0x00) {
 		i += 1;
@@ -33,7 +33,7 @@ INTEGER Strings_Length (CHAR *s, INTEGER s__len)
 void Strings_Append (CHAR *extra, INTEGER extra__len, CHAR *dest, INTEGER dest__len)
 {
 	INTEGER n1, n2, i;
-	__DUP(extra, extra__len, CHAR);
+	__DUP(extra, extra__len);
 	n1 = Strings_Length(dest, dest__len);
 	n2 = Strings_Length(extra, extra__len);
 	i = 0;
@@ -51,7 +51,7 @@ void Strings_Append (CHAR *extra, INTEGER extra__len, CHAR *dest, INTEGER dest__
 void Strings_Insert (CHAR *source, INTEGER source__len, INTEGER pos, CHAR *dest, INTEGER dest__len)
 {
 	INTEGER n1, n2, i;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	n1 = Strings_Length(dest, dest__len);
 	n2 = Strings_Length(source, source__len);
 	if (pos < 0) {
@@ -106,7 +106,7 @@ void Strings_Delete (CHAR *s, INTEGER s__len, INTEGER pos, INTEGER n)
 /*----------------------------------------------------------------------------*/
 void Strings_Replace (CHAR *source, INTEGER source__len, INTEGER pos, CHAR *dest, INTEGER dest__len)
 {
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	Strings_Delete((void*)dest, dest__len, pos, pos + Strings_Length(source, source__len));
 	Strings_Insert(source, source__len, pos, (void*)dest, dest__len);
 	__DEL(source);
@@ -116,7 +116,7 @@ void Strings_Replace (CHAR *source, INTEGER source__len, INTEGER pos, CHAR *dest
 void Strings_Extract (CHAR *source, INTEGER source__len, INTEGER pos, INTEGER n, CHAR *dest, INTEGER dest__len)
 {
 	INTEGER len, destLen, i;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	len = Strings_Length(source, source__len);
 	destLen = dest__len - 1;
 	if (pos < 0) {
@@ -142,8 +142,8 @@ void Strings_Extract (CHAR *source, INTEGER source__len, INTEGER pos, INTEGER n,
 INTEGER Strings_Pos (CHAR *pattern, INTEGER pattern__len, CHAR *s, INTEGER s__len, INTEGER pos)
 {
 	INTEGER n1, n2, i, j;
-	__DUP(pattern, pattern__len, CHAR);
-	__DUP(s, s__len, CHAR);
+	__DUP(pattern, pattern__len);
+	__DUP(s, s__len);
 	n1 = Strings_Length(s, s__len);
 	n2 = Strings_Length(pattern, pattern__len);
 	if (n2 == 0) {
@@ -221,8 +221,8 @@ static BOOLEAN M__8 (CHAR *name, INTEGER name__len, CHAR *mask, INTEGER mask__le
 BOOLEAN Strings_Match (CHAR *string, INTEGER string__len, CHAR *pattern, INTEGER pattern__len)
 {
 	struct Match__7 _s;
-	__DUP(string, string__len, CHAR);
-	__DUP(pattern, pattern__len, CHAR);
+	__DUP(string, string__len);
+	__DUP(pattern, pattern__len);
 	_s.lnk = Match__7_s;
 	Match__7_s = &_s;
 	Match__7_s = _s.lnk;

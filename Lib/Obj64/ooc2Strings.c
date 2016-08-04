@@ -32,7 +32,7 @@ export void ooc2Strings_Replace (CHAR *source, INTEGER source__len, INTEGER star
 INTEGER ooc2Strings_Length (CHAR *stringVal, INTEGER stringVal__len)
 {
 	INTEGER i;
-	__DUP(stringVal, stringVal__len, CHAR);
+	__DUP(stringVal, stringVal__len);
 	i = 0;
 	while (stringVal[__X(i, stringVal__len)] != 0x00) {
 		i += 1;
@@ -45,7 +45,7 @@ INTEGER ooc2Strings_Length (CHAR *stringVal, INTEGER stringVal__len)
 void ooc2Strings_Assign (CHAR *source, INTEGER source__len, CHAR *destination, INTEGER destination__len)
 {
 	INTEGER i;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	i = -1;
 	do {
 		i += 1;
@@ -59,7 +59,7 @@ void ooc2Strings_Assign (CHAR *source, INTEGER source__len, CHAR *destination, I
 void ooc2Strings_Extract (CHAR *source, INTEGER source__len, INTEGER startPos, INTEGER numberToExtract, CHAR *destination, INTEGER destination__len)
 {
 	INTEGER sourceLength, i;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	sourceLength = ooc2Strings_Length(source, source__len);
 	if (startPos > sourceLength) {
 		startPos = sourceLength;
@@ -97,7 +97,7 @@ void ooc2Strings_Delete (CHAR *stringVar, INTEGER stringVar__len, INTEGER startP
 void ooc2Strings_Insert (CHAR *source, INTEGER source__len, INTEGER startPos, CHAR *destination, INTEGER destination__len)
 {
 	INTEGER sourceLength, destLength, destMax, i, _for__22, _for__21;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	destLength = ooc2Strings_Length(destination, destination__len);
 	sourceLength = ooc2Strings_Length(source, source__len);
 	destMax = destination__len - 1;
@@ -131,7 +131,7 @@ void ooc2Strings_Insert (CHAR *source, INTEGER source__len, INTEGER startPos, CH
 void ooc2Strings_Replace (CHAR *source, INTEGER source__len, INTEGER startPos, CHAR *destination, INTEGER destination__len)
 {
 	INTEGER destLength, i;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	destLength = ooc2Strings_Length(destination, destination__len);
 	if (startPos < destLength) {
 		i = 0;
@@ -148,7 +148,7 @@ void ooc2Strings_Replace (CHAR *source, INTEGER source__len, INTEGER startPos, C
 void ooc2Strings_Append (CHAR *source, INTEGER source__len, CHAR *destination, INTEGER destination__len)
 {
 	INTEGER destLength, i;
-	__DUP(source, source__len, CHAR);
+	__DUP(source, source__len);
 	destLength = ooc2Strings_Length(destination, destination__len);
 	i = 0;
 	while (destLength < destination__len - 1 && source[__X(i, source__len)] != 0x00) {
@@ -164,8 +164,8 @@ void ooc2Strings_Append (CHAR *source, INTEGER source__len, CHAR *destination, I
 void ooc2Strings_Concat (CHAR *source1, INTEGER source1__len, CHAR *source2, INTEGER source2__len, CHAR *destination, INTEGER destination__len)
 {
 	INTEGER i, j;
-	__DUP(source1, source1__len, CHAR);
-	__DUP(source2, source2__len, CHAR);
+	__DUP(source1, source1__len);
+	__DUP(source2, source2__len);
 	i = 0;
 	while (source1[__X(i, source1__len)] != 0x00 && i < destination__len - 1) {
 		destination[__X(i, destination__len)] = source1[__X(i, source1__len)];
@@ -230,8 +230,8 @@ BOOLEAN ooc2Strings_CanConcatAll (INTEGER source1Length, INTEGER source2Length, 
 SHORTINT ooc2Strings_Compare (CHAR *stringVal1, INTEGER stringVal1__len, CHAR *stringVal2, INTEGER stringVal2__len)
 {
 	INTEGER i;
-	__DUP(stringVal1, stringVal1__len, CHAR);
-	__DUP(stringVal2, stringVal2__len, CHAR);
+	__DUP(stringVal1, stringVal1__len);
+	__DUP(stringVal2, stringVal2__len);
 	i = 0;
 	while (stringVal1[__X(i, stringVal1__len)] != 0x00 && stringVal1[__X(i, stringVal1__len)] == stringVal2[__X(i, stringVal2__len)]) {
 		i += 1;
@@ -256,8 +256,8 @@ SHORTINT ooc2Strings_Compare (CHAR *stringVal1, INTEGER stringVal1__len, CHAR *s
 BOOLEAN ooc2Strings_Equal (CHAR *stringVal1, INTEGER stringVal1__len, CHAR *stringVal2, INTEGER stringVal2__len)
 {
 	INTEGER i;
-	__DUP(stringVal1, stringVal1__len, CHAR);
-	__DUP(stringVal2, stringVal2__len, CHAR);
+	__DUP(stringVal1, stringVal1__len);
+	__DUP(stringVal2, stringVal2__len);
 	i = 0;
 	while (stringVal1[__X(i, stringVal1__len)] != 0x00 && stringVal1[__X(i, stringVal1__len)] == stringVal2[__X(i, stringVal2__len)]) {
 		i += 1;
@@ -271,8 +271,8 @@ BOOLEAN ooc2Strings_Equal (CHAR *stringVal1, INTEGER stringVal1__len, CHAR *stri
 void ooc2Strings_FindNext (CHAR *pattern, INTEGER pattern__len, CHAR *stringToSearch, INTEGER stringToSearch__len, INTEGER startPos, BOOLEAN *patternFound, INTEGER *posOfPattern)
 {
 	INTEGER patternPos;
-	__DUP(pattern, pattern__len, CHAR);
-	__DUP(stringToSearch, stringToSearch__len, CHAR);
+	__DUP(pattern, pattern__len);
+	__DUP(stringToSearch, stringToSearch__len);
 	if (startPos < ooc2Strings_Length(stringToSearch, stringToSearch__len)) {
 		patternPos = 0;
 		for (;;) {
@@ -302,8 +302,8 @@ void ooc2Strings_FindNext (CHAR *pattern, INTEGER pattern__len, CHAR *stringToSe
 void ooc2Strings_FindPrev (CHAR *pattern, INTEGER pattern__len, CHAR *stringToSearch, INTEGER stringToSearch__len, INTEGER startPos, BOOLEAN *patternFound, INTEGER *posOfPattern)
 {
 	INTEGER patternPos, stringLength, patternLength;
-	__DUP(pattern, pattern__len, CHAR);
-	__DUP(stringToSearch, stringToSearch__len, CHAR);
+	__DUP(pattern, pattern__len);
+	__DUP(stringToSearch, stringToSearch__len);
 	stringLength = ooc2Strings_Length(stringToSearch, stringToSearch__len);
 	patternLength = ooc2Strings_Length(pattern, pattern__len);
 	if (startPos > stringLength - patternLength) {
@@ -340,8 +340,8 @@ void ooc2Strings_FindPrev (CHAR *pattern, INTEGER pattern__len, CHAR *stringToSe
 void ooc2Strings_FindDiff (CHAR *stringVal1, INTEGER stringVal1__len, CHAR *stringVal2, INTEGER stringVal2__len, BOOLEAN *differenceFound, INTEGER *posOfDifference)
 {
 	INTEGER i;
-	__DUP(stringVal1, stringVal1__len, CHAR);
-	__DUP(stringVal2, stringVal2__len, CHAR);
+	__DUP(stringVal1, stringVal1__len);
+	__DUP(stringVal2, stringVal2__len);
 	i = 0;
 	while (stringVal1[__X(i, stringVal1__len)] != 0x00 && stringVal1[__X(i, stringVal1__len)] == stringVal2[__X(i, stringVal2__len)]) {
 		i += 1;

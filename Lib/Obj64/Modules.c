@@ -54,7 +54,7 @@ export Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len);
 static void Modules_Append (CHAR *a, INTEGER a__len, CHAR *b, INTEGER b__len)
 {
 	INTEGER i, j;
-	__DUP(b, b__len, CHAR);
+	__DUP(b, b__len);
 	i = 0;
 	while (a[__X(i, a__len)] != 0x00) {
 		i += 1;
@@ -74,7 +74,7 @@ Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len)
 	Modules_Module m = NIL;
 	CHAR bodyname[64];
 	Modules_Command body;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	m = Modules_modules();
 	while (m != NIL && __STRCMP(m->name, name) != 0) {
 		m = m->next;
@@ -97,7 +97,7 @@ Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len)
 Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER name__len)
 {
 	Modules_Cmd c = NIL;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	c = mod->cmds;
 	while (c != NIL && __STRCMP(c->name, name) != 0) {
 		c = c->next;
@@ -125,7 +125,7 @@ Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER nam
 void Modules_Free (CHAR *name, INTEGER name__len, BOOLEAN all)
 {
 	Modules_Module m = NIL, p = NIL;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	m = Modules_modules();
 	if (all) {
 		Modules_res = 1;

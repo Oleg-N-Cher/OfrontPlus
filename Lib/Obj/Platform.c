@@ -249,7 +249,7 @@ BOOLEAN Platform_getEnv (CHAR *var, INTEGER var__len, CHAR *val, INTEGER val__le
 {
 	CHAR buf[4096];
 	INTEGER res;
-	__DUP(var, var__len, CHAR);
+	__DUP(var, var__len);
 	res = Platform_getenv(var, var__len, (void*)buf, 4096);
 	if (res > 0 && res < 4096) {
 		__COPY(buf, val, val__len);
@@ -265,7 +265,7 @@ BOOLEAN Platform_getEnv (CHAR *var, INTEGER var__len, CHAR *val, INTEGER val__le
 /*----------------------------------------------------------------------------*/
 void Platform_GetEnv (CHAR *var, INTEGER var__len, CHAR *val, INTEGER val__len)
 {
-	__DUP(var, var__len, CHAR);
+	__DUP(var, var__len);
 	if (!Platform_getEnv(var, var__len, (void*)val, val__len)) {
 		val[0] = 0x00;
 	}
@@ -312,7 +312,7 @@ INTEGER Platform_ArgPos (CHAR *s, INTEGER s__len)
 {
 	INTEGER i;
 	CHAR arg[256];
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	i = 0;
 	Platform_GetArg(i, (void*)arg, 256);
 	while (i < Platform_ArgCount && __STRCMP(s, arg) != 0) {
@@ -365,7 +365,7 @@ void Platform_Delay (INTEGER ms)
 INTEGER Platform_System (CHAR *cmd, INTEGER cmd__len)
 {
 	INTEGER result;
-	__DUP(cmd, cmd__len, CHAR);
+	__DUP(cmd, cmd__len);
 	result = 127;
 	Platform_startupInfo();
 	Platform_processInfo();
@@ -458,7 +458,7 @@ INTEGER Platform_IdentifyByName (CHAR *n, INTEGER n__len, Platform_FileIdentity 
 {
 	Platform_FileHandle h;
 	INTEGER e, i;
-	__DUP(n, n__len, CHAR);
+	__DUP(n, n__len);
 	e = Platform_OldRO((void*)n, n__len, &h);
 	if (e != 0) {
 		__DEL(n);

@@ -1193,7 +1193,7 @@ void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOOLEAN *d
 	OfrontOPT_Object obj = NIL;
 	SHORTINT mno;
 	OfrontOPS_Name aliasName__copy;
-	__DUPARR(aliasName, OfrontOPS_Name);
+	__DUPARR(aliasName);
 	if (__STRCMP(name, "SYSTEM") == 0) {
 		OfrontOPT_SYSimported = 1;
 		OfrontOPT_Insert(aliasName, &obj);
@@ -1608,7 +1608,7 @@ static void OfrontOPT_EnterBoolConst (OfrontOPS_Name name, LONGINT value)
 {
 	OfrontOPT_Object obj = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	obj->conval = OfrontOPT_NewConst();
 	obj->mode = 3;
@@ -1621,7 +1621,7 @@ static void OfrontOPT_EnterTyp (OfrontOPS_Name name, SHORTINT form, INTEGER size
 	OfrontOPT_Object obj = NIL;
 	OfrontOPT_Struct typ = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	typ = OfrontOPT_NewStr(form, 1);
 	obj->mode = 5;
@@ -1643,7 +1643,7 @@ static void OfrontOPT_EnterProc (OfrontOPS_Name name, INTEGER num)
 {
 	OfrontOPT_Object obj = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	obj->mode = 8;
 	obj->typ = OfrontOPT_notyp;

@@ -32,7 +32,7 @@ static void BrowserCmd_Wtype (OfrontOPT_Struct typ);
 
 static void BrowserCmd_Ws (CHAR *s, INTEGER s__len)
 {
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	Texts_WriteString(&BrowserCmd_W, Texts_Writer__typ, s, s__len);
 	__DEL(s);
 }
@@ -404,7 +404,7 @@ static void Header__8 (CHAR *s, INTEGER s__len);
 
 static void Header__8 (CHAR *s, INTEGER s__len)
 {
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	*WModule__5_s->beg = BrowserCmd_W.buf->len;
 	BrowserCmd_Indent(1);
 	BrowserCmd_Ws(s, s__len);
@@ -432,7 +432,7 @@ static void BrowserCmd_WModule (OfrontOPS_Name name, Texts_Text T)
 	BOOLEAN first, done;
 	struct WModule__5 _s;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	_s.T = &T;
 	_s.beg = &beg;
 	_s.end = &end;

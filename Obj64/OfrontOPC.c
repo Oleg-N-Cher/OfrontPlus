@@ -149,7 +149,7 @@ static void OfrontOPC_Str1 (CHAR *s, INTEGER s__len, LONGINT x)
 {
 	CHAR ch;
 	INTEGER i;
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	ch = s[0];
 	i = 0;
 	while (ch != 0x00) {
@@ -1175,7 +1175,7 @@ static void OfrontOPC_ProcPredefs (OfrontOPT_Object obj, SHORTINT vis)
 
 static void OfrontOPC_Include (CHAR *name, INTEGER name__len)
 {
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	OfrontOPM_WriteString((CHAR*)"#include ", 10);
 	OfrontOPM_Write('\"');
 	OfrontOPM_WriteStringVar((void*)name, name__len);
@@ -2009,7 +2009,7 @@ static void Enter__48 (CHAR *s, INTEGER s__len);
 static void Enter__48 (CHAR *s, INTEGER s__len)
 {
 	INTEGER h;
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	h = OfrontOPC_PerfectHash((void*)s, s__len);
 	OfrontOPC_hashtab[__X(h, 105)] = *InitKeywords__47_s->n;
 	__COPY(s, OfrontOPC_keytab[__X(*InitKeywords__47_s->n, 36)], 9);

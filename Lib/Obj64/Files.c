@@ -114,7 +114,7 @@ export void Files_WriteString (Files_Rider *R, LONGINT *R__typ, CHAR *x, INTEGER
 
 static void Files_Err (CHAR *s, INTEGER s__len, Files_File f, INTEGER errcode)
 {
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	Console_Ln();
 	Console_String((CHAR*)"-- ", 4);
 	Console_String(s, s__len);
@@ -142,8 +142,8 @@ static void Files_Err (CHAR *s, INTEGER s__len, Files_File f, INTEGER errcode)
 static void Files_MakeFileName (CHAR *dir, INTEGER dir__len, CHAR *name, INTEGER name__len, CHAR *dest, INTEGER dest__len)
 {
 	INTEGER i, j;
-	__DUP(dir, dir__len, CHAR);
-	__DUP(name, name__len, CHAR);
+	__DUP(dir, dir__len);
+	__DUP(name, name__len);
 	i = 0;
 	j = 0;
 	while (dir[__X(i, dir__len)] != 0x00) {
@@ -167,7 +167,7 @@ static void Files_MakeFileName (CHAR *dir, INTEGER dir__len, CHAR *name, INTEGER
 static void Files_GetTempName (CHAR *finalName, INTEGER finalName__len, CHAR *name, INTEGER name__len)
 {
 	INTEGER n, i, j;
-	__DUP(finalName, finalName__len, CHAR);
+	__DUP(finalName, finalName__len);
 	Files_tempno += 1;
 	n = Files_tempno;
 	i = 0;
@@ -325,7 +325,7 @@ INTEGER Files_Length (Files_File f)
 Files_File Files_New (CHAR *name, INTEGER name__len)
 {
 	Files_File f = NIL;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	__NEW(f, Files_FileDesc);
 	f->workName[0] = 0x00;
 	__COPY(name, f->registerName, 101);
@@ -434,7 +434,7 @@ Files_File Files_Old (CHAR *name, INTEGER name__len)
 	INTEGER error;
 	Platform_FileIdentity identity;
 	LONGINT len;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	if (name[0] != 0x00) {
 		if (Files_HasDir((void*)name, name__len)) {
 			dir[0] = 0x00;
@@ -742,7 +742,7 @@ void Files_WriteBytes (Files_Rider *r, LONGINT *r__typ, BYTE *x, INTEGER x__len,
 /*----------------------------------------------------------------------------*/
 void Files_Delete (CHAR *name, INTEGER name__len, INTEGER *res)
 {
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	*res = Platform_Unlink((void*)name, name__len);
 	__DEL(name);
 }
@@ -754,8 +754,8 @@ void Files_Rename (CHAR *old, INTEGER old__len, CHAR *new, INTEGER new__len, INT
 	INTEGER n, error, ignore;
 	Platform_FileIdentity oldidentity, newidentity;
 	CHAR buf[4096];
-	__DUP(old, old__len, CHAR);
-	__DUP(new, new__len, CHAR);
+	__DUP(old, old__len);
+	__DUP(new, new__len);
 	error = Platform_IdentifyByName(old, old__len, &oldidentity, Platform_FileIdentity__typ);
 	if (error == 0) {
 		error = Platform_IdentifyByName(new, new__len, &newidentity, Platform_FileIdentity__typ);
@@ -835,7 +835,7 @@ void Files_Register (Files_File f)
 /*----------------------------------------------------------------------------*/
 void Files_ChangeDirectory (CHAR *path, INTEGER path__len, INTEGER *res)
 {
-	__DUP(path, path__len, CHAR);
+	__DUP(path, path__len);
 	*res = Platform_Chdir((void*)path, path__len);
 	__DEL(path);
 }
@@ -1090,7 +1090,7 @@ static void Files_Finalize (SYSTEM_PTR o)
 
 void Files_SetSearchPath (CHAR *path, INTEGER path__len)
 {
-	__DUP(path, path__len, CHAR);
+	__DUP(path, path__len);
 	if (Strings_Length(path, path__len) != 0) {
 		Files_SearchPath = __NEWARR(NIL, 1, 1, 1, 1, (Strings_Length(path, path__len) + 1));
 		__COPY(path, Files_SearchPath->data, Files_SearchPath->len[0]);

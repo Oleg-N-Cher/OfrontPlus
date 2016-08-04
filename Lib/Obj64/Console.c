@@ -46,7 +46,7 @@ void Console_Char (CHAR ch)
 void Console_String (CHAR *s, INTEGER s__len)
 {
 	INTEGER i;
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	i = 0;
 	while (s[__X(i, s__len)] != 0x00) {
 		Console_Char(s[__X(i, s__len)]);

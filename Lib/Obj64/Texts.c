@@ -1054,7 +1054,7 @@ void Texts_WriteLn (Texts_Writer *W, LONGINT *W__typ)
 void Texts_WriteString (Texts_Writer *W, LONGINT *W__typ, CHAR *s, INTEGER s__len)
 {
 	SHORTINT i;
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	i = 0;
 	while (s[__X(i, s__len)] >= ' ') {
 		Texts_Write(&*W, W__typ, s[__X(i, s__len)]);
@@ -1641,7 +1641,7 @@ void Texts_Open (Texts_Text T, CHAR *name, INTEGER name__len)
 	Texts_Piece p = NIL;
 	CHAR tag, version;
 	INTEGER hlen;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	f = Files_Old(name, name__len);
 	if (f == NIL) {
 		f = Files_New((CHAR*)"", 1);
@@ -1856,7 +1856,7 @@ void Texts_Close (Texts_Text T, CHAR *name, INTEGER name__len)
 	Files_Rider r;
 	INTEGER i, res;
 	CHAR bak[64];
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	f = Files_New(name, name__len);
 	Files_Set(&r, Files_Rider__typ, f, 0);
 	Files_WriteChar(&r, Files_Rider__typ, 0xf0);
