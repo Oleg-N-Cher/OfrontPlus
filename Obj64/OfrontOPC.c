@@ -1247,7 +1247,7 @@ static void OfrontOPC_GenHeaderMsg (void)
 {
 	INTEGER i;
 	OfrontOPM_WriteString((CHAR*)"/* ", 4);
-	OfrontOPM_WriteString((CHAR*)"Ofront+ 1.0 -", 14);
+	OfrontOPM_WriteString((CHAR*)"Ofront+ 0.9 -", 14);
 	i = 0;
 	while (i <= 31) {
 		if (__IN(i, OfrontOPM_glbopt)) {
