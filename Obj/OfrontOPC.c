@@ -1471,11 +1471,6 @@ void OfrontOPC_EnterBody (void)
 		OfrontOPM_WriteString((CHAR*)"__DEFMOD", 9);
 	}
 	OfrontOPC_EndStat();
-	if (OfrontOPC_mainprog && 0) {
-		OfrontOPC_BegStat();
-		OfrontOPM_WriteString((CHAR*)"/*don`t do it!*/ printf(\"DEMO VERSION: DO NOT USE THIS PROGRAM FOR ANY COMMERCIAL PURPOSE\\n\")", 94);
-		OfrontOPC_EndStat();
-	}
 	OfrontOPC_InitImports(OfrontOPT_topScope->right);
 	OfrontOPC_BegStat();
 	if (OfrontOPC_mainprog) {
@@ -1597,12 +1592,6 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 			if (var->typ->comp == 2) {
 				OfrontOPM_WriteString((CHAR*)"__DUPARR(", 10);
 				OfrontOPC_Ident(var);
-				OfrontOPM_WriteString((CHAR*)", ", 3);
-				if (var->typ->strobj == NIL) {
-					OfrontOPM_Mark(200, var->typ->txtpos);
-				} else {
-					OfrontOPC_Ident(var->typ->strobj);
-				}
 			} else {
 				OfrontOPM_WriteString((CHAR*)"__DUP(", 7);
 				OfrontOPC_Ident(var);
@@ -1618,12 +1607,6 @@ void OfrontOPC_EnterProc (OfrontOPT_Object proc)
 					OfrontOPM_WriteInt(dim);
 					typ = typ->BaseTyp;
 					dim += 1;
-				}
-				OfrontOPM_WriteString((CHAR*)", ", 3);
-				if (typ->strobj == NIL) {
-					OfrontOPM_Mark(200, typ->txtpos);
-				} else {
-					OfrontOPC_Ident(typ->strobj);
 				}
 			}
 			OfrontOPM_Write(')');
