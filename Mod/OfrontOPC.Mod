@@ -9,8 +9,6 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	IMPORT OPT := OfrontOPT, OPM := OfrontOPM, SYSTEM;
 
-	CONST demoVersion = FALSE;
-
 	CONST
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -992,10 +990,6 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		BegBlk; BegStat;
 		IF mainprog THEN OPM.WriteString("__INIT(argc, argv)") ELSE OPM.WriteString("__DEFMOD") END ;
 		EndStat;
-		IF mainprog & demoVersion THEN BegStat;
-			OPM.WriteString('/*don`t do it!*/ printf("DEMO VERSION: DO NOT USE THIS PROGRAM FOR ANY COMMERCIAL PURPOSE\n")'); 
-			EndStat
-		END ;
 		InitImports(OPT.topScope^.right);
 		BegStat;
 		IF mainprog THEN OPM.WriteString('__REGMAIN("') ELSE OPM.WriteString('__REGMOD("') END ;
