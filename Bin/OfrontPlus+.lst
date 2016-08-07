@@ -1,12 +1,15 @@
 Bin\ocat.exe
 Bin\ofront+.exe
 Bin\showdef.exe
+Code\
+Docu\Ofront.odc
 Docu\Ofront.pdf
 Docu\Ofront+.doc
 Docu\OfrontUser.doc
 Lib\
 Linux\
-Work\
-About.txt
+Linux\Bin\
+Sym\*.osf
+Rsrc\
 License.txt
 Readme.txt

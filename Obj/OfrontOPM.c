@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -xtspkae */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -895,7 +895,7 @@ void OfrontOPM_CloseFiles (void)
 	INTEGER res;
 	if (OfrontOPM_noerr) {
 		OfrontOPM_LogWStr((CHAR*)"    ", 5);
-		OfrontOPM_LogWNum((SHORTINT)Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
+		OfrontOPM_LogWNum((INTEGER)Files_Pos(&OfrontOPM_R[1], Files_Rider__typ), 0);
 	}
 	if (OfrontOPM_noerr) {
 		if (__STRCMP(OfrontOPM_modName, "SYSTEM") == 0) {
