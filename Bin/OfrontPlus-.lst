@@ -1,1 +1,16 @@
-
+Lib\Test\
+Lib\Test64\
+Linux\Bin\build
+Linux\Bin\build-All
+Linux\Bin\build-Lib
+Linux\Bin\compile
+Linux\Bin\dif
+Linux\Lib\C\SYSTEM_old.c0
+Linux\Lib\C\SYSTEM_old.h
+Linux\Lib\Test\
+Linux\Lib\Test64\
+Linux\Obj\
+Linux\Obj64\
+Linux\Sym\
+Linux\Sym64\
+Rsrc\Text\
