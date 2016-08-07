@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -ske */
+/* Ofront+ 0.9 -ske */
 
 #ifndef Platform__h
 #define Platform__h
@@ -77,7 +77,7 @@ import INTEGER Platform_Seek (Platform_FileHandle h, LONGINT o, INTEGER r);
 import void Platform_SetBadInstructionHandler (Platform_SignalHandler handler);
 import void Platform_SetHalt (Platform_HaltProcedure p);
 import void Platform_SetMTime (Platform_FileIdentity *target, LONGINT *target__typ, Platform_FileIdentity source);
-import INTEGER Platform_Size (Platform_FileHandle h, LONGINT *l);
+import INTEGER Platform_Size (Platform_FileHandle h, LONGINT *len);
 import INTEGER Platform_Sync (Platform_FileHandle h);
 import INTEGER Platform_System (CHAR *cmd, INTEGER cmd__len);
 import INTEGER Platform_Time (void);

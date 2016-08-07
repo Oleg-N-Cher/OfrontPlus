@@ -8,6 +8,10 @@ IMPORT SYSTEM;
    Made compatible with older Windows (GetFileSizeEx). *)
 
 
+CONST
+  pathDelimiter* = "\";
+  pathSeparator* = ";";
+
 TYPE
   Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
   MemAdr* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
@@ -397,11 +401,11 @@ PROCEDURE -largeInteger "LARGE_INTEGER li";
 PROCEDURE -liLongint(): LONGINT "(LONGINT)li.QuadPart"; (* QuadPart is signed 64-bit integer *)
 PROCEDURE -getFileSize(h: FileHandle): BOOL "(INTEGER)GetFileSizeEx((HANDLE)h, &li)";
 
-PROCEDURE Size*(h: FileHandle; VAR l: LONGINT): ErrorCode;
+PROCEDURE Size*(h: FileHandle; VAR len: LONGINT): ErrorCode;
 BEGIN
   largeInteger;
   IF getFileSize(h) = 0 THEN RETURN err() END;
-  l := liLongint();
+  len := liLongint();
   RETURN 0
 END Size;
 

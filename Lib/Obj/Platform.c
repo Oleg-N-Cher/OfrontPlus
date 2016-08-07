@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -ske */
+/* Ofront+ 0.9 -ske */
 #include "SYSTEM.h"
 
 typedef
@@ -75,7 +75,7 @@ export INTEGER Platform_Seek (Platform_FileHandle h, LONGINT o, INTEGER r);
 export void Platform_SetBadInstructionHandler (Platform_SignalHandler handler);
 export void Platform_SetHalt (Platform_HaltProcedure p);
 export void Platform_SetMTime (Platform_FileIdentity *target, LONGINT *target__typ, Platform_FileIdentity source);
-export INTEGER Platform_Size (Platform_FileHandle h, LONGINT *l);
+export INTEGER Platform_Size (Platform_FileHandle h, LONGINT *len);
 export INTEGER Platform_Sync (Platform_FileHandle h);
 export INTEGER Platform_System (CHAR *cmd, INTEGER cmd__len);
 static void Platform_TestLittleEndian (void);
@@ -498,13 +498,13 @@ void Platform_MTimeAsClock (Platform_FileIdentity i, INTEGER *t, INTEGER *d)
 }
 
 /*----------------------------------------------------------------------------*/
-INTEGER Platform_Size (Platform_FileHandle h, LONGINT *l)
+INTEGER Platform_Size (Platform_FileHandle h, LONGINT *len)
 {
 	Platform_largeInteger();
 	if (Platform_getFileSize(h) == 0) {
 		return Platform_err();
 	}
-	*l = Platform_liLongint();
+	*len = Platform_liLongint();
 	return 0;
 }
 

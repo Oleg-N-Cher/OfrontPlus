@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -xtspkae */
+/* Ofront+ 0.9 -xtspkae */
 
 #ifndef Files__h
 #define Files__h
@@ -13,7 +13,7 @@ typedef
 	struct Files_FileDesc {
 		char _prvt0[224];
 		Platform_FileHandle fd;
-		char _prvt1[56];
+		char _prvt1[64];
 	} Files_FileDesc;
 
 typedef
@@ -21,7 +21,7 @@ typedef
 		INTEGER res;
 		BOOLEAN eof;
 		LONGINT _prvt0;
-		char _prvt1[8];
+		char _prvt1[12];
 	} Files_Rider;
 
 
@@ -35,10 +35,10 @@ import void Files_Close (Files_File f);
 import void Files_Delete (CHAR *name, INTEGER name__len, INTEGER *res);
 import void Files_GetDate (Files_File f, INTEGER *t, INTEGER *d);
 import void Files_GetName (Files_File f, CHAR *name, INTEGER name__len);
-import INTEGER Files_Length (Files_File f);
+import LONGINT Files_Length (Files_File f);
 import Files_File Files_New (CHAR *name, INTEGER name__len);
 import Files_File Files_Old (CHAR *name, INTEGER name__len);
-import INTEGER Files_Pos (Files_Rider *r, LONGINT *r__typ);
+import LONGINT Files_Pos (Files_Rider *r, LONGINT *r__typ);
 import void Files_Purge (Files_File f);
 import void Files_ReadBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN *x);
 import void Files_ReadByte (Files_Rider *r, LONGINT *r__typ, BYTE *x);
@@ -55,7 +55,7 @@ import void Files_ReadSet (Files_Rider *R, LONGINT *R__typ, SET *x);
 import void Files_ReadString (Files_Rider *R, LONGINT *R__typ, CHAR *x, INTEGER x__len);
 import void Files_Register (Files_File f);
 import void Files_Rename (CHAR *old, INTEGER old__len, CHAR *new, INTEGER new__len, INTEGER *res);
-import void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, INTEGER pos);
+import void Files_Set (Files_Rider *r, LONGINT *r__typ, Files_File f, LONGINT pos);
 import void Files_SetSearchPath (CHAR *path, INTEGER path__len);
 import void Files_WriteBool (Files_Rider *R, LONGINT *R__typ, BOOLEAN x);
 import void Files_WriteByte (Files_Rider *r, LONGINT *r__typ, BYTE x);
