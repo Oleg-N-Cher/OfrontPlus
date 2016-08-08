@@ -4,17 +4,22 @@ translation to arbitrary target platforms. ofront includes
 a runtime system including an automatic garbage collector 
 for Linux, and a set of command-line tools.
 
-Download OfrontPlus for Windows and Linux/i386 from
+Download OfrontPlus for Windows and Linux/i386 & amd64 from
 https://github.com/Oleg-N-Cher/OfrontPlus/
 
 The directory structure of the project ofront is as follows:
 
 Bin
-    The scripts for building ofront.
+    The executable files
 
 Lib
-    The library modules for building ofront.
+    The library modules
 
-Obj
-    The working directory.
+Lib/C
+    Part of code written in C
 
+Lib/Obj & Obj64
+    The working directory for object files
+
+Lib/Sym & Sym64
+    Symbol files
