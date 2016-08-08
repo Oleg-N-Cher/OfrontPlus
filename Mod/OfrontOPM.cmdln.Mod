@@ -225,7 +225,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 				(* at 255 means:  >= 255 *)
 			END
 		ELSIF ch = 0DX THEN
-			curpos := SHORT( Texts.Pos(inR) )	(* supports CR LF mapping *)
+			curpos := Texts.Pos(inR)	(* supports CR LF mapping *)
 		ELSE
 			INC(curpos)
 		END ;
@@ -577,7 +577,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteReal;
 
 	PROCEDURE WriteLn* ();
-	BEGIN WriteString(Platform.nl)
+	BEGIN WriteString(Platform.newLine)
 	END WriteLn;
 
 	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);

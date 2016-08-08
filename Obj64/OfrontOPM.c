@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -xtspkae */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -267,7 +267,7 @@ void OfrontOPM_Get (CHAR *ch)
 			OfrontOPM_curpos += 1;
 		}
 	} else if (*ch == 0x0d) {
-		OfrontOPM_curpos = (SHORTINT)Texts_Pos(&OfrontOPM_inR, Texts_Reader__typ);
+		OfrontOPM_curpos = Texts_Pos(&OfrontOPM_inR, Texts_Reader__typ);
 	} else {
 		OfrontOPM_curpos += 1;
 	}
@@ -838,7 +838,7 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_WriteLn (void)
 {
-	OfrontOPM_WriteString(Platform_nl, 3);
+	OfrontOPM_WriteString(Platform_newLine, 3);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -937,12 +937,12 @@ void OfrontOPM_PromoteIntConstToLInt (void)
 /*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
-	__ENUMR(&OfrontOPM_inR, Texts_Reader__typ, 72, 1, P);
+	__ENUMR(&OfrontOPM_inR, Texts_Reader__typ, 80, 1, P);
 	P(OfrontOPM_Log);
-	__ENUMR(&OfrontOPM_W, Texts_Writer__typ, 56, 1, P);
-	__ENUMR(&OfrontOPM_oldSF, Files_Rider__typ, 24, 1, P);
-	__ENUMR(&OfrontOPM_newSF, Files_Rider__typ, 24, 1, P);
-	__ENUMR(OfrontOPM_R, Files_Rider__typ, 24, 3, P);
+	__ENUMR(&OfrontOPM_W, Texts_Writer__typ, 64, 1, P);
+	__ENUMR(&OfrontOPM_oldSF, Files_Rider__typ, 32, 1, P);
+	__ENUMR(&OfrontOPM_newSF, Files_Rider__typ, 32, 1, P);
+	__ENUMR(OfrontOPM_R, Files_Rider__typ, 32, 3, P);
 	P(OfrontOPM_oldSFile);
 	P(OfrontOPM_newSFile);
 	P(OfrontOPM_HFile);

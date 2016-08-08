@@ -561,7 +561,7 @@ void BrowserCmd_ShowDef (void)
 /*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
-	__ENUMR(&BrowserCmd_W, Texts_Writer__typ, 56, 1, P);
+	__ENUMR(&BrowserCmd_W, Texts_Writer__typ, 64, 1, P);
 }
 
 

@@ -267,7 +267,7 @@ void OfrontOPM_Get (CHAR *ch)
 			OfrontOPM_curpos += 1;
 		}
 	} else if (*ch == 0x0d) {
-		OfrontOPM_curpos = (SHORTINT)Texts_Pos(&OfrontOPM_inR, Texts_Reader__typ);
+		OfrontOPM_curpos = Texts_Pos(&OfrontOPM_inR, Texts_Reader__typ);
 	} else {
 		OfrontOPM_curpos += 1;
 	}
@@ -838,7 +838,7 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_WriteLn (void)
 {
-	OfrontOPM_WriteString(Platform_nl, 3);
+	OfrontOPM_WriteString(Platform_newLine, 3);
 }
 
 /*----------------------------------------------------------------------------*/
