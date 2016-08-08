@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -xtspkae */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "Platform.h"
 
@@ -125,7 +125,7 @@ void Console_LongInt (LONGINT i, INTEGER n)
 /*----------------------------------------------------------------------------*/
 void Console_Ln (void)
 {
-	Console_String(Platform_nl, 3);
+	Console_String(Platform_newLine, 3);
 }
 
 /*----------------------------------------------------------------------------*/

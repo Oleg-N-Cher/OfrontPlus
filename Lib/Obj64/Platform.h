@@ -38,7 +38,7 @@ import INTEGER Platform_ArgCount;
 import Platform_ArgVec Platform_ArgVector;
 import INTEGER Platform_SeekSet, Platform_SeekCur, Platform_SeekEnd;
 import Platform_FileHandle Platform_StdIn, Platform_StdOut, Platform_StdErr;
-import CHAR Platform_nl[3];
+import CHAR Platform_newLine[3];
 
 import LONGINT *Platform_FileIdentity__typ;
 

@@ -35,7 +35,7 @@ static Platform_HaltProcedure Platform_HaltHandler;
 static INTEGER Platform_TimeStart;
 export INTEGER Platform_SeekSet, Platform_SeekCur, Platform_SeekEnd;
 export Platform_FileHandle Platform_StdIn, Platform_StdOut, Platform_StdErr;
-export CHAR Platform_nl[3];
+export CHAR Platform_newLine[3];
 
 export LONGINT *Platform_FileIdentity__typ;
 
@@ -779,8 +779,8 @@ export void *Platform__init(void)
 	Platform_StdIn = Platform_getstdinhandle();
 	Platform_StdOut = Platform_getstdouthandle();
 	Platform_StdErr = Platform_getstderrhandle();
-	Platform_nl[0] = 0x0d;
-	Platform_nl[1] = 0x0a;
-	Platform_nl[2] = 0x00;
+	Platform_newLine[0] = 0x0d;
+	Platform_newLine[1] = 0x0a;
+	Platform_newLine[2] = 0x00;
 	__ENDMOD;
 }
