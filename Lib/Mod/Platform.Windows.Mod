@@ -12,6 +12,10 @@ CONST
   pathDelimiter* = "\";
   pathSeparator* = ";";
 
+  Unix*    = FALSE;
+  Windows* = TRUE;
+
+
 TYPE
   Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
   MemAdr* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
@@ -62,7 +66,7 @@ VAR
   StdOut-:          FileHandle;
   StdErr-:          FileHandle;
 
-  nl-: ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
+  newLine-: ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
 
 
 (* Some unsigned arithmetic *)
@@ -601,5 +605,5 @@ BEGIN
   StdOut := getstdouthandle();
   StdErr := getstderrhandle();
 
-  nl[0] := 0DX; nl[1] := 0AX; nl[2] := 0X; (* CR LF *)
+  newLine[0] := 0DX; newLine[1] := 0AX; newLine[2] := 0X; (* CR LF *)
 END Platform.

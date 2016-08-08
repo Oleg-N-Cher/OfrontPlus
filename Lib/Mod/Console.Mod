@@ -64,7 +64,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   END LongInt;
 
   PROCEDURE Ln*;
-  BEGIN String(Platform.nl);  (* Unix/Windows end-of-line *)
+  BEGIN String(Platform.newLine)  (* Unix/Windows end-of-line *)
   END Ln;
 
   PROCEDURE Bool*(b: BOOLEAN);
