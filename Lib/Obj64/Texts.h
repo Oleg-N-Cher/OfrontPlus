@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -xtspkae */
+/* Ofront+ 0.9 -xtspkae */
 
 #ifndef Texts__h
 #define Texts__h
@@ -78,7 +78,7 @@ typedef
 		Texts_FontsFont fnt;
 		BYTE col, voff;
 		Texts_Elem elem;
-		char _prvt0[40];
+		char _prvt0[48];
 	} Texts_Reader;
 
 typedef
@@ -87,7 +87,7 @@ typedef
 		Texts_FontsFont fnt;
 		BYTE col, voff;
 		Texts_Elem elem;
-		char _prvt0[40];
+		char _prvt0[48];
 		CHAR nextCh;
 		SHORTINT line, class;
 		INTEGER i;
@@ -110,7 +110,7 @@ typedef
 		Texts_Buffer buf;
 		Texts_FontsFont fnt;
 		BYTE col, voff;
-		char _prvt0[38];
+		char _prvt0[46];
 	} Texts_Writer;
 
 

@@ -343,7 +343,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     IF u IS Piece THEN Files.ReadChar(R.rider, ch); R.elem := NIL;
       IF (ch = 0AX) & u(Piece).ascii THEN ch := CR (* << LF to CR *)
       ELSIF (ch = CR) & u(Piece).ascii THEN (* << CR LF to CR *)
-         pos := Files.Pos(R.rider); Files.ReadChar(R.rider, nextch);
+         pos := SHORT(Files.Pos(R.rider)); Files.ReadChar(R.rider, nextch);
 	 IF nextch = 0AX THEN INC(R.off) ELSE Files.Set(R.rider, u(Piece).file, pos) END
       END
     ELSIF u IS Elem THEN ch := ElemChar; R.elem := u(Elem)
@@ -526,7 +526,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       INC(u.len)
     ELSE NEW(p); u.next := p; p.prev := u; p.next := un; un.prev := p;
       p.len := 1; p.fnt := W.fnt; p.col := W.col; p.voff := W.voff;
-      p.file := W.file; p.org := Files.Length(W.file) - 1; p.ascii := FALSE (* << *)
+      p.file := W.file; p.org := SHORT(Files.Length(W.file)) - 1; p.ascii := FALSE (* << *)
     END
   END Write;
 
@@ -776,14 +776,14 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     BEGIN new := NIL;
       Files.ReadInt(r, ew); Files.ReadInt(r, eh); Files.ReadByte(r, eno);
       IF eno > ecnt THEN ecnt := eno; Files.ReadString(r, mods[eno]); Files.ReadString(r, procs[eno]) END;
-      org := Files.Pos(r); M := Modules.ThisMod(mods[eno]);
+      org := SHORT(Files.Pos(r)); M := Modules.ThisMod(mods[eno]);
       IF M # NIL THEN Cmd := Modules.ThisCommand(M, procs[eno]);
         IF Cmd # NIL THEN Cmd END
       END;
       e := new;
       IF e # NIL THEN e.W := ew; e.H := eh; e.base := T;
         msg.pos := pos; e.handle(e, msg);
-        IF Files.Pos(r) # org + span THEN e := NIL END
+        IF SHORT(Files.Pos(r)) # org + span THEN e := NIL END
       END;
       IF e = NIL THEN Files.Set(r, f, org + span);
         NEW(a); a.W := ew; a.H := eh; a.handle := HandleAlien; a.base := T;
@@ -793,7 +793,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       END
     END LoadElem;
 
-  BEGIN pos := Files.Pos(r); f := Files.Base(r);
+  BEGIN pos := SHORT(Files.Pos(r)); f := Files.Base(r);
     NEW(u); u.len := MAX(LONGINT); (*u.fnt := FontsDefault;*)u.fnt := NIL; u.col := Displaywhite;
     T.head := u; ecnt := 0; fcnt := 0;
     msg.id := load; msg.r := r;
@@ -808,7 +808,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       INC(pos, un.len); u.next := un; un.prev := u; u := un; Files.ReadByte(msg.r, fno)
     END;
     u.next := T.head; T.head.prev := u; T.cache := T.head; T.corg := 0;
-    Files.ReadInt(msg.r, T.len); Files.Set(r, f, Files.Pos(msg.r) + T.len)
+    Files.ReadInt(msg.r, T.len); Files.Set(r, f, SHORT(Files.Pos(msg.r)) + T.len)
   END Load0;
 
   PROCEDURE Load* (VAR r: Files.Rider; T: Text);
@@ -833,7 +833,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
         Files.Set(r, f, 28); Files.ReadInt(r, hlen);
         Files.Set(r, f, 22 + hlen); Files.ReadInt(r, T.len); p.org := 26 + hlen
       ELSE
-        T.len := Files.Length(f); p.org := 0
+        T.len := SHORT(Files.Length(f)); p.org := 0
       END ;
       IF T.len > 0 THEN p.len := T.len; p.fnt := FontsDefault;
         p.col := Displaywhite; p.voff := 0; p.file := f; p.ascii := TRUE;
@@ -859,12 +859,12 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       Files.WriteInt(r, 0); Files.WriteInt(r, 0); Files.WriteInt(r, 0); (*fixup slot*)
       Files.WriteByte(r, eno);
       IF eno = ecnt THEN INC(ecnt); Files.WriteString(r, iden.mod); Files.WriteString(r, iden.proc) END;
-      msg.pos := pos; org := Files.Pos(r); e.handle(e, msg); span := Files.Pos(r) - org;
+      msg.pos := pos; org := SHORT(Files.Pos(r)); e.handle(e, msg); span := SHORT(Files.Pos(r)) - org;
       Files.WriteInt(r1, -span); Files.WriteInt(r1, e.W); Files.WriteInt(r1, e.H) (*fixup*)
     END StoreElem;
 
   BEGIN
-    org := Files.Pos(r); msg.id := store; msg.r := r; Files.WriteInt(msg.r, 0); (*fixup slot*)
+    org := SHORT(Files.Pos(r)); msg.id := store; msg.r := r; Files.WriteInt(msg.r, 0); (*fixup slot*)
     u := T.head.next; pos := 0; delta := 0; fcnt := 1; ecnt := 1;
     WHILE u # T.head DO
       IF u IS Elem THEN iden.mod[0] := 0X; u(Elem).handle(u(Elem), iden) ELSE iden.mod[0] := 1X END;
@@ -885,7 +885,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       END
     END;
     Files.WriteByte(msg.r, 0); Files.WriteInt(msg.r, T.len - delta);
-    (*!!!hlen := Files.Pos(msg.r) - org;*) hlen := Files.Pos(msg.r) - org + 2;
+    (*!!!hlen := Files.Pos(msg.r) - org;*) hlen := SHORT(Files.Pos(msg.r)) - org + 2;
     Files.Set(r1, Files.Base(msg.r), org); Files.WriteInt(r1, hlen); (*fixup*)
     u := T.head.next;
     WHILE u # T.head DO

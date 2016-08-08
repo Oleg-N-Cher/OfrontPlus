@@ -1,4 +1,4 @@
-/* Ofront+ 1.0 -xtspkae */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "Files.h"
 #include "Modules.h"
@@ -636,7 +636,7 @@ void Texts_Read (Texts_Reader *R, LONGINT *R__typ, CHAR *ch)
 		if (*ch == 0x0a && __GUARDP(u, Texts_PieceDesc, 1)->ascii) {
 			*ch = 0x0d;
 		} else if (*ch == 0x0d && __GUARDP(u, Texts_PieceDesc, 1)->ascii) {
-			pos = Files_Pos(&(*R).rider, Files_Rider__typ);
+			pos = (INTEGER)Files_Pos(&(*R).rider, Files_Rider__typ);
 			Files_ReadChar(&(*R).rider, Files_Rider__typ, &nextch);
 			if (nextch == 0x0a) {
 				(*R).off += 1;
@@ -1019,7 +1019,7 @@ void Texts_Write (Texts_Writer *W, LONGINT *W__typ, CHAR ch)
 		p->col = (*W).col;
 		p->voff = (*W).voff;
 		p->file = (*W).file;
-		p->org = Files_Length((*W).file) - 1;
+		p->org = (INTEGER)Files_Length((*W).file) - 1;
 		p->ascii = 0;
 	}
 }
@@ -1513,7 +1513,7 @@ static void LoadElem__17 (Files_Rider *r, LONGINT *r__typ, INTEGER pos, INTEGER 
 		Files_ReadString(&*r, r__typ, (void*)(*Load0__16_s->mods)[__X(eno, 64)], 32);
 		Files_ReadString(&*r, r__typ, (void*)(*Load0__16_s->procs)[__X(eno, 64)], 32);
 	}
-	org = Files_Pos(&*r, r__typ);
+	org = (INTEGER)Files_Pos(&*r, r__typ);
 	M = Modules_ThisMod((*Load0__16_s->mods)[__X(eno, 64)], 32);
 	if (M != NIL) {
 		Cmd = Modules_ThisCommand(M, (*Load0__16_s->procs)[__X(eno, 64)], 32);
@@ -1528,7 +1528,7 @@ static void LoadElem__17 (Files_Rider *r, LONGINT *r__typ, INTEGER pos, INTEGER 
 		(*e)->base = *Load0__16_s->T;
 		(*Load0__16_s->msg).pos = pos;
 		(*(*e)->handle)(*e, (void*)&*Load0__16_s->msg, Texts_FileMsg__typ);
-		if (Files_Pos(&*r, r__typ) != org + span) {
+		if ((INTEGER)Files_Pos(&*r, r__typ) != org + span) {
 			*e = NIL;
 		}
 	}
@@ -1569,7 +1569,7 @@ static void Texts_Load0 (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 	_s.procs = (void*)procs;
 	_s.lnk = Load0__16_s;
 	Load0__16_s = &_s;
-	pos = Files_Pos(&*r, r__typ);
+	pos = (INTEGER)Files_Pos(&*r, r__typ);
 	f = Files_Base(&*r, r__typ);
 	__NEW(u, Texts_RunDesc);
 	u->len = 2147483647;
@@ -1618,7 +1618,7 @@ static void Texts_Load0 (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 	T->cache = T->head;
 	T->corg = 0;
 	Files_ReadInt(&msg.r, Files_Rider__typ, &T->len);
-	Files_Set(&*r, r__typ, f, Files_Pos(&msg.r, Files_Rider__typ) + T->len);
+	Files_Set(&*r, r__typ, f, (INTEGER)Files_Pos(&msg.r, Files_Rider__typ) + T->len);
 	Load0__16_s = _s.lnk;
 }
 
@@ -1664,7 +1664,7 @@ void Texts_Open (Texts_Text T, CHAR *name, INTEGER name__len)
 			Files_ReadInt(&r, Files_Rider__typ, &T->len);
 			p->org = 26 + hlen;
 		} else {
-			T->len = Files_Length(f);
+			T->len = (INTEGER)Files_Length(f);
 			p->org = 0;
 		}
 		if (T->len > 0) {
@@ -1722,9 +1722,9 @@ static void StoreElem__40 (Files_Rider *r, LONGINT *r__typ, INTEGER pos, Texts_E
 		Files_WriteString(&*r, r__typ, (*Store__39_s->iden).proc, 32);
 	}
 	(*Store__39_s->msg).pos = pos;
-	org = Files_Pos(&*r, r__typ);
+	org = (INTEGER)Files_Pos(&*r, r__typ);
 	(*e->handle)(e, (void*)&*Store__39_s->msg, Texts_FileMsg__typ);
-	span = Files_Pos(&*r, r__typ) - org;
+	span = (INTEGER)Files_Pos(&*r, r__typ) - org;
 	Files_WriteInt(&r1, Files_Rider__typ, -span);
 	Files_WriteInt(&r1, Files_Rider__typ, e->W);
 	Files_WriteInt(&r1, Files_Rider__typ, e->H);
@@ -1751,7 +1751,7 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 	_s.procs = (void*)procs;
 	_s.lnk = Store__39_s;
 	Store__39_s = &_s;
-	org = Files_Pos(&*r, r__typ);
+	org = (INTEGER)Files_Pos(&*r, r__typ);
 	msg.id = 1;
 	msg.r = *r;
 	Files_WriteInt(&msg.r, Files_Rider__typ, 0);
@@ -1802,7 +1802,7 @@ void Texts_Store (Files_Rider *r, LONGINT *r__typ, Texts_Text T)
 	}
 	Files_WriteByte(&msg.r, Files_Rider__typ, 0);
 	Files_WriteInt(&msg.r, Files_Rider__typ, T->len - delta);
-	hlen = (Files_Pos(&msg.r, Files_Rider__typ) - org) + 2;
+	hlen = ((INTEGER)Files_Pos(&msg.r, Files_Rider__typ) - org) + 2;
 	Files_Set(&r1, Files_Rider__typ, Files_Base(&msg.r, Files_Rider__typ), org);
 	Files_WriteInt(&r1, Files_Rider__typ, hlen);
 	u = T->head->next;
