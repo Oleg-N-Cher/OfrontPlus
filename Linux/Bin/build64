@@ -1,0 +1,18 @@
+#!/bin/bash
+cd ../Obj64
+
+rm ../Sym64/*.sym
+
+../Bin/compile64 OfrontErrors
+../Bin/compile64 OfrontOPM.cmdln
+../Bin/compile64 OfrontOPS
+../Bin/compile64 OfrontOPT
+../Bin/compile64 OfrontOPB
+../Bin/compile64 OfrontOPP
+../Bin/compile64 OfrontOPC
+../Bin/compile64 OfrontOPV
+../Bin/compile64 OCatCmd -o ../Bin64/ocat
+../Bin/compile64 OfrontCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o../Bin64/ofront+
+../Bin/compile64 BrowserCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -o../Bin64/showdef
+
+#../Bin/clear
