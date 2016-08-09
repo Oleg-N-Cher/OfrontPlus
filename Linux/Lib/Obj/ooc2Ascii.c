@@ -1,10 +1,12 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 
 
 
 
 
+
+/*============================================================================*/
 
 
 export void *ooc2Ascii__init(void)

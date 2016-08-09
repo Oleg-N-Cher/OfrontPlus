@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 
 typedef
@@ -14,6 +14,8 @@ typedef
 export LONGINT *ooc2ConvTypes_ScanDesc__typ;
 
 
+
+/*============================================================================*/
 
 __TDESC(ooc2ConvTypes_ScanDesc__desc, 1, 0) = {__TDFLDS("ScanDesc", 4), {-4}};
 

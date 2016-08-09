@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 
 #ifndef ooc2Ascii__h
 #define ooc2Ascii__h

@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "Console.h"
 #include "Heap.h"
@@ -41,18 +41,20 @@ export Modules_ModuleName Modules_imported, Modules_importing;
 export LONGINT *Modules_ModuleDesc__typ;
 export LONGINT *Modules_CmdDesc__typ;
 
-static void Modules_Append (CHAR *a, LONGINT a__len, CHAR *b, LONGINT b__len);
-export void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all);
-export Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT name__len);
-export Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len);
+static void Modules_Append (CHAR *a, INTEGER a__len, CHAR *b, INTEGER b__len);
+export void Modules_Free (CHAR *name, INTEGER name__len, BOOLEAN all);
+export Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER name__len);
+export Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len);
 
 #define Modules_modules()	(Modules_Module)Heap_modules
 #define Modules_setmodules(m)	Heap_modules = m
 
-static void Modules_Append (CHAR *a, LONGINT a__len, CHAR *b, LONGINT b__len)
+/*============================================================================*/
+
+static void Modules_Append (CHAR *a, INTEGER a__len, CHAR *b, INTEGER b__len)
 {
 	INTEGER i, j;
-	__DUP(b, b__len, CHAR);
+	__DUP(b, b__len);
 	i = 0;
 	while (a[__X(i, a__len)] != 0x00) {
 		i += 1;
@@ -67,12 +69,12 @@ static void Modules_Append (CHAR *a, LONGINT a__len, CHAR *b, LONGINT b__len)
 	__DEL(b);
 }
 
-Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len)
+Modules_Module Modules_ThisMod (CHAR *name, INTEGER name__len)
 {
 	Modules_Module m = NIL;
 	CHAR bodyname[64];
 	Modules_Command body;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	m = Modules_modules();
 	while (m != NIL && __STRCMP(m->name, name) != 0) {
 		m = m->next;
@@ -85,16 +87,17 @@ Modules_Module Modules_ThisMod (CHAR *name, LONGINT name__len)
 		__COPY(name, Modules_importing, 20);
 		__MOVE(" module \"", Modules_resMsg, 10);
 		Modules_Append((void*)Modules_resMsg, 256, name, name__len);
-		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", (LONGINT)12);
+		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", 12);
 	}
 	__DEL(name);
 	return m;
 }
 
-Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, INTEGER name__len)
 {
 	Modules_Cmd c = NIL;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	c = mod->cmds;
 	while (c != NIL && __STRCMP(c->name, name) != 0) {
 		c = c->next;
@@ -109,19 +112,20 @@ Modules_Command Modules_ThisCommand (Modules_Module mod, CHAR *name, LONGINT nam
 		__MOVE(" command \"", Modules_resMsg, 11);
 		__COPY(name, Modules_importing, 20);
 		Modules_Append((void*)Modules_resMsg, 256, mod->name, 20);
-		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)".", (LONGINT)2);
+		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)".", 2);
 		Modules_Append((void*)Modules_resMsg, 256, name, name__len);
-		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", (LONGINT)12);
+		Modules_Append((void*)Modules_resMsg, 256, (CHAR*)"\" not found", 12);
 		__DEL(name);
 		return NIL;
 	}
 	__RETCHK;
 }
 
-void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all)
+/*----------------------------------------------------------------------------*/
+void Modules_Free (CHAR *name, INTEGER name__len, BOOLEAN all)
 {
 	Modules_Module m = NIL, p = NIL;
-	__DUP(name, name__len, CHAR);
+	__DUP(name, name__len);
 	m = Modules_modules();
 	if (all) {
 		Modules_res = 1;
@@ -150,6 +154,7 @@ void Modules_Free (CHAR *name, LONGINT name__len, BOOLEAN all)
 	__DEL(name);
 }
 
+/*----------------------------------------------------------------------------*/
 __TDESC(Modules_ModuleDesc__desc, 1, 2) = {__TDFLDS("ModuleDesc", 48), {0, 28, -12}};
 __TDESC(Modules_CmdDesc__desc, 1, 1) = {__TDFLDS("CmdDesc", 32), {0, -8}};
 

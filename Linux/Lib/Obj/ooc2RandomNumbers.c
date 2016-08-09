@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 
 
@@ -12,11 +12,14 @@ export INTEGER ooc2RandomNumbers_RND (INTEGER range);
 export REAL ooc2RandomNumbers_Random (void);
 
 
+/*============================================================================*/
+
 void ooc2RandomNumbers_GetSeed (INTEGER *seed)
 {
 	*seed = ooc2RandomNumbers_z;
 }
 
+/*----------------------------------------------------------------------------*/
 void ooc2RandomNumbers_PutSeed (INTEGER seed)
 {
 	seed = (INTEGER)__MOD(seed, 2147483647);
@@ -27,6 +30,7 @@ void ooc2RandomNumbers_PutSeed (INTEGER seed)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 static void ooc2RandomNumbers_NextRND (void)
 {
 	INTEGER lo, hi, test;
@@ -46,12 +50,14 @@ INTEGER ooc2RandomNumbers_RND (INTEGER range)
 	return (INTEGER)__MOD(ooc2RandomNumbers_z, range);
 }
 
+/*----------------------------------------------------------------------------*/
 REAL ooc2RandomNumbers_Random (void)
 {
 	ooc2RandomNumbers_NextRND();
 	return (ooc2RandomNumbers_z - 1) *   4.6566129e-010;
 }
 
+/*----------------------------------------------------------------------------*/
 
 export void *ooc2RandomNumbers__init(void)
 {

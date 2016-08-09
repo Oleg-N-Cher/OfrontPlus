@@ -1,5 +1,6 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
+#include "Platform.h"
 
 
 static CHAR Console_line[128];
@@ -15,19 +16,20 @@ export void Console_Ln (void);
 export void Console_LongHex (LONGINT i);
 export void Console_LongInt (LONGINT i, INTEGER n);
 export void Console_Read (CHAR *ch);
-export void Console_ReadLine (CHAR *line, LONGINT line__len);
-export void Console_String (CHAR *s, LONGINT s__len);
+export void Console_ReadLine (CHAR *line, INTEGER line__len);
+export void Console_String (CHAR *s, INTEGER s__len);
 
-#include <unistd.h>
-#define Console_Write(adr, n)	write(1/*stdout*/, (void*)adr, n)
-#define Console_read(ch)	read(0/*stdin*/, ch, 1)
+
+/*============================================================================*/
 
 void Console_Flush (void)
 {
-	Console_Write((LONGINT)Console_line, Console_pos);
+	INTEGER error;
+	error = Platform_Write(1, (Platform_MemAdr)((INTEGER)Console_line), Console_pos);
 	Console_pos = 0;
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_Char (CHAR ch)
 {
 	if (Console_pos == 128) {
@@ -40,10 +42,11 @@ void Console_Char (CHAR ch)
 	}
 }
 
-void Console_String (CHAR *s, LONGINT s__len)
+/*----------------------------------------------------------------------------*/
+void Console_String (CHAR *s, INTEGER s__len)
 {
 	INTEGER i;
-	__DUP(s, s__len, CHAR);
+	__DUP(s, s__len);
 	i = 0;
 	while (s[__X(i, s__len)] != 0x00) {
 		Console_Char(s[__X(i, s__len)]);
@@ -52,11 +55,12 @@ void Console_String (CHAR *s, LONGINT s__len)
 	__DEL(s);
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_Int (INTEGER i, INTEGER n)
 {
 	CHAR s[16];
 	INTEGER i1, k;
-	if (i == __LSHL(1, 31, INTEGER)) {
+	if (i == __LSHL((INTEGER)1, 31, INTEGER)) {
 		__MOVE("8463847412", s, 11);
 		k = 10;
 	} else {
@@ -84,12 +88,13 @@ void Console_Int (INTEGER i, INTEGER n)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_LongInt (LONGINT i, INTEGER n)
 {
 	CHAR s[24];
 	LONGINT i1;
 	INTEGER k;
-	if (i == __LSHL(1, 31, LONGINT)) {
+	if (i == __LSHL((LONGINT)1, 31, LONGINT)) {
 		__MOVE("8463847412", s, 11);
 		k = 10;
 	} else {
@@ -117,26 +122,29 @@ void Console_LongInt (LONGINT i, INTEGER n)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_Ln (void)
 {
-	Console_Char(0x0a);
+	Console_String(Platform_newLine, 2);
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_Bool (BOOLEAN b)
 {
 	if (b) {
-		Console_String((CHAR*)"TRUE", (LONGINT)5);
+		Console_String((CHAR*)"TRUE", 5);
 	} else {
-		Console_String((CHAR*)"FALSE", (LONGINT)6);
+		Console_String((CHAR*)"FALSE", 6);
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_Hex (INTEGER i)
 {
 	INTEGER k, n;
 	k = -28;
 	while (k <= 0) {
-		n = (INTEGER)__MASK(__ASH(i, k, INTEGER), -16);
+		n = __MASK(__ASH(i, k, INTEGER), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {
@@ -146,12 +154,13 @@ void Console_Hex (INTEGER i)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_LongHex (LONGINT i)
 {
 	INTEGER k, n;
 	k = -28;
 	while (k <= 0) {
-		n = (INTEGER)__MASK(__ASH(i, k, LONGINT), -16);
+		n = __MASK((INTEGER)__ASH(i, k, LONGINT), -16);
 		if (n <= 9) {
 			Console_Char((CHAR)(48 + n));
 		} else {
@@ -161,22 +170,26 @@ void Console_LongHex (LONGINT i)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void Console_Read (CHAR *ch)
 {
+	INTEGER n, error;
 	Console_Flush();
-	if (Console_read(&*ch) != 1) {
+	error = Platform_ReadBuf(0, (BYTE*)(void*)&*ch, 1, &n);
+	if (n != 1) {
 		*ch = 0x00;
 	}
 }
 
-void Console_ReadLine (CHAR *line, LONGINT line__len)
+/*----------------------------------------------------------------------------*/
+void Console_ReadLine (CHAR *line, INTEGER line__len)
 {
 	INTEGER i;
 	CHAR ch;
 	Console_Flush();
 	i = 0;
 	Console_Read(&ch);
-	while (((LONGINT)i < line__len - 1 && ch != 0x0a) && ch != 0x00) {
+	while ((i < line__len - 1 && ch != 0x0a) && ch != 0x00) {
 		line[__X(i, line__len)] = ch;
 		i += 1;
 		Console_Read(&ch);
@@ -184,10 +197,12 @@ void Console_ReadLine (CHAR *line, LONGINT line__len)
 	line[__X(i, line__len)] = 0x00;
 }
 
+/*----------------------------------------------------------------------------*/
 
 export void *Console__init(void)
 {
 	__DEFMOD;
+	__IMPORT(Platform__init);
 	__REGMOD("Console", 0);
 	__REGCMD("Flush", Console_Flush);
 	__REGCMD("Ln", Console_Ln);

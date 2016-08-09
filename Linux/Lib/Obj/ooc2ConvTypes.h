@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 
 #ifndef ooc2ConvTypes__h
 #define ooc2ConvTypes__h
