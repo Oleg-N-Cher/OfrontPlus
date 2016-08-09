@@ -75,6 +75,10 @@ PROCEDURE -UBYTE*(b: BYTE): SHORTINT "((SHORTINT)(unsigned char)(b))";
 PROCEDURE -USHORT*(s: SHORTINT): INTEGER "((INTEGER)(unsigned short)(s))";
 PROCEDURE -UINT*(i: INTEGER): LONGINT "((LONGINT)(unsigned int)(i))";
 
+PROCEDURE -ToBYTE*(s: SHORTINT): BYTE "((BYTE)(s))";
+PROCEDURE -ToSHORT*(i: INTEGER): SHORTINT "((SHORTINT)(i))";
+PROCEDURE -ToINT*(l: LONGINT): INTEGER "((INTEGER)(l))";
+
 
 PROCEDURE -AAincludeWindowsWrapper '#include "_windows.h"';
 
