@@ -8,7 +8,13 @@ rm ../Sym64/*.sym
 ## Ofront+
 ../Bin/compile64 $Lib SYSTEM
 ../Bin/compile64 $Lib Platform.Unix
-../Bin/compile64 $Lib Heap
+#../Bin/compile64 $Lib Heap
+../../Bin/ofront+ -s ../../../Lib/Obj64/Heap0.Mod
+gcc -c -I ../C Heap.c
+ar -rc $Lib Heap.o
+rm ../Sym64/Heap.sym
+mv Heap.sym ../Sym64
+#
 ../Bin/compile64 $Lib Args
 ../Bin/compile64 $Lib Console
 ../Bin/compile64 $Lib Strings
