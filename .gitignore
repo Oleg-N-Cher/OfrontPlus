@@ -6,7 +6,10 @@ Lib/Test/*.c
 Lib/Test/*.exe
 Lib/Test64/*.c
 Lib/Test64/*.exe
+Linux/Lib/Obj/*.o
+Linux/Lib/Obj64/*.o
 Linux/Obj/*.o
+Linux/Obj64/*.o
 Linux/ocat
 Linux/ofront+
 Linux/showdef
