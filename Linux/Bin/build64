@@ -12,7 +12,7 @@ rm ../Sym64/*.sym
 ../Bin/compile64 OfrontOPC
 ../Bin/compile64 OfrontOPV
 ../Bin/compile64 OCatCmd -o ../Bin64/ocat
-../Bin/compile64 OfrontCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o../Bin64/ofront+
+../Bin/compile64 OfrontCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o../Bin64/ofront+new
 ../Bin/compile64 BrowserCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -o../Bin64/showdef
 
 #../Bin/clear

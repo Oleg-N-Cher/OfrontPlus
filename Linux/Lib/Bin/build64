@@ -9,7 +9,7 @@ rm ../Sym64/*.sym
 ../Bin/compile64 $Lib SYSTEM
 ../Bin/compile64 $Lib Platform.Unix
 #../Bin/compile64 $Lib Heap
-../../Bin/ofront+ -s ../../../Lib/Obj64/Heap0.Mod
+../../Bin64/ofront+ -s ../../../Lib/Obj64/Heap0.Mod
 gcc -c -I ../C Heap.c
 ar -rc $Lib Heap.o
 rm ../Sym64/Heap.sym
