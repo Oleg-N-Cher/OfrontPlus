@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPS.h"
@@ -108,7 +108,7 @@ static void OfrontOPT_EnterProc (OfrontOPS_Name name, INTEGER num);
 static void OfrontOPT_EnterTyp (OfrontOPS_Name name, SHORTINT form, INTEGER size, OfrontOPT_Struct *res);
 export void OfrontOPT_Export (BOOLEAN *ext, BOOLEAN *new);
 export void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno);
-static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len);
+static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, INTEGER name__len);
 export void OfrontOPT_FPrintObj (OfrontOPT_Object obj);
 static void OfrontOPT_FPrintSign (LONGINT *fp, OfrontOPT_Struct result, OfrontOPT_Object par);
 export void OfrontOPT_FPrintStr (OfrontOPT_Struct typ);
@@ -120,7 +120,7 @@ export void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOO
 static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval);
 static OfrontOPT_Object OfrontOPT_InFld (void);
 static void OfrontOPT_InMod (SHORTINT *mno);
-static void OfrontOPT_InName (CHAR *name, LONGINT name__len);
+static void OfrontOPT_InName (CHAR *name, INTEGER name__len);
 static OfrontOPT_Object OfrontOPT_InObj (SHORTINT mno);
 static void OfrontOPT_InSign (SHORTINT mno, OfrontOPT_Struct *res, OfrontOPT_Object *par);
 static void OfrontOPT_InStruct (OfrontOPT_Struct *typ);
@@ -139,13 +139,15 @@ static void OfrontOPT_OutConstant (OfrontOPT_Object obj);
 static void OfrontOPT_OutFlds (OfrontOPT_Object fld, LONGINT adr, BOOLEAN visible);
 static void OfrontOPT_OutHdFld (OfrontOPT_Struct typ, OfrontOPT_Object fld, LONGINT adr);
 static void OfrontOPT_OutMod (INTEGER mno);
-static void OfrontOPT_OutName (CHAR *name, LONGINT name__len);
+static void OfrontOPT_OutName (CHAR *name, INTEGER name__len);
 static void OfrontOPT_OutObj (OfrontOPT_Object obj);
 static void OfrontOPT_OutSign (OfrontOPT_Struct result, OfrontOPT_Object par);
 static void OfrontOPT_OutStr (OfrontOPT_Struct typ);
 static void OfrontOPT_OutTProcs (OfrontOPT_Struct typ, OfrontOPT_Object obj);
 static void OfrontOPT_err (INTEGER n);
 
+
+/*============================================================================*/
 
 static void OfrontOPT_err (INTEGER n)
 {
@@ -159,6 +161,7 @@ OfrontOPT_Const OfrontOPT_NewConst (void)
 	return const_;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_Object OfrontOPT_NewObj (void)
 {
 	OfrontOPT_Object obj = NIL;
@@ -166,6 +169,7 @@ OfrontOPT_Object OfrontOPT_NewObj (void)
 	return obj;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_Struct OfrontOPT_NewStr (SHORTINT form, SHORTINT comp)
 {
 	OfrontOPT_Struct typ = NIL;
@@ -181,6 +185,7 @@ OfrontOPT_Struct OfrontOPT_NewStr (SHORTINT form, SHORTINT comp)
 	return typ;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_Node OfrontOPT_NewNode (SHORTINT class)
 {
 	OfrontOPT_Node node = NIL;
@@ -189,6 +194,7 @@ OfrontOPT_Node OfrontOPT_NewNode (SHORTINT class)
 	return node;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_ConstExt OfrontOPT_NewExt (void)
 {
 	OfrontOPT_ConstExt ext = NIL;
@@ -196,6 +202,7 @@ OfrontOPT_ConstExt OfrontOPT_NewExt (void)
 	return ext;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_OpenScope (SHORTINT level, OfrontOPT_Object owner)
 {
 	OfrontOPT_Object head = NIL;
@@ -212,11 +219,13 @@ void OfrontOPT_OpenScope (SHORTINT level, OfrontOPT_Object owner)
 	OfrontOPT_topScope = head;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_CloseScope (void)
 {
 	OfrontOPT_topScope = OfrontOPT_topScope->left;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Init (OfrontOPS_Name name, SET opt)
 {
 	OfrontOPT_topScope = OfrontOPT_universe;
@@ -232,6 +241,7 @@ void OfrontOPT_Init (OfrontOPS_Name name, SET opt)
 	OfrontOPT_sfpresent = 1;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Close (void)
 {
 	INTEGER i;
@@ -249,6 +259,7 @@ void OfrontOPT_Close (void)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FindImport (OfrontOPT_Object mod, OfrontOPT_Object *res)
 {
 	OfrontOPT_Object obj = NIL;
@@ -273,6 +284,7 @@ void OfrontOPT_FindImport (OfrontOPT_Object mod, OfrontOPT_Object *res)
 	*res = obj;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Find (OfrontOPT_Object *res)
 {
 	OfrontOPT_Object obj = NIL, head = NIL;
@@ -302,6 +314,7 @@ void OfrontOPT_Find (OfrontOPT_Object *res)
 	*res = obj;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FindField (OfrontOPS_Name name, OfrontOPT_Struct typ, OfrontOPT_Object *res)
 {
 	OfrontOPT_Object obj = NIL;
@@ -322,6 +335,7 @@ void OfrontOPT_FindField (OfrontOPS_Name name, OfrontOPT_Struct typ, OfrontOPT_O
 	*res = NIL;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Insert (OfrontOPS_Name name, OfrontOPT_Object *obj)
 {
 	OfrontOPT_Object ob0 = NIL, ob1 = NIL;
@@ -364,14 +378,15 @@ void OfrontOPT_Insert (OfrontOPS_Name name, OfrontOPT_Object *obj)
 	*obj = ob1;
 }
 
-static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
 	i = 0;
 	do {
 		ch = name[__X(i, name__len)];
-		OfrontOPM_FPrint(&*fp, (INTEGER)ch);
+		OfrontOPM_FPrint(&*fp, (SHORTINT)ch);
 		i += 1;
 	} while (!(ch == 0x00));
 }
@@ -421,6 +436,7 @@ void OfrontOPT_IdFPrint (OfrontOPT_Struct typ)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 static struct FPrintStr__11 {
 	LONGINT *pbfp, *pvfp;
 	struct FPrintStr__11 *lnk;
@@ -559,6 +575,7 @@ void OfrontOPT_FPrintStr (OfrontOPT_Struct typ)
 	FPrintStr__11_s = _s.lnk;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 {
 	LONGINT fprint;
@@ -573,7 +590,8 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 			f = obj->typ->form;
 			OfrontOPM_FPrint(&fprint, f);
 			switch (f) {
-				case 2: case 3: case 4: case 5: case 6: 
+				case 1: case 2: case 3: case 4: case 5: 
+				case 6: 
 					OfrontOPM_FPrint(&fprint, obj->conval->intval);
 					break;
 				case 9: 
@@ -604,11 +622,11 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 		} else if (obj->mode == 9) {
 			OfrontOPT_FPrintSign(&fprint, obj->typ, obj->link);
 			ext = obj->conval->ext;
-			m = (INTEGER)(*ext)[0];
+			m = (SHORTINT)(*ext)[0];
 			f = 1;
 			OfrontOPM_FPrint(&fprint, m);
 			while (f <= m) {
-				OfrontOPM_FPrint(&fprint, (INTEGER)(*ext)[__X(f, 256)]);
+				OfrontOPM_FPrint(&fprint, (SHORTINT)(*ext)[__X(f, 256)]);
 				f += 1;
 			}
 		} else if (obj->mode == 5) {
@@ -619,6 +637,7 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno)
 {
 	INTEGER i, j;
@@ -658,6 +677,7 @@ void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_InsertImport (OfrontOPT_Object obj, OfrontOPT_Object *root, OfrontOPT_Object *old)
 {
 	OfrontOPT_Object ob0 = NIL, ob1 = NIL;
@@ -709,7 +729,8 @@ void OfrontOPT_InsertImport (OfrontOPT_Object obj, OfrontOPT_Object *root, Ofron
 	}
 }
 
-static void OfrontOPT_InName (CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+static void OfrontOPT_InName (CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
@@ -770,11 +791,11 @@ static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval)
 	OfrontOPT_ConstExt ext = NIL;
 	REAL rval;
 	switch (f) {
-		case 1: case 3: case 2: 
+		case 3: case 2: 
 			OfrontOPM_SymRCh(&ch);
-			conval->intval = (INTEGER)ch;
+			conval->intval = (SHORTINT)ch;
 			break;
-		case 4: case 5: case 6: 
+		case 1: case 4: case 5: case 6: 
 			conval->intval = OfrontOPM_SymRInt();
 			break;
 		case 9: 
@@ -1172,7 +1193,7 @@ void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOOLEAN *d
 	OfrontOPT_Object obj = NIL;
 	SHORTINT mno;
 	OfrontOPS_Name aliasName__copy;
-	__DUPARR(aliasName, OfrontOPS_Name);
+	__DUPARR(aliasName);
 	if (__STRCMP(name, "SYSTEM") == 0) {
 		OfrontOPT_SYSimported = 1;
 		OfrontOPT_Insert(aliasName, &obj);
@@ -1211,7 +1232,8 @@ void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOOLEAN *d
 	}
 }
 
-static void OfrontOPT_OutName (CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+static void OfrontOPT_OutName (CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
@@ -1419,7 +1441,7 @@ static void OfrontOPT_OutConstant (OfrontOPT_Object obj)
 		case 2: case 3: 
 			OfrontOPM_SymWCh((CHAR)obj->conval->intval);
 			break;
-		case 4: case 5: case 6: 
+		case 1: case 4: case 5: case 6: 
 			OfrontOPM_SymWInt(obj->conval->intval);
 			break;
 		case 9: 
@@ -1508,7 +1530,7 @@ static void OfrontOPT_OutObj (OfrontOPT_Object obj)
 						OfrontOPM_SymWInt(33);
 						OfrontOPT_OutSign(obj->typ, obj->link);
 						ext = obj->conval->ext;
-						j = (INTEGER)(*ext)[0];
+						j = (SHORTINT)(*ext)[0];
 						i = 1;
 						OfrontOPM_SymWInt(j);
 						while (i <= j) {
@@ -1567,6 +1589,7 @@ void OfrontOPT_Export (BOOLEAN *ext, BOOLEAN *new)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 static void OfrontOPT_InitStruct (OfrontOPT_Struct *typ, SHORTINT form)
 {
 	*typ = OfrontOPT_NewStr(form, 1);
@@ -1585,7 +1608,7 @@ static void OfrontOPT_EnterBoolConst (OfrontOPS_Name name, LONGINT value)
 {
 	OfrontOPT_Object obj = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	obj->conval = OfrontOPT_NewConst();
 	obj->mode = 3;
@@ -1598,7 +1621,7 @@ static void OfrontOPT_EnterTyp (OfrontOPS_Name name, SHORTINT form, INTEGER size
 	OfrontOPT_Object obj = NIL;
 	OfrontOPT_Struct typ = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	typ = OfrontOPT_NewStr(form, 1);
 	obj->mode = 5;
@@ -1620,7 +1643,7 @@ static void OfrontOPT_EnterProc (OfrontOPS_Name name, INTEGER num)
 {
 	OfrontOPT_Object obj = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	obj->mode = 8;
 	obj->typ = OfrontOPT_notyp;

@@ -1,15 +1,17 @@
-/* Ofront 1.2 -xtspkaeml */
+/* Ofront+ 0.9 -xtspkaem */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
 #include "Files.h"
-#include "CmdlnTexts.h"
+#include "Texts.h"
 
 
 
 
 export void OCatCmd_Cat (void);
 
+
+/*============================================================================*/
 
 static struct Cat__1 {
 	CHAR (*buf)[1024];
@@ -34,8 +36,8 @@ void OCatCmd_Cat (void)
 {
 	CHAR path[128];
 	INTEGER i;
-	CmdlnTexts_Text T = NIL;
-	CmdlnTexts_Reader R;
+	Texts_Text T = NIL;
+	Texts_Reader R;
 	CHAR ch;
 	BOOLEAN tab;
 	CHAR buf[1024];
@@ -46,7 +48,7 @@ void OCatCmd_Cat (void)
 	_s.lnk = Cat__1_s;
 	Cat__1_s = &_s;
 	path[0] = 0x00;
-	__NEW(T, CmdlnTexts_TextDesc);
+	__NEW(T, Texts_TextDesc);
 	Args_Get(1, (void*)path, 128);
 	if (__STRCMP(path, "-t") == 0) {
 		tab = 1;
@@ -58,9 +60,9 @@ void OCatCmd_Cat (void)
 	}
 	while (path[0] != 0x00) {
 		if (Files_Old(path, 128) != NIL) {
-			CmdlnTexts_Open(T, path, 128);
-			CmdlnTexts_OpenReader(&R, CmdlnTexts_Reader__typ, T, 0);
-			CmdlnTexts_Read(&R, CmdlnTexts_Reader__typ, &ch);
+			Texts_Open(T, path, 128);
+			Texts_OpenReader(&R, Texts_Reader__typ, T, 0);
+			Texts_Read(&R, Texts_Reader__typ, &ch);
 			bufpos = 0;
 			while (!R.eot) {
 				if (ch >= ' ') {
@@ -75,12 +77,12 @@ void OCatCmd_Cat (void)
 				} else if (ch == 0x0d) {
 					ConsoleChar__2(0x0a);
 				}
-				CmdlnTexts_Read(&R, CmdlnTexts_Reader__typ, &ch);
+				Texts_Read(&R, Texts_Reader__typ, &ch);
 			}
 			buf[__X(bufpos, 1024)] = 0x00;
 			Console_String(buf, 1024);
 		} else {
-			Console_String((CHAR*)"OCat: cannot open ", (LONGINT)19);
+			Console_String((CHAR*)"OCat: cannot open ", 19);
 			Console_String(path, 128);
 			Console_Ln();
 		}
@@ -91,6 +93,7 @@ void OCatCmd_Cat (void)
 	Cat__1_s = _s.lnk;
 }
 
+/*----------------------------------------------------------------------------*/
 
 int main(int argc, char **argv)
 {
@@ -98,7 +101,7 @@ int main(int argc, char **argv)
 	__IMPORT(Args__init);
 	__IMPORT(Console__init);
 	__IMPORT(Files__init);
-	__IMPORT(CmdlnTexts__init);
+	__IMPORT(Texts__init);
 	__REGMAIN("OCatCmd", 0);
 	__REGCMD("Cat", OCatCmd_Cat);
 /* BEGIN */

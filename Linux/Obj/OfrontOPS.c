@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 
@@ -25,6 +25,8 @@ static void OfrontOPS_Number (void);
 static void OfrontOPS_Str (SHORTINT *sym);
 static void OfrontOPS_err (INTEGER n);
 
+
+/*============================================================================*/
 
 static void OfrontOPS_err (INTEGER n)
 {
@@ -59,7 +61,7 @@ static void OfrontOPS_Str (SHORTINT *sym)
 	if (OfrontOPS_intval == 2) {
 		*sym = 35;
 		OfrontOPS_numtyp = 1;
-		OfrontOPS_intval = (INTEGER)OfrontOPS_str[0];
+		OfrontOPS_intval = (SHORTINT)OfrontOPS_str[0];
 	} else {
 		*sym = 37;
 	}
@@ -109,9 +111,9 @@ static LONGREAL Ten__9 (INTEGER e)
 static INTEGER Ord__7 (CHAR ch, BOOLEAN hex)
 {
 	if (ch <= '9') {
-		return (INTEGER)ch - 48;
+		return (SHORTINT)ch - 48;
 	} else if (hex) {
-		return ((INTEGER)ch - 65) + 10;
+		return ((SHORTINT)ch - 65) + 10;
 	} else {
 		OfrontOPS_err(2);
 		return 0;
@@ -601,11 +603,13 @@ void OfrontOPS_Get (SHORTINT *sym)
 	Get__1_s = _s.lnk;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPS_Init (void)
 {
 	OfrontOPS_ch = ' ';
 }
 
+/*----------------------------------------------------------------------------*/
 
 export void *OfrontOPS__init(void)
 {

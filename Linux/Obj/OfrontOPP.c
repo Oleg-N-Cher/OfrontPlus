@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPB.h"
 #include "OfrontOPM.h"
@@ -50,6 +50,8 @@ static void OfrontOPP_err (INTEGER n);
 static void OfrontOPP_qualident (OfrontOPT_Object *id);
 static void OfrontOPP_selector (OfrontOPT_Node *x);
 
+
+/*============================================================================*/
 
 static void OfrontOPP_err (INTEGER n)
 {
@@ -136,7 +138,7 @@ static void OfrontOPP_CheckSysFlag (INTEGER *sysflag, INTEGER default_)
 			OfrontOPP_err(135);
 		}
 		OfrontOPP_ConstExpression(&x);
-		if (__IN(x->typ->form, 0x70)) {
+		if (__IN(x->typ->form, 0x72)) {
 			sf = x->conval->intval;
 			if (sf < 0 || sf > 1) {
 				OfrontOPP_err(220);
@@ -268,7 +270,7 @@ static void OfrontOPP_ArrayType (OfrontOPT_Struct *typ, OfrontOPT_Struct *banned
 		*typ = OfrontOPT_NewStr(15, 2);
 		(*typ)->sysflag = sysflag;
 		OfrontOPP_ConstExpression(&x);
-		if (__IN(x->typ->form, 0x70)) {
+		if (__IN(x->typ->form, 0x72)) {
 			n = x->conval->intval;
 			if (n <= 0 || n > (LONGINT)OfrontOPM_MaxIndex) {
 				OfrontOPP_err(63);
@@ -625,7 +627,7 @@ static void OfrontOPP_StandProcCall (OfrontOPT_Node *x)
 	OfrontOPT_Node y = NIL;
 	SHORTINT m;
 	INTEGER n;
-	m = (INTEGER)(*x)->obj->adr;
+	m = (SHORTINT)(*x)->obj->adr;
 	n = 0;
 	if (OfrontOPP_sym == 30) {
 		OfrontOPS_Get(&OfrontOPP_sym);
@@ -1167,24 +1169,20 @@ static void OfrontOPP_CaseLabelList (OfrontOPT_Node *lab, INTEGER LabelForm, INT
 	for (;;) {
 		OfrontOPP_ConstExpression(&x);
 		f = x->typ->form;
-		if (__IN(f, 0x78)) {
+		if (__IN(f, 0x7a)) {
 			xval = x->conval->intval;
 		} else {
 			OfrontOPP_err(61);
 			xval = 1;
 		}
-		if (__IN(f, 0x70)) {
-			if (LabelForm < f) {
-				OfrontOPP_err(60);
-			}
-		} else if (LabelForm != f) {
+		if (__IN(f, 0x72) != __IN(LabelForm, 0x72)) {
 			OfrontOPP_err(60);
 		}
 		if (OfrontOPP_sym == 21) {
 			OfrontOPS_Get(&OfrontOPP_sym);
 			OfrontOPP_ConstExpression(&y);
 			yval = y->conval->intval;
-			if ((INTEGER)y->typ->form != f && !(__IN(f, 0x70) && __IN(y->typ->form, 0x70))) {
+			if ((INTEGER)y->typ->form != f && !(__IN(f, 0x72) && __IN(y->typ->form, 0x72))) {
 				OfrontOPP_err(60);
 			}
 			if (yval < xval) {
@@ -1432,7 +1430,7 @@ static void OfrontOPP_StatSeq (OfrontOPT_Node *stat)
 			OfrontOPS_Get(&OfrontOPP_sym);
 			if (OfrontOPP_sym == 38) {
 				OfrontOPP_qualident(&id);
-				if (!__IN(id->typ->form, 0x70)) {
+				if (!__IN(id->typ->form, 0x72)) {
 					OfrontOPP_err(68);
 				}
 				OfrontOPP_CheckSym(34);
@@ -1464,7 +1462,7 @@ static void OfrontOPP_StatSeq (OfrontOPT_Node *stat)
 					SetPos__35(z);
 					OfrontOPB_Link(&*stat, &last, z);
 					y = OfrontOPB_NewLeaf(t);
-				} else if (y->typ->form < 4 || y->typ->form > x->left->typ->form) {
+				} else if (__IN(y->typ->form, 0x0d) || y->typ->form > x->left->typ->form) {
 					OfrontOPP_err(113);
 				}
 				OfrontOPB_Link(&*stat, &last, x);
@@ -1842,6 +1840,7 @@ void OfrontOPP_Module (OfrontOPT_Node *prog, SET opt)
 	OfrontOPP_lastTDinit = NIL;
 }
 
+/*----------------------------------------------------------------------------*/
 static void EnumPtrs(void (*P)(void*))
 {
 	P(OfrontOPP_TDinit);
