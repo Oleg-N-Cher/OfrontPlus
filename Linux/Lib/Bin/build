@@ -8,14 +8,20 @@ rm ../Sym/*.sym
 ## Ofront+
 ../Bin/compile $Lib SYSTEM
 ../Bin/compile $Lib Platform.Unix
-../Bin/compile $Lib Heap
+#../Bin/compile $Lib Heap
+../../Bin/ofront+ -s ../../../Lib/Obj/Heap0.Mod
+gcc -c -I ../C Heap.c
+ar -rc $Lib Heap.o
+rm ../Sym/Heap.sym
+mv Heap.sym ../Sym
+#
 ../Bin/compile $Lib Args
 ../Bin/compile $Lib Console
 ../Bin/compile $Lib Strings
 ../Bin/compile $Lib Files
 ../Bin/compile $Lib Reals
-../Bin/compile $Lib Modules.Unix
-../Bin/compile $Lib CmdlnTexts
+../Bin/compile $Lib Modules
+../Bin/compile $Lib Texts
 
 ## OOC2
 ../Bin/compile $Lib ooc2Ascii

@@ -3,6 +3,12 @@ IMPORT SYSTEM;
 
 
 CONST
+  pathDelimiter* = "/";
+  pathSeparator* = ":";
+
+  Unix*    = TRUE;
+  Windows* = FALSE;
+  
   StdIn-  = 0;
   StdOut- = 1;
   StdErr- = 2;
@@ -54,7 +60,7 @@ VAR
   SeekCur-:        INTEGER;
   SeekEnd-:        INTEGER;
 
-  nl-:  ARRAY 2 OF CHAR;  (* Platform specific newline representation *)
+  newLine-:  ARRAY 2 OF CHAR;  (* Platform specific newline representation *)
 
 
 (* Some unsigned arithmetic *)
@@ -63,11 +69,15 @@ PROCEDURE -UBYTE*(b: BYTE): SHORTINT "((SHORTINT)(unsigned char)(b))";
 PROCEDURE -USHORT*(s: SHORTINT): INTEGER "((INTEGER)(unsigned short)(s))";
 PROCEDURE -UINT*(i: INTEGER): LONGINT "((LONGINT)(unsigned int)(i))";
 
+PROCEDURE -ToBYTE*(s: SHORTINT): BYTE "((BYTE)(s))";
+PROCEDURE -ToSHORT*(i: INTEGER): SHORTINT "((SHORTINT)(i))";
+PROCEDURE -ToINT*(l: LONGINT): INTEGER "((INTEGER)(l))";
+
 
 (* Unix headers to be included *)
 
-(*PROCEDURE -AAincludeSystime  "#include <sys/time.h>";  (* for gettimeofday *)*)
-PROCEDURE -AAincludeTime     "#include <time.h>";      (* for localtime *)
+PROCEDURE -AAincludeSystime  "#include <sys/time.h>";  (* for gettimeofday() *)
+PROCEDURE -AAincludeTime     "#include <time.h>";      (* for localtime() *)
 PROCEDURE -AAincludeSystypes "#include <sys/types.h>";
 PROCEDURE -AAincludeUnistd   "#include <unistd.h>";
 PROCEDURE -AAincludeSysstat  "#include <sys/stat.h>";
@@ -118,10 +128,11 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
+PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)malloc((size_t)(size)))";
+
 PROCEDURE ^ Halt*(code: INTEGER);
 
-PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)malloc((size_t)(size)))";
-PROCEDURE OSAllocate*(size: INTEGER): MemAdr;
+PROCEDURE OSAllocate*(size: INTEGER): MemAdr; (* 2 Gb will be sufficient *)
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* malloc will return the null pointer when it fails. *)
@@ -129,7 +140,7 @@ BEGIN
   Halt(-25); RETURN NIL (* To remove __RETCHK *)
 END OSAllocate;
 
-PROCEDURE -free(address: MemAdr) "free((void*)address)";
+PROCEDURE -free(address: MemAdr) "free((void*)(address))";
 PROCEDURE OSFree*(address: MemAdr); BEGIN free(address) END OSFree;
 
 
@@ -233,8 +244,8 @@ BEGIN sethandler(4, handler); END SetBadInstructionHandler;
    until year 2100+. You should use the time_t type instead, and you won't need
    to think about how long your program is supposed to run for in the future.
 *)
-PROCEDURE -gettimeval          "struct timeval tv; gettimeofday(&tv,0)";
-PROCEDURE -tvsec():  TIME_T    "(Platform_TIME_T)tv.tv_sec";
+PROCEDURE -gettimeval          "struct timeval tv; gettimeofday(&tv, 0)";
+PROCEDURE -tvsec():  TIME_T    "tv.tv_sec";
 PROCEDURE -tvusec(): INTEGER   "(INTEGER)tv.tv_usec";
 PROCEDURE -sectotm(s: TIME_T)  "struct tm *time = localtime((time_t*)&s)";
 PROCEDURE -tmsec():  INTEGER   "time->tm_sec";
@@ -262,7 +273,7 @@ PROCEDURE Time*(): INTEGER;
 VAR ms: INTEGER;
 BEGIN
   gettimeval;
-  ms := (tvusec() DIV 1000) + (timeint(tvsec()) * 1000);
+  ms := tvusec() DIV 1000 + timeint(tvsec()) * 1000;
   RETURN (ms - TimeStart) MOD 7FFFFFFFH
 END Time;
 
@@ -302,6 +313,7 @@ PROCEDURE -InvalidHandleValue*(): FileHandle "(-1)";
 PROCEDURE -openrw (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDWR)";
 PROCEDURE -openro (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDONLY)";
 PROCEDURE -opennew(n: ARRAY OF CHAR): INTEGER "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
+
 
 (* File APIs *)
 
@@ -383,17 +395,17 @@ BEGIN
 END MTimeAsClock;
 
 
-PROCEDURE Size*(h: FileHandle; VAR l: LONGINT): ErrorCode;
+PROCEDURE Size*(h: FileHandle; VAR len: LONGINT): ErrorCode;
 BEGIN
   structstats;
   IF fstat(h) < 0 THEN RETURN err() END;
-  l := statsize();
+  len := statsize();
   RETURN 0
 END Size;
 
 
-PROCEDURE -readfile (fd: INTEGER; p: MemAdr; l: INTEGER): INTEGER
-"read(fd, (void*)(SYSTEM_ADR)(p), l)";
+PROCEDURE -readfile (fd: FileHandle; p: MemAdr; l: INTEGER): INTEGER
+"read(fd, (void*)(p), l)";
 
 PROCEDURE Read*(h: FileHandle; p: MemAdr; l: INTEGER; VAR n: INTEGER): ErrorCode;
 BEGIN
@@ -408,11 +420,10 @@ BEGIN
 END ReadBuf;
 
 
+PROCEDURE -writefile(fd: FileHandle; p: MemAdr; l: INTEGER): INTEGER
+"write(fd, (void*)(p), l)";
 
-PROCEDURE -writefile(fd: INTEGER; p: INTEGER; l: INTEGER): INTEGER
-"write(fd, (void*)(SYSTEM_ADR)(p), l)";
-
-PROCEDURE Write*(h: FileHandle; p: INTEGER; l: INTEGER): ErrorCode;
+PROCEDURE Write*(h: FileHandle; p: MemAdr; l: INTEGER): ErrorCode;
   VAR written: INTEGER;
 BEGIN
   written := writefile(h, p, l);
@@ -420,8 +431,7 @@ BEGIN
 END Write;
 
 
-
-PROCEDURE -fsync(fd: INTEGER): SHORTINT "fsync(fd)";
+PROCEDURE -fsync(fd: FileHandle): INTEGER "fsync(fd)";
 
 PROCEDURE Sync*(h: FileHandle): ErrorCode;
 BEGIN
@@ -429,20 +439,18 @@ BEGIN
 END Sync;
 
 
+PROCEDURE -lseek(fd: FileHandle; offset: LONGINT; whence: INTEGER): INTEGER "lseek(fd, offset, whence)";
+PROCEDURE -seekset(): INTEGER "SEEK_SET";
+PROCEDURE -seekcur(): INTEGER "SEEK_CUR";
+PROCEDURE -seekend(): INTEGER "SEEK_END";
 
-PROCEDURE -lseek(fd: INTEGER; o: INTEGER; w: SHORTINT): SHORTINT "lseek(fd, o, w)";
-PROCEDURE -seekset(): SHORTINT "SEEK_SET";
-PROCEDURE -seekcur(): SHORTINT "SEEK_CUR";
-PROCEDURE -seekend(): SHORTINT "SEEK_END";
-
-PROCEDURE Seek*(h: FileHandle; offset: INTEGER; whence: SHORTINT): ErrorCode;
+PROCEDURE Seek*(h: FileHandle; offset: LONGINT; whence: INTEGER): ErrorCode;
 BEGIN
   IF lseek(h, offset, whence) < 0 THEN RETURN err() ELSE RETURN 0 END
 END Seek;
 
 
-
-PROCEDURE -ftruncate(fd: INTEGER; l: INTEGER): SHORTINT "ftruncate(fd, l)";
+PROCEDURE -ftruncate(fd: FileHandle; l: INTEGER): INTEGER "ftruncate(fd, l)";
 
 PROCEDURE Truncate*(h: FileHandle; l: INTEGER): ErrorCode;
 BEGIN
@@ -450,8 +458,7 @@ BEGIN
 END Truncate;
 
 
-
-PROCEDURE -unlink(n: ARRAY OF CHAR): SHORTINT "unlink((char*)n)";
+PROCEDURE -unlink(n: ARRAY OF CHAR): INTEGER "unlink((char*)n)";
 
 PROCEDURE Unlink*(VAR n: ARRAY OF CHAR): ErrorCode;
 BEGIN
@@ -459,39 +466,35 @@ BEGIN
 END Unlink;
 
 
-
-PROCEDURE -chdir(n: ARRAY OF CHAR): SHORTINT "chdir((char*)n)";
+PROCEDURE -chdir(n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
 PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "getcwd((char*)cwd, cwd__len)";
 
 PROCEDURE Chdir*(VAR n: ARRAY OF CHAR): ErrorCode;
-  VAR r: SHORTINT;
+  VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
   IF r < 0 THEN RETURN err() ELSE RETURN 0 END
 END Chdir;
 
 
+PROCEDURE -rename(o,n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
 
-PROCEDURE -rename(o,n: ARRAY OF CHAR): SHORTINT "rename((char*)o, (char*)n)";
-
-PROCEDURE Rename*(VAR o,n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE Rename*(VAR o, n: ARRAY OF CHAR): ErrorCode;
 BEGIN
-  IF rename(o,n) < 0 THEN RETURN err() ELSE RETURN 0 END
+  IF rename(o, n) < 0 THEN RETURN err() ELSE RETURN 0 END
 END Rename;
-
-
 
 
 (* Process termination *)
 
-PROCEDURE -exit(code: SHORTINT) "exit(code)";
-PROCEDURE Exit*(code: SHORTINT);
+PROCEDURE -exit(code: INTEGER) "exit(code)";
+PROCEDURE Exit*(code: INTEGER);
 BEGIN exit(code) END Exit;
 
 PROCEDURE -errstring(s: ARRAY OF CHAR) "write(1, s, s__len-1)";
 PROCEDURE -errc     (c: CHAR)          "write(1, &c, 1)";
 PROCEDURE errch(c: CHAR); BEGIN errc(c) END errch;
-PROCEDURE errln; BEGIN errch(0DX); errch(0AX) END errln;
+PROCEDURE errln; BEGIN errch(0AX) END errln;
 
 PROCEDURE errposint(l: INTEGER);
 BEGIN IF l>10 THEN errposint(l DIV 10) END; errch(CHR(ORD("0") + (l MOD 10))) END errposint;
@@ -531,7 +534,7 @@ BEGIN
   errstring("Terminated by Halt("); errint(code); errstring("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
   errln;
-  exit(SYSTEM.VAL(SHORTINT,code));
+  exit(code)
 END Halt;
 
 PROCEDURE AssertFail*(code: INTEGER);
@@ -540,14 +543,11 @@ BEGIN
   errstring("Assertion failure.");
   IF code # 0 THEN errstring(" ASSERT code "); errint(code); errstring("."); END;
   errln;
-  exit(SYSTEM.VAL(SHORTINT,code));
+  exit(code)
 END AssertFail;
 
 PROCEDURE SetHalt*(p: HaltProcedure);
 BEGIN HaltHandler := p; END SetHalt;
-
-
-
 
 
 PROCEDURE TestLittleEndian;
@@ -570,7 +570,5 @@ BEGIN
   SeekCur := seekcur();
   SeekEnd := seekend();
 
-  nl[0] := 0AX; (* LF *)
-  nl[1] := 0X;
+  newLine[0] := 0AX; newLine[1] := 0X; (* LF *)
 END Platform.
-

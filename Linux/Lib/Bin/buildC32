@@ -7,15 +7,15 @@ rm ../Sym/*.sym
 
 ## Ofront+
 ../Bin/compileC32 $Lib SYSTEM
-../Bin/compileC32 $Lib Platform.Unix
+../Bin/compileC32 $Lib Platform
 ../Bin/compileC32 $Lib Heap
 ../Bin/compileC32 $Lib Args
 ../Bin/compileC32 $Lib Console
 ../Bin/compileC32 $Lib Strings
 ../Bin/compileC32 $Lib Files
 ../Bin/compileC32 $Lib Reals
-../Bin/compileC32 $Lib Modules.Unix
-../Bin/compileC32 $Lib CmdlnTexts
+../Bin/compileC32 $Lib Modules
+../Bin/compileC32 $Lib Texts
 
 ## OOC2
 ../Bin/compileC32 $Lib ooc2Ascii
