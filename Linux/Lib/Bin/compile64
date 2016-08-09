@@ -1,5 +1,5 @@
 #!/bin/bash
-export OBERON=.:../C:../Sym64
+export OBERON=.:../Sym64
 
 mod=$2
 if [ "$2" == "Platform.Unix" ]; then mod="Platform"; fi
