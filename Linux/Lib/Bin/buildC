@@ -14,8 +14,8 @@ rm ../Sym64/*.sym
 ../Bin/compileC $Lib Strings
 ../Bin/compileC $Lib Files
 ../Bin/compileC $Lib Reals
-../Bin/compileC $Lib Modules.Unix
-../Bin/compileC $Lib CmdlnTexts
+../Bin/compileC $Lib Modules
+../Bin/compileC $Lib Texts
 
 ## OOC2
 ../Bin/compileC $Lib ooc2Ascii
