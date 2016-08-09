@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 
 #ifndef OfrontOPM__h
 #define OfrontOPM__h
@@ -6,12 +6,15 @@
 #include "SYSTEM.h"
 
 
-import INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet;
-import LONGINT OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MinLInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt, OfrontOPM_MaxLInt, OfrontOPM_MaxIndex;
+import INTEGER OfrontOPM_ByteSize, OfrontOPM_CharSize, OfrontOPM_BoolSize, OfrontOPM_SIntSize, OfrontOPM_IntSize, OfrontOPM_LIntSize, OfrontOPM_SetSize, OfrontOPM_RealSize, OfrontOPM_LRealSize, OfrontOPM_PointerSize, OfrontOPM_ProcSize, OfrontOPM_RecSize, OfrontOPM_ArrLenSize, OfrontOPM_CharAlign, OfrontOPM_BoolAlign, OfrontOPM_SIntAlign, OfrontOPM_IntAlign, OfrontOPM_LIntAlign, OfrontOPM_SetAlign, OfrontOPM_RealAlign, OfrontOPM_LRealAlign, OfrontOPM_PointerAlign, OfrontOPM_ProcAlign, OfrontOPM_RecAlign, OfrontOPM_ByteOrder, OfrontOPM_BitOrder, OfrontOPM_MaxSet, OfrontOPM_MinSInt, OfrontOPM_MinInt, OfrontOPM_MaxSInt, OfrontOPM_MaxInt, OfrontOPM_MaxIndex;
+import LONGINT OfrontOPM_MinLInt, OfrontOPM_MaxLInt;
 import LONGREAL OfrontOPM_MinReal, OfrontOPM_MaxReal, OfrontOPM_MinLReal, OfrontOPM_MaxLReal;
 import BOOLEAN OfrontOPM_noerr;
-import LONGINT OfrontOPM_curpos, OfrontOPM_errpos, OfrontOPM_breakpc;
-import INTEGER OfrontOPM_currFile, OfrontOPM_level, OfrontOPM_pc, OfrontOPM_entno;
+import INTEGER OfrontOPM_curpos;
+import LONGINT OfrontOPM_errpos;
+import INTEGER OfrontOPM_breakpc;
+import INTEGER OfrontOPM_currFile, OfrontOPM_level;
+import INTEGER OfrontOPM_pc, OfrontOPM_entno;
 import CHAR OfrontOPM_modName[32];
 import CHAR OfrontOPM_objname[64];
 import SET OfrontOPM_opt, OfrontOPM_glbopt;
@@ -29,12 +32,12 @@ import void OfrontOPM_Init (BOOLEAN *done);
 import void OfrontOPM_InitOptions (void);
 import void OfrontOPM_LogW (CHAR ch);
 import void OfrontOPM_LogWLn (void);
-import void OfrontOPM_LogWNum (LONGINT i, LONGINT len);
-import void OfrontOPM_LogWStr (CHAR *s, LONGINT s__len);
-import void OfrontOPM_Mark (INTEGER n, LONGINT pos);
-import void OfrontOPM_NewSym (CHAR *modName, LONGINT modName__len);
-import void OfrontOPM_OldSym (CHAR *modName, LONGINT modName__len, BOOLEAN *done);
-import void OfrontOPM_OpenFiles (CHAR *moduleName, LONGINT moduleName__len);
+import void OfrontOPM_LogWNum (INTEGER i, INTEGER len);
+import void OfrontOPM_LogWStr (CHAR *s, INTEGER s__len);
+import void OfrontOPM_Mark (INTEGER n, LONGINT pos1);
+import void OfrontOPM_NewSym (CHAR *modName, INTEGER modName__len);
+import void OfrontOPM_OldSym (CHAR *modName, INTEGER modName__len, BOOLEAN *done);
+import void OfrontOPM_OpenFiles (CHAR *moduleName, INTEGER moduleName__len);
 import void OfrontOPM_OpenPar (void);
 import void OfrontOPM_PromoteIntConstToLInt (void);
 import void OfrontOPM_RegisterNewSym (void);
@@ -53,8 +56,8 @@ import void OfrontOPM_WriteHex (LONGINT i);
 import void OfrontOPM_WriteInt (LONGINT i);
 import void OfrontOPM_WriteLn (void);
 import void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx);
-import void OfrontOPM_WriteString (CHAR *s, LONGINT s__len);
-import void OfrontOPM_WriteStringVar (CHAR *s, LONGINT s__len);
+import void OfrontOPM_WriteString (CHAR *s, INTEGER s__len);
+import void OfrontOPM_WriteStringVar (CHAR *s, INTEGER s__len);
 import BOOLEAN OfrontOPM_eofSF (void);
 import void OfrontOPM_err (INTEGER n);
 import void *OfrontOPM__init(void);

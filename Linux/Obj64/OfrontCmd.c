@@ -1,38 +1,23 @@
-/* Ofront 1.2 -xtspkaeml */
+/* Ofront+ 0.9 -xtspkaem */
 #include "SYSTEM.h"
-#include "Kernel.h"
+#include "Heap.h"
 #include "OfrontOPB.h"
 #include "OfrontOPC.h"
 #include "OfrontOPM.h"
 #include "OfrontOPP.h"
 #include "OfrontOPT.h"
 #include "OfrontOPV.h"
-#include "Unix.h"
+#include "Platform.h"
 
 
 
 
 export void OfrontCmd_Module (BOOLEAN *done);
 export void OfrontCmd_Translate (void);
-static void OfrontCmd_Trap (LONGINT sig, LONGINT code, Unix_SigCtxPtr scp);
+static void OfrontCmd_Trap (INTEGER sig);
 
-#define OfrontCmd_fin()	SYSTEM_FINALL()
-#define OfrontCmd_halt()	SYSTEM_halt
-#define OfrontCmd_signal(sig, func)	signal(sig, func)
 
-static void OfrontCmd_Trap (LONGINT sig, LONGINT code, Unix_SigCtxPtr scp)
-{
-	OfrontCmd_fin();
-	if (sig == 3) {
-		Unix_Exit(0);
-	} else {
-		if (sig == 4 && OfrontCmd_halt() == -15) {
-			OfrontOPM_LogWStr((CHAR*)" --- ofront: internal error", (LONGINT)28);
-			OfrontOPM_LogWLn();
-		}
-		Unix_Exit(2);
-	}
-}
+/*============================================================================*/
 
 void OfrontCmd_Module (BOOLEAN *done)
 {
@@ -50,13 +35,13 @@ void OfrontCmd_Module (BOOLEAN *done)
 			if (OfrontOPM_noerr) {
 				if (__IN(10, OfrontOPM_opt) && __STRCMP(OfrontOPM_modName, "SYSTEM") != 0) {
 					OfrontOPM_DeleteNewSym();
-					OfrontOPM_LogWStr((CHAR*)"  main program", (LONGINT)15);
+					OfrontOPM_LogWStr((CHAR*)"  main program", 15);
 				} else {
 					if (new) {
-						OfrontOPM_LogWStr((CHAR*)"  new symbol file", (LONGINT)18);
+						OfrontOPM_LogWStr((CHAR*)"  new symbol file", 18);
 						OfrontOPM_RegisterNewSym();
 					} else if (ext) {
-						OfrontOPM_LogWStr((CHAR*)"  extended symbol file", (LONGINT)23);
+						OfrontOPM_LogWStr((CHAR*)"  extended symbol file", 23);
 						OfrontOPM_RegisterNewSym();
 					}
 				}
@@ -71,6 +56,7 @@ void OfrontCmd_Module (BOOLEAN *done)
 	*done = OfrontOPM_noerr;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontCmd_Translate (void)
 {
 	BOOLEAN done;
@@ -91,32 +77,47 @@ void OfrontCmd_Translate (void)
 			break;
 		}
 		OfrontOPM_InitOptions();
-		Kernel_GC(0);
+//		Heap_GC(0);
 		OfrontCmd_Module(&done);
 		if (!done) {
-			Unix_Exit(1);
+			Platform_Exit(1);
 		}
 	}
 }
 
+/*----------------------------------------------------------------------------*/
+static void OfrontCmd_Trap (INTEGER sig)
+{
+	Heap_FINALL();
+	if (sig == 3) {
+		Platform_Exit(0);
+	} else {
+		if (sig == 4 && Platform_HaltCode == -15) {
+			OfrontOPM_LogWStr((CHAR*)" --- Ofront+: internal error", 29);
+			OfrontOPM_LogWLn();
+		}
+		Platform_Exit(2);
+	}
+}
 
-export main(int argc, char **argv)
+
+int main(int argc, char **argv)
 {
 	__INIT(argc, argv);
-	__IMPORT(Kernel__init);
+	__IMPORT(Heap__init);
 	__IMPORT(OfrontOPB__init);
 	__IMPORT(OfrontOPC__init);
 	__IMPORT(OfrontOPM__init);
 	__IMPORT(OfrontOPP__init);
 	__IMPORT(OfrontOPT__init);
 	__IMPORT(OfrontOPV__init);
-	__IMPORT(Unix__init);
+	__IMPORT(Platform__init);
 	__REGMAIN("OfrontCmd", 0);
 	__REGCMD("Translate", OfrontCmd_Translate);
 /* BEGIN */
-	OfrontCmd_signal(2, OfrontCmd_Trap);
-	OfrontCmd_signal(3, OfrontCmd_Trap);
-	OfrontCmd_signal(4, OfrontCmd_Trap);
+	Platform_SetInterruptHandler(OfrontCmd_Trap);
+	Platform_SetQuitHandler(OfrontCmd_Trap);
+	Platform_SetBadInstructionHandler(OfrontCmd_Trap);
 	OfrontOPB_typSize = OfrontOPV_TypSize;
 	OfrontOPT_typSize = OfrontOPV_TypSize;
 	OfrontCmd_Translate();

@@ -1,4 +1,4 @@
-/* Ofront 1.2 -xtspkael */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPS.h"
@@ -108,7 +108,7 @@ static void OfrontOPT_EnterProc (OfrontOPS_Name name, INTEGER num);
 static void OfrontOPT_EnterTyp (OfrontOPS_Name name, SHORTINT form, INTEGER size, OfrontOPT_Struct *res);
 export void OfrontOPT_Export (BOOLEAN *ext, BOOLEAN *new);
 export void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno);
-static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len);
+static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, INTEGER name__len);
 export void OfrontOPT_FPrintObj (OfrontOPT_Object obj);
 static void OfrontOPT_FPrintSign (LONGINT *fp, OfrontOPT_Struct result, OfrontOPT_Object par);
 export void OfrontOPT_FPrintStr (OfrontOPT_Struct typ);
@@ -120,7 +120,7 @@ export void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOO
 static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval);
 static OfrontOPT_Object OfrontOPT_InFld (void);
 static void OfrontOPT_InMod (SHORTINT *mno);
-static void OfrontOPT_InName (CHAR *name, LONGINT name__len);
+static void OfrontOPT_InName (CHAR *name, INTEGER name__len);
 static OfrontOPT_Object OfrontOPT_InObj (SHORTINT mno);
 static void OfrontOPT_InSign (SHORTINT mno, OfrontOPT_Struct *res, OfrontOPT_Object *par);
 static void OfrontOPT_InStruct (OfrontOPT_Struct *typ);
@@ -139,13 +139,15 @@ static void OfrontOPT_OutConstant (OfrontOPT_Object obj);
 static void OfrontOPT_OutFlds (OfrontOPT_Object fld, LONGINT adr, BOOLEAN visible);
 static void OfrontOPT_OutHdFld (OfrontOPT_Struct typ, OfrontOPT_Object fld, LONGINT adr);
 static void OfrontOPT_OutMod (INTEGER mno);
-static void OfrontOPT_OutName (CHAR *name, LONGINT name__len);
+static void OfrontOPT_OutName (CHAR *name, INTEGER name__len);
 static void OfrontOPT_OutObj (OfrontOPT_Object obj);
 static void OfrontOPT_OutSign (OfrontOPT_Struct result, OfrontOPT_Object par);
 static void OfrontOPT_OutStr (OfrontOPT_Struct typ);
 static void OfrontOPT_OutTProcs (OfrontOPT_Struct typ, OfrontOPT_Object obj);
 static void OfrontOPT_err (INTEGER n);
 
+
+/*============================================================================*/
 
 static void OfrontOPT_err (INTEGER n)
 {
@@ -159,6 +161,7 @@ OfrontOPT_Const OfrontOPT_NewConst (void)
 	return const_;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_Object OfrontOPT_NewObj (void)
 {
 	OfrontOPT_Object obj = NIL;
@@ -166,6 +169,7 @@ OfrontOPT_Object OfrontOPT_NewObj (void)
 	return obj;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_Struct OfrontOPT_NewStr (SHORTINT form, SHORTINT comp)
 {
 	OfrontOPT_Struct typ = NIL;
@@ -181,6 +185,7 @@ OfrontOPT_Struct OfrontOPT_NewStr (SHORTINT form, SHORTINT comp)
 	return typ;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_Node OfrontOPT_NewNode (SHORTINT class)
 {
 	OfrontOPT_Node node = NIL;
@@ -189,6 +194,7 @@ OfrontOPT_Node OfrontOPT_NewNode (SHORTINT class)
 	return node;
 }
 
+/*----------------------------------------------------------------------------*/
 OfrontOPT_ConstExt OfrontOPT_NewExt (void)
 {
 	OfrontOPT_ConstExt ext = NIL;
@@ -196,6 +202,7 @@ OfrontOPT_ConstExt OfrontOPT_NewExt (void)
 	return ext;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_OpenScope (SHORTINT level, OfrontOPT_Object owner)
 {
 	OfrontOPT_Object head = NIL;
@@ -212,11 +219,13 @@ void OfrontOPT_OpenScope (SHORTINT level, OfrontOPT_Object owner)
 	OfrontOPT_topScope = head;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_CloseScope (void)
 {
 	OfrontOPT_topScope = OfrontOPT_topScope->left;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Init (OfrontOPS_Name name, SET opt)
 {
 	OfrontOPT_topScope = OfrontOPT_universe;
@@ -232,6 +241,7 @@ void OfrontOPT_Init (OfrontOPS_Name name, SET opt)
 	OfrontOPT_sfpresent = 1;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Close (void)
 {
 	INTEGER i;
@@ -249,6 +259,7 @@ void OfrontOPT_Close (void)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FindImport (OfrontOPT_Object mod, OfrontOPT_Object *res)
 {
 	OfrontOPT_Object obj = NIL;
@@ -273,6 +284,7 @@ void OfrontOPT_FindImport (OfrontOPT_Object mod, OfrontOPT_Object *res)
 	*res = obj;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Find (OfrontOPT_Object *res)
 {
 	OfrontOPT_Object obj = NIL, head = NIL;
@@ -302,6 +314,7 @@ void OfrontOPT_Find (OfrontOPT_Object *res)
 	*res = obj;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FindField (OfrontOPS_Name name, OfrontOPT_Struct typ, OfrontOPT_Object *res)
 {
 	OfrontOPT_Object obj = NIL;
@@ -322,6 +335,7 @@ void OfrontOPT_FindField (OfrontOPS_Name name, OfrontOPT_Struct typ, OfrontOPT_O
 	*res = NIL;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_Insert (OfrontOPS_Name name, OfrontOPT_Object *obj)
 {
 	OfrontOPT_Object ob0 = NIL, ob1 = NIL;
@@ -364,14 +378,15 @@ void OfrontOPT_Insert (OfrontOPS_Name name, OfrontOPT_Object *obj)
 	*obj = ob1;
 }
 
-static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+static void OfrontOPT_FPrintName (LONGINT *fp, CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
 	i = 0;
 	do {
 		ch = name[__X(i, name__len)];
-		OfrontOPM_FPrint(&*fp, (int)ch);
+		OfrontOPM_FPrint(&*fp, (SHORTINT)ch);
 		i += 1;
 	} while (!(ch == 0x00));
 }
@@ -421,6 +436,7 @@ void OfrontOPT_IdFPrint (OfrontOPT_Struct typ)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 static struct FPrintStr__11 {
 	LONGINT *pbfp, *pvfp;
 	struct FPrintStr__11 *lnk;
@@ -486,7 +502,7 @@ static void FPrintTProcs__16 (OfrontOPT_Object obj)
 		if (obj->mode == 13) {
 			if (obj->vis != 0) {
 				OfrontOPM_FPrint(&*FPrintStr__11_s->pbfp, 13);
-				OfrontOPM_FPrint(&*FPrintStr__11_s->pbfp, __ASHR(obj->adr, 16));
+				OfrontOPM_FPrint(&*FPrintStr__11_s->pbfp, __ASHR(obj->adr, 16, LONGINT));
 				OfrontOPT_FPrintSign(&*FPrintStr__11_s->pbfp, obj->typ, obj->link);
 				OfrontOPT_FPrintName(&*FPrintStr__11_s->pbfp, (void*)obj->name, 32);
 			}
@@ -559,6 +575,7 @@ void OfrontOPT_FPrintStr (OfrontOPT_Struct typ)
 	FPrintStr__11_s = _s.lnk;
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 {
 	LONGINT fprint;
@@ -573,7 +590,8 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 			f = obj->typ->form;
 			OfrontOPM_FPrint(&fprint, f);
 			switch (f) {
-				case 2: case 3: case 4: case 5: case 6: 
+				case 1: case 2: case 3: case 4: case 5: 
+				case 6: 
 					OfrontOPM_FPrint(&fprint, obj->conval->intval);
 					break;
 				case 9: 
@@ -604,11 +622,11 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 		} else if (obj->mode == 9) {
 			OfrontOPT_FPrintSign(&fprint, obj->typ, obj->link);
 			ext = obj->conval->ext;
-			m = (int)(*ext)[0];
+			m = (SHORTINT)(*ext)[0];
 			f = 1;
 			OfrontOPM_FPrint(&fprint, m);
 			while (f <= m) {
-				OfrontOPM_FPrint(&fprint, (int)(*ext)[__X(f, 256)]);
+				OfrontOPM_FPrint(&fprint, (SHORTINT)(*ext)[__X(f, 256)]);
 				f += 1;
 			}
 		} else if (obj->mode == 5) {
@@ -619,6 +637,7 @@ void OfrontOPT_FPrintObj (OfrontOPT_Object obj)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno)
 {
 	INTEGER i, j;
@@ -658,6 +677,7 @@ void OfrontOPT_FPrintErr (OfrontOPT_Object obj, INTEGER errno)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 void OfrontOPT_InsertImport (OfrontOPT_Object obj, OfrontOPT_Object *root, OfrontOPT_Object *old)
 {
 	OfrontOPT_Object ob0 = NIL, ob1 = NIL;
@@ -709,7 +729,8 @@ void OfrontOPT_InsertImport (OfrontOPT_Object obj, OfrontOPT_Object *root, Ofron
 	}
 }
 
-static void OfrontOPT_InName (CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+static void OfrontOPT_InName (CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
@@ -770,11 +791,11 @@ static void OfrontOPT_InConstant (LONGINT f, OfrontOPT_Const conval)
 	OfrontOPT_ConstExt ext = NIL;
 	REAL rval;
 	switch (f) {
-		case 1: case 3: case 2: 
+		case 3: case 2: 
 			OfrontOPM_SymRCh(&ch);
-			conval->intval = (int)ch;
+			conval->intval = (SHORTINT)ch;
 			break;
-		case 4: case 5: case 6: 
+		case 1: case 4: case 5: case 6: 
 			conval->intval = OfrontOPM_SymRInt();
 			break;
 		case 9: 
@@ -880,14 +901,14 @@ static OfrontOPT_Object OfrontOPT_InTProc (SHORTINT mno)
 		OfrontOPT_InSign(mno, &obj->typ, &obj->link);
 		obj->vis = 1;
 		OfrontOPT_InName((void*)obj->name, 32);
-		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16);
+		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16, LONGINT);
 	} else {
 		obj->mode = 13;
 		__MOVE("@tproc", obj->name, 7);
 		obj->link = OfrontOPT_NewObj();
 		obj->typ = OfrontOPT_undftyp;
 		obj->vis = 0;
-		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16);
+		obj->adr = __ASHL(OfrontOPM_SymRInt(), 16, LONGINT);
 	}
 	return obj;
 }
@@ -952,7 +973,7 @@ static void OfrontOPT_InStruct (OfrontOPT_Struct *typ)
 		obj->vis = 0;
 		tag = OfrontOPM_SymRInt();
 		if (tag == 35) {
-			(*typ)->sysflag = (int)OfrontOPM_SymRInt();
+			(*typ)->sysflag = (INTEGER)OfrontOPM_SymRInt();
 			tag = OfrontOPM_SymRInt();
 		}
 		switch (tag) {
@@ -1109,7 +1130,7 @@ static OfrontOPT_Object OfrontOPT_InObj (SHORTINT mno)
 					obj->mode = 9;
 					ext = OfrontOPT_NewExt();
 					obj->conval->ext = ext;
-					s = (int)OfrontOPM_SymRInt();
+					s = (INTEGER)OfrontOPM_SymRInt();
 					(*ext)[0] = (CHAR)s;
 					i = 1;
 					while (i <= s) {
@@ -1172,7 +1193,7 @@ void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOOLEAN *d
 	OfrontOPT_Object obj = NIL;
 	SHORTINT mno;
 	OfrontOPS_Name aliasName__copy;
-	__DUPARR(aliasName, OfrontOPS_Name);
+	__DUPARR(aliasName);
 	if (__STRCMP(name, "SYSTEM") == 0) {
 		OfrontOPT_SYSimported = 1;
 		OfrontOPT_Insert(aliasName, &obj);
@@ -1211,7 +1232,8 @@ void OfrontOPT_Import (OfrontOPS_Name aliasName, OfrontOPS_Name name, BOOLEAN *d
 	}
 }
 
-static void OfrontOPT_OutName (CHAR *name, LONGINT name__len)
+/*----------------------------------------------------------------------------*/
+static void OfrontOPT_OutName (CHAR *name, INTEGER name__len)
 {
 	INTEGER i;
 	CHAR ch;
@@ -1308,7 +1330,7 @@ static void OfrontOPT_OutTProcs (OfrontOPT_Struct typ, OfrontOPT_Object obj)
 	if (obj != NIL) {
 		OfrontOPT_OutTProcs(typ, obj->left);
 		if (obj->mode == 13) {
-			if ((typ->BaseTyp != NIL && __ASHR(obj->adr, 16) < typ->BaseTyp->n) && obj->vis == 0) {
+			if ((typ->BaseTyp != NIL && __ASHR(obj->adr, 16, LONGINT) < typ->BaseTyp->n) && obj->vis == 0) {
 				OfrontOPM_Mark(109, typ->txtpos);
 			}
 			if (obj->vis != 0) {
@@ -1316,10 +1338,10 @@ static void OfrontOPT_OutTProcs (OfrontOPT_Struct typ, OfrontOPT_Object obj)
 					OfrontOPM_SymWInt(29);
 					OfrontOPT_OutSign(obj->typ, obj->link);
 					OfrontOPT_OutName((void*)obj->name, 32);
-					OfrontOPM_SymWInt(__ASHR(obj->adr, 16));
+					OfrontOPM_SymWInt(__ASHR(obj->adr, 16, LONGINT));
 				} else {
 					OfrontOPM_SymWInt(30);
-					OfrontOPM_SymWInt(__ASHR(obj->adr, 16));
+					OfrontOPM_SymWInt(__ASHR(obj->adr, 16, LONGINT));
 				}
 			}
 		}
@@ -1419,7 +1441,7 @@ static void OfrontOPT_OutConstant (OfrontOPT_Object obj)
 		case 2: case 3: 
 			OfrontOPM_SymWCh((CHAR)obj->conval->intval);
 			break;
-		case 4: case 5: case 6: 
+		case 1: case 4: case 5: case 6: 
 			OfrontOPM_SymWInt(obj->conval->intval);
 			break;
 		case 9: 
@@ -1508,7 +1530,7 @@ static void OfrontOPT_OutObj (OfrontOPT_Object obj)
 						OfrontOPM_SymWInt(33);
 						OfrontOPT_OutSign(obj->typ, obj->link);
 						ext = obj->conval->ext;
-						j = (int)(*ext)[0];
+						j = (SHORTINT)(*ext)[0];
 						i = 1;
 						OfrontOPM_SymWInt(j);
 						while (i <= j) {
@@ -1567,6 +1589,7 @@ void OfrontOPT_Export (BOOLEAN *ext, BOOLEAN *new)
 	}
 }
 
+/*----------------------------------------------------------------------------*/
 static void OfrontOPT_InitStruct (OfrontOPT_Struct *typ, SHORTINT form)
 {
 	*typ = OfrontOPT_NewStr(form, 1);
@@ -1585,7 +1608,7 @@ static void OfrontOPT_EnterBoolConst (OfrontOPS_Name name, LONGINT value)
 {
 	OfrontOPT_Object obj = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	obj->conval = OfrontOPT_NewConst();
 	obj->mode = 3;
@@ -1598,7 +1621,7 @@ static void OfrontOPT_EnterTyp (OfrontOPS_Name name, SHORTINT form, INTEGER size
 	OfrontOPT_Object obj = NIL;
 	OfrontOPT_Struct typ = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	typ = OfrontOPT_NewStr(form, 1);
 	obj->mode = 5;
@@ -1620,7 +1643,7 @@ static void OfrontOPT_EnterProc (OfrontOPS_Name name, INTEGER num)
 {
 	OfrontOPT_Object obj = NIL;
 	OfrontOPS_Name name__copy;
-	__DUPARR(name, OfrontOPS_Name);
+	__DUPARR(name);
 	OfrontOPT_Insert(name, &obj);
 	obj->mode = 8;
 	obj->typ = OfrontOPT_notyp;
@@ -1647,46 +1670,46 @@ static void EnumPtrs(void (*P)(void*))
 	__ENUMP(OfrontOPT_GlbMod, 64, P);
 	P(OfrontOPT_universe);
 	P(OfrontOPT_syslink);
-	__ENUMR(&OfrontOPT_impCtxt, OfrontOPT_ImpCtxt__typ, 3212, 1, P);
+	__ENUMR(&OfrontOPT_impCtxt, OfrontOPT_ImpCtxt__typ, 6280, 1, P);
 }
 
-__TDESC(OfrontOPT_ConstDesc__desc, 1, 1) = {__TDFLDS("ConstDesc", 24), {0, -8}};
-__TDESC(OfrontOPT_ObjDesc__desc, 1, 6) = {__TDFLDS("ObjDesc", 84), {0, 4, 8, 12, 64, 68, -28}};
-__TDESC(OfrontOPT_StrDesc__desc, 1, 3) = {__TDFLDS("StrDesc", 64), {52, 56, 60, -16}};
-__TDESC(OfrontOPT_NodeDesc__desc, 1, 6) = {__TDFLDS("NodeDesc", 32), {0, 4, 8, 20, 24, 28, -28}};
-__TDESC(OfrontOPT_ImpCtxt__desc, 1, 510) = {__TDFLDS("ImpCtxt", 3212), {24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 
-	88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 
-	152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 
-	216, 220, 224, 228, 232, 236, 240, 244, 248, 252, 256, 260, 264, 268, 272, 276, 
-	280, 284, 288, 292, 296, 300, 304, 308, 312, 316, 320, 324, 328, 332, 336, 340, 
-	344, 348, 352, 356, 360, 364, 368, 372, 376, 380, 384, 388, 392, 396, 400, 404, 
-	408, 412, 416, 420, 424, 428, 432, 436, 440, 444, 448, 452, 456, 460, 464, 468, 
-	472, 476, 480, 484, 488, 492, 496, 500, 504, 508, 512, 516, 520, 524, 528, 532, 
-	536, 540, 544, 548, 552, 556, 560, 564, 568, 572, 576, 580, 584, 588, 592, 596, 
-	600, 604, 608, 612, 616, 620, 624, 628, 632, 636, 640, 644, 648, 652, 656, 660, 
-	664, 668, 672, 676, 680, 684, 688, 692, 696, 700, 704, 708, 712, 716, 720, 724, 
-	728, 732, 736, 740, 744, 748, 752, 756, 760, 764, 768, 772, 776, 780, 784, 788, 
-	792, 796, 800, 804, 808, 812, 816, 820, 824, 828, 832, 836, 840, 844, 848, 852, 
-	856, 860, 864, 868, 872, 876, 880, 884, 888, 892, 896, 900, 904, 908, 912, 916, 
-	920, 924, 928, 932, 936, 940, 944, 948, 952, 956, 960, 964, 968, 972, 976, 980, 
-	984, 988, 992, 996, 1000, 1004, 1008, 1012, 1016, 1020, 1024, 1028, 1032, 1036, 1040, 1044, 
-	1048, 1052, 1056, 1060, 1064, 1068, 1072, 1076, 1080, 1084, 1088, 1092, 1096, 1100, 1104, 1108, 
-	1112, 1116, 1120, 1124, 1128, 1132, 1136, 1140, 1144, 1148, 1152, 1156, 1160, 1164, 1168, 1172, 
-	1176, 1180, 1184, 1188, 1192, 1196, 1200, 1204, 1208, 1212, 1216, 1220, 1224, 1228, 1232, 1236, 
-	1240, 1244, 1248, 1252, 1256, 1260, 1264, 1268, 1272, 1276, 1280, 1284, 1288, 1292, 1296, 1300, 
-	1304, 1308, 1312, 1316, 1320, 1324, 1328, 1332, 1336, 1340, 1344, 1348, 1352, 1356, 1360, 1364, 
-	1368, 1372, 1376, 1380, 1384, 1388, 1392, 1396, 1400, 1404, 1408, 1412, 1416, 1420, 1424, 1428, 
-	1432, 1436, 1440, 1444, 1448, 1452, 1456, 1460, 1464, 1468, 1472, 1476, 1480, 1484, 1488, 1492, 
-	1496, 1500, 1504, 1508, 1512, 1516, 1520, 1524, 1528, 1532, 1536, 1540, 1544, 1548, 1552, 1556, 
-	1560, 1564, 1568, 1572, 1576, 1580, 1584, 1588, 1592, 1596, 1600, 1604, 1608, 1612, 1616, 1620, 
-	1624, 1628, 1632, 1636, 1640, 1644, 1648, 1652, 1656, 1660, 1664, 1668, 1672, 1676, 1680, 1684, 
-	1688, 1692, 1696, 1700, 1704, 1708, 1712, 1716, 1720, 1724, 1728, 1732, 1736, 1740, 1744, 1748, 
-	1752, 1756, 1760, 1764, 1768, 1772, 1776, 1780, 1784, 1788, 1792, 1796, 1800, 1804, 1808, 1812, 
-	1816, 1820, 1824, 1828, 1832, 1836, 1840, 1844, 1848, 1852, 1856, 1860, 1864, 1868, 1872, 1876, 
-	1880, 1884, 1888, 1892, 1896, 1900, 1904, 1908, 1912, 1916, 1920, 1924, 1928, 1932, 1936, 1940, 
-	1944, 1948, 1952, 1956, 1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 
-	2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2044, 2048, 2052, 2056, 2060, -2044}};
-__TDESC(OfrontOPT_ExpCtxt__desc, 1, 0) = {__TDFLDS("ExpCtxt", 140), {-4}};
+__TDESC(OfrontOPT_ConstDesc__desc, 1, 1) = {__TDFLDS("ConstDesc", 40), {0, -16}};
+__TDESC(OfrontOPT_ObjDesc__desc, 1, 6) = {__TDFLDS("ObjDesc", 128), {0, 8, 16, 24, 88, 96, -56}};
+__TDESC(OfrontOPT_StrDesc__desc, 1, 3) = {__TDFLDS("StrDesc", 104), {80, 88, 96, -32}};
+__TDESC(OfrontOPT_NodeDesc__desc, 1, 6) = {__TDFLDS("NodeDesc", 56), {0, 8, 16, 32, 40, 48, -56}};
+__TDESC(OfrontOPT_ImpCtxt__desc, 1, 510) = {__TDFLDS("ImpCtxt", 6280), {32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 
+	160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 264, 272, 280, 
+	288, 296, 304, 312, 320, 328, 336, 344, 352, 360, 368, 376, 384, 392, 400, 408, 
+	416, 424, 432, 440, 448, 456, 464, 472, 480, 488, 496, 504, 512, 520, 528, 536, 
+	544, 552, 560, 568, 576, 584, 592, 600, 608, 616, 624, 632, 640, 648, 656, 664, 
+	672, 680, 688, 696, 704, 712, 720, 728, 736, 744, 752, 760, 768, 776, 784, 792, 
+	800, 808, 816, 824, 832, 840, 848, 856, 864, 872, 880, 888, 896, 904, 912, 920, 
+	928, 936, 944, 952, 960, 968, 976, 984, 992, 1000, 1008, 1016, 1024, 1032, 1040, 1048, 
+	1056, 1064, 1072, 1080, 1088, 1096, 1104, 1112, 1120, 1128, 1136, 1144, 1152, 1160, 1168, 1176, 
+	1184, 1192, 1200, 1208, 1216, 1224, 1232, 1240, 1248, 1256, 1264, 1272, 1280, 1288, 1296, 1304, 
+	1312, 1320, 1328, 1336, 1344, 1352, 1360, 1368, 1376, 1384, 1392, 1400, 1408, 1416, 1424, 1432, 
+	1440, 1448, 1456, 1464, 1472, 1480, 1488, 1496, 1504, 1512, 1520, 1528, 1536, 1544, 1552, 1560, 
+	1568, 1576, 1584, 1592, 1600, 1608, 1616, 1624, 1632, 1640, 1648, 1656, 1664, 1672, 1680, 1688, 
+	1696, 1704, 1712, 1720, 1728, 1736, 1744, 1752, 1760, 1768, 1776, 1784, 1792, 1800, 1808, 1816, 
+	1824, 1832, 1840, 1848, 1856, 1864, 1872, 1880, 1888, 1896, 1904, 1912, 1920, 1928, 1936, 1944, 
+	1952, 1960, 1968, 1976, 1984, 1992, 2000, 2008, 2016, 2024, 2032, 2040, 2048, 2056, 2064, 2072, 
+	2080, 2088, 2096, 2104, 2112, 2120, 2128, 2136, 2144, 2152, 2160, 2168, 2176, 2184, 2192, 2200, 
+	2208, 2216, 2224, 2232, 2240, 2248, 2256, 2264, 2272, 2280, 2288, 2296, 2304, 2312, 2320, 2328, 
+	2336, 2344, 2352, 2360, 2368, 2376, 2384, 2392, 2400, 2408, 2416, 2424, 2432, 2440, 2448, 2456, 
+	2464, 2472, 2480, 2488, 2496, 2504, 2512, 2520, 2528, 2536, 2544, 2552, 2560, 2568, 2576, 2584, 
+	2592, 2600, 2608, 2616, 2624, 2632, 2640, 2648, 2656, 2664, 2672, 2680, 2688, 2696, 2704, 2712, 
+	2720, 2728, 2736, 2744, 2752, 2760, 2768, 2776, 2784, 2792, 2800, 2808, 2816, 2824, 2832, 2840, 
+	2848, 2856, 2864, 2872, 2880, 2888, 2896, 2904, 2912, 2920, 2928, 2936, 2944, 2952, 2960, 2968, 
+	2976, 2984, 2992, 3000, 3008, 3016, 3024, 3032, 3040, 3048, 3056, 3064, 3072, 3080, 3088, 3096, 
+	3104, 3112, 3120, 3128, 3136, 3144, 3152, 3160, 3168, 3176, 3184, 3192, 3200, 3208, 3216, 3224, 
+	3232, 3240, 3248, 3256, 3264, 3272, 3280, 3288, 3296, 3304, 3312, 3320, 3328, 3336, 3344, 3352, 
+	3360, 3368, 3376, 3384, 3392, 3400, 3408, 3416, 3424, 3432, 3440, 3448, 3456, 3464, 3472, 3480, 
+	3488, 3496, 3504, 3512, 3520, 3528, 3536, 3544, 3552, 3560, 3568, 3576, 3584, 3592, 3600, 3608, 
+	3616, 3624, 3632, 3640, 3648, 3656, 3664, 3672, 3680, 3688, 3696, 3704, 3712, 3720, 3728, 3736, 
+	3744, 3752, 3760, 3768, 3776, 3784, 3792, 3800, 3808, 3816, 3824, 3832, 3840, 3848, 3856, 3864, 
+	3872, 3880, 3888, 3896, 3904, 3912, 3920, 3928, 3936, 3944, 3952, 3960, 3968, 3976, 3984, 3992, 
+	4000, 4008, 4016, 4024, 4032, 4040, 4048, 4056, 4064, 4072, 4080, 4088, 4096, 4104, -4088}};
+__TDESC(OfrontOPT_ExpCtxt__desc, 1, 0) = {__TDFLDS("ExpCtxt", 144), {-8}};
 
 export void *OfrontOPT__init(void)
 {
