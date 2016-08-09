@@ -19,13 +19,13 @@ if [ "$2" == "SYSTEM" ]; then
 else
 
   if [ "$2" == "Platform" ] || [ "$2" == "Heap" ] ; then
-    ../../Bin64/ofront+ -apxe ../../../Lib/Mod/$2.Mod
+    #../../Bin64/ofront+ -apxe ../../../Lib/Mod/$2.Mod
     errCode=$?
-    if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
+    #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
   else
-    ../../Bin64/ofront+ -se ../../../Lib/Mod/$2.Mod
+    #../../Bin64/ofront+ -se ../../../Lib/Mod/$2.Mod
     errCode=$?
-    if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
+    #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
     mv -f $mod.sym ../Sym64
   fi

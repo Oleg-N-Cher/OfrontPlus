@@ -26,8 +26,8 @@ static void Reals_Unpack (BYTE *b, INTEGER b__len, BYTE *d, INTEGER d__len);
 REAL Reals_Ten (SHORTINT e)
 {
 	LONGREAL r, power;
-	r =   1.00000000000000e+000;
-	power =   1.00000000000000e+001;
+	r = (LONGREAL)1;
+	power = (LONGREAL)10;
 	while (e > 0) {
 		if (__ODD(e)) {
 			r = r * power;
@@ -42,8 +42,8 @@ REAL Reals_Ten (SHORTINT e)
 LONGREAL Reals_TenL (SHORTINT e)
 {
 	LONGREAL r, power;
-	r =   1.00000000000000e+000;
-	power =   1.00000000000000e+001;
+	r = (LONGREAL)1;
+	power = (LONGREAL)10;
 	for (;;) {
 		if (__ODD(e)) {
 			r = r * power;

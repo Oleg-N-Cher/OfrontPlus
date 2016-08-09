@@ -6,18 +6,18 @@ if [ "$modName" == "OfrontOPM.cmdln" ]; then modName="OfrontOPM"; fi
 
 if [ "$modName" == "OfrontCmd" ] || [ "$modName" == "BrowserCmd" ] || [ "$modName" == "OCatCmd" ] ; then
 
-  ../Bin64/ofront+ -me ../../Mod/$modName.Mod
+  #../Bin64/ofront+ -me ../../Mod/$modName.Mod
   errCode=$?
-  if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
+  #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
   gcc $modName.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -Wl,--gc-sections -I../Lib/C -I../Lib/Obj64 -L../Lib $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} -lOfront64 -ldl
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
 else
 
-  ../Bin64/ofront+ -se ../../Mod/$1.Mod
+  #../Bin64/ofront+ -se ../../Mod/$1.Mod
   errCode=$?
-  if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
+  #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
   mv -f $modName.sym ../Sym64
   gcc -c $modName.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -I../Lib/C -I../Lib/Obj64
   errCode=$?

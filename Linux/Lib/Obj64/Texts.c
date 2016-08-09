@@ -867,14 +867,14 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 				}
 				if (ch == 'D') {
 					e = 0;
-					y =   0                    ;
-					g =   1.00000000000000e+000;
+					y = (LONGREAL)0;
+					g = (LONGREAL)1;
 					do {
-						y = y *   1.00000000000000e+001 + ((SHORTINT)d[__X(j, 32)] - 48);
+						y = y * (LONGREAL)10 + ((SHORTINT)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
-						g = g / (LONGREAL)  1.00000000000000e+001;
+						g = g / (LONGREAL)(LONGREAL)10;
 						y = ((SHORTINT)d[__X(j, 32)] - 48) * g + y;
 						j += 1;
 					}
@@ -883,7 +883,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 						if (e <= 308) {
 							y = y / (LONGREAL)Reals_TenL(e);
 						} else {
-							y =   0                    ;
+							y = (LONGREAL)0;
 						}
 					} else if (e > 0) {
 						if (e <= 308) {
@@ -899,14 +899,14 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 					(*S).y = y;
 				} else {
 					e = 0;
-					x =   0             ;
-					f =   1.0000000e+000;
+					x = (REAL)0;
+					f = (REAL)1;
 					do {
-						x = x *   1.0000000e+001 + ((SHORTINT)d[__X(j, 32)] - 48);
+						x = x * (REAL)10 + ((SHORTINT)d[__X(j, 32)] - 48);
 						j += 1;
 					} while (!(j == h));
 					while (j < i) {
-						f = f / (REAL)  1.0000000e+001;
+						f = f / (REAL)(REAL)10;
 						x = ((SHORTINT)d[__X(j, 32)] - 48) * f + x;
 						j += 1;
 					}
@@ -917,7 +917,7 @@ void Texts_Scan (Texts_Scanner *S, LONGINT *S__typ)
 						if (e <= 38) {
 							x = x / (REAL)Reals_Ten(e);
 						} else {
-							x =   0             ;
+							x = (REAL)0;
 						}
 					} else if (e > 0) {
 						if (e <= 38) {
@@ -1107,7 +1107,7 @@ void Texts_WriteLongInt (Texts_Writer *W, LONGINT *W__typ, LONGINT x, INTEGER n)
 	CHAR a[22];
 	i = 0;
 	if (x < 0) {
-		if (x == 0) {
+		if (x == (-9223372036854775807-1)) {
 			Texts_WriteString(&*W, W__typ, (CHAR*)" -9223372036854775808", 22);
 			return;
 		} else {
@@ -1212,7 +1212,7 @@ void Texts_WriteReal (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n)
 			Texts_Write(&*W, W__typ, ' ');
 			n -= 1;
 		} while (!(n <= 8));
-		if (x <   0             ) {
+		if (x < (REAL)0) {
 			Texts_Write(&*W, W__typ, '-');
 			x = -x;
 		} else {
@@ -1224,13 +1224,13 @@ void Texts_WriteReal (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n)
 		} else {
 			x = Reals_Ten(-e) * x;
 		}
-		if (x >=   1.0000000e+001) {
+		if (x >= (REAL)10) {
 			x =   1.0000000e-001 * x;
 			e += 1;
 		}
 		x0 = Reals_Ten(n - 1);
 		x = x0 * x +   5.0000000e-001;
-		if (x >=   1.0000000e+001 * x0) {
+		if (x >= (REAL)10 * x0) {
 			x = x *   1.0000000e-001;
 			e += 1;
 		}
@@ -1308,7 +1308,7 @@ void Texts_WriteRealFix (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n, S
 		seq__58(' ', n - 4);
 	} else {
 		e = __ASHR((e - 127) * 77, 8, SHORTINT);
-		if (x <   0             ) {
+		if (x < (REAL)0) {
 			sign = '-';
 			x = -x;
 		} else {
@@ -1319,7 +1319,7 @@ void Texts_WriteRealFix (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n, S
 		} else {
 			x = Reals_Ten(-e) * x;
 		}
-		if (x >=   1.0000000e+001) {
+		if (x >= (REAL)10) {
 			x =   1.0000000e-001 * x;
 			e += 1;
 		}
@@ -1327,11 +1327,11 @@ void Texts_WriteRealFix (Texts_Writer *W, LONGINT *W__typ, REAL x, SHORTINT n, S
 			k = 8 - e;
 		} else if (k + e < 0) {
 			k = -e;
-			x =   0             ;
+			x = (REAL)0;
 		}
 		x0 = Reals_Ten(k + e);
 		x = x0 * x +   5.0000000e-001;
-		if (x >=   1.0000000e+001 * x0) {
+		if (x >= (REAL)10 * x0) {
 			e += 1;
 		}
 		e += 1;
@@ -1397,7 +1397,7 @@ void Texts_WriteLongReal (Texts_Writer *W, LONGINT *W__typ, LONGREAL x, SHORTINT
 			Texts_Write(&*W, W__typ, ' ');
 			n -= 1;
 		} while (!(n <= 16));
-		if (x <   0                    ) {
+		if (x < (LONGREAL)0) {
 			Texts_Write(&*W, W__typ, '-');
 			x = -x;
 		} else {
@@ -1409,13 +1409,13 @@ void Texts_WriteLongReal (Texts_Writer *W, LONGINT *W__typ, LONGREAL x, SHORTINT
 		} else {
 			x = Reals_TenL(-e) * x;
 		}
-		if (x >=   1.00000000000000e+001) {
+		if (x >= (LONGREAL)10) {
 			x =   1.00000000000000e-001 * x;
 			e += 1;
 		}
 		x0 = Reals_TenL(n - 1);
 		x = x0 * x +   5.00000000000000e-001;
-		if (x >=   1.00000000000000e+001 * x0) {
+		if (x >= (LONGREAL)10 * x0) {
 			x =   1.00000000000000e-001 * x;
 			e += 1;
 		}

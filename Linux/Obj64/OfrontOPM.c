@@ -1,4 +1,4 @@
-/* Ofront+ 0.9 -xtspka */
+/* Ofront+ 0.9 -xtspkae */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -838,7 +838,7 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_WriteLn (void)
 {
-	OfrontOPM_WriteString(Platform_newLine, 3);
+	OfrontOPM_WriteString(Platform_newLine, 2);
 }
 
 /*----------------------------------------------------------------------------*/
