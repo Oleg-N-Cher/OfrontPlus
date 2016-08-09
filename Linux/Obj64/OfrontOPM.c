@@ -1,4 +1,4 @@
-/* Ofront+ 0.9 -xtspkae */
+/* Ofront+ 0.9 -xtspka */
 #include "SYSTEM.h"
 #include "Args.h"
 #include "Console.h"
@@ -762,7 +762,7 @@ void OfrontOPM_WriteInt (LONGINT i)
 	CHAR s[20];
 	LONGINT i1;
 	INTEGER k;
-	if (i == (-2147483647-1) || i == 0) {
+	if (i == (-2147483647-1) || i == (-9223372036854775807-1)) {
 		OfrontOPM_Write('(');
 		OfrontOPM_WriteInt(i + 1);
 		OfrontOPM_WriteString((CHAR*)"-1)", 4);
@@ -838,7 +838,7 @@ void OfrontOPM_WriteReal (LONGREAL r, CHAR suffx)
 /*----------------------------------------------------------------------------*/
 void OfrontOPM_WriteLn (void)
 {
-	OfrontOPM_WriteString(Platform_newLine, 2);
+	OfrontOPM_WriteString(Platform_newLine, 3);
 }
 
 /*----------------------------------------------------------------------------*/

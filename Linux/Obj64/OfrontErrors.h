@@ -1,4 +1,4 @@
-/* Ofront+ 0.9 -xtspkae */
+/* Ofront+ 0.9 -xtspka */
 
 #ifndef OfrontErrors__h
 #define OfrontErrors__h

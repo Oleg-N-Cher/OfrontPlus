@@ -1,4 +1,4 @@
-/* Ofront+ 0.9 -xtspkae */
+/* Ofront+ 0.9 -xtspka */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 
@@ -94,8 +94,8 @@ static LONGREAL Ten__9 (INTEGER e);
 static LONGREAL Ten__9 (INTEGER e)
 {
 	LONGREAL x, p;
-	x =   1.00000000000000e+000;
-	p =   1.00000000000000e+001;
+	x = (LONGREAL)1;
+	p = (LONGREAL)10;
 	while (e > 0) {
 		if (__ODD(e)) {
 			x = x * p;
@@ -194,7 +194,7 @@ static void OfrontOPS_Number (void)
 				while (i < n) {
 					d = Ord__7(dig[__X(i, 24)], 0);
 					i += 1;
-					if (OfrontOPS_intval <= (LONGINT)__DIV(-1 - d, 10)) {
+					if (OfrontOPS_intval <= __DIV(9223372036854775807 - (LONGINT)d, 10)) {
 						OfrontOPS_intval = OfrontOPS_intval * 10 + (LONGINT)d;
 					} else {
 						OfrontOPS_err(203);
@@ -205,12 +205,12 @@ static void OfrontOPS_Number (void)
 			OfrontOPS_err(203);
 		}
 	} else {
-		f =   0                    ;
+		f = (LONGREAL)0;
 		e = 0;
 		expCh = 'E';
 		while (n > 0) {
 			n -= 1;
-			f = (Ord__7(dig[__X(n, 24)], 0) + f) / (LONGREAL)  1.00000000000000e+001;
+			f = (Ord__7(dig[__X(n, 24)], 0) + f) / (LONGREAL)(LONGREAL)10;
 		}
 		if (OfrontOPS_ch == 'E' || OfrontOPS_ch == 'D') {
 			expCh = OfrontOPS_ch;

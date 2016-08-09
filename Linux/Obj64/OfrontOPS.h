@@ -1,4 +1,4 @@
-/* Ofront+ 0.9 -xtspkae */
+/* Ofront+ 0.9 -xtspka */
 
 #ifndef OfrontOPS__h
 #define OfrontOPS__h

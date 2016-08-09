@@ -1,4 +1,4 @@
-/* Ofront+ 0.9 -xtspkae */
+/* Ofront+ 0.9 -xtspka */
 #include "SYSTEM.h"
 #include "OfrontOPM.h"
 #include "OfrontOPS.h"
@@ -509,7 +509,7 @@ static void OfrontOPB_CheckRealType (INTEGER f, INTEGER nr, OfrontOPT_Const x)
 	r = __ABS(x->realval);
 	if (r > max || r < min) {
 		OfrontOPB_err(nr);
-		x->realval =   1.00000000000000e+000;
+		x->realval = (LONGREAL)1;
 	} else if (f == 7) {
 		x->realval = x->realval;
 	}
@@ -568,7 +568,7 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				if (__IN(f, 0x03f2)) {
 					if (z->class == 7) {
 						if (__IN(f, 0x72)) {
-							if (z->conval->intval == 0) {
+							if (z->conval->intval == (-9223372036854775807-1)) {
 								OfrontOPB_err(203);
 							} else {
 								z->conval->intval = -z->conval->intval;
@@ -591,7 +591,7 @@ void OfrontOPB_MOp (SHORTINT op, OfrontOPT_Node *x)
 				if (__IN(f, 0x01f2)) {
 					if (z->class == 7) {
 						if (__IN(f, 0x72)) {
-							if (z->conval->intval == 0) {
+							if (z->conval->intval == (-9223372036854775807-1)) {
 								OfrontOPB_err(203);
 							} else {
 								z->conval->intval = __ABS(z->conval->intval);
@@ -977,14 +977,14 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			if (__IN(f, 0x72)) {
 				xv = xval->intval;
 				yv = yval->intval;
-				if (((((xv == 0 || yv == 0) || (xv > 0 && yv > 0) && yv <= __DIV(-1, xv)) || (xv > 0 && yv < 0) && yv >= __DIV(0, xv)) || (xv < 0 && yv > 0) && xv >= __DIV(0, yv)) || (((xv < 0 && yv < 0) && xv != 0) && yv != 0) && -xv <= __DIV(-1, -yv)) {
+				if (((((xv == 0 || yv == 0) || (xv > 0 && yv > 0) && yv <= __DIV(9223372036854775807, xv)) || (xv > 0 && yv < 0) && yv >= __DIV((-9223372036854775807-1), xv)) || (xv < 0 && yv > 0) && xv >= __DIV((-9223372036854775807-1), yv)) || (((xv < 0 && yv < 0) && xv != (-9223372036854775807-1)) && yv != (-9223372036854775807-1)) && -xv <= __DIV(9223372036854775807, -yv)) {
 					xval->intval = xv * yv;
 					OfrontOPB_SetIntType(x);
 				} else {
 					OfrontOPB_err(204);
 				}
 			} else if (__IN(f, 0x0180)) {
-				temp = __ABS(yval->realval) <=   1.00000000000000e+000;
+				temp = __ABS(yval->realval) <= (LONGREAL)1;
 				if (temp || __ABS(xval->realval) <= OfrontOPM_MaxLReal / (LONGREAL)__ABS(yval->realval)) {
 					xval->realval = xval->realval * yval->realval;
 					OfrontOPB_CheckRealType(f, 204, xval);
@@ -1004,11 +1004,11 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 					OfrontOPB_CheckRealType(7, 205, xval);
 				} else {
 					OfrontOPB_err(205);
-					xval->realval =   1.00000000000000e+000;
+					xval->realval = (LONGREAL)1;
 				}
 				x->typ = OfrontOPT_realtyp;
 			} else if (__IN(f, 0x0180)) {
-				temp = __ABS(yval->realval) >=   1.00000000000000e+000;
+				temp = __ABS(yval->realval) >= (LONGREAL)1;
 				if (temp || __ABS(xval->realval) <= OfrontOPM_MaxLReal * __ABS(yval->realval)) {
 					xval->realval = xval->realval / yval->realval;
 					OfrontOPB_CheckRealType(f, 205, xval);
@@ -1054,16 +1054,16 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			break;
 		case 6: 
 			if (__IN(f, 0x72)) {
-				temp = yval->intval >= 0 && xval->intval <= -1 - yval->intval;
-				if (temp || yval->intval < 0 && xval->intval >= 0 - yval->intval) {
+				temp = yval->intval >= 0 && xval->intval <= 9223372036854775807 - yval->intval;
+				if (temp || yval->intval < 0 && xval->intval >= (-9223372036854775807-1) - yval->intval) {
 					xval->intval += yval->intval;
 					OfrontOPB_SetIntType(x);
 				} else {
 					OfrontOPB_err(206);
 				}
 			} else if (__IN(f, 0x0180)) {
-				temp = yval->realval >=   0                     && xval->realval <= OfrontOPM_MaxLReal - yval->realval;
-				if (temp || yval->realval <   0                     && xval->realval >= -OfrontOPM_MaxLReal - yval->realval) {
+				temp = yval->realval >= (LONGREAL)0 && xval->realval <= OfrontOPM_MaxLReal - yval->realval;
+				if (temp || yval->realval < (LONGREAL)0 && xval->realval >= -OfrontOPM_MaxLReal - yval->realval) {
 					xval->realval = xval->realval + yval->realval;
 					OfrontOPB_CheckRealType(f, 206, xval);
 				} else {
@@ -1077,15 +1077,15 @@ static void OfrontOPB_ConstOp (INTEGER op, OfrontOPT_Node x, OfrontOPT_Node y)
 			break;
 		case 7: 
 			if (__IN(f, 0x72)) {
-				if (yval->intval >= 0 && xval->intval >= yval->intval || yval->intval < 0 && xval->intval <= -1 + yval->intval) {
+				if (yval->intval >= 0 && xval->intval >= (-9223372036854775807-1) + yval->intval || yval->intval < 0 && xval->intval <= 9223372036854775807 + yval->intval) {
 					xval->intval -= yval->intval;
 					OfrontOPB_SetIntType(x);
 				} else {
 					OfrontOPB_err(207);
 				}
 			} else if (__IN(f, 0x0180)) {
-				temp = yval->realval >=   0                     && xval->realval >= -OfrontOPM_MaxLReal + yval->realval;
-				if (temp || yval->realval <   0                     && xval->realval <= OfrontOPM_MaxLReal + yval->realval) {
+				temp = yval->realval >= (LONGREAL)0 && xval->realval >= -OfrontOPM_MaxLReal + yval->realval;
+				if (temp || yval->realval < (LONGREAL)0 && xval->realval <= OfrontOPM_MaxLReal + yval->realval) {
 					xval->realval = xval->realval - yval->realval;
 					OfrontOPB_CheckRealType(f, 207, xval);
 				} else {
@@ -1175,9 +1175,9 @@ static void OfrontOPB_Convert (OfrontOPT_Node *x, OfrontOPT_Struct typ)
 				OfrontOPB_CheckRealType(g, 203, (*x)->conval);
 			} else {
 				r = (*x)->conval->realval;
-				if (r <   0                     || r >  -1.00000000000000e+000) {
+				if (r <  -9.22337203685478e+018 || r >   9.22337203685478e+018) {
 					OfrontOPB_err(203);
-					r =   1.00000000000000e+000;
+					r = (LONGREAL)1;
 				}
 				(*x)->conval->intval = __ENTIERL(r);
 				OfrontOPB_SetIntType(*x);
@@ -1406,7 +1406,7 @@ void OfrontOPB_Op (SHORTINT op, OfrontOPT_Node *x, OfrontOPT_Node y)
 					OfrontOPB_Convert(&y, OfrontOPT_realtyp);
 					typ = OfrontOPT_realtyp;
 				} else if (__IN(f, 0x0180)) {
-					if (y->class == 7 && y->conval->realval ==   0                    ) {
+					if (y->class == 7 && y->conval->realval == (LONGREAL)0) {
 						OfrontOPB_err(205);
 					}
 				} else if (f != 9 && f != 0) {
