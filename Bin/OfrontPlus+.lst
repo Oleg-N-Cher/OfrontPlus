@@ -11,5 +11,4 @@ Linux\
 Linux\Bin\
 Sym\*.osf
 Rsrc\
-License.txt
-Readme.txt
+*.txt

@@ -1,0 +1,129 @@
+﻿Ofront+ QuickStart
+==================
+
+English text below
+
+Для запуска транслятора из командной строки вам нужно три вещи:
+
+
+1. Если работа происходит в одном каталоге, то ничего. Если в нескольких,
+   важно чтобы транслятор мог найти символьные файлы *.sym, необходимые для
+   трансляции, т.к. в них хранится информация о модулях. Поэтому задайте
+   переменную OBERON, содержащую пути для поиска:
+
+   UNIX / Linux 32:
+
+   export OBERON=.:../Lib/Sym:../Sym
+
+   UNIX / Linux 64:
+
+   export OBERON=.:../Lib/Sym64:../Sym64
+
+   Windows 32:
+
+   SET OBERON=%CD%;%CD%\..\Lib\Sym;%CD%\..\Sym
+
+   Windows 64:
+
+   SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64
+
+   Включайте в поиск текущий каталог, т.к. там обычно хранится файл Ofront.par
+
+
+2. Необходимо задать размеры всех типов данных и их выравнивание. Это
+   платформенно-зависимые вещи, и вы можете для UNIX / Windows соответствующей
+   разрядности просто взять готовый Ofront.par из поставки Ofront+
+
+   UNIX / Linux:
+
+   Linux/Lib/Obj и Linux/Lib/Obj64
+
+   Windows:
+
+   Lib\Obj и Lib\Obj64
+
+   Для других платформ понадобится создавать Ofront.par вручную.
+
+
+3. При вызове компилятора Си включайте в поиск каталоги Lib/C и Lib/Obj*, а также библиотеку Ofront:
+
+   UNIX / Linux 32:
+
+   gcc modName.c -s -Os -fno-exceptions -I../Lib/C -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
+
+   UNIX / Linux 64:
+
+   gcc modName.c -s -Os -fno-exceptions -I../Lib/C -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
+
+   Windows 32:
+
+   gcc modName.c -s -Os -fno-exceptions -I ..\Lib\C -I ..\Lib\Obj -o modName.exe ..\Lib\Ofront.a
+
+   Windows 64:
+
+   gcc modName.c -s -Os -fno-exceptions -I ..\Lib\C -I ..\Lib\Obj64 -o modName.exe ..\Lib\Ofront64.a
+
+
+------------------------------------------------------------------------------
+
+To start the translator from the command line you need three things:
+
+
+1. If the work takes place in the single directory, it's ok; If in several,
+   it is important that the translator can find the symbol files * .sym,
+   necessary for translation, as they stored information on the modules.
+   So specify variable OBERON, containing the path to search for:
+
+   UNIX / Linux 32:
+
+   export OBERON=.:../Lib/Sym:../Sym
+
+   UNIX / Linux 64:
+
+   export OBERON=.:../Lib/Sym64:../Sym64
+
+   Windows 32:
+
+   SET OBERON=%CD%;%CD%\..\Lib\Sym;%CD%\..\Sym
+
+   Windows 64:
+
+   SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64
+
+   Add into the search the current directory too, as there usually lives
+   the file Ofront.par
+
+
+2. You must set the size of all data types, and their alignment. These
+   are platform-specific things, and you can use for UNIX / Windows with
+   appropriate bit depth just take a ready Ofront.par from Ofront+
+   distribution.
+
+   UNIX / Linux:
+
+   Linux/Lib/Obj and Linux/Lib/Obj64
+
+   Windows:
+
+   Lib\Obj and Lib\Obj64
+
+   For other platforms you'll need to create Ofront.par manually.
+
+
+3. When invoke C compiler, include the directories Lib/C and Lib/Obj*, and the library Ofront:
+
+   UNIX / Linux 32:
+
+   gcc modName.c -s -Os -fno-exceptions -I../Lib/C -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
+
+   UNIX / Linux 64:
+
+   gcc modName.c -s -Os -fno-exceptions -I../Lib/C -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
+
+   Windows 32:
+
+   gcc modName.c -s -Os -fno-exceptions -I ..\Lib\C -I ..\Lib\Obj -o modName.exe ..\Lib\Ofront.a
+
+   Windows 64:
+
+   gcc modName.c -s -Os -fno-exceptions -I ..\Lib\C -I ..\Lib\Obj64 -o modName.exe ..\Lib\Ofront64.a
