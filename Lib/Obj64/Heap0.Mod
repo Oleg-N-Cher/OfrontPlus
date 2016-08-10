@@ -309,7 +309,7 @@ MODULE Heap;
      VAR blksz, tag: LONGINT; new: SYSTEM.PTR;
   BEGIN
     Lock();
-    blksz := (size + (4*SZL + Unit - 1)) DIV Unit * Unit;  (*size + tag + meta + blksz + sntnl + UnitAlignment*)
+    blksz := (LONG(size) + (4*SZL + Unit - 1)) DIV Unit * Unit;  (*size + tag + meta + blksz + sntnl + UnitAlignment*)
     new := NEWREC(SYSTEM.ADR(blksz));
     tag := SYSTEM.VAL(LONGINT, new) + blksz - 3*SZL;
     SYSTEM.PUT(tag - SZL,                      LongZero); (*reserved for meta info*)
