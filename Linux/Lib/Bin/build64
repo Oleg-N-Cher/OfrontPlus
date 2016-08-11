@@ -9,8 +9,8 @@ rm ../Sym64/*.sym
 ../Bin/compile64 $Lib SYSTEM
 ../Bin/compile64 $Lib Platform.Unix
 #../Bin/compile64 $Lib Heap
-../../Bin64/ofront+ -s ../../../Lib/Obj64/Heap0.Mod
-gcc -c -I ../C Heap.c
+../../Bin64/ofront+ -apxe ../../../Lib/Obj64/Heap0.Mod
+gcc -c Heap.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -I ../C
 ar -rc $Lib Heap.o
 rm ../Sym64/Heap.sym
 mv Heap.sym ../Sym64

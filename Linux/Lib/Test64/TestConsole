@@ -2,9 +2,9 @@
 
 export OBERON=.:../Sym64
 
-#../../Bin/ofront+ -m ../Test/TestConsole.Mod
-#errCode=$?
-#if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
+../../Bin64/ofront+ -m ../Test/TestConsole.Mod
+errCode=$?
+if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
 gcc TestConsole.c -o TestConsole.x -I ../Obj64 -I ../C -L .. -lOfront64
 errCode=$?
