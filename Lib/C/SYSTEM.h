@@ -49,7 +49,8 @@ typedef unsigned char      U_BYTE;
 typedef unsigned char      U_CHAR;
 typedef unsigned short int U_SHORTINT;
 typedef unsigned int       U_INTEGER;
-  
+typedef unsigned int       U_SET;
+
 // For 32 bit builds, the size of LONGINT depends on a make option:
 
 #if (__SIZEOF_POINTER__ == 8) || defined(_LONGINT64) || defined(_WIN64)
