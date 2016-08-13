@@ -116,7 +116,7 @@ extern LONGINT SYSTEM_ENTIERL(LONGREAL x);
 
 /* SYSTEM ops */
 
-#define __VAL(t, x)     ((t)(x))
+#define __VAL(t, x)     (*(t*)&(x))
 #define __VALP(t, x)    ((t)(SYSTEM_ADR)(x))
 
 #define __GET(a, x, t)  x= *(t*)(SYSTEM_ADR)(a)
