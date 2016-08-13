@@ -116,7 +116,7 @@ extern LONGINT SYSTEM_ENTIERL(LONGREAL x);
 
 /* SYSTEM ops */
 
-#define __VAL(t, x)     ((t)(x))
+#define __VAL(t, x)     (*(t*)&(x))
 #define __VALP(t, x)    ((t)(SYSTEM_ADR)(x))
 
 #define __GET(a, x, t)  x= *(t*)(SYSTEM_ADR)(a)
@@ -190,7 +190,7 @@ extern void       Heap_INCREF();
 #define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, cmd)
 #define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,enum);}
 #define __ENDMOD              return m
-#define __IMPORT(name__init)	Heap_INCREF(name__init())
+#define __IMPORT(name__init)  Heap_INCREF(name__init())
 
 #define __EXTERN __attribute__((dllimport))
 #define __CALL_1 __attribute__((__stdcall__))
