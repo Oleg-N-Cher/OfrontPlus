@@ -229,8 +229,8 @@ extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
 
 /* Type handling */
 
-#define __TDESC(t__desc, m, n)                                                \
-  static struct t__desc {                                             \
+#define __TDESC(t__desc, m, n)                                          \
+  static struct t__desc {                                               \
     LONGINT  tproc[m];         /* Proc for each ptr field            */ \
     LONGINT  tag;                                                       \
     LONGINT  next;             /* Module table type list points here */ \
@@ -252,12 +252,12 @@ extern SYSTEM_PTR SYSTEM_NEWARR(LONGINT*, LONGINT, int, int, int, ...);
 
 #define __INITYP(t, t0, level) \
   t##__typ               = (LONGINT*)&t##__desc.blksz;                                                    \
-  __MEMCPY(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(LONGINT));                                  \
-  t##__desc.basep[level] = (LONGINT)(SYSTEM_ADR)t##__typ;                                                  \
-  t##__desc.module       = (LONGINT)(SYSTEM_ADR)m;                                                         \
+  __MEMCPY(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(LONGINT));                                \
+  t##__desc.basep[level] = (LONGINT)(SYSTEM_ADR)t##__typ;                                                 \
+  t##__desc.module       = (LONGINT)(SYSTEM_ADR)m;                                                        \
   if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15);                                                      \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(LONGINT)-1)/(4*sizeof(LONGINT))*(4*sizeof(LONGINT)); \
-  Heap_REGTYP(m, (LONGINT)(SYSTEM_ADR)&t##__desc.next);                                                    \
+  Heap_REGTYP(m, (LONGINT)(SYSTEM_ADR)&t##__desc.next);                                                   \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
 
 #define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(LONGINT)(SYSTEM_ADR)typ##__typ)
