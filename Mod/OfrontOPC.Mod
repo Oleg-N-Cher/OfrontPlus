@@ -870,6 +870,10 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				| OPM.ptrinit: OPM.Write("p")
 				| OPM.include0: OPM.Write("i")
 				| OPM.lineno:
+				| OPM.oberon1: OPM.Write("1")
+				| OPM.oberon2: OPM.Write("2")
+				| OPM.compascal: OPM.Write("c")
+				| OPM.oberon07: OPM.Write("7")
 				END
 			END
 		END;

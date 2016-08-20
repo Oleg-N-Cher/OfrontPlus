@@ -688,7 +688,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ;
 			OPS.Get(sym)
 		END ;
-		IF sym = lparen THEN TProcDecl
+		IF (sym = lparen) & ~(OPM.oberon1 IN OPM.opt) & ~(OPM.oberon07 IN OPM.opt) THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(fwd);
 			name := OPS.name; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
