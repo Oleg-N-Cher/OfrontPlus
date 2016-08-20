@@ -237,10 +237,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "l": opt := opt / {lineno}
-			| "1": opt := opt + {oberon1} - {oberon2} - {compascal} - {oberon07}
-			| "2": opt := opt + {oberon2} - {oberon1} - {compascal} - {oberon07}
-			| "c": opt := opt + {compascal} - {oberon1} - {oberon2} - {oberon07}
-			| "7": opt := opt + {oberon07} - {oberon1} - {oberon2} - {compascal}
+			| "1": opt := opt + {oberon1} - {oberon2, compascal, oberon07}
+			| "2": opt := opt + {oberon2} - {oberon1, compascal, oberon07}
+			| "c": opt := opt + {compascal} - {oberon1, oberon2, oberon07}
+			| "7": opt := opt + {oberon07} - {oberon1, oberon2, compascal}
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END ;
 			INC(i)
