@@ -937,6 +937,10 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				| OPM.ptrinit: OPM.Write("p")
 				| OPM.include0: OPM.Write("i")
 				| OPM.lineno:
+				| OPM.oberon1: OPM.Write("1")
+				| OPM.oberon2: OPM.Write("2")
+				| OPM.compascal: OPM.Write("c")
+				| OPM.oberon07: OPM.Write("7")
 				END
 			END
 		END;

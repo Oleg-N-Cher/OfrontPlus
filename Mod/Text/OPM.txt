@@ -25,6 +25,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
+		oberon1* = 12;	(** 1 - compile Oberon-1 programs *)
+		oberon2* = 13; 	(** 2 - compile Oberon-2 programs *)
+		compascal* = 14;	(** c - compile Component Pascal programs *)
+		oberon07* = 15;	(** 7 - compile Oberon-07 programs *)
 		defopt* = {inxchk, typchk, ptrinit, assert};	(* default options *)
 
 		nilval* = 0;
@@ -129,7 +133,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		stop, useLineNo: BOOLEAN;	(*useLineNo not supported under Windows *)
 
 		options*: RECORD
-			mainprog*, newsf*, extsf*, ansii*, include0*, vcpp*, inxchk*, assert*, ranchk*, typchk*, ptrinit*: BOOLEAN;
+			mainprog*, newsf*, extsf*, ansii*, include0*, vcpp*, inxchk*, assert*, ranchk*, typchk*, ptrinit*,
+				oberon1*, oberon2*, compascal*, oberon07*: BOOLEAN;
 			dirs*: ARRAY 256 OF CHAR;
 		END ;
 
@@ -232,6 +237,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "l": opt := opt / {lineno}
+			| "1": opt := opt + {oberon1} - {oberon2} - {compascal} - {oberon07}
+			| "2": opt := opt + {oberon2} - {oberon1} - {compascal} - {oberon07}
+			| "c": opt := opt + {compascal} - {oberon1} - {oberon2} - {oberon07}
+			| "7": opt := opt + {oberon07} - {oberon1} - {oberon2} - {compascal}
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END ;
 			INC(i)
@@ -271,6 +280,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				IF options.ptrinit THEN INCL(glbopt, ptrinit) END ;
 				IF options.ranchk THEN INCL(glbopt, ranchk) END ;
 				IF options.typchk THEN INCL(glbopt, typchk) END ;
+				IF options.oberon1 THEN INCL(glbopt, oberon1) END ;
+				IF options.oberon2 THEN INCL(glbopt, oberon2) END ;
+				IF options.compascal THEN INCL(glbopt, compascal) END ;
+				IF options.oberon07 THEN INCL(glbopt, oberon07) END ;
 			END
 		ELSE stop := TRUE
 		END ;
@@ -830,6 +843,10 @@ suffix does not work in K&R *)
 		options.assert := assert IN defopt;
 		options.typchk := typchk IN defopt;
 		options.ptrinit := ptrinit IN defopt;
+		options.oberon1 := oberon1 IN defopt;
+		options.oberon2 := oberon2 IN defopt;
+		options.compascal := compascal IN defopt;
+		options.oberon07 := oberon07 IN defopt;
 		Dialog.MapString( "#ofront:directories", options.dirs)
 	END GetDefaultOptions;
 	

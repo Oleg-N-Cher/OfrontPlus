@@ -22,6 +22,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
+		oberon1* = 12;	(** 1 - compile Oberon-1 programs *)
+		oberon2* = 13; 	(** 2 - compile Oberon-2 programs *)
+		compascal* = 14;	(** c - compile Component Pascal programs *)
+		oberon07* = 15;	(** 7 - compile Oberon-07 programs *)
 		defopt* = {inxchk, typchk, ptrinit, ansi, assert, lineno};	(* default options *)
 
 		nilval* = 0;
@@ -157,6 +161,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "l": opt := opt / {lineno}
+			| "1": opt := opt + {oberon1} - {oberon2} - {compascal} - {oberon07}
+			| "2": opt := opt + {oberon2} - {oberon1} - {compascal} - {oberon07}
+			| "c": opt := opt + {compascal} - {oberon1} - {oberon2} - {oberon07}
+			| "7": opt := opt + {oberon07} - {oberon1} - {oberon2} - {compascal}
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END ;
 			INC(i)

@@ -836,7 +836,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				OPS.Get(sym)
 			END
 		END ;
-		IF sym = lparen THEN TProcDecl
+		IF (sym = lparen) & ~(OPM.oberon1 IN OPM.opt) & ~(OPM.oberon07 IN OPM.opt) THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(fwd);
 			name := OPS.name; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
