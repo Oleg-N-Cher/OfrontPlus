@@ -188,6 +188,7 @@ BEGIN
   | 301: Log.String("implicit type cast")
   | 302: Log.String("guarded variable can be side-effected")
   | 306: Log.String("inappropriate symbol file ignored")
+  | 308: Log.String("SYSTEM.VAL result includes memory past end of source variable") (* DCWB *)
 
 (*
     4. Analyzer Warnings

@@ -1314,6 +1314,8 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class = Ntype) OR (x^.class = Nproc) OR
 					(f IN {Undef, String, NoTyp}) OR (x^.typ^.comp = DynArr) THEN err(126)
 				END ;
+				(* Warn if the result type includes memory past the end of the source variable *)
+				IF (x^.class # Nconst) & (x^.typ^.size < p^.typ^.size) THEN err(-308) END;
 				t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t;
 (*
 				IF (x^.class >= Nconst) OR ((f IN realSet) # (p^.typ^.form IN realSet)) THEN
