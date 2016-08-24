@@ -177,7 +177,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
           Console.String(", error code "); Console.Int(error,1); Console.Ln;
         *)
       END;
-      error := Platform.Write(f.fd, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf.data)), buf.size);
+      error := Platform.Write(f.fd, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf.data)), buf.size);
       IF error # 0 THEN Err("error writing file", f, error) END;
       f.pos := buf.org + buf.size;
       buf.chg := FALSE;
@@ -545,15 +545,15 @@ Especially Length would become fairly complex.
         IF error # 0 THEN res := 2; RETURN END;
         error := Platform.New(new, fdnew);
         IF error # 0 THEN error := Platform.Close(fdold); res := 3; RETURN END;
-        error := Platform.Read(fdold, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf)), bufsize, n);
+        error := Platform.Read(fdold, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), bufsize, n);
         WHILE n > 0 DO
-          error := Platform.Write(fdnew, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf)), n);
+          error := Platform.Write(fdnew, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), n);
           IF error # 0 THEN
             ignore := Platform.Close(fdold);
             ignore := Platform.Close(fdnew);
             Err("cannot move file", NIL, error)
           END;
-          error := Platform.Read(fdold, SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(buf)), bufsize, n);
+          error := Platform.Read(fdold, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), bufsize, n);
         END;
         ignore := Platform.Close(fdold);
         ignore := Platform.Close(fdnew);

@@ -17,16 +17,16 @@ CONST
 
 
 TYPE
-  Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
-  MemAdr* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
+  INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
+  ADR* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
 
-  BOOL = Int32; DWORD = Int32;
+  BOOL = INT32; DWORD = INT32;
 
   HaltProcedure = PROCEDURE(n: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
 
   ErrorCode*  = INTEGER;
-  FileHandle* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bit *)
+  FileHandle* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
   (* In Windows, the file handle is used to identify a file. When a file is
      opened by a process using the CreateFile function, a file handle is
      associated with it until either the process terminates or the handle is
@@ -48,14 +48,10 @@ TYPE
 
 VAR
   LittleEndian-:    BOOLEAN;
-  MainStackFrame-:  MemAdr;
   HaltCode-:        INTEGER;
   PID-:             DWORD;  (* Note: Must be updated by Fork implementation *)
   CWD-:             ARRAY 4096 OF CHAR;
-  ArgCount-:        INTEGER;
 
-  ArgVector-:       ArgVec;
-  HaltHandler:      HaltProcedure;
   TimeStart:        DWORD;  (* milliseconds *)
 
   SeekSet-:         INTEGER;
@@ -128,45 +124,21 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
+PROCEDURE -allocate(size: INTEGER): ADR "((Platform_ADR)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
 
-PROCEDURE ^ Halt*(code: INTEGER);
+PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
 
-PROCEDURE OSAllocate*(size: INTEGER): MemAdr; (* 2 Gb will be sufficient *)
+PROCEDURE OSAllocate*(size: INTEGER): ADR; (* 2 Gb will be sufficient *)
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* If the function HeapAlloc fails and you have not specified HEAP_GENERATE_EXCEPTIONS, the return value is NULL. *)
   END;
-  Halt(-25); RETURN NIL (* To remove __RETCHK *)
+  SystemHalt(-25); RETURN NIL (* To remove __RETCHK *)
 END OSAllocate;
 
-PROCEDURE -free(address: MemAdr) "HeapFree(GetProcessHeap(), 0, (void*)address)";
+PROCEDURE -free(address: ADR) "HeapFree(GetProcessHeap(), 0, (void*)address)";
 
-PROCEDURE OSFree*(address: MemAdr); BEGIN free(address) END OSFree;
-
-
-(* Program startup *)
-
-PROCEDURE -ExternInitHeap  "extern void Heap_InitHeap();";
-PROCEDURE -HeapInitHeap()  "Heap_InitHeap()";
-
-PROCEDURE Init*(argc: INTEGER; argvadr: MemAdr);
-TYPE
-  ArgVecPtr = POINTER [1] TO ARRAY [1] 1 OF ArgVec; 
-VAR
-  av: ArgVecPtr;
-BEGIN
-  MainStackFrame := argvadr;
-  ArgCount       := argc;
-  av             := SYSTEM.VAL(ArgVecPtr, argvadr);
-  ArgVector      := av[0];
-  HaltCode       := -128;
-
-  (* This function (Platform.Init) is called at program startup BEFORE any
-     modules have been initalized. In turn we must initialize the heap
-     before module startup (xxx__init) code is run. *)
-  HeapInitHeap();
-END Init;
+PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
 
 
 (* Program arguments and environmet access *)
@@ -193,9 +165,16 @@ BEGIN
   IF ~ getEnv(var, val) THEN val[0] := 0X END;
 END GetEnv;
 
+PROCEDURE -AAExternArgCount    "extern INTEGER SYSTEM_ArgCount;";
+PROCEDURE -AAExternArgVector   "extern void *SYSTEM_ArgVector;";
+PROCEDURE -ArgCount(): INTEGER "SYSTEM_ArgCount";
+PROCEDURE -ArgVector(): ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
+
 PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
+VAR
+  av: ArgVec;
 BEGIN
-  IF n < ArgCount THEN COPY(ArgVector[n]^, val) END
+  IF n < ArgCount() THEN av := ArgVector(); COPY(av[n]^, val) END
 END GetArg;
 
 PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);
@@ -213,7 +192,7 @@ PROCEDURE ArgPos*(s: ARRAY OF CHAR): INTEGER;
   VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 BEGIN
   i := 0; GetArg(i, arg);
-  WHILE (i < ArgCount) & (s # arg) DO INC(i); GetArg(i, arg) END ;
+  WHILE (i < ArgCount()) & (s # arg) DO INC(i); GetArg(i, arg) END ;
   RETURN i
 END ArgPos;
 
@@ -418,10 +397,10 @@ BEGIN
 END Size;
 
 
-PROCEDURE -readfile (fd: FileHandle; p: MemAdr; l: INTEGER; VAR n: INTEGER): BOOL
+PROCEDURE -readfile (fd: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): BOOL
 "(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
 
-PROCEDURE Read*(h: FileHandle; p: MemAdr; l: INTEGER; VAR n: INTEGER): ErrorCode;
+PROCEDURE Read*(h: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): ErrorCode;
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
@@ -433,15 +412,15 @@ PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCo
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
-  result := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), LEN(b), n);
+  result := readfile(h, SYSTEM.VAL(ADR, SYSTEM.ADR(b)), LEN(b), n);
   IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
 
-PROCEDURE -writefile(fd: FileHandle; p: MemAdr; l: INTEGER; VAR dummy: DWORD): BOOL
+PROCEDURE -writefile(fd: FileHandle; p: ADR; l: INTEGER; VAR dummy: DWORD): BOOL
 "(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)dummy, 0)";
 
-PROCEDURE Write*(h: FileHandle; p: MemAdr; l: INTEGER): ErrorCode;
+PROCEDURE Write*(h: FileHandle; p: ADR; l: INTEGER): ErrorCode;
 VAR dummy: DWORD;
 BEGIN
   IF writefile(h, p, l, dummy) = 0 THEN RETURN err() ELSE RETURN 0 END
@@ -559,10 +538,8 @@ BEGIN
 END DisplayHaltCode;
 
 PROCEDURE Halt*(code: INTEGER);
-VAR e: ErrorCode;
 BEGIN
   HaltCode := code;
-  IF HaltHandler # NIL THEN HaltHandler(code) END;
   errstring("Terminated by Halt("); errint(code); errstring("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
   errln;
@@ -570,7 +547,6 @@ BEGIN
 END Halt;
 
 PROCEDURE AssertFail*(code: INTEGER);
-VAR e: ErrorCode;
 BEGIN
   errstring("Assertion failure.");
   IF code # 0 THEN errstring(" ASSERT code "); errint(code); errstring("."); END;
@@ -578,8 +554,13 @@ BEGIN
   exit(code)
 END AssertFail;
 
-PROCEDURE SetHalt*(p: HaltProcedure);
-BEGIN HaltHandler := p; END SetHalt;
+PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code);";
+PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code);";
+
+PROCEDURE -SetHaltHandler (p: HaltProcedure) "SYSTEM_HaltHandler = p";
+PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
+
+PROCEDURE SetHalt*(p: HaltProcedure); BEGIN SetHaltHandler(p) END SetHalt;
 
 
 PROCEDURE TestLittleEndian;
@@ -590,16 +571,15 @@ PROCEDURE TestLittleEndian;
 PROCEDURE -getstdinhandle():  FileHandle "(Platform_FileHandle)GetStdHandle(STD_INPUT_HANDLE)";
 PROCEDURE -getstdouthandle(): FileHandle "(Platform_FileHandle)GetStdHandle(STD_OUTPUT_HANDLE)";
 PROCEDURE -getstderrhandle(): FileHandle "(Platform_FileHandle)GetStdHandle(STD_ERROR_HANDLE)";
-PROCEDURE -getpid():          DWORD    "(INTEGER)GetCurrentProcessId()";
+PROCEDURE -getpid():          DWORD      "(INTEGER)GetCurrentProcessId()";
 
 BEGIN
   TestLittleEndian;
 
-  HaltCode    := -128;
-  HaltHandler := NIL;
-  TimeStart   := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
-  CWD         := "";  getCurrentDirectory(CWD);
-  PID         := getpid();
+  HaltCode  := -128;  SetHalt(Halt);  SetAssertFail(AssertFail);
+  TimeStart := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
+  CWD       := "";  getCurrentDirectory(CWD);
+  PID       := getpid();
 
   SeekSet := seekset();
   SeekCur := seekcur();

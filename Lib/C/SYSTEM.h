@@ -69,8 +69,6 @@ typedef U_INTEGER SET;   // SET is 32 bit.
   typedef unsigned int SYSTEM_ADR;
 #endif
 
-typedef CHAR (*__Platform_MemAdr)[1];   // non-GC pointer type compatible with Platform.MemAdr
-
 
 // Run time system routines in SYSTEM.c
 
@@ -188,7 +186,7 @@ extern void       Heap_REGTYP();
 extern void       Heap_INCREF();
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
-#define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, cmd)
+#define __REGCMD(name, cmd)   // Heap_REGCMD(m, (CHAR*)name, cmd)
 #define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,enum);}
 #define __ENDMOD              return m
 #define __IMPORT(name__init)  Heap_INCREF(name__init())
@@ -196,23 +194,23 @@ extern void       Heap_INCREF();
 #define __EXTERN __attribute__((dllimport))
 #define __CALL_1 __attribute__((__stdcall__))
 
-// Main module initialisation, registration and finalisation
+// Main module initialization, registration and finalization
 
-extern void Platform_Init(INTEGER argc, __Platform_MemAdr argv);
+extern void SYSTEM_INIT(INTEGER argc, void *argvadr);
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; Platform_Init(argc, (__Platform_MemAdr)&argv);
+#define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, &argv);
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,enum)
 #define __FINI                Heap_FINALL(); return 0
 
 
 // Assertions and Halts
 
-extern void Platform_Halt(INTEGER code);
-extern void Platform_AssertFail(INTEGER code);
+extern void SYSTEM_HALT(INTEGER code);
+extern void SYSTEM_ASSERT_FAIL(INTEGER code);
 
-#define __HALT(code)         Platform_Halt(code)
-#define __ASSERT(cond, code) if (!(cond)) Platform_AssertFail(code)
+#define __HALT(code)         SYSTEM_HALT(code)
+#define __ASSERT(cond, code) if (!(cond)) SYSTEM_ASSERT_FAIL(code)
 
 
 // Memory allocation

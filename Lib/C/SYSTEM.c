@@ -16,6 +16,14 @@
 #include "SYSTEM.h"
 #include "stdarg.h"
 #include <signal.h>
+#include <stdlib.h>
+
+
+INTEGER SYSTEM_ArgCount;
+void   *SYSTEM_ArgVector;
+void  (*SYSTEM_AssertFailHandler)(INTEGER code);
+void  (*SYSTEM_HaltHandler)(INTEGER code);
+void   *SYSTEM_MainStackFrame; /* adr of main proc stack frame, used for stack collection */
 
 
 LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub) {return __X(i, ub);}
@@ -86,6 +94,37 @@ LONGINT SYSTEM_ENTIERL(LONGREAL x)
 
 extern void Heap_Lock();
 extern void Heap_Unlock();
+
+
+void SYSTEM_HALT(INTEGER code)
+{
+  if (SYSTEM_HaltHandler!=0) SYSTEM_HaltHandler(code);
+	exit(code);
+}
+
+void SYSTEM_ASSERT_FAIL(INTEGER code)
+{
+  if (SYSTEM_AssertFailHandler!=0) SYSTEM_AssertFailHandler(code);
+	exit(code);
+}
+
+
+// Program startup
+
+extern void Heap_InitHeap();
+
+void SYSTEM_INIT(INTEGER argc, void *argvadr)
+{
+  SYSTEM_MainStackFrame = argvadr;
+  SYSTEM_ArgCount = argc;
+  SYSTEM_ArgVector = *(void**)argvadr;
+  SYSTEM_AssertFailHandler = 0;
+  SYSTEM_HaltHandler = 0;
+  // This function (SYSTEM_INIT) is called at program startup BEFORE any
+  // modules have been initalized. In turn we must initialize the heap
+  // before module startup (xxx__init) code is run.
+  Heap_InitHeap();
+}
 
 SYSTEM_PTR SYSTEM_NEWARR(LONGINT *typ, LONGINT elemsz, int elemalgn, int nofdim, int nofdyn, ...)
 {

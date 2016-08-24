@@ -134,7 +134,7 @@ MODULE Heap;
   PROCEDURE REGMOD*(VAR name: ModuleName; enumPtrs: EnumProc): SYSTEM.PTR;
     VAR m: Module;
   BEGIN
-    (* REGMOD is called at the start of module initialisation code before that modules
+    (* REGMOD is called at the start of module initialization code before that modules
        type descriptors have been set up. "NEW" depends on the Heap modules type 
        descriptors being ready for use, therefore, just for the Heap module itself, we 
        must use SYSTEM.NEW. *)
@@ -152,7 +152,7 @@ MODULE Heap;
   PROCEDURE REGCMD*(m: Module; VAR name: CmdName; cmd: Command);
     VAR c: Cmd;
   BEGIN
-    (* REGCMD is called during module initialisation code before that modules
+    (* REGCMD is called during module initialization code before that modules
        type descriptors have been set up. "NEW" depends on the Heap modules type 
        descriptors being ready for use, therefore, just for the commands registered
        by the Heap module itself, we must use SYSTEM.NEW. *)
