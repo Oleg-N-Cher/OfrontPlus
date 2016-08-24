@@ -4,14 +4,14 @@ MODULE Reals;
   IMPORT S := SYSTEM, P := Platform;
 
   TYPE
-    SHORTINT = P.Int8; INTEGER = P.Int16; LONGINT = P.Int32; ADR = P.MemAdr;
+    SHORTINT = P.INT8; INTEGER = P.INT16; LONGINT = P.INT32; ADR = P.ADR;
 
 
   PROCEDURE -Offset(adr: ADR; offset: LONGINT): ADR
-      "((Platform_MemAdr)((SYSTEM_ADR)adr + offset))"; 
+      "((Platform_ADR)((SYSTEM_ADR)adr + offset))"; 
   PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
   PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADR
-      "((Platform_MemAdr)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
+      "((Platform_ADR)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
 
   PROCEDURE Ten*(e: INTEGER): REAL;
     VAR r, power: LONGREAL;

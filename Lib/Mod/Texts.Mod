@@ -3,7 +3,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     Files, Modules, Reals, P := Platform;
 
   TYPE
-    SHORTINT = P.Int8; INTEGER = P.Int16; LONGINT = P.Int32; HUGEINT = P.Int64;
+    SHORTINT = P.INT8; INTEGER = P.INT16; LONGINT = P.INT32; HUGEINT = P.INT64;
 
   (*--- insert field e: Elem into Texts.Scanner and change Texts.Scan to set it in case of class=6 *)
 

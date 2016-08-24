@@ -12,7 +12,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   BEGIN
     error := Platform.Write(
       Platform.StdOut,
-      SYSTEM.VAL(Platform.MemAdr, SYSTEM.ADR(line)), pos); 
+      SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(line)), pos); 
     pos := 0;
   END Flush;
 

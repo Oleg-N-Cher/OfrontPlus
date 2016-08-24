@@ -15,14 +15,14 @@ CONST
 
 
 TYPE
-  Int8* = BYTE; Int16* = SHORTINT; Int32* = INTEGER; Int64* = LONGINT;
-  MemAdr* = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
+  INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
+  ADR* = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bits *)
   
   TIME_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* time_t type is used
     instead of long, but which is also a 32-bit representation on some systems
     while there are even 64-bit representations on other systems. *)
-  DEV_T = LONGINT;  (* 64 bit in Linux 2.2 *)
-  INO_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bit *)
+  DEV_T = INT64;  (* 64 bit in Linux 2.2 *)
+  INO_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bits *)
 
   HaltProcedure = PROCEDURE(n: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
@@ -46,14 +46,10 @@ TYPE
 
 VAR
   LittleEndian-:   BOOLEAN;
-  MainStackFrame-: MemAdr;
   HaltCode-:       INTEGER;
   PID-:            INTEGER;  (* Note: Must be updated by Fork implementation *)
   CWD-:            ARRAY 256 OF CHAR;
-  ArgCount-:       INTEGER;
 
-  ArgVector-:      ArgVec;
-  HaltHandler:     HaltProcedure;
   TimeStart:       INTEGER;  (* milliseconds *)
 
   SeekSet-:        INTEGER;
@@ -128,44 +124,20 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): MemAdr "((Platform_MemAdr)malloc((size_t)(size)))";
+PROCEDURE -allocate(size: INTEGER): ADR "((Platform_ADR)malloc((size_t)(size)))";
 
-PROCEDURE ^ Halt*(code: INTEGER);
+PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
 
-PROCEDURE OSAllocate*(size: INTEGER): MemAdr; (* 2 Gb will be sufficient *)
+PROCEDURE OSAllocate*(size: INTEGER): ADR; (* 2 Gb will be sufficient *)
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* malloc will return the null pointer when it fails. *)
   END;
-  Halt(-25); RETURN NIL (* To remove __RETCHK *)
+  SystemHalt(-25); RETURN NIL (* To remove __RETCHK *)
 END OSAllocate;
 
-PROCEDURE -free(address: MemAdr) "free((void*)(address))";
-PROCEDURE OSFree*(address: MemAdr); BEGIN free(address) END OSFree;
-
-
-(* Program startup *)
-
-PROCEDURE -ExternInitHeap  "extern void Heap_InitHeap();";
-PROCEDURE -HeapInitHeap()  "Heap_InitHeap()";
-
-PROCEDURE Init*(argc: INTEGER; argvadr: MemAdr);
-TYPE
-  ArgVecPtr = POINTER [1] TO ARRAY [1] 1 OF ArgVec;
-VAR
-  av: ArgVecPtr;
-BEGIN
-  MainStackFrame := argvadr;
-  ArgCount       := argc;
-  av             := SYSTEM.VAL(ArgVecPtr, argvadr);
-  ArgVector      := av[0];
-  HaltCode       := -128;
-
-  (* This function (Platform.Init) is called at program startup BEFORE any
-     modules have been initalized. In turn we must initialize the heap
-     before module startup (xxx__init) code is run. *)
-  HeapInitHeap();
-END Init;
+PROCEDURE -free(address: ADR) "free((void*)(address))";
+PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
 
 
 (* Program arguments and environment access *)
@@ -185,9 +157,16 @@ BEGIN
   IF ~ getEnv(var, val) THEN val[0] := 0X END;
 END GetEnv;
 
+PROCEDURE -AAExternArgCount    "extern INTEGER SYSTEM_ArgCount;";
+PROCEDURE -AAExternArgVector   "extern void *SYSTEM_ArgVector;";
+PROCEDURE -ArgCount(): INTEGER "SYSTEM_ArgCount";
+PROCEDURE -ArgVector(): ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
+
 PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
+VAR
+  av: ArgVec;
 BEGIN
-  IF n < ArgCount THEN COPY(ArgVector[n]^, val) END
+  IF n < ArgCount() THEN av := ArgVector(); COPY(av[n]^, val) END
 END GetArg;
 
 PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);
@@ -205,7 +184,7 @@ PROCEDURE ArgPos*(s: ARRAY OF CHAR): INTEGER;
   VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 BEGIN
   i := 0; GetArg(i, arg);
-  WHILE (i < ArgCount) & (s # arg) DO INC(i); GetArg(i, arg) END ;
+  WHILE (i < ArgCount()) & (s # arg) DO INC(i); GetArg(i, arg) END ;
   RETURN i
 END ArgPos;
 
@@ -404,10 +383,10 @@ BEGIN
 END Size;
 
 
-PROCEDURE -readfile (fd: FileHandle; p: MemAdr; l: INTEGER): INTEGER
+PROCEDURE -readfile (fd: FileHandle; p: ADR; l: INTEGER): INTEGER
 "read(fd, (void*)(p), l)";
 
-PROCEDURE Read*(h: FileHandle; p: MemAdr; l: INTEGER; VAR n: INTEGER): ErrorCode;
+PROCEDURE Read*(h: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): ErrorCode;
 BEGIN
   n := readfile(h, p, l);
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
@@ -415,15 +394,15 @@ END Read;
 
 PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCode;
 BEGIN
-  n := readfile(h, SYSTEM.VAL(MemAdr, SYSTEM.ADR(b)), LEN(b));
+  n := readfile(h, SYSTEM.VAL(ADR, SYSTEM.ADR(b)), LEN(b));
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
 
-PROCEDURE -writefile(fd: FileHandle; p: MemAdr; l: INTEGER): INTEGER
+PROCEDURE -writefile(fd: FileHandle; p: ADR; l: INTEGER): INTEGER
 "write(fd, (void*)(p), l)";
 
-PROCEDURE Write*(h: FileHandle; p: MemAdr; l: INTEGER): ErrorCode;
+PROCEDURE Write*(h: FileHandle; p: ADR; l: INTEGER): ErrorCode;
   VAR written: INTEGER;
 BEGIN
   written := writefile(h, p, l);
@@ -527,10 +506,8 @@ BEGIN
 END DisplayHaltCode;
 
 PROCEDURE Halt*(code: INTEGER);
-VAR e: ErrorCode;
 BEGIN
   HaltCode := code;
-  IF HaltHandler # NIL THEN HaltHandler(code) END;
   errstring("Terminated by Halt("); errint(code); errstring("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
   errln;
@@ -538,7 +515,6 @@ BEGIN
 END Halt;
 
 PROCEDURE AssertFail*(code: INTEGER);
-VAR e: ErrorCode;
 BEGIN
   errstring("Assertion failure.");
   IF code # 0 THEN errstring(" ASSERT code "); errint(code); errstring("."); END;
@@ -546,8 +522,13 @@ BEGIN
   exit(code)
 END AssertFail;
 
-PROCEDURE SetHalt*(p: HaltProcedure);
-BEGIN HaltHandler := p; END SetHalt;
+PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code);";
+PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code);";
+
+PROCEDURE -SetHaltHandler (p: HaltProcedure) "SYSTEM_HaltHandler = p";
+PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
+
+PROCEDURE SetHalt*(p: HaltProcedure); BEGIN SetHaltHandler(p) END SetHalt;
 
 
 PROCEDURE TestLittleEndian;
@@ -555,13 +536,12 @@ PROCEDURE TestLittleEndian;
  BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
 
 
-PROCEDURE -getpid(): INTEGER   "(INTEGER)getpid()";
+PROCEDURE -getpid(): INTEGER "(INTEGER)getpid()";
 
 BEGIN
   TestLittleEndian;
 
-  HaltCode    := -128;
-  HaltHandler := NIL;
+  HaltCode    := -128;  SetHalt(Halt);  SetAssertFail(AssertFail);
   TimeStart   := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
   CWD         := "";  getcwd(CWD);
   PID         := getpid();

@@ -99,14 +99,12 @@ MODULE Heap;
     INC(lockdepth);
   END Lock;
 
-  PROCEDURE -PlatformHalt(code: INTEGER) "Platform_Halt(code)";
+  PROCEDURE -Halt(code: INTEGER) "__HALT(code)";
 
   PROCEDURE Unlock*;
   BEGIN
     DEC(lockdepth);
-    IF interrupted & (lockdepth = 0) THEN
-      PlatformHalt(-9);
-    END
+    IF interrupted & (lockdepth = 0) THEN Halt(-9) END
   END Unlock;
 
 
@@ -123,7 +121,7 @@ MODULE Heap;
   PROCEDURE REGMOD*(VAR name: ModuleName; enumPtrs: EnumProc): SYSTEM.PTR;
     VAR m: Module;
   BEGIN
-    (* REGMOD is called at the start of module initialisation code before that modules
+    (* REGMOD is called at the start of module initialization code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type 
        descriptors being ready for use, therefore, just for the Heap module itself, we 
        must use SYSTEM.NEW. *)
@@ -141,7 +139,7 @@ MODULE Heap;
   PROCEDURE REGCMD*(m: Module; VAR name: CmdName; cmd: Command);
     VAR c: Cmd;
   BEGIN
-    (* REGCMD is called during module initialisation code before that modules
+    (* REGCMD is called during module initialization code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type 
        descriptors being ready for use, therefore, just for the commands registered
        by the Heap module itself, we must use SYSTEM.NEW. *)
@@ -162,8 +160,15 @@ MODULE Heap;
   END INCREF;
 
 
-  PROCEDURE -ExternPlatformOSAllocate           "extern __Platform_MemAdr Platform_OSAllocate(INTEGER size);";
-  PROCEDURE -OSAllocate(size: INTEGER): INTEGER "((INTEGER)(SYSTEM_ADR)Platform_OSAllocate((SYSTEM_ADR)(size)))";
+  PROCEDURE -ExternOSAllocate1 "#if defined __linux__ || defined __unix__";
+  PROCEDURE -ExternOSAllocate2 "#  include <stdlib.h>";
+  PROCEDURE -ExternOSAllocate3 "#  define OSAllocate(size) malloc((size_t)(size))";
+  PROCEDURE -ExternOSAllocate4 "#else";
+  PROCEDURE -ExternOSAllocate5 '#  include "_windows.h"';
+  PROCEDURE -ExternOSAllocate6 "#  define OSAllocate(size) HeapAlloc(GetProcessHeap(), 0, (size_t)(size))";
+  PROCEDURE -ExternOSAllocate7 "#endif";
+
+  PROCEDURE -OSAllocate(size: INTEGER): INTEGER "((INTEGER)(SYSTEM_ADR)OSAllocate(size))";
 
   PROCEDURE NewChunk(blksz: INTEGER): INTEGER;
     VAR chnk: INTEGER;
@@ -490,8 +495,8 @@ MODULE Heap;
     END
   END FINALL;
 
-  PROCEDURE -ExternMainStackFrame              "extern INTEGER Platform_MainStackFrame;";
-  PROCEDURE -PlatformMainStackFrame(): INTEGER "Platform_MainStackFrame";
+  PROCEDURE -ExternMainStackFrame      "extern void *SYSTEM_MainStackFrame;";
+  PROCEDURE -MainStackFrame(): INTEGER "((INTEGER)(SYSTEM_ADR)SYSTEM_MainStackFrame)";
 
   PROCEDURE MarkStack(n: INTEGER; VAR cand: ARRAY OF INTEGER);
     VAR
@@ -505,7 +510,7 @@ MODULE Heap;
     END ;
     IF n = 0 THEN
       nofcand := 0; sp := SYSTEM.ADR(frame);
-      stack0 := PlatformMainStackFrame();
+      stack0 := MainStackFrame();
       (* check for minimum alignment of pointers *)
       inc := SYSTEM.ADR(align.p) - SYSTEM.ADR(align);
       IF sp > stack0 THEN inc := -inc END ;
@@ -569,7 +574,7 @@ PROCEDURE -ExternHeapInit "extern void *Heap__init();";
 PROCEDURE -HeapModuleInit 'Heap__init()';
 
   PROCEDURE InitHeap*;
-  (* InitHeap is called by Platform.init before any module bodies have been
+  (* InitHeap is called by SYSTEM_INIT before any module bodies have been
      initialised, to enable NEW, SYSTEM.NEW *)
   BEGIN
     heap    := NewChunk(heapSize0);
