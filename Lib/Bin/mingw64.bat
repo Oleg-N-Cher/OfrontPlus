@@ -3,7 +3,7 @@
 
 @SET WinDev=%XDev%\WinDev
 @SET PATH=%WinDev%\Bin\MinGW64\bin;%PATH%
-@SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
+@SET gcc=gcc.exe -pipe -Os -s -march=x86-64 -msse -msse2 -msse3 -fno-exceptions -fno-asynchronous-unwind-tables
 
 @SET Mod=%2
 @IF "%2"=="SYSTEM" SET Mod=..\C\SYSTEM
