@@ -38,7 +38,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MaxLRealPatH = 7FEFFFFFH;
 *)
 
-		MaxRExp* = 38;	MaxLExp* = 308;	MaxHDig* = 16;
+		MaxRExp* = 38;	MaxLExp* = 308;
 
 		MinHaltNr* = 0;
 		MaxHaltNr* = 255;
@@ -95,7 +95,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
 		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
 		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
-		ByteOrder-, BitOrder-, MaxSet-: INTEGER;
+		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: INTEGER;
 		MinSInt-, MinInt-, MaxSInt-, MaxInt-, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: LONGREAL;
 
@@ -426,6 +426,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
+		MaxHDig := 2*LIntSize;		
 		IF ArrLenSize = -1 THEN ArrLenSize := LIntSize
 		ELSIF ~ ((ArrLenSize = SIntSize) OR (ArrLenSize = IntSize) OR (ArrLenSize = LIntSize)) THEN Mark(-157, -1)
 		END;
