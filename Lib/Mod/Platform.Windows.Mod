@@ -22,9 +22,6 @@ TYPE
 
   BOOL = INT32; DWORD = INT32;
 
-  HaltProcedure = PROCEDURE(n: INTEGER);
-  SignalHandler = PROCEDURE(signal: INTEGER);
-
   ErrorCode*  = INTEGER;
   FileHandle* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
   (* In Windows, the file handle is used to identify a file. When a file is
@@ -48,7 +45,6 @@ TYPE
 
 VAR
   LittleEndian-:    BOOLEAN;
-  HaltCode-:        INTEGER;
   PID-:             DWORD;  (* Note: Must be updated by Fork implementation *)
   CWD-:             ARRAY 4096 OF CHAR;
 
@@ -197,23 +193,6 @@ BEGIN
 END ArgPos;
 
 
-(* Signals and traps *)
-
-(* PROCEDURE -signal(sig: INTEGER; func: SignalHandler) "signal(sig, func)"; *)
-
-(* TODO *)
-
-(* Ctrl/c handling *)
-
-PROCEDURE -SetInterruptHandler*(h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADR)h)";
-
-PROCEDURE -SetQuitHandler*     (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADR)h)";
-
-PROCEDURE SetBadInstructionHandler*(handler: SignalHandler);
-BEGIN (* TODO *) END SetBadInstructionHandler;
-
-
-
 (* Time of day *)
 
 PROCEDURE -getLocalTime  "SYSTEMTIME st; GetLocalTime(&st)";
@@ -310,20 +289,20 @@ BEGIN
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
-PROCEDURE New*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
-END New;
+END NewFile;
 
 
 PROCEDURE -closeHandle(h: FileHandle): BOOL "(INTEGER)CloseHandle((HANDLE)h)";
 
-PROCEDURE Close*(h: FileHandle): ErrorCode;
+PROCEDURE CloseFile*(h: FileHandle): ErrorCode;
 BEGIN
   IF closeHandle(h) = 0 THEN RETURN err() ELSE RETURN 0 END
-END Close;
+END CloseFile;
 
 
 PROCEDURE -byHandleFileInformation "BY_HANDLE_FILE_INFORMATION bhfi";
@@ -355,7 +334,7 @@ BEGIN
   e := OldRO(n, h);
   IF e # 0 THEN RETURN e END;
   e := Identify(h, identity);
-  i := Close(h);
+  i := CloseFile(h);
   RETURN e
 END IdentifyByName;
 
@@ -388,13 +367,13 @@ PROCEDURE -largeInteger "LARGE_INTEGER li";
 PROCEDURE -liLongint(): LONGINT "(LONGINT)li.QuadPart"; (* QuadPart is signed 64-bit integer *)
 PROCEDURE -getFileSize(h: FileHandle): BOOL "(INTEGER)GetFileSizeEx((HANDLE)h, &li)";
 
-PROCEDURE Size*(h: FileHandle; VAR len: LONGINT): ErrorCode;
+PROCEDURE FileSize*(h: FileHandle; VAR len: LONGINT): ErrorCode;
 BEGIN
   largeInteger;
   IF getFileSize(h) = 0 THEN RETURN err() END;
   len := liLongint();
   RETURN 0
-END Size;
+END FileSize;
 
 
 PROCEDURE -readfile (fd: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): BOOL
@@ -455,7 +434,7 @@ PROCEDURE -setEndOfFile(h: FileHandle): BOOL "(INTEGER)SetEndOfFile((HANDLE)h)";
 PROCEDURE -getFilePos(h: FileHandle; VAR r: LONGINT; VAR rc: BOOL)
 "LARGE_INTEGER liz = {0}; *rc = (INTEGER)SetFilePointerEx((HANDLE)h, liz, &li, FILE_CURRENT); *r = (LONGINT)li.QuadPart";
 
-PROCEDURE Truncate*(h: FileHandle; limit: LONGINT): ErrorCode;
+PROCEDURE TruncateFile*(h: FileHandle; limit: LONGINT): ErrorCode;
 VAR rc: BOOL; oldpos: LONGINT;
 BEGIN
   largeInteger;
@@ -467,15 +446,15 @@ BEGIN
   setFilePointerEx(h, oldpos, seekset(), rc);  (* Restore original file position *)
   IF rc = 0                                          THEN RETURN err() END;
   RETURN 0
-END Truncate;
+END TruncateFile;
 
 
 PROCEDURE -deleteFile(n: ARRAY OF CHAR): BOOL "(INTEGER)DeleteFile((char*)n)";
 
-PROCEDURE Unlink*(VAR n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE DeleteFile*(VAR n: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF deleteFile(n) = 0 THEN RETURN err() ELSE RETURN 0 END
-END Unlink;
+END DeleteFile;
 
 
 PROCEDURE -setCurrentDirectory(n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
@@ -494,73 +473,17 @@ END Chdir;
 PROCEDURE -moveFile(o, n: ARRAY OF CHAR): BOOL
 "(INTEGER)MoveFileEx((char*)o, (char*)n, MOVEFILE_REPLACE_EXISTING)";
 
-PROCEDURE Rename*(VAR o, n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile*(VAR o, n: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF moveFile(o, n) = 0 THEN RETURN err() ELSE RETURN 0 END
-END Rename;
+END RenameFile;
 
 
 (* Process termination *)
 
 PROCEDURE -exit(code: INTEGER) "ExitProcess((UINT)code)";
-PROCEDURE Exit*(code: INTEGER);
-BEGIN exit(code) END Exit;
-
-
-PROCEDURE -errstring(s: ARRAY OF CHAR) "{ DWORD dummy; WriteFile((HANDLE)Platform_StdOut, s, s__len-1, &dummy, 0); }";
-PROCEDURE -errc     (c: CHAR)          "{ DWORD dummy; WriteFile((HANDLE)Platform_StdOut, &c, 1, &dummy, 0); }";
-PROCEDURE errch(c: CHAR); BEGIN errc(c) END errch;
-PROCEDURE errln; BEGIN errch(0DX); errch(0AX) END errln;
-
-PROCEDURE errposint(l: INTEGER);
-BEGIN IF l>10 THEN errposint(l DIV 10) END; errch(CHR(ORD("0") + (l MOD 10))) END errposint;
-
-PROCEDURE errint(l: INTEGER);
-BEGIN IF l<0 THEN errch("-"); l := -l END; errposint(l) END errint;
-
-PROCEDURE DisplayHaltCode(code: INTEGER);
-BEGIN
-  CASE code OF
-  | -1: errstring("Rider ReadBuf/WriteBuf transfer size longer than buffer.")
-  | -2: errstring("Index out of range.")
-  | -3: errstring("Reached end of function without reaching RETURN.")
-  | -4: errstring("CASE statement: no matching label and no ELSE.")
-  | -5: errstring("Type guard failed.")
-  | -6: errstring("Type equality failed.")
-  | -7: errstring("WITH statement type guard failed.")
-  | -8: errstring("SHORT: Value too large for shorter type.")
-  | -9: errstring("Heap interrupted while locked, but lockdepth = 0 at unlock.")
-  |-15: errstring("Type descriptor size mismatch.")
-  |-20: errstring("Too many, or negative number of, elements in dynamic array.")
-  |-25: errstring("Memory allocation error.")
-  ELSE
-  END
-END DisplayHaltCode;
-
-PROCEDURE Halt*(code: INTEGER);
-BEGIN
-  HaltCode := code;
-  errstring("Terminated by Halt("); errint(code); errstring("). ");
-  IF code < 0 THEN DisplayHaltCode(code) END;
-  errln;
-  exit(code)
-END Halt;
-
-PROCEDURE AssertFail*(code: INTEGER);
-BEGIN
-  errstring("Assertion failure.");
-  IF code # 0 THEN errstring(" ASSERT code "); errint(code); errstring("."); END;
-  errln;
-  exit(code)
-END AssertFail;
-
-PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code);";
-PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code);";
-
-PROCEDURE -SetHaltHandler (p: HaltProcedure) "SYSTEM_HaltHandler = p";
-PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
-
-PROCEDURE SetHalt*(p: HaltProcedure); BEGIN SetHaltHandler(p) END SetHalt;
+PROCEDURE ExitOS*(code: INTEGER);
+BEGIN exit(code) END ExitOS;
 
 
 PROCEDURE TestLittleEndian;
@@ -576,7 +499,6 @@ PROCEDURE -getpid():          DWORD      "(INTEGER)GetCurrentProcessId()";
 BEGIN
   TestLittleEndian;
 
-  HaltCode  := -128;  SetHalt(Halt);  SetAssertFail(AssertFail);
   TimeStart := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
   CWD       := "";  getCurrentDirectory(CWD);
   PID       := getpid();

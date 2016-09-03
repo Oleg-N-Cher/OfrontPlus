@@ -13,6 +13,7 @@
 @CALL ..\Bin\mingw64 %Lib% SYSTEM
 @CALL ..\Bin\mingw64 %Lib% Heap
 @CALL ..\Bin\mingw64 %Lib% Platform
+@CALL ..\Bin\mingw64 %Lib% Kernel
 @CALL ..\Bin\mingw64 %Lib% Args
 @CALL ..\Bin\mingw64 %Lib% Console
 @CALL ..\Bin\mingw64 %Lib% Strings
