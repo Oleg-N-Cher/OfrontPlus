@@ -1,7 +1,7 @@
 MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 
 	IMPORT
-		SYSTEM, Heap, Platform,
+		SYSTEM, Heap, Kernel,
 		OPP := OfrontOPP, OPB := OfrontOPB, OPT := OfrontOPT,
 		OPV := OfrontOPV, OPC := OfrontOPC, OPM := OfrontOPM;
 
@@ -53,7 +53,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 			OPM.InitOptions;
 			Heap.GC(FALSE);
 			Module(done);
-			IF ~done THEN Platform.Exit(1) END
+			IF ~done THEN Kernel.Exit(1) END
 		END
 	END Translate;
 
@@ -61,19 +61,19 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 	BEGIN
 		Heap.FINALL();
 		IF sig = 3 THEN
-			Platform.Exit(0)
+			Kernel.Exit(0)
 		ELSE
-			IF (sig = 4) & (Platform.HaltCode = -15) THEN
+			IF (sig = 4) & (Kernel.HaltCode = -15) THEN
 				OPM.LogWStr(" --- Ofront+: internal error");
 				OPM.LogWLn
 			END ;
-			Platform.Exit(2)
+			Kernel.Exit(2)
 		END
 	END Trap;
 
 BEGIN (*$MAIN*)
-	Platform.SetInterruptHandler(Trap);	(* interrupt *)
-	Platform.SetQuitHandler(Trap);	(* quit *)
-	Platform.SetBadInstructionHandler(Trap);	(* illegal instruction, HALT *)
+	Kernel.SetInterruptHandler(Trap);	(* interrupt *)
+	Kernel.SetQuitHandler(Trap);	(* quit *)
+	Kernel.SetBadInstructionHandler(Trap);	(* illegal instruction, HALT *)
 	OPB.typSize := OPV.TypSize; OPT.typSize := OPV.TypSize; Translate
 END OfrontCmd.
