@@ -99,13 +99,13 @@ extern void Heap_Unlock();
 void SYSTEM_HALT(INTEGER code)
 {
   if (SYSTEM_HaltHandler!=0) SYSTEM_HaltHandler(code);
-	exit(code);
+  exit(code);
 }
 
 void SYSTEM_ASSERT_FAIL(INTEGER code)
 {
   if (SYSTEM_AssertFailHandler!=0) SYSTEM_AssertFailHandler(code);
-	exit(code);
+  exit(code);
 }
 
 
