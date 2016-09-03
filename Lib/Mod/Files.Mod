@@ -136,9 +136,9 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       ELSIF f.state = close THEN
         f.workName := f.registerName; f.registerName := ""; f.tempFile := FALSE
       END;
-      error := Platform.Unlink(f.workName);  (*unlink first to avoid stale NFS handles and to avoid reuse of inodes*)
+      error := Platform.DeleteFile(f.workName);  (*unlink first to avoid stale NFS handles and to avoid reuse of inodes*)
 
-      error := Platform.New(f.workName, f.fd);
+      error := Platform.NewFile(f.workName, f.fd);
       done := error = 0;
       IF done THEN
         f.next := files;  files := f;
@@ -201,7 +201,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       WHILE (prev # NIL) & (prev.next # f) DO prev := prev.next END;
       IF prev.next # NIL THEN prev.next := f.next END
     END;
-    error := Platform.Close(f.fd);
+    error := Platform.CloseFile(f.fd);
     f.fd := Platform.InvalidHandleValue(); f.state := create; DEC(Heap.FileCount);
   END CloseOSFile;
 
@@ -276,7 +276,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
             INC(i)
           END;
           f.swapper := -1; f.identity := identity;
-          error := Platform.Size(f.fd, len); f.len := len
+          error := Platform.FileSize(f.fd, len); f.len := len
         END;
         RETURN f
       END;
@@ -320,7 +320,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
             RETURN f
           ELSE NEW(f); Heap.RegisterFinalizer(f, Finalize);
             f.fd := fd; f.state := open; f.pos := 0; f.swapper := -1; (*all f.buf[i] = NIL*)
-            error := Platform.Size(fd, len); f.len := len;
+            error := Platform.FileSize(fd, len); f.len := len;
             COPY(name, f.workName); f.registerName := ""; f.tempFile := FALSE;
             f.identity := identity;
             f.next := files; files := f; INC(Heap.FileCount);
@@ -342,7 +342,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       INC(i)
     END;
     IF f.fd # Platform.InvalidHandleValue() THEN
-      error := Platform.Truncate(f.fd, 0);
+      error := Platform.TruncateFile(f.fd, 0);
       error := Platform.Seek(f.fd, 0, Platform.SeekSet)
     END;
     f.pos := 0; f.len := 0; f.swapper := -1;
@@ -515,7 +515,7 @@ Especially Length would become fairly complex.
 *)
 
   PROCEDURE Delete*(name: ARRAY [1] OF CHAR; VAR res: INTEGER);
-  BEGIN res := Platform.Unlink(name) END Delete;
+  BEGIN res := Platform.DeleteFile(name) END Delete;
 
   PROCEDURE Rename* (old, new: ARRAY [1] OF CHAR; VAR res: INTEGER);
     VAR
@@ -535,7 +535,7 @@ Especially Length would become fairly complex.
       IF (error # 0) & ~Platform.SameFile(oldidentity, newidentity) THEN
         Delete(new, error);  (* work around stale nfs handles *)
       END;
-      error := Platform.Rename(old, new);
+      error := Platform.RenameFile(old, new);
       (* Console.String("Platform.Rename error code "); Console.Int(error,1); Console.Ln; *)
       IF ~Platform.DifferentFilesystems(error) THEN
         res := error; RETURN
@@ -543,22 +543,22 @@ Especially Length would become fairly complex.
         (* cross device link, move the file *)
         error := Platform.OldRO(old, fdold);
         IF error # 0 THEN res := 2; RETURN END;
-        error := Platform.New(new, fdnew);
-        IF error # 0 THEN error := Platform.Close(fdold); res := 3; RETURN END;
+        error := Platform.NewFile(new, fdnew);
+        IF error # 0 THEN error := Platform.CloseFile(fdold); res := 3; RETURN END;
         error := Platform.Read(fdold, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), bufsize, n);
         WHILE n > 0 DO
           error := Platform.Write(fdnew, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), n);
           IF error # 0 THEN
-            ignore := Platform.Close(fdold);
-            ignore := Platform.Close(fdnew);
+            ignore := Platform.CloseFile(fdold);
+            ignore := Platform.CloseFile(fdnew);
             Err("cannot move file", NIL, error)
           END;
           error := Platform.Read(fdold, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), bufsize, n);
         END;
-        ignore := Platform.Close(fdold);
-        ignore := Platform.Close(fdnew);
+        ignore := Platform.CloseFile(fdold);
+        ignore := Platform.CloseFile(fdnew);
         IF n = 0 THEN
-          error := Platform.Unlink(old); res := 0
+          error := Platform.DeleteFile(old); res := 0
         ELSE
           Err("cannot move file", NIL, error)
         END;
@@ -773,7 +773,7 @@ Especially Length would become fairly complex.
     *)
     IF f.fd # Platform.InvalidHandleValue() THEN
       CloseOSFile(f);
-      IF f.tempFile THEN res := Platform.Unlink(f.workName) END
+      IF f.tempFile THEN res := Platform.DeleteFile(f.workName) END
     END
   END Finalize;
 

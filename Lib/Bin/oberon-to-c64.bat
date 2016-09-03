@@ -7,9 +7,11 @@
 ::@IF errorlevel 1 PAUSE
 ofront+ -seatpx ..\Mod\Platform.Windows.Mod
 @IF errorlevel 1 PAUSE
-ofront+ -se ..\Mod\Args.Mod
-@IF errorlevel 1 PAUSE
 ofront+ -se ..\Mod\Console.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -seatpx ..\Mod\Kernel.Mod
+@IF errorlevel 1 PAUSE
+ofront+ -se ..\Mod\Args.Mod
 @IF errorlevel 1 PAUSE
 ofront+ -se ..\Mod\Strings.Mod
 @IF errorlevel 1 PAUSE

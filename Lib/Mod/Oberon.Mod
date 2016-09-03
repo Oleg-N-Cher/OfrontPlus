@@ -5,7 +5,7 @@ MODULE Oberon;
   IMPORT Platform, Texts, Args, Console;
 
   TYPE
-    INTEGER = Platform.Int16; LONGINT = Platform.Int32;
+    INTEGER = Platform.INT16; LONGINT = Platform.INT32;
 
     ParList* = POINTER TO ParRec;
 
