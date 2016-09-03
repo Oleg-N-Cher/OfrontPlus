@@ -864,7 +864,7 @@ suffix does not work in K&R *)
 	END PromoteIntConstToLInt;
 
 	PROCEDURE SetWorkDir* (
-		IN workdir, subsysdir: ARRAY OF CHAR; useSymObj: BOOLEAN; IN addtoObj: ARRAY 3 OF CHAR);
+		IN workdir, subsysdir: ARRAY OF CHAR; useObj, useSym: BOOLEAN; IN addTo: ARRAY 3 OF CHAR);
 	VAR
 		i: INTEGER;
 	BEGIN
@@ -872,11 +872,9 @@ suffix does not work in K&R *)
 		i := LEN(workDir$) - 1; IF (i >= 0) & ((workDir[i] = "\") OR (workDir[i] = "/")) THEN workDir[i] := 0X END;
 		subsys := subsysdir$;
 		i := LEN(subsys$) - 1; IF (i >= 0) & ((subsys[i] = "\") OR (subsys[i] = "/")) THEN subsys[i] := 0X END;
-		IF useSymObj THEN
-			SFsubdir := "/Sym" + addtoObj; CFsubdir := "/Obj" + addtoObj;
-		ELSE
-			SFsubdir := ""; CFsubdir := "";
-		END;
+		SFsubdir := ""; CFsubdir := "";
+		IF useObj THEN CFsubdir := "/Obj" + addTo END;
+		IF useSym THEN SFsubdir := "/Sym" + addTo ELSIF useObj THEN SFsubdir := "/Obj" + addTo END;
 	END SetWorkDir;
 
 BEGIN
