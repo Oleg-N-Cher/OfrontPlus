@@ -1,7 +1,7 @@
 MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 
 	IMPORT
-		SYSTEM, Heap, Kernel,
+		Heap, Kernel,
 		OPP := OfrontOPP, OPB := OfrontOPB, OPT := OfrontOPT,
 		OPV := OfrontOPV, OPC := OfrontOPC, OPM := OfrontOPM;
 
