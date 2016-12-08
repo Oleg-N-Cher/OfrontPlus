@@ -7,7 +7,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		param typ has a strobj pointer to an anonymous object, i.e. typ.strobj.name = ""
 *)
 
-	IMPORT OPT := OfrontOPT, OPM := OfrontOPM, SYSTEM;
+	IMPORT OPT := OfrontOPT, OPM := OfrontOPM;
 
 	CONST
 		(* structure forms *)
@@ -531,7 +531,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END DefineType;
 
-	PROCEDURE Prefixed(x: OPT.ConstExt; y: ARRAY [1] OF CHAR): BOOLEAN;
+	PROCEDURE Prefixed(x: OPT.ConstExt; y: ARRAY OF CHAR): BOOLEAN;
 		VAR i: INTEGER;
 	BEGIN i := 0;
 		WHILE x[i+1] = y[i] DO INC(i) END ;
