@@ -173,15 +173,15 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE ^GetProperties;
 
-	PROCEDURE OpenPar*;	(* prepare for a sequence of translations *)
+	PROCEDURE OpenPar*(title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
 		IF Args.argc = 1 THEN stop := TRUE;
 			Console.Ln;
-			Console.String("OfrontPlus - Oberon family of languages to C Translator v0.9"); Console.Ln;
-			Console.String("Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2016"); Console.Ln; Console.Ln;
+			Console.String(title); Console.Ln;
+			Console.String("Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2017"); Console.Ln; Console.Ln;
 			Console.String("SYNOPSIS"); Console.Ln;
-				Console.String('  command = "ofront+" options {file options}.'); Console.Ln;
+			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
 			Console.String('  option  = "m" | "s" | "e" | "i" | "l" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
 			Console.String('            "1" Oberon | "2" Oberon-2 | "c" Component Pascal | "7" Oberon-07');
@@ -204,23 +204,24 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END InitOptions;
 
-	PROCEDURE Init*(VAR done: BOOLEAN);	(* get the source for one translation *)
-		VAR T: Texts.Text; beg, end, time: INTEGER;
+	(* get the source for one translation; msg is "translating" or "compiling" *)
+	PROCEDURE Init*(msg: ARRAY OF CHAR; VAR done: BOOLEAN);
+		VAR T: Texts.Text; beg, end, time: LONGINT;
 			s: ARRAY 256 OF CHAR;
 	BEGIN
 		done := FALSE; curpos := 0;
-		IF stop OR (S >= Args.argc) THEN RETURN END ;
+		IF stop OR (S >= Args.argc) THEN noerr := TRUE; RETURN END ;
 		s := ""; Args.Get(S, s);
 		NEW(T); Texts.Open(T, s);
 		LogWStr(s);
-		IF T.len = 0 THEN LogWStr(" not found"); LogWLn
+		IF Files.Old(s) = NIL THEN LogWStr(" not found"); LogWLn; noerr := FALSE
 		ELSE
 			Texts.OpenReader(inR, T, 0);
-			LogWStr("  translating");
-			done := TRUE
+			LogWStr("  "); LogWStr(msg);
+			done := TRUE; noerr := TRUE
 		END ;
 		INC(S);
-		level := 0; noerr := TRUE; errpos := curpos; lasterrpos := curpos -10
+		level := 0; errpos := curpos; lasterrpos := curpos -10
 	END Init;
 
 	(* ------------------------- read source text -------------------------*)
