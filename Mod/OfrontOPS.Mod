@@ -39,7 +39,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 
 	CONST
 		(* numtyp values *)
-		char = 1; integer = 2; real = 3; longreal = 4; longint = 5;
+		char = 1; integer = 2; real = 3; longreal = 4;
 
 		(*symbol values*)
 		null = 0; times = 1; slash = 2; div = 3; mod = 4;
