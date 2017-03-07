@@ -26,7 +26,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		oberon2* = 13; 	(** 2 - compile Oberon-2 programs *)
 		compascal* = 14;	(** c - compile Component Pascal programs *)
 		oberon07* = 15;	(** 7 - compile Oberon-07 programs *)
-		defopt* = {inxchk, typchk, ptrinit, ansi, assert, lineno};	(* default options *)
+		defopt* = {inxchk, typchk, ptrinit, ansi, assert, lineno, newsf, extsf};	(* default options *)
 
 		nilval* = 0;
 (*
