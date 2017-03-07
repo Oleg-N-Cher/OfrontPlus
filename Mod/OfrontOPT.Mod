@@ -2,6 +2,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*
 2002-08-20 jt: NewStr: txtpos remains 0 for structs read from symbol file
+2016-10-12 jt: issue #7: FPrintStr improved: constant added to btyp^.pbfp for avoiding a collision pattern
 *)
 
 	IMPORT
@@ -175,7 +176,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END OpenScope;
 
 	PROCEDURE CloseScope*;
-	BEGIN topScope := topScope^.left
+	BEGIN IF topScope # NIL THEN topScope := topScope^.left END
 	END CloseScope;
 
 	PROCEDURE Init*(VAR name: OPS.Name; opt: SET);
@@ -368,7 +369,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF f = Pointer THEN
 				strobj := typ^.strobj; bstrobj := btyp^.strobj;
 				IF (strobj = NIL) OR (strobj^.name = "") OR (bstrobj = NIL) OR (bstrobj^.name = "") THEN
-					FPrintStr(btyp); OPM.FPrint(pbfp, btyp^.pbfp); pvfp := pbfp
+					FPrintStr(btyp); OPM.FPrint(pbfp, btyp^.pbfp + 12345(*constant added for fixing issue #7*)); pvfp := pbfp
 				(* else use idfp as pbfp and as pvfp, do not call FPrintStr(btyp) here, else cycle not broken *)
 				END
 			ELSIF f = ProcTyp THEN (* use idfp as pbfp and as pvfp *)
