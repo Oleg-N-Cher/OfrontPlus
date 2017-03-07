@@ -1,6 +1,10 @@
 MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 (* build parse tree *)
 
+(* changes
+	2015-10-07 jt, support for SYSTEM.ADR("x"), i.e. applied to char constant, added in MOp
+*)
+
 	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
 
 	CONST
