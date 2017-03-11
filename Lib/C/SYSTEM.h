@@ -91,12 +91,9 @@ extern LONGINT SYSTEM_ENTIERL(LONGREAL x);
 
 // Signal handling in SYSTEM.c
 
-#ifndef _WIN32
-  extern void SystemSetHandler(int s, SYSTEM_ADR h);
-#else
-  extern void SystemSetInterruptHandler(SYSTEM_ADR h);
-  extern void SystemSetQuitHandler     (SYSTEM_ADR h);
-#endif
+extern void SystemSetInterruptHandler     (SYSTEM_ADR h);
+extern void SystemSetQuitHandler          (SYSTEM_ADR h);
+extern void SystemSetBadInstructionHandler(SYSTEM_ADR h);
 
 
 // String comparison

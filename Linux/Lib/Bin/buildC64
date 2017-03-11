@@ -15,8 +15,9 @@ ar -rc $Lib Heap.o
 rm ../Sym64/Heap.sym
 mv Heap.sym ../Sym64
 #
-../Bin/compileC64 $Lib Args
 ../Bin/compileC64 $Lib Console
+../Bin/compileC64 $Lib Kernel
+../Bin/compileC64 $Lib Args
 ../Bin/compileC64 $Lib Strings
 ../Bin/compileC64 $Lib Files
 ../Bin/compileC64 $Lib Reals

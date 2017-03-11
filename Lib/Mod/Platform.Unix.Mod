@@ -292,20 +292,20 @@ BEGIN
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
-PROCEDURE New*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
-END New;
+END NewFile;
 
 
 PROCEDURE -closefile (fd: FileHandle): INTEGER "close(fd)";
 
-PROCEDURE Close*(h: FileHandle): ErrorCode;
+PROCEDURE CloseFile*(h: FileHandle): ErrorCode;
 BEGIN
   IF closefile(h) < 0 THEN RETURN err() ELSE RETURN 0 END
-END Close;
+END CloseFile;
 
 
 PROCEDURE -fstat(fd: FileHandle):  INTEGER "fstat(fd, &s)";
@@ -356,13 +356,13 @@ BEGIN
 END MTimeAsClock;
 
 
-PROCEDURE Size*(h: FileHandle; VAR len: LONGINT): ErrorCode;
+PROCEDURE FileSize*(h: FileHandle; VAR len: LONGINT): ErrorCode;
 BEGIN
   structstats;
   IF fstat(h) < 0 THEN RETURN err() END;
   len := statsize();
   RETURN 0
-END Size;
+END FileSize;
 
 
 PROCEDURE -readfile (fd: FileHandle; p: ADR; l: INTEGER): INTEGER
@@ -413,10 +413,10 @@ END Seek;
 
 PROCEDURE -ftruncate(fd: FileHandle; l: INTEGER): INTEGER "ftruncate(fd, l)";
 
-PROCEDURE Truncate*(h: FileHandle; l: INTEGER): ErrorCode;
+PROCEDURE TruncateFile*(h: FileHandle; l: INTEGER): ErrorCode;
 BEGIN
   IF (ftruncate(h, l) < 0) THEN RETURN err() ELSE RETURN 0 END;
-END Truncate;
+END TruncateFile;
 
 
 PROCEDURE -unlink(n: ARRAY OF CHAR): INTEGER "unlink((char*)n)";
@@ -440,10 +440,10 @@ END Chdir;
 
 PROCEDURE -rename(o,n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
 
-PROCEDURE Rename*(VAR o, n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile*(VAR o, n: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF rename(o, n) < 0 THEN RETURN err() ELSE RETURN 0 END
-END Rename;
+END RenameFile;
 
 
 (* Process termination *)

@@ -10,8 +10,9 @@ rm ../Sym/*.sym
 ../Bin/compileWine $Lib SYSTEM
 ../Bin/compileWine $Lib Platform.Unix
 ../Bin/compileWine $Lib Heap
-../Bin/compileWine $Lib Args
 ../Bin/compileWine $Lib Console
+../Bin/compileWine $Lib Kernel
+../Bin/compileWine $Lib Args
 ../Bin/compileWine $Lib Strings
 ../Bin/compileWine $Lib Files
 ../Bin/compileWine $Lib Reals

@@ -15,8 +15,9 @@ ar -rc $Lib Heap.o
 rm ../Sym/Heap.sym
 mv Heap.sym ../Sym
 #
-../Bin/compile $Lib Args
 ../Bin/compile $Lib Console
+../Bin/compile $Lib Kernel
+../Bin/compile $Lib Args
 ../Bin/compile $Lib Strings
 ../Bin/compile $Lib Files
 ../Bin/compile $Lib Reals
