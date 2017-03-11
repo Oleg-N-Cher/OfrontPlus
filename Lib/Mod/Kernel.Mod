@@ -8,39 +8,15 @@ TYPE
 VAR
   HaltCode-: INTEGER;
 
-(* WINDOWS *)
-
 (* Signals and traps *)
-
-(* PROCEDURE -signal(sig: INTEGER; func: SignalHandler) "signal(sig, func)"; *)
 
 (* TODO *)
 
 (* Ctrl/c handling *)
 
-PROCEDURE -SetInterruptHandler*(h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADR)h)";
-
-PROCEDURE -SetQuitHandler*     (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADR)h)";
-
-PROCEDURE SetBadInstructionHandler*(handler: SignalHandler);
-BEGIN (* TODO *) END SetBadInstructionHandler;
-
-(* UNIX
-
-(* Signals and traps *)
-
-PROCEDURE -sethandler(s: INTEGER; h: SignalHandler) "SystemSetHandler(s, (SYSTEM_ADR)h)";
-
-PROCEDURE SetInterruptHandler*(handler: SignalHandler);
-BEGIN sethandler(2, handler); END SetInterruptHandler;
-
-PROCEDURE SetQuitHandler*(handler: SignalHandler);
-BEGIN sethandler(3, handler); END SetQuitHandler;
-
-PROCEDURE SetBadInstructionHandler*(handler: SignalHandler);
-BEGIN sethandler(4, handler); END SetBadInstructionHandler;
-
-*)
+PROCEDURE -SetInterruptHandler*     (h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADR)h)";
+PROCEDURE -SetQuitHandler*          (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADR)h)";
+PROCEDURE -SetBadInstructionHandler*(h: SignalHandler) "SystemSetBadInstructionHandler((SYSTEM_ADR)h)";
 
 
 PROCEDURE DisplayHaltCode(code: INTEGER);

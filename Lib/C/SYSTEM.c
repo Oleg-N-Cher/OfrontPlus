@@ -235,6 +235,18 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         }
     }
 
+    void SystemSetInterruptHandler(SYSTEM_ADR h) {
+        SystemSetHandler(2, h);
+    }
+
+    void SystemSetQuitHandler(SYSTEM_ADR h) {
+        SystemSetHandler(3, h);
+    }
+
+    void SystemSetBadInstructionHandler(SYSTEM_ADR h) {
+        SystemSetHandler(4, h);
+    }
+
 #else
 
     // Provides Windows callback handlers for signal-like scenarios
@@ -274,6 +286,9 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
     void SystemSetQuitHandler(SYSTEM_ADR h) {
         EnsureConsoleCtrlHandler();
         SystemQuitHandler = (SystemSignalHandler)h;
+    }
+
+    void SystemSetBadInstructionHandler(SYSTEM_ADR h) {
     }
 
 #endif

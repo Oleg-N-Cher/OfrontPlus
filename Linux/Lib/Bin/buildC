@@ -9,8 +9,9 @@ rm ../Sym64/*.sym
 ../Bin/compileC $Lib SYSTEM
 ../Bin/compileC $Lib Platform.Unix
 ../Bin/compileC $Lib Heap
-../Bin/compileC $Lib Args
 ../Bin/compileC $Lib Console
+../Bin/compileC $Lib Kernel
+../Bin/compileC $Lib Args
 ../Bin/compileC $Lib Strings
 ../Bin/compileC $Lib Files
 ../Bin/compileC $Lib Reals
