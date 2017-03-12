@@ -919,31 +919,23 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END GenHdr;
 
 	PROCEDURE GenHeaderMsg;
-		VAR i: INTEGER;
 	BEGIN
 		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg); 
-		FOR i := 0 TO 31 DO
-			IF i IN OPM.glbopt THEN
-				CASE i OF	(* c.f. ScanOptions in OPM *)
-				| OPM.extsf: OPM.Write("e")
-				| OPM.newsf: OPM.Write("s")
-				| OPM.mainprog: OPM.Write("m")
-				| OPM.inxchk: OPM.Write("x")
-				| OPM.vcpp: OPM.Write("v")
-				| OPM.ranchk: OPM.Write("r")
-				| OPM.typchk: OPM.Write("t")
-				| OPM.assert: OPM.Write("a")
-				| OPM.ansi: OPM.Write("k")
-				| OPM.ptrinit: OPM.Write("p")
-				| OPM.include0: OPM.Write("i")
-				| OPM.lineno:
-				| OPM.oberon1: OPM.Write("1")
-				| OPM.oberon2: OPM.Write("2")
-				| OPM.compascal: OPM.Write("c")
-				| OPM.oberon07: OPM.Write("7")
-				END
-			END
-		END;
+		IF OPM.extsf IN OPM.glbopt THEN OPM.Write("e") END;
+		IF OPM.newsf IN OPM.glbopt THEN OPM.Write("s") END;
+		IF OPM.mainprog IN OPM.glbopt THEN OPM.Write("m") END;
+		IF ~(OPM.inxchk IN OPM.glbopt) THEN OPM.Write("x") END;
+		IF OPM.vcpp IN OPM.glbopt THEN OPM.Write("v") END;
+		IF OPM.ranchk IN OPM.glbopt THEN OPM.Write("r") END;
+		IF ~(OPM.typchk IN OPM.glbopt) THEN OPM.Write("t") END;
+		IF ~(OPM.assert IN OPM.glbopt) THEN OPM.Write("a") END;
+		IF ~(OPM.ansi IN OPM.glbopt) THEN OPM.Write("k") END;
+		IF ~(OPM.ptrinit IN OPM.glbopt) THEN OPM.Write("p") END;
+		IF OPM.include0 IN OPM.glbopt THEN OPM.Write("i") END;
+		IF OPM.oberon1 IN OPM.glbopt THEN OPM.Write("1") END;
+		IF OPM.oberon2 IN OPM.glbopt THEN OPM.Write("2") END;
+		IF OPM.compascal IN OPM.glbopt THEN OPM.Write("C") END;
+		IF OPM.oberon07 IN OPM.glbopt THEN OPM.Write("7") END;
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;
 
