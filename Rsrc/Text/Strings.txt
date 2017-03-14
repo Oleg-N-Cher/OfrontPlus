@@ -1,5 +1,5 @@
 STRINGS
-options	ekxatps
+options	sxtakp
 directories	%WorkDir%;%Subsys%/Lib
 ok	ok
 error	error(s) detected
@@ -167,6 +167,7 @@ insertMarkers	Insert Markers
 253	"^0" is new, compile with option e
 301	implicit type cast
 306	inappropriate symbol file ignored
+308	SYSTEM.VAL result includes memory past end of source variable
 900	never used
 901	never set
 902	used before set
