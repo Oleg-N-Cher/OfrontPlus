@@ -3,6 +3,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 (* changes
 	2015-10-07 jt, support for SYSTEM.ADR("x"), i.e. applied to char constant, added in MOp
+	2017-03-16 davebrown, allow usage of SYSTEM.VAL in CONST section to explicitly define types of integer constants
 *)
 
 	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
@@ -1315,19 +1316,28 @@ avoid unnecessary intermediate variables in OFront
 				END ;
 				p^.typ := OPT.booltyp
 		| valfn: (*SYSTEM.VAL*)	(* type is changed without considering the byte ordering on the target machine *)
+				(* p (1st param): desired type *)
+				(* x (2nd param): constant or value to be converted to p *)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) OR
 					(f IN {Undef, String, NoTyp}) OR (x^.typ^.comp = DynArr) THEN err(126)
 				END ;
 				(* Warn if the result type includes memory past the end of the source variable *)
+				OPT.typSize(x^.typ); OPT.typSize(p^.typ);
 				IF (x^.class # Nconst) & (x^.typ^.size < p^.typ^.size) THEN err(-308) END;
-				t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t;
+				IF (x^.class = Nconst) & (x^.typ^.form IN intSet) & (p^.typ^.form IN intSet) THEN
+					(* Convert integer constants in place allowing usage in CONST section *)
+					Convert(x, p^.typ)
+				ELSE
+					t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t;
 (*
-				IF (x^.class >= Nconst) OR ((f IN realSet) # (p^.typ^.form IN realSet)) THEN
-					t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t
-				ELSE x^.readonly := FALSE
-				END ;
+					IF (x^.class >= Nconst) OR ((f IN realSet) # (p^.typ^.form IN realSet)) THEN
+						t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t
+					ELSE x^.readonly := FALSE
+					END ;
 *)
-				x^.typ := p^.typ; p := x
+					x^.typ := p^.typ;
+				END;
+				p := x
 		| sysnewfn: (*SYSTEM.NEW*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
