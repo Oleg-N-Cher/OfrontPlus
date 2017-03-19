@@ -5,7 +5,7 @@
 
 :XDev
 @SET WinDev=%XDev%\WinDev
-@SET PATH=%WinDev%\Bin\MinGW64\bin;%PATH%
+@SET PATH=%WinDev%\Bin\MinGW64\bin
 @SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
 
 @SET Mod=%1
