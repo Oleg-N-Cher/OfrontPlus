@@ -1,5 +1,5 @@
 MODULE Kernel;
-IMPORT SYSTEM, Platform, Out := Console;
+IMPORT SYSTEM, Heap, Platform, Out := Console;
 
 TYPE
   HaltProcedure = PROCEDURE(code: INTEGER);
@@ -69,6 +69,7 @@ END DisplayHaltCode;
 
 PROCEDURE Halt*(code: INTEGER);
 BEGIN
+  Heap.FINALL;
   HaltCode := code;
   Out.String("Terminated by Halt("); Out.Int(code, 0); Out.String("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
@@ -78,6 +79,7 @@ END Halt;
 
 PROCEDURE AssertFail*(code: INTEGER);
 BEGIN
+  Heap.FINALL;
   Out.String("Assertion failure.");
   IF code # 0 THEN
     Out.String(" ASSERT code "); Out.Int(code, 0); Out.Char(".")

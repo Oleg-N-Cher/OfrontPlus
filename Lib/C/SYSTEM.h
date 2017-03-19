@@ -67,8 +67,10 @@ typedef U_INTEGER SET;   // SET is 32 bit.
 
 #if defined __amd64__ || defined __x86_64__
   typedef unsigned long long SYSTEM_ADR;
+  typedef long long SYSTEM_ADRINT;
 #else
   typedef unsigned int SYSTEM_ADR;
+  typedef int SYSTEM_ADRINT;
 #endif
 
 
@@ -214,8 +216,8 @@ extern void SYSTEM_ASSERT_FAIL(INTEGER code);
 
 // Memory allocation
 
-extern SYSTEM_PTR Heap_NEWBLK (SYSTEM_ADR size);
-extern SYSTEM_PTR Heap_NEWREC (SYSTEM_ADR tag);
+extern SYSTEM_PTR Heap_NEWBLK (SYSTEM_ADRINT size);
+extern SYSTEM_PTR Heap_NEWREC (SYSTEM_ADRINT tag);
 extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADR*, SYSTEM_ADR, int, int, int, ...);
 
 #define __SYSNEW(p, len) p = Heap_NEWBLK((SYSTEM_ADR)(len))
