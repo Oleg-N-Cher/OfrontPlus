@@ -187,8 +187,8 @@ extern void       Heap_REGTYP();
 extern void       Heap_INCREF();
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
-#define __REGCMD(name, cmd)   // Heap_REGCMD(m, (CHAR*)name, cmd)
-#define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,enum);}
+#define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, cmd)
+#define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,(void*)enum);}
 #define __ENDMOD              return m
 #define __IMPORT(name__init)  Heap_INCREF(name__init())
 
@@ -201,7 +201,7 @@ extern void SYSTEM_INIT(INTEGER argc, void *argvadr);
 extern void Heap_FINALL();
 
 #define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, &argv);
-#define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,enum)
+#define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
 
 

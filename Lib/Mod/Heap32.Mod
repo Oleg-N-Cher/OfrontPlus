@@ -46,12 +46,12 @@ MODULE Heap;
     ModuleDesc- = RECORD
       next-:     Module;
       name-:     ModuleName;
-      refcnt-:   LONGINT;
+      refcnt-:   INTEGER;
       cmds-:     Cmd;
       types-:    ADDRESS;
       enumPtrs-: EnumProc;
       reserved1,
-      reserved2: LONGINT
+      reserved2: INTEGER
     END;
 
     Command- = PROCEDURE;
@@ -80,7 +80,7 @@ MODULE Heap;
     bigBlocks:  ADDRESS;
     allocated*: ADDRESS;
     firstTry:   BOOLEAN;
-    ldUnit:     INTEGER;    (* Unit = 2^ldUnit, for unsigned division expressed as logical shift right *)
+    ldUnit:     SHORTINT;   (* Unit = 2^ldUnit, for unsigned division expressed as logical shift right *)
 
 
     (* extensible heap *)
@@ -94,11 +94,11 @@ MODULE Heap;
     fin: FinNode;
 
     (* garbage collector locking *)
-    lockdepth:   INTEGER;
+    lockdepth:   SHORTINT;
     interrupted: BOOLEAN;
 
     (* File system file count monitor *)
-    FileCount*: INTEGER;
+    FileCount*: SHORTINT;
 
 
   PROCEDURE Lock*;
@@ -148,7 +148,7 @@ MODULE Heap;
     RETURN m
   END REGMOD;
 
-  PROCEDURE FreeModule*(name: ARRAY OF CHAR): LONGINT;
+  PROCEDURE FreeModule*(name: ARRAY OF CHAR): INTEGER;
   (* Returns 0 if freed, -1 if not found, refcount if found and refcount > 0. *)
     VAR m, p: Module;
   BEGIN m := S.VAL(Module, modules);
@@ -441,8 +441,8 @@ MODULE Heap;
     END
   END Scan;
 
-  PROCEDURE Sift (l, r: LONGINT; VAR a: ARRAY OF ADDRESS);
-    VAR i, j: LONGINT; x: ADDRESS;
+  PROCEDURE Sift (l, r: INTEGER; VAR a: ARRAY OF ADDRESS);
+    VAR i, j: INTEGER; x: ADDRESS;
   BEGIN j := l; x := a[j];
     LOOP i := j; j := 2*j + 1;
       IF (j < r) &  uLT(a[j], a[j+1]) THEN INC(j) END;
@@ -452,14 +452,14 @@ MODULE Heap;
     a[i] := x
   END Sift;
 
-  PROCEDURE HeapSort (n: LONGINT; VAR a: ARRAY OF ADDRESS);
-    VAR l, r: LONGINT; x: ADDRESS;
+  PROCEDURE HeapSort (n: INTEGER; VAR a: ARRAY OF ADDRESS);
+    VAR l, r: INTEGER; x: ADDRESS;
   BEGIN l := n DIV 2; r := n - 1;
     WHILE l > 0 DO DEC(l); Sift(l, r, a) END;
     WHILE r > 0 DO x := a[0]; a[0] := a[r]; a[r] := x; DEC(r); Sift(l, r, a) END
   END HeapSort;
 
-  PROCEDURE MarkCandidates(n: LONGINT; VAR cand: ARRAY OF ADDRESS);
+  PROCEDURE MarkCandidates(n: INTEGER; VAR cand: ARRAY OF ADDRESS);
     VAR chnk, end, adr, tag, next, i, ptr, size: ADDRESS;
   BEGIN
     ASSERT(n > 0);
@@ -526,7 +526,7 @@ MODULE Heap;
   PROCEDURE MarkStack(n: ADDRESS; VAR cand: ARRAY OF ADDRESS);
     VAR
       frame: S.PTR;
-      nofcand: LONGINT;
+      nofcand: INTEGER;
       inc, sp, p, stack0: ADDRESS;
       align: RECORD ch: CHAR; p: S.PTR END;
   BEGIN
