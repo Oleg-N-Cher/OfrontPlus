@@ -53,7 +53,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
 	(* vars used by symbol file reader *)
 		curObj: OPT.Object;	(* current object in process *)
-		syspos: LONGINT;	(* text pos where to write imported modules *)
+		syspos: INTEGER;	(* text pos where to write imported modules *)
 		sysImported,	(* indicates whether SYSTEM is imported or not *)
 		first,	(* FALSE: keyword ['CONST' | 'TYPE' | 'VAR'] has already been written to text *)
 		showObj: BOOLEAN;	(* TRUE: only one object is showen *)
@@ -88,7 +88,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	END Ch;
 	
 	PROCEDURE Num (i: LONGINT);	(* writes number i to W *)
-	BEGIN Texts.WriteInt(W, i, 0);
+	BEGIN Texts.WriteLongInt(W, i, 0);
 	END Num;
 	
 	PROCEDURE Hexa(i: LONGINT; short: BOOLEAN);	(* writes number i to W as a hex. number *)
@@ -154,7 +154,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	BEGIN
 		y:= obj.conval.intval;
 		CASE obj.typ^.form OF
-			| SInt, Int, LInt:  Texts.WriteInt(W, y, 0)
+			| SInt, Int, LInt:  Texts.WriteLongInt(W, y, 0)
 			| Real:  Texts.WriteReal(W, SHORT(obj.conval.realval), 15)
 			| LReal:  Texts.WriteLongReal(W, obj.conval.realval, 20)
 			| Bool:  IF y = 0 THEN Str("FALSE") ELSE Str("TRUE") END 
@@ -170,7 +170,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			| Set:
 				Ch("{"); s := obj.conval.setval; y := 0;
 				WHILE y <= MAX(SET) DO
-					IF y IN s THEN Texts.WriteInt(W, y, 0); EXCL(s, y); IF s # {} THEN Str(", ") END END;
+					IF y IN s THEN Texts.WriteLongInt(W, y, 0); EXCL(s, y); IF s # {} THEN Str(", ") END END;
 					INC(y)
 				END;
 				Ch("}")
@@ -443,7 +443,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	PROCEDURE WriteModule(mod: ARRAY OF CHAR; root: OPT.Object);	(* writes a module definition *)
 	BEGIN sysImported:= FALSE;
 		Str("DEFINITION "); Str(mod);
-		IF showAdr THEN Str(" ["); Texts.WriteHex(W, root.adr); Ch("]") END;
+		IF showAdr THEN Str(" ["); Texts.WriteLongHex(W, root.adr); Ch("]") END;
 		Ch(";"); Ln; Ln;
 		syspos := W.buf.len;
 		WriteImports;
@@ -525,7 +525,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		f:= Files.Old(fileName);
 		IF (f # NIL) OR (mod = "SYSTEM") THEN
 			IF mod = "SYSTEM" THEN Out.String("definition of SYSTEM not available"); Ln; RETURN NIL
-			ELSE Files.Set(R, f, 0); Files.Read(R, ch)
+			ELSE Files.Set(R, f, 0); Files.ReadChar(R, ch)
 			END;
 			IF ch = symFileId THEN
 				NEW(T); Texts.Open(T, ""); Texts.OpenReader(RR, T, 0);
@@ -563,11 +563,11 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			i, c, e, nofentry, nofcmds: INTEGER; ch: CHAR;
 	BEGIN Files.Set(R, F, 0);
 		(* check if it is an object file *)
-		Files.Read(R, ch);
+		Files.ReadChar(R, ch);
 		IF ch # objFileId THEN Out.String("not a object file"); RETURN END;
 
 		(* check if it has right version *)
-		Files.Read(R, ch);
+		Files.ReadChar(R, ch);
 (*
 		IF ch # Version THEN Out.String("object file has wrong version"); RETURN END;
 *)
@@ -579,19 +579,19 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		Files.ReadBytes(R, nofcmds, 2);	(* # commands *)
 
 		Files.Set(R, F, Files.Pos(R)+18);	(* skip rest *)
-		REPEAT Files.Read(R, ch) UNTIL ch = 0X;	(* skip module name *)
+		REPEAT Files.ReadChar(R, ch) UNTIL ch = 0X;	(* skip module name *)
 
 		(* skip entry block *)
-		Files.Read(R, ch); IF ch # EntryId THEN Out.String("corrunpted object file"); RETURN END;
+		Files.ReadChar(R, ch); IF ch # EntryId THEN Out.String("corrunpted object file"); RETURN END;
 		WHILE nofentry > 0 DO Files.ReadBytes(R, e, 2); DEC(nofentry) END;
 
 		(* write commands *)
-		Files.Read(R, ch); IF ch # CmdId THEN Out.String("corrunpted object file"); RETURN END;
+		Files.ReadChar(R, ch); IF ch # CmdId THEN Out.String("corrunpted object file"); RETURN END;
 		Str("DEFINITION "); Str(modName);
 		IF showAdr THEN Str(" ["); Hexa(key, FALSE); Ch("]") END;
 		Ch(";"); Ln;
 		WHILE nofcmds > 0 DO
-			i:= 0; REPEAT Files.Read(R, ch); name[i]:= ch; INC(i) UNTIL ch = 0X;
+			i:= 0; REPEAT Files.ReadChar(R, ch); name[i]:= ch; INC(i) UNTIL ch = 0X;
 			Files.ReadBytes(R, c, 2);
 			Ch(09X);	(* TAB *)
 			IF showAdr THEN Ch("["); Hexa(c, TRUE); Str("] ") END;
