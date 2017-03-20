@@ -784,7 +784,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					LenList(obj, FALSE, TRUE)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
 					EndStat; BegStat;
-					OPM.WriteString("LONGINT *"); Ident(obj); OPM.WriteString(TagExt);
+					OPM.WriteString("SYSTEM_ADR *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
 				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) & (obj^.typ^.form = Pointer) THEN
 					OPM.WriteString(" = NIL")
@@ -822,7 +822,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 						END;
 						LenList(obj, TRUE, showParamNames)
 					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
-						OPM.WriteString(", LONGINT *");
+						OPM.WriteString(", SYSTEM_ADR *");
 						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
 					END ;
 				END;
@@ -895,7 +895,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
 				ELSE OPM.WriteString(Export)
 				END ;
-				OPM.WriteString("LONGINT *"); Andent(typ); OPM.WriteString(DynTypExt);
+				OPM.WriteString("SYSTEM_ADR *"); Andent(typ); OPM.WriteString(DynTypExt);
 				EndStat
 			END ;
 			n := n^.link
