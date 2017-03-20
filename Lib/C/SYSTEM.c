@@ -85,12 +85,12 @@ void SYSTEM_ENUMP(void *adr, SYSTEM_ADR n, void (*P)())
 
 void SYSTEM_ENUMR(void *adr, SYSTEM_ADR *typ, SYSTEM_ADR size, SYSTEM_ADR n, void (*P)())
 {
-    SYSTEM_ADR *t, off;
+    SYSTEM_ADRINT *t, off;
     typ++;
     while (n > 0) {
         t = typ;
         off = *t;
-        while (off >= 0) {P(*(SYSTEM_ADR*)((char*)adr+off)); t++; off = *t;}
+        while (off >= 0) {P(*(SYSTEM_ADRINT*)((char*)adr+off)); t++; off = *t;}
         adr = ((char*)adr) + size;
         n--;
     }
