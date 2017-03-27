@@ -428,7 +428,7 @@ END DeleteFile;
 
 
 PROCEDURE -chdir(n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
-PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "getcwd((char*)cwd, cwd__len)";
+PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
 PROCEDURE Chdir*(VAR n: ARRAY OF CHAR): ErrorCode;
   VAR r: INTEGER;
