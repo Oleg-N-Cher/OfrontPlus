@@ -5,8 +5,8 @@
 
 :XDev
 @SET WinDev=%XDev%\WinDev
-@SET PATH=%WinDev%\Bin\MinGW64\bin;%PATH%
-@SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
+@SET PATH=%WinDev%\Bin\MinGW64\bin
+@SET gcc=gcc.exe -s -Os -I ..\C -fno-exceptions -fno-asynchronous-unwind-tables
 
-%gcc% ofrontparam.c -o ofrontparam.exe
+%gcc% ofrontparam.c -o ofrontparam.exe ..\Ofront64.a
 @IF errorlevel 1 PAUSE
