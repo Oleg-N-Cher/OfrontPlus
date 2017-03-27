@@ -4,6 +4,7 @@ export OBERON=.:../Sym64
 mod=$2
 if [ "$2" == "Platform.Unix" ]; then mod="Platform"; fi
 if [ "$2" == "Modules.Unix" ]; then mod="Modules"; fi
+if [ "$2" == "Heap64" ]; then mod="Heap"; fi
 
 if [ "$2" == "SYSTEM" ]; then
 
@@ -27,7 +28,7 @@ else
     errCode=$?
     #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
-    mv -f $mod.sym ../Sym64
+    #mv -f $mod.sym ../Sym64
   fi
   
 fi
