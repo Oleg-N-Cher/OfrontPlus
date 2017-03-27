@@ -18,7 +18,7 @@ else
   #../Bin64/ofront+ -se ../../Mod/$1.Mod
   errCode=$?
   #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
-  mv -f $modName.sym ../Sym64
+  #mv -f $modName.sym ../Sym64
   gcc -c $modName.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -I../Lib/C -I../Lib/Obj64
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
