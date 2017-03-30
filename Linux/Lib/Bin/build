@@ -9,8 +9,8 @@ rm ../Sym/*.sym
 ../Bin/compile $Lib SYSTEM
 ../Bin/compile $Lib Platform.Unix
 #../Bin/compile $Lib Heap
-../../Bin/ofront+ -s ../../../Lib/Obj/Heap0.Mod
-gcc -c -I ../C Heap.c
+../../Bin/ofront+ -apxe ../../../Lib/Mod/Heap32.Mod
+gcc -c Heap.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -I ../C
 ar -rc $Lib Heap.o
 rm ../Sym/Heap.sym
 mv Heap.sym ../Sym
@@ -31,4 +31,3 @@ mv Heap.sym ../Sym
 ../Bin/compile $Lib ooc2Strings
 
 #../Bin/clear
-

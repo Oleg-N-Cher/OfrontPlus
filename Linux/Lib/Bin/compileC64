@@ -19,7 +19,7 @@ if [ "$2" == "SYSTEM" ]; then
 
 else
 
-  if [ "$2" == "Platform" ] || [ "$2" == "Heap" ] ; then
+  if [ "$2" == "Platform" ] || [ "$2" == "Heap64" ] ; then
     #../../Bin64/ofront+ -apxe ../../../Lib/Mod/$2.Mod
     errCode=$?
     #if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi

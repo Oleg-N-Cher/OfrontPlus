@@ -1,9 +1,9 @@
 #!/bin/bash
-cd ../Obj64
+cd ../Obj
 
-Lib=../libOfront64.a
+Lib=../libOfront.a
 if [ -f $Lib ]; then rm $Lib; fi
-rm ../Sym64/*.sym
+rm ../Sym/*.sym
 
 ## Ofront+
 ../Bin/compileC $Lib SYSTEM
