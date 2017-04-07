@@ -66,7 +66,7 @@ LONGINT SYSTEM_ENTIERL(LONGREAL x)
 }
 
 
-void SYSTEM_INHERIT(SYSTEM_ADR *t, SYSTEM_ADR *t0)
+void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0)
 {
     t -= __TPROC0OFF;
     t0 -= __TPROC0OFF;
@@ -74,16 +74,16 @@ void SYSTEM_INHERIT(SYSTEM_ADR *t, SYSTEM_ADR *t0)
 }
 
 
-void SYSTEM_ENUMP(void *adr, SYSTEM_ADR n, void (*P)())
+void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)())
 {
     while (n > 0) {
-        P((SYSTEM_ADR)(*((void**)(adr))));
+        P((SYSTEM_ADRINT)(*((void**)(adr))));
         adr = ((void**)adr) + 1;
         n--;
     }
 }
 
-void SYSTEM_ENUMR(void *adr, SYSTEM_ADR *typ, SYSTEM_ADR size, SYSTEM_ADR n, void (*P)())
+void SYSTEM_ENUMR(void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)())
 {
     SYSTEM_ADRINT *t, off;
     typ++;
@@ -130,19 +130,19 @@ void SYSTEM_INIT(INTEGER argc, void *argvadr)
   Heap_InitHeap();
 }
 
-SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADR *typ, SYSTEM_ADR elemsz, int elemalgn, int nofdim, int nofdyn, ...)
+SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ADRINT elemsz, int elemalgn, int nofdim, int nofdyn, ...)
 {
-    SYSTEM_ADR nofelems, size, dataoff, n, nptr, *x, *p, nofptrs, i, *ptab, off;
+    SYSTEM_ADRINT nofelems, size, dataoff, n, nptr, *x, *p, nofptrs, i, *ptab, off;
     va_list ap;
     va_start(ap, nofdyn);
     nofelems = 1;
     while (nofdim > 0) {
-        nofelems = nofelems * va_arg(ap, SYSTEM_ADR); nofdim--;
+        nofelems = nofelems * va_arg(ap, SYSTEM_ADRINT); nofdim--;
         if (nofelems <= 0) __HALT(-20);
     }
     va_end(ap);
-    dataoff = nofdyn * sizeof(SYSTEM_ADR);
-    if (elemalgn > sizeof(SYSTEM_ADR)) {
+    dataoff = nofdyn * sizeof(SYSTEM_ADRINT);
+    if (elemalgn > sizeof(SYSTEM_ADRINT)) {
         n = dataoff % elemalgn;
         if (n != 0) dataoff += elemalgn - n;
     }
@@ -152,37 +152,37 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADR *typ, SYSTEM_ADR elemsz, int elemalgn, int n
         /* element typ does not contain pointers */
         x = Heap_NEWBLK(size);
     }
-    else if (typ == (SYSTEM_ADR*)POINTER__typ) {
+    else if (typ == (SYSTEM_ADRINT*)POINTER__typ) {
         /* element type is a pointer */
-        x = Heap_NEWBLK(size + nofelems * sizeof(SYSTEM_ADR));
-        p = (SYSTEM_ADR*)(SYSTEM_ADR)x[-1];
+        x = Heap_NEWBLK(size + nofelems * sizeof(SYSTEM_ADRINT));
+        p = (SYSTEM_ADRINT*)(SYSTEM_ADRINT)x[-1];
         p[-nofelems] = *p;  /* build new type desc in situ: 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nofelems - 1; n = 1;   /* n =1 for skipping the size field */
-        while (n <= nofelems) {*p = n*sizeof(SYSTEM_ADR); p++; n++;}
-        *p = - (nofelems + 1) * sizeof(SYSTEM_ADR);    /* sentinel */
-        x[-1] -= nofelems * sizeof(SYSTEM_ADR);
+        while (n <= nofelems) {*p = n*sizeof(SYSTEM_ADRINT); p++; n++;}
+        *p = - (nofelems + 1) * sizeof(SYSTEM_ADRINT);    /* sentinel */
+        x[-1] -= nofelems * sizeof(SYSTEM_ADRINT);
     }
     else {
         /* element type is a record that contains pointers */
         ptab = typ + 1; nofptrs = 0;
         while (ptab[nofptrs] >= 0) {nofptrs++;} /* number of pointers per element */
         nptr = nofelems * nofptrs;  /* total number of pointers */
-        x = Heap_NEWBLK(size + nptr * sizeof(SYSTEM_ADR));
-        p = (SYSTEM_ADR*)(SYSTEM_ADR)x[- 1];
+        x = Heap_NEWBLK(size + nptr * sizeof(SYSTEM_ADRINT));
+        p = (SYSTEM_ADRINT*)(SYSTEM_ADRINT)x[- 1];
         p[-nptr] = *p;  /* build new type desc in situ; 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nptr - 1; n = 0; off = dataoff;
         while (n < nofelems) {i = 0;
             while (i < nofptrs) {*p = off + ptab[i]; p++; i++;}
             off += elemsz; n++;
         }
-        *p = - (nptr + 1) * sizeof(SYSTEM_ADR);    /* sentinel */
-        x[-1] -= nptr * sizeof(SYSTEM_ADR);
+        *p = - (nptr + 1) * sizeof(SYSTEM_ADRINT);    /* sentinel */
+        x[-1] -= nptr * sizeof(SYSTEM_ADRINT);
     }
     if (nofdyn != 0) {
         /* setup len vector for index checks */
         va_start(ap, nofdyn);
         p = x;
-        while (nofdyn > 0) {*p = va_arg(ap, SYSTEM_ADR); p++, nofdyn--;}
+        while (nofdyn > 0) {*p = va_arg(ap, SYSTEM_ADRINT); p++, nofdyn--;}
         va_end(ap);
     }
     Heap_Unlock();
@@ -213,9 +213,9 @@ int SYSTEM_STRCMP(CHAR *x, CHAR *y)
   void * __cdecl memcpy(void * dest, const void * source, SYSTEM_ADR size);
 #endif
 
-void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADR n)
+void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADRINT n)
 {
-  return memcpy(dest, (const void*)src, n);
+  return memcpy(dest, (const void*)src, (SYSTEM_ADR)n);
 }
 
 
@@ -231,7 +231,7 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         // (Ignore other signals)
     }
 
-    void SystemSetHandler(int s, SYSTEM_ADR h) {
+    void SystemSetHandler(int s, SYSTEM_ADRINT h) {
         if (s >= 2 && s <= 4) {
             int needtosetsystemhandler = handler[s-2] == 0;
             handler[s-2] = (SystemSignalHandler)h;
@@ -239,15 +239,15 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         }
     }
 
-    void SystemSetInterruptHandler(SYSTEM_ADR h) {
+    void SystemSetInterruptHandler(SYSTEM_ADRINT h) {
         SystemSetHandler(2, h);
     }
 
-    void SystemSetQuitHandler(SYSTEM_ADR h) {
+    void SystemSetQuitHandler(SYSTEM_ADRINT h) {
         SystemSetHandler(3, h);
     }
 
-    void SystemSetBadInstructionHandler(SYSTEM_ADR h) {
+    void SystemSetBadInstructionHandler(SYSTEM_ADRINT h) {
         SystemSetHandler(4, h);
     }
 
@@ -282,17 +282,17 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         }
     }
 
-    void SystemSetInterruptHandler(SYSTEM_ADR h) {
+    void SystemSetInterruptHandler(SYSTEM_ADRINT h) {
         EnsureConsoleCtrlHandler();
         SystemInterruptHandler = (SystemSignalHandler)h;
     }
 
-    void SystemSetQuitHandler(SYSTEM_ADR h) {
+    void SystemSetQuitHandler(SYSTEM_ADRINT h) {
         EnsureConsoleCtrlHandler();
         SystemQuitHandler = (SystemSignalHandler)h;
     }
 
-    void SystemSetBadInstructionHandler(SYSTEM_ADR h) {
+    void SystemSetBadInstructionHandler(SYSTEM_ADRINT h) {
     }
 
 #endif
