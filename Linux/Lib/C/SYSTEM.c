@@ -86,6 +86,7 @@ void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)())
 void SYSTEM_ENUMR(void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)())
 {
     SYSTEM_ADRINT *t, off;
+    if (typ == 0) return; // not yet initialized
     typ++;
     while (n > 0) {
         t = typ;
