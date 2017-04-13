@@ -1,7 +1,9 @@
+Lib/Obj/*.c
 Lib/Obj/*.o
 Lib/Obj/*.sym
-Lib/Obj/ofrontparam.exe
+Lib/Obj64/*.c
 Lib/Obj64/*.o
+Lib/Obj64/*.sym
 Lib/Test/*.c
 Lib/Test/*.exe
 Lib/Test64/*.c
