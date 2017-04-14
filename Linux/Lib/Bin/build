@@ -1,33 +1,4 @@
 #!/bin/bash
-cd ../Obj
-
-Lib=../libOfront.a
-if [ -f $Lib ]; then rm $Lib; fi
-rm ../Sym/*.sym
-
-## Ofront+
-../Bin/compile $Lib SYSTEM
-../Bin/compile $Lib Platform.Unix
-#../Bin/compile $Lib Heap
-../../Bin/ofront+ -apxe ../../../Lib/Mod/Heap32.Mod
-gcc -c Heap.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -I ../C
-ar -rc $Lib Heap.o
-rm ../Sym/Heap.sym
-mv Heap.sym ../Sym
-#
-../Bin/compile $Lib Console
-../Bin/compile $Lib Kernel
-../Bin/compile $Lib Args
-../Bin/compile $Lib Strings
-../Bin/compile $Lib Files
-../Bin/compile $Lib Reals
-../Bin/compile $Lib Modules
-../Bin/compile $Lib Texts
-
-## OOC2
-../Bin/compile $Lib ooc2Ascii
-../Bin/compile $Lib ooc2ConvTypes
-../Bin/compile $Lib ooc2RandomNumbers
-../Bin/compile $Lib ooc2Strings
-
-#../Bin/clear
+./o2c
+./cc
+rm ../Obj/*.o ../Obj/*.c
