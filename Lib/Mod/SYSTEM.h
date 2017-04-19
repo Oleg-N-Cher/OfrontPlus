@@ -12,19 +12,22 @@
 
 
 
-// Declare memcpy in a way compatible with C compilers intrinsic
-// built in implementations.
-
 #if (__SIZEOF_POINTER__ == 8) || defined (_LP64) || defined(__LP64__) || defined(_WIN64)
 #  ifdef _WIN64
      typedef unsigned long long SYSTEM_ADR;
+     typedef          long long SYSTEM_ADRINT;
 #  else
      typedef unsigned long      SYSTEM_ADR;
+     typedef          long      SYSTEM_ADRINT;
 #  endif
 #else
    typedef unsigned int         SYSTEM_ADR;
+   typedef          int         SYSTEM_ADRINT;
 #endif
 
+
+// Declare memcpy in a way compatible with C compilers intrinsic
+// built in implementations.
 
 void *memcpy(void *dest, const void *source, SYSTEM_ADR size);
 #ifdef _MSC_VER
@@ -80,15 +83,6 @@ typedef unsigned int       U_SET;
 
 typedef U_INTEGER SET;   // SET is 32 bit.
 
-// SYSTEM_ADRINT is integer of pointer size
-
-#if defined __amd64__ || defined __x86_64__
-  typedef unsigned long long SYSTEM_ADR;
-  typedef long long SYSTEM_ADRINT;
-#else
-  typedef unsigned int SYSTEM_ADR;
-  typedef int SYSTEM_ADRINT;
-#endif
 
 
 // Run time system routines in SYSTEM.c
