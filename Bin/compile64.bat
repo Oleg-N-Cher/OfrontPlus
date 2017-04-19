@@ -6,7 +6,7 @@
 :XDev
 @SET WinDev=%XDev%\WinDev
 @SET PATH=%WinDev%\Bin\MinGW64\bin
-@SET lib=-I ..\Lib\Obj64 -I ..\Lib\C
+@SET lib=-I ..\Lib\Obj64 -I ..\Lib\Mod
 @SET gcc=gcc.exe -Os -fno-exceptions -fno-asynchronous-unwind-tables %lib%
 
 @SET Mod=%1
