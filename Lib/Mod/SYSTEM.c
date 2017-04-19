@@ -204,22 +204,6 @@ int SYSTEM_STRCMP(CHAR *x, CHAR *y)
 }
 
 
-// Copy memory
-
-#ifndef _WIN32
-  // Building for a Unix/Linux based system
-#  include <string.h>  // For memcpy ...
-#else
-  // Building for Windows platform with either mingw under cygwin, or the MS C compiler
-  void * __cdecl memcpy(void * dest, const void * source, SYSTEM_ADR size);
-#endif
-
-void *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADRINT n)
-{
-  return memcpy(dest, (const void*)src, (SYSTEM_ADR)n);
-}
-
-
 typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32

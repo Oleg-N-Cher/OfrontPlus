@@ -1,6 +1,8 @@
 #ifndef SYSTEM__h
 #define SYSTEM__h
 
+
+
 /*
 
   the Ofront+ runtime system interface and macro library
@@ -9,13 +11,28 @@
 */
 
 
-#if defined __linux__ || defined __unix__
-#  include <alloca.h>
+
+// Declare memcpy in a way compatible with C compilers intrinsic
+// built in implementations.
+
+#if (__SIZEOF_POINTER__ == 8) || defined (_LP64) || defined(__LP64__) || defined(_WIN64)
+#  ifdef _WIN64
+     typedef unsigned long long SYSTEM_ADR;
+#  else
+     typedef unsigned long      SYSTEM_ADR;
+#  endif
 #else
-#  define errno __errno__ /* to avoid of implicit inclusion "errno" */
-#  include <malloc.h>
-#  undef errno
+   typedef unsigned int         SYSTEM_ADR;
 #endif
+
+
+void *memcpy(void *dest, const void *source, SYSTEM_ADR size);
+#ifdef _MSC_VER
+#  define alloca _alloca
+#endif
+void *alloca(SYSTEM_ADR size);
+
+
 
 // The compiler uses 'import' and 'export' which translate to 'extern' and
 // nothing respectively.
@@ -77,7 +94,6 @@ typedef U_INTEGER SET;   // SET is 32 bit.
 // Run time system routines in SYSTEM.c
 
 extern int     SYSTEM_STRCMP (CHAR *x, CHAR *y);
-extern void   *SYSTEM_MEMCPY (void *dest, void *src, SYSTEM_ADRINT n);
 extern LONGINT SYSTEM_XCHK   (LONGINT i, LONGINT ub);
 extern LONGINT SYSTEM_RCHK   (LONGINT i, LONGINT ub);
 extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
@@ -109,8 +125,8 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 #define __COPY(s, d, n) {char*_a=(void*)s,*_b=(void*)d; INTEGER _i=0,_t=n-1; \
                          while(_i<_t&&((_b[_i]=_a[_i])!=0)){_i++;};_b[_i]=0;}
-#define __DUP(x, l)     x=(void*)__MEMCPY(alloca(l*sizeof(*x)),x,l*sizeof(*x))
-#define __DUPARR(v)     v=(void*)__MEMCPY(v##__copy,v,sizeof(v##__copy))
+#define __DUP(x, l)     x=(void*)memcpy(alloca(l*sizeof(*x)),x,l*sizeof(*x))
+#define __DUPARR(v)     v=(void*)memcpy(v##__copy,v,sizeof(v##__copy))
 #define __DEL(x)        /* DUP with alloca frees storage automatically */
 
 
@@ -137,8 +153,7 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 #define __ROT(x, n, t)  ((n)>=0? __ROTL(x, n, t): __ROTR(x, -(n), t))
 
 #define __BIT(x, n)     (*(U_LONGINT*)(x)>>(n)&1)
-#define __MEMCPY        SYSTEM_MEMCPY
-#define __MOVE(s, d, n) __MEMCPY((char*)(d),(char*)(s),n)
+#define __MOVE(s, d, n) memcpy((char*)(d),(char*)(s),n)
 #define __SHORT(x, y)   ((int)((U_LONGINT)(x)+(y)<(y)+(y)?(x):(__HALT(-8),0)))
 #define __SHORTF(x, y)  ((int)(__RF((x)+(y),(y)+(y))-(y)))
 #define __CHR(x)        ((CHAR)__R(x, 256))
@@ -251,7 +266,7 @@ extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ADRINT, int, int, int, ..
 
 #define __INITYP(t, t0, level)                                                   \
   t##__typ               = (SYSTEM_ADRINT*)&t##__desc.blksz;                     \
-  __MEMCPY(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT)); \
+  memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT));   \
   t##__desc.basep[level] = (SYSTEM_ADRINT)t##__typ;                              \
   t##__desc.module       = (SYSTEM_ADRINT)m;                                     \
   if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15);                             \
