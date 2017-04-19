@@ -117,8 +117,8 @@ MODULE Heap;
   END Unlock;
 
 
-  PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((size_t)x <  (size_t)y)";
-  PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((size_t)x <= (size_t)y)";
+  PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <  (SYSTEM_ADR)y)";
+  PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <= (SYSTEM_ADR)y)";
 
   (*
     PROCEDURE TAS*(VAR flag:BOOLEAN): BOOLEAN; (* added for compatibility with ulmSYSTEM module; noch *)
