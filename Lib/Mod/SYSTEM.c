@@ -36,34 +36,45 @@ LONGINT SYSTEM_ASHL(LONGINT x, INTEGER n)  {return __ASH(x, n, LONGINT);}
 LONGINT SYSTEM_ABS (LONGINT i)             {return __ABS(i);}
 double  SYSTEM_ABSD(double i)              {return __ABS(i);}
 
+
 LONGINT SYSTEM_DIV(LONGINT x, LONGINT y)
-{   if (x >= 0) return ((U_LONGINT)x / (U_LONGINT)y);
-    else return -((U_LONGINT)(y - 1 - x) / (U_LONGINT)y);
+{
+  if (x == 0) return 0;
+  if (x >= 0)
+    if (y >= 0) {return x/y;}
+    else        {return -((x-y-1)/(-y));}
+  else
+    if (y >= 0) {return -((y-x-1)/y);}
+    else        {return (-x)/(-y);}
 }
 
 LONGINT SYSTEM_MOD(LONGINT x, LONGINT y)
-{   U_LONGINT m;
-    if (x >= 0) return ((U_LONGINT)x % (U_LONGINT)y);
-    else { m = (U_LONGINT)(-x) % (U_LONGINT)y;
-        if (m != 0) return (y - m); else return 0;
-    }
+{
+  if (x == 0) return 0;
+  if (x >= 0)
+    if (y >= 0) {return x % y;}
+    else        {return (y+1) + ((x-1) % (-y));}
+  else
+    if (y >= 0) {return (y-1) - ((-x-1) % y);}
+    else        {return -((-x) % (-y));}
 }
 
 INTEGER SYSTEM_ENTIER(LONGREAL x)
 {
-    INTEGER i;
-    i = (INTEGER)x;
-    if (i > x) i--;
-    return i;
+  INTEGER i;
+  i = (INTEGER)x;
+  if (i > x) i--;
+  return i;
 }
 
 LONGINT SYSTEM_ENTIERL(LONGREAL x)
 {
-    LONGINT i;
-    i = (LONGINT)x;
-    if (i > x) i--;
-    return i;
+  LONGINT i;
+  i = (LONGINT)x;
+  if (i > x) i--;
+  return i;
 }
+
 
 
 void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0)
