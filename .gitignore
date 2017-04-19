@@ -17,8 +17,12 @@ Linux/Obj64/*.o
 Linux/ocat
 Linux/ofront+
 Linux/showdef
+Obj/*.c
 Obj/*.o
+Obj/*.sym
+Obj64/*.c
 Obj64/*.o
+Obj64/*.sym
 ToDo/
 Work/*.c
 Work/*.exe
