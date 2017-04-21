@@ -45,15 +45,15 @@ English text below
    Для других платформ понадобится создавать Ofront.par вручную.
 
 
-3. При вызове компилятора Си включайте в поиск каталоги Lib/Mod и Lib/Obj*, а также библиотеку Ofront:
+3. При вызове компилятора Си включайте в поиск каталоги Lib/Mod (там хранится SYSTEM.h) и Lib/Obj* нужной разрядности, а также библиотеку Ofront:
 
    UNIX / Linux 32:
 
-   gcc modName.c -s -Os -fno-exceptions -I../Lib/Mod -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
+   gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
 
    UNIX / Linux 64:
 
-   gcc modName.c -s -Os -fno-exceptions -I../Lib/Mod -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
+   gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
 
    Windows 32:
 
@@ -110,15 +110,15 @@ To start the translator from the command line you need three things:
    For other platforms you'll need to create Ofront.par manually.
 
 
-3. When invoke C compiler, include the directories Lib/Mod and Lib/Obj*, and the library Ofront:
+3. When invoke C compiler, include the directories Lib/Mod (SYSTEM.h lives there) and Lib/Obj* of wanted bit depth, and the library Ofront:
 
    UNIX / Linux 32:
 
-   gcc modName.c -s -Os -fno-exceptions -I../Lib/Mod -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
+   gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
 
    UNIX / Linux 64:
 
-   gcc modName.c -s -Os -fno-exceptions -I../Lib/Mod -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
+   gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
 
    Windows 32:
 
