@@ -1138,6 +1138,11 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF x = y THEN (* ok *)
 					ELSIF (g = String) & (x^.BaseTyp = OPT.chartyp) THEN (*check length of string*)
 						IF ynode^.conval^.intval2 > x^.n THEN err(114) END ;
+					(* ??????? ?? ???????? ????????????? ?????? ?? ???????? *)
+					ELSIF (g = Comp) & (y^.comp = Array) & (y^.BaseTyp = OPT.chartyp)
+						& (x^.BaseTyp = OPT.chartyp) & (ynode^.left # NIL) & (ynode^.left^.obj # NIL)
+						& (ynode^.left^.obj^.conval # NIL) & (ynode^.left^.obj^.conval^.arr # NIL) THEN
+						 	IF y^.n > x^.n THEN err(114) END ;
 					ELSE err(113)
 					END
 				ELSIF x^.comp = Record THEN
