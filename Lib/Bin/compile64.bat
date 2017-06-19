@@ -6,8 +6,7 @@
 :XDev
 @SET WinDev=%XDev%\WinDev
 @SET PATH=%WinDev%\Bin\MinGW64\bin
-@SET gcc=gcc.exe -s -Os -fno-exceptions -fno-asynchronous-unwind-tables
-
+@SET CC=gcc.exe -I . -I ..\Mod -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -c
 @SET Mod=%1
 @IF "%Mod%"=="Args2" SET Mod=Args
 @IF "%Mod%"=="Platform.Windows" SET Mod=Platform
@@ -17,6 +16,6 @@
 @EXIT
 
 :MinGW
-%gcc% -c %Mod%.c -I "." -I ..\C
+%CC% %Mod%.c
 @IF errorlevel 1 PAUSE
 PAUSE
