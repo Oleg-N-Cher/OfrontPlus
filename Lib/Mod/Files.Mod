@@ -74,7 +74,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 
-  PROCEDURE -fdint(fd: Platform.FileHandle): INTEGER "((INTEGER)(SYSTEM_ADR)(fd))";
+  PROCEDURE -fdint(fd: Platform.FileHandle): INTEGER "((INTEGER)(SYSTEM_ADRINT)(fd))";
 
   PROCEDURE Err(s: ARRAY [1] OF CHAR; f: File; errcode: Platform.ErrorCode);
   BEGIN

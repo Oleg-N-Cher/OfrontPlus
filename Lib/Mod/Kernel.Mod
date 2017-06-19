@@ -12,11 +12,11 @@ VAR
 
 (* TODO *)
 
-(* Ctrl/c handling *)
+(* Ctrl/C handling *)
 
-PROCEDURE -SetInterruptHandler*     (h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADR)h)";
-PROCEDURE -SetQuitHandler*          (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADR)h)";
-PROCEDURE -SetBadInstructionHandler*(h: SignalHandler) "SystemSetBadInstructionHandler((SYSTEM_ADR)h)";
+PROCEDURE -SetInterruptHandler*     (h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADRINT)h)";
+PROCEDURE -SetQuitHandler*          (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADRINT)h)";
+PROCEDURE -SetBadInstructionHandler*(h: SignalHandler) "SystemSetBadInstructionHandler((SYSTEM_ADRINT)h)";
 
 
 PROCEDURE DisplayHaltCode(code: INTEGER);
