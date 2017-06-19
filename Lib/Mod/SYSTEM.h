@@ -6,7 +6,7 @@
 /*
 
   the Ofront+ runtime system interface and macro library
-  based on SYSTEM.h by Josef Templ and voc team
+  based on SYSTEM.h by Josef Templ and Dave Brown
 
 */
 
@@ -49,7 +49,7 @@ void *alloca(SYSTEM_ADR size);
 
 #define NIL          ((void*)0)
 #define __MAXEXT     16
-#define POINTER__typ ((SYSTEM_ADR*)(1))  // not NIL and not a valid type
+#define POINTER__typ ((SYSTEM_ADRINT*)(1))  // not NIL and not a valid type
 
 
 // Oberon types
@@ -59,6 +59,7 @@ typedef signed char   BYTE;
 typedef unsigned char CHAR;
 typedef short int     SHORTINT;
 typedef int           INTEGER;   // INTEGER is 32 bit.
+typedef unsigned int  SET;       // SET is 32 bit.
 typedef float         REAL;
 typedef double        LONGREAL;
 typedef void*         SYSTEM_PTR;
@@ -81,9 +82,6 @@ typedef unsigned int       U_SET;
   typedef unsigned long      U_LONGINT;
 #endif
 
-typedef U_INTEGER SET;   // SET is 32 bit.
-
-
 
 // Run time system routines in SYSTEM.c
 
@@ -94,9 +92,6 @@ extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
 extern LONGINT SYSTEM_ASHL   (LONGINT x, INTEGER n);
 extern LONGINT SYSTEM_ABS    (LONGINT i);
 extern double  SYSTEM_ABSD   (double i);
-extern void    SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0);
-extern void    SYSTEM_ENUMP  (void *adr, SYSTEM_ADRINT n, void (*P)());
-extern void    SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)());
 extern LONGINT SYSTEM_DIV    (LONGINT x, LONGINT y);
 extern LONGINT SYSTEM_MOD    (LONGINT x, LONGINT y);
 extern INTEGER SYSTEM_ENTIER (LONGREAL x);
@@ -164,6 +159,7 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 #define __CAP(ch)       ((CHAR)((ch)&0x5f))
 #define __ODD(x)        ((x)&1)
 #define __IN(x, s)      (((s)>>(x))&1)
+// todo tested versions of SETOF and SETRNG: check that x, l and h fit size
 #define __SETOF(x)      ((SET)1<<(x))
 #define __SETRNG(l, h)  ((~(SET)0<<(l))&~(SET)0>>(8*sizeof(SET)-1-(h)))
 #define __MASK(x, m)    ((x)&~(m))
@@ -237,6 +233,10 @@ extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ADRINT, int, int, int, ..
 
 /* Type handling */
 
+extern void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0);
+extern void SYSTEM_ENUMP  (void *adr, SYSTEM_ADRINT n, void (*P)());
+extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)());
+
 #define __TDESC(t__desc, m, n)                                                \
   static struct t__desc {                                                     \
     SYSTEM_ADRINT  tproc[m];         /* Proc for each ptr field            */ \
@@ -258,7 +258,7 @@ extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ADRINT, int, int, int, ..
 #define __ENUMP(adr, n, P)            SYSTEM_ENUMP(adr, (SYSTEM_ADRINT)(n), P)
 #define __ENUMR(adr, typ, size, n, P) SYSTEM_ENUMR(adr, typ, (SYSTEM_ADRINT)(size), (SYSTEM_ADRINT)(n), P)
 
-#define __INITYP(t, t0, level)                                                   \
+#define __INITYP(t, t0, level) \
   t##__typ               = (SYSTEM_ADRINT*)&t##__desc.blksz;                     \
   memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT));   \
   t##__desc.basep[level] = (SYSTEM_ADRINT)t##__typ;                              \
@@ -268,8 +268,8 @@ extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ADRINT, int, int, int, ..
   Heap_REGTYP(m, (SYSTEM_ADRINT)&t##__desc.next);                                \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
 
-#define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(SYSTEM_ADR)typ##__typ)
-#define __TYPEOF(p)           (*(((SYSTEM_ADR**)(p))-1))
+#define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(SYSTEM_ADRINT)typ##__typ)
+#define __TYPEOF(p)           (*(((SYSTEM_ADRINT**)(p))-1))
 #define __ISP(p, typ, level)  __IS(__TYPEOF(p),typ,level)
 
 // Oberon-2 type bound procedures support
