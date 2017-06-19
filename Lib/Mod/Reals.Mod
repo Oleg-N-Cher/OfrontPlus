@@ -8,7 +8,7 @@ MODULE Reals;
 
 
   PROCEDURE -Offset(adr: ADR; offset: LONGINT): ADR
-      "((Platform_ADR)((SYSTEM_ADR)adr + offset))"; 
+      "((Platform_ADR)((SYSTEM_ADRINT)adr + offset))"; 
   PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
   PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADR
       "((Platform_ADR)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";

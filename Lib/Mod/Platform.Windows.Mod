@@ -261,7 +261,7 @@ PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 (* File system *)
 
-PROCEDURE -InvalidHandleValue*(): FileHandle "((Platform_FileHandle)(SYSTEM_ADR)-1)";
+PROCEDURE -InvalidHandleValue*(): FileHandle "((Platform_FileHandle)(SYSTEM_ADRINT)-1)";
 
 PROCEDURE -openrw (n: ARRAY OF CHAR): FileHandle
 "(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
