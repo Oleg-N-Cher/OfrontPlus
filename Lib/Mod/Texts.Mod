@@ -90,8 +90,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       elem*: Elem;
       rider: Files.Rider;
       run: Run;
-      org, off: LONGINT;
-      bom: BOOLEAN;
+      org, off: LONGINT
     END;
 
     Scanner* = RECORD (Reader)
@@ -331,21 +330,21 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   PROCEDURE ^ Read* (VAR R: Reader; VAR ch: CHAR);
 
   PROCEDURE OpenReader* (VAR R: Reader; T: Text; pos: LONGINT);
-    VAR u: Run; ch: CHAR;
+    VAR u: Run; bom: BOOLEAN; ch: CHAR;
   BEGIN
     IF pos >= T.len THEN pos := T.len END;
     Find(T, pos, u, R.org, R.off); R.run := u; R.eot := FALSE;
     IF u IS Piece THEN
       Files.Set(R.rider, u(Piece).file, u(Piece).org + R.off)
     END;
-    R.bom := FALSE;
+    bom := FALSE;
     IF pos = 0 THEN (* checking isn't it UTF-8 encoded text with BOM? *)
       Read(R, ch); IF ch = 0EFX THEN
         Read(R, ch); IF ch = 0BBX THEN
-          Read(R, ch); IF ch = 0BFX THEN R.bom := TRUE END;
+          Read(R, ch); IF ch = 0BFX THEN bom := TRUE END;
         END;
       END;
-      IF ~R.bom THEN pos := 0 END;
+      IF ~bom THEN pos := 0 END;
     END;
   END OpenReader;
 
