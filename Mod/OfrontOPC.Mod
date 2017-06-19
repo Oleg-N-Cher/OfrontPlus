@@ -726,7 +726,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					LenList(obj, FALSE, TRUE)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
 					EndStat; BegStat;
-					OPM.WriteString("SYSTEM_ADR *"); Ident(obj); OPM.WriteString(TagExt);
+					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
 				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) & (obj^.typ^.form = Pointer) THEN
 					OPM.WriteString(" = NIL")
@@ -757,7 +757,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					END;
 					LenList(obj, TRUE, showParamNames)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
-					OPM.WriteString(", SYSTEM_ADR *");
+					OPM.WriteString(", SYSTEM_ADRINT *");
 					IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
 				END ;
 				IF (obj^.link = NIL) OR (obj^.link.mode = TProc) THEN EXIT END ;
@@ -828,7 +828,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
 				ELSE OPM.WriteString(Export)
 				END ;
-				OPM.WriteString("SYSTEM_ADR *"); Andent(typ); OPM.WriteString(DynTypExt);
+				OPM.WriteString("SYSTEM_ADRINT *"); Andent(typ); OPM.WriteString(DynTypExt);
 				EndStat
 			END ;
 			n := n^.link
