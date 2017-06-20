@@ -344,7 +344,12 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
           Read(R, ch); IF ch = 0BFX THEN bom := TRUE END;
         END;
       END;
-      IF ~bom THEN pos := 0 END;
+      IF ~bom THEN
+        Find(T, pos, u, R.org, R.off); R.run := u; R.eot := FALSE;
+        IF u IS Piece THEN
+          Files.Set(R.rider, u(Piece).file, u(Piece).org + R.off)
+        END;
+      END;
     END;
   END OpenReader;
 
@@ -355,7 +360,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       IF (ch = 0AX) & u(Piece).ascii THEN ch := CR (* << LF to CR *)
       ELSIF (ch = CR) & u(Piece).ascii THEN (* << CR LF to CR *)
          pos := SHORT(Files.Pos(R.rider)); Files.ReadChar(R.rider, nextch);
-	 IF nextch = 0AX THEN INC(R.off) ELSE Files.Set(R.rider, u(Piece).file, pos) END
+         IF nextch = 0AX THEN INC(R.off) ELSE Files.Set(R.rider, u(Piece).file, pos) END
       END
     ELSIF u IS Elem THEN ch := ElemChar; R.elem := u(Elem)
     ELSE ch := 0X; R.elem := NIL; R.eot := TRUE
