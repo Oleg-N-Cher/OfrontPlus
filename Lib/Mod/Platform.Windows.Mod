@@ -4,8 +4,7 @@ IMPORT SYSTEM;
 (* TODO:
    Use Unicode APIs with manual UTF8 conversion and prepend "\\?\" to
    file paths in order to get 32768 character path length limit (as
-   opposed to 256 bytes.
-   Made compatible with older Windows (GetFileSizeEx). *)
+   opposed to 256 bytes. *)
 
 
 CONST
@@ -90,6 +89,8 @@ PROCEDURE -ECONNREFUSED():          ErrorCode "WSAECONNREFUSED";
 PROCEDURE -ECONNABORTED():          ErrorCode "WSAECONNABORTED";
 PROCEDURE -ENETUNREACH():           ErrorCode "WSAENETUNREACH";
 PROCEDURE -EHOSTUNREACH():          ErrorCode "WSAEHOSTUNREACH";
+PROCEDURE -INVALIDFILESIZE():       ErrorCode "INVALID_FILE_SIZE";
+PROCEDURE -NOERROR():               ErrorCode "NO_ERROR";
 
 
 PROCEDURE TooManyFiles*(e: ErrorCode): BOOLEAN;
@@ -363,15 +364,17 @@ BEGIN
   YMDHMStoClock(styear(), stmon(), stmday(), sthour(), stmin(), stsec(), t, d);
 END MTimeAsClock;
 
-PROCEDURE -largeInteger "LARGE_INTEGER li";
-PROCEDURE -liLongint(): LONGINT "(LONGINT)li.QuadPart"; (* QuadPart is signed 64-bit integer *)
-PROCEDURE -getFileSize(h: FileHandle): BOOL "(INTEGER)GetFileSizeEx((HANDLE)h, &li)";
+
+PROCEDURE -getFileSize(h: FileHandle; VAR sizehigh: DWORD): DWORD "(INTEGER)GetFileSize((HANDLE)h, (LPDWORD)sizehigh)";
 
 PROCEDURE FileSize*(h: FileHandle; VAR len: LONGINT): ErrorCode;
+VAR size: RECORD [1] low, high: DWORD END; error: ErrorCode;
 BEGIN
-  largeInteger;
-  IF getFileSize(h) = 0 THEN RETURN err() END;
-  len := liLongint();
+  size.low := getFileSize(h, size.high);
+  IF size.low = INVALIDFILESIZE() THEN
+    error := err(); IF error # NOERROR() THEN RETURN error END;
+  END;
+  len := SYSTEM.VAL(LONGINT, size);
   RETURN 0
 END FileSize;
 
@@ -413,6 +416,8 @@ BEGIN
   IF flushFileBuffers(h) = 0 THEN RETURN err() ELSE RETURN 0 END
 END Sync;
 
+
+PROCEDURE -largeInteger "LARGE_INTEGER li";
 
 PROCEDURE -setFilePointerEx(h: FileHandle; o: LONGINT; r: DWORD; VAR rc: BOOL)
 "li.QuadPart=o; *rc = (INTEGER)SetFilePointerEx((HANDLE)h, li, 0, (DWORD)r)";
