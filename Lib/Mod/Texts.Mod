@@ -330,7 +330,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   PROCEDURE OpenReader* (VAR R: Reader; T: Text; pos: LONGINT);
     VAR u: Run;
   BEGIN
-    IF pos >= T.len THEN pos := T.len END;
+    IF pos >= T.len THEN pos := T.len ELSIF pos < 0 THEN pos := 0 END;
     Find(T, pos, u, R.org, R.off); R.run := u; R.eot := FALSE;
     IF u IS Piece THEN
       Files.Set(R.rider, u(Piece).file, u(Piece).org + R.off)
@@ -821,10 +821,11 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   END Load;
 
   PROCEDURE Open* (T: Text; name: ARRAY OF CHAR);
-    VAR f: Files.File; r: Files.Rider; u: Run; p: Piece; tag, version: CHAR; hlen: LONGINT;
+    VAR f: Files.File; r: Files.Rider; u: Run; p: Piece; tag, version, bom: CHAR; hlen: LONGINT;
   BEGIN f := Files.Old(name);
     IF f = NIL THEN f := Files.New("") END;
     Files.Set(r, f, 0); Files.ReadChar(r, tag); Files.ReadChar(r, version);
+    Files.ReadChar(r, bom);
     IF (tag = textTag) OR (tag = 01X) & (version = textTag) THEN Load0(r, T)
     ELSE (*ascii*)
       NEW(u); u.len := MAX(LONGINT); u.fnt := NIL; u.col := Displaywhite;
@@ -833,7 +834,11 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
         Files.Set(r, f, 28); Files.ReadInt(r, hlen);
         Files.Set(r, f, 22 + hlen); Files.ReadInt(r, T.len); p.org := 26 + hlen
       ELSE
-        T.len := SHORT(Files.Length(f)); p.org := 0
+        T.len := SHORT(Files.Length(f));
+        (* checking isn't it UTF-8 encoded text with BOM? *)
+        IF (tag = 0EFX) & (version = 0BBX) & (bom = 0BFX) THEN p.org := 3
+        ELSE p.org := 0
+        END;
       END ;
       IF T.len > 0 THEN p.len := T.len; p.fnt := FontsDefault;
         p.col := Displaywhite; p.voff := 0; p.file := f; p.ascii := TRUE;
