@@ -825,7 +825,6 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   BEGIN f := Files.Old(name);
     IF f = NIL THEN f := Files.New("") END;
     Files.Set(r, f, 0); Files.ReadChar(r, tag); Files.ReadChar(r, version);
-    Files.ReadChar(r, bom);
     IF (tag = textTag) OR (tag = 01X) & (version = textTag) THEN Load0(r, T)
     ELSE (*ascii*)
       NEW(u); u.len := MAX(LONGINT); u.fnt := NIL; u.col := Displaywhite;
@@ -836,6 +835,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       ELSE
         T.len := SHORT(Files.Length(f));
         (* checking isn't it UTF-8 encoded text with BOM? *)
+        Files.ReadChar(r, bom);
         IF (tag = 0EFX) & (version = 0BBX) & (bom = 0BFX) THEN p.org := 3
         ELSE p.org := 0
         END;
