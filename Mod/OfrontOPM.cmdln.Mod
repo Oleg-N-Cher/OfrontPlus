@@ -562,7 +562,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END ;
 			IF i < 0 THEN s[k] := "-"; INC(k) END ;
 			WHILE k > 0 DO  DEC(k); Write(s[k]) END;
-			IF (ansi IN opt) & (LIntSize = 8) & ((i < MinInt) OR (i > MaxInt)) THEN WriteString("LL") END
+			IF (ansi IN opt) & ((i < MIN(INTEGER)) OR (i > MAX(INTEGER))) THEN WriteString("LL") END
 		END ;
 	END WriteInt;
 
