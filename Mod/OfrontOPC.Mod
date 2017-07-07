@@ -593,7 +593,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.Write('"');
 		IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name) END ;
 		Str1('", #), {', typ^.size);
-		nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.LIntSize);
+		nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.PointerSize);
 		EndStat
 	END TDescDecl;
 
