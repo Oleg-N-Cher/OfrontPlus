@@ -22,13 +22,13 @@ BEGIN
   Write.Char(" "); Write.Hex(int); Write.Char("H"); Write.Ln;
 
   (* LONGINT *)
-  long := SYSTEM.LSH(LONG(LONG(1)), 63);
+  long := SYSTEM.LSH(LONG(LONG(LONG(1))), 63);
   Write.String("MIN(LONGINT) = "); Write.LongInt(long, 0); Write.Char(" ");
   Write.LongHex(long); Write.Char("H"); Write.Ln;
   INC(long); Write.String("MIN(LONGINT)+1 = "); Write.LongInt(long, 0);
   Write.Char(" "); Write.LongHex(long); Write.Char("H"); Write.Ln;
 
-  long := -(SYSTEM.LSH(LONG(LONG(1)), 63) + 1);
+  long := -(SYSTEM.LSH(LONG(LONG(LONG(1))), 63) + 1);
   Write.String("MAX(LONGINT) = "); Write.LongInt(long, 0); Write.Char(" ");
   Write.LongHex(long); Write.Char("H"); Write.Ln;
   DEC(long); Write.String("MAX(LONGINT)-1 = "); Write.LongInt(long, 0);

@@ -12,11 +12,11 @@ BEGIN
       IF p.FileSize(file, filesize) = 0 THEN
         Write.String("file size = "); Write.LongInt(filesize, 0);
       ELSE
-        Write.String("error when calculating file size");
+        Write.String("error calculating file size");
       END;
       IF p.CloseFile(file) = 0 THEN END;
     ELSE
-      Write.String("error when open file");
+      Write.String("error opening file");
     END;
     Write.Ln;
   END;
