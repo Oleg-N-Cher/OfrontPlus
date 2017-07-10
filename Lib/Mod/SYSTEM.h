@@ -72,14 +72,16 @@ typedef unsigned short int U_SHORTINT;
 typedef unsigned int       U_INTEGER;
 typedef unsigned int       U_SET;
 
-// For 32 bit builds, the size of LONGINT depends on a make option:
+// LONGINT is 64 bit.
 
-#if (__SIZEOF_POINTER__ == 8) || defined(_LONGINT64) || defined(_WIN64)
-  typedef long long          LONGINT;   // LONGINT is 64 bit. (long long is always 64 bits, while long can be 32 bits e.g. under MSC/MingW)
-  typedef unsigned long long U_LONGINT;
-#else
-  typedef long               LONGINT;   // LONGINT is 32 bit.
+#if !defined(_WIN64) && ((__SIZEOF_POINTER__ == 8) || defined (_LP64) || defined(__LP64__))
+  // LP64
+  typedef long               LONGINT;
   typedef unsigned long      U_LONGINT;
+#else
+  // ILP32 or LLP64
+  typedef long long          LONGINT;
+  typedef unsigned long long U_LONGINT;
 #endif
 
 
