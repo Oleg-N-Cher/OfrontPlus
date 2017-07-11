@@ -278,33 +278,33 @@ PROCEDURE -opennew(n: ARRAY OF CHAR): INTEGER "open((char*)n, O_CREAT | O_TRUNC 
 
 (* File APIs *)
 
-PROCEDURE OldRO*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(VAR name: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := openro(n);
+  fd := openro(name);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
-PROCEDURE OldRW*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(VAR name: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := openrw(n);
+  fd := openrw(name);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
-PROCEDURE NewFile*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(VAR name: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := opennew(n);
+  fd := opennew(name);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END NewFile;
 
 
 PROCEDURE -closefile (fd: FileHandle): INTEGER "close(fd)";
 
-PROCEDURE CloseFile*(h: FileHandle): ErrorCode;
+PROCEDURE CloseFile*(handle: FileHandle): ErrorCode;
 BEGIN
-  IF closefile(h) < 0 THEN RETURN err() ELSE RETURN 0 END
+  IF closefile(handle) < 0 THEN RETURN err() ELSE RETURN 0 END
 END CloseFile;
 
 
@@ -411,11 +411,11 @@ BEGIN
 END Seek;
 
 
-PROCEDURE -ftruncate(fd: FileHandle; l: INTEGER): INTEGER "ftruncate(fd, l)";
+PROCEDURE -ftruncate(fd: FileHandle; length: LONGINT): INTEGER "ftruncate(fd, length)";
 
-PROCEDURE TruncateFile*(h: FileHandle; l: INTEGER): ErrorCode;
+PROCEDURE TruncateFile*(h: FileHandle; limit: LONGINT): ErrorCode;
 BEGIN
-  IF (ftruncate(h, l) < 0) THEN RETURN err() ELSE RETURN 0 END;
+  IF (ftruncate(h, limit) < 0) THEN RETURN err() ELSE RETURN 0 END;
 END TruncateFile;
 
 
