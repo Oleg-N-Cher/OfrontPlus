@@ -8,11 +8,15 @@ Lib/Test/*.c
 Lib/Test/*.exe
 Lib/Test64/*.c
 Lib/Test64/*.exe
+Linux/Lib/Obj/*.c
 Linux/Lib/Obj/*.o
+Linux/Lib/Obj64/*.c
 Linux/Lib/Obj64/*.o
 Linux/Lib/Test/*.c
 Linux/Lib/Test64/*.c
+Linux/Obj/*.c
 Linux/Obj/*.o
+Linux/Obj64/*.c
 Linux/Obj64/*.o
 Linux/ocat
 Linux/ofront+
