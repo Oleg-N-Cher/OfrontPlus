@@ -11,4 +11,4 @@ IF errorlevel 1 PAUSE
 ofront+ -e ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
 IF errorlevel 1 PAUSE
 
-MOVE /Y *.sym ..\Sym
+FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
