@@ -315,6 +315,8 @@ PROCEDURE -statdev():              DEV_T   "(LONGINT)s.st_dev";
 PROCEDURE -statino():              INO_T   "(Platform_INO_T)s.st_ino";
 PROCEDURE -statmtime():            TIME_T  "(Platform_TIME_T)s.st_mtime";
 PROCEDURE -statsize():             LONGINT "(LONGINT)s.st_size";
+PROCEDURE -statisreg():            BOOLEAN "S_ISREG(s.st_mode)";
+PROCEDURE -statisdir():            BOOLEAN "S_ISDIR(s.st_mode)";
 
 PROCEDURE Identify*(h: FileHandle; VAR identity: FileIdentity): ErrorCode;
 BEGIN
@@ -436,6 +438,21 @@ BEGIN
   r := chdir(n);  getcwd(CWD);
   IF r < 0 THEN RETURN err() ELSE RETURN 0 END
 END Chdir;
+
+
+PROCEDURE FileExists*(pathname: ARRAY OF CHAR): BOOLEAN;
+BEGIN
+  structstats;
+  IF stat(pathname) # 0 THEN RETURN FALSE END;
+  RETURN statisreg()
+END FileExists;
+
+PROCEDURE DirExists*(path: ARRAY OF CHAR): BOOLEAN;
+BEGIN
+  structstats;
+  IF stat(path) # 0 THEN RETURN FALSE END;
+  RETURN statisdir()
+END DirExists;
 
 
 PROCEDURE -rename(o,n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
