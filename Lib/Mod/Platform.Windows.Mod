@@ -89,6 +89,7 @@ PROCEDURE -ECONNREFUSED():          ErrorCode "WSAECONNREFUSED";
 PROCEDURE -ECONNABORTED():          ErrorCode "WSAECONNABORTED";
 PROCEDURE -ENETUNREACH():           ErrorCode "WSAENETUNREACH";
 PROCEDURE -EHOSTUNREACH():          ErrorCode "WSAEHOSTUNREACH";
+PROCEDURE -INVALIDFILEATTRIBUTES(): ErrorCode "INVALID_FILE_ATTRIBUTES";
 PROCEDURE -INVALIDFILESIZE():       ErrorCode "INVALID_FILE_SIZE";
 PROCEDURE -NOERROR():               ErrorCode "NO_ERROR";
 
@@ -473,6 +474,29 @@ BEGIN
   getCurrentDirectory(CWD);
   RETURN 0
 END Chdir;
+
+
+PROCEDURE -getFileAttributes(name: ARRAY OF CHAR): DWORD
+"(INTEGER)GetFileAttributes((LPCTSTR)name)";
+PROCEDURE -FILEATTRIBUTEDIRECTORY(): SET "(SET)FILE_ATTRIBUTE_DIRECTORY";
+
+PROCEDURE FileExists*(name: ARRAY OF CHAR): BOOLEAN;
+VAR
+  dwAttrib: DWORD;
+BEGIN
+  dwAttrib := getFileAttributes(name);
+  RETURN (dwAttrib # INVALIDFILEATTRIBUTES()) (* Wrong path! *)
+    & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() = {})
+END FileExists;
+
+PROCEDURE DirExists*(name: ARRAY OF CHAR): BOOLEAN;
+VAR
+  dwAttrib: DWORD;
+BEGIN
+  dwAttrib := getFileAttributes(name);
+  RETURN (dwAttrib # INVALIDFILEATTRIBUTES()) (* Wrong path! *)
+    & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() # {})
+END DirExists;
 
 
 PROCEDURE -moveFile(o, n: ARRAY OF CHAR): BOOL
