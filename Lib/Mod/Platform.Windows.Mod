@@ -499,12 +499,21 @@ BEGIN
 END DirExists;
 
 
-PROCEDURE -moveFile(o, n: ARRAY OF CHAR): BOOL
-"(INTEGER)MoveFileEx((char*)o, (char*)n, MOVEFILE_REPLACE_EXISTING)";
+PROCEDURE -moveFile(lpExistingFileName, lpNewFileName: ARRAY OF CHAR): BOOL
+  "(INTEGER)MoveFile((LPCTSTR)lpExistingFileName, (LPCTSTR)lpNewFileName)";
 
-PROCEDURE RenameFile*(VAR o, n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile*(oldname, newname: ARRAY OF CHAR): ErrorCode;
+VAR
+  old, new: FileIdentity; error: ErrorCode;
 BEGIN
-  IF moveFile(o, n) = 0 THEN RETURN err() ELSE RETURN 0 END
+  IF FileExists(newname) & FileExists(oldname)
+    & (IdentifyByName(oldname, old) = 0) & (IdentifyByName(newname, new) = 0)
+    & ~ SameFile(old, new)
+  THEN
+    error := DeleteFile(newname); IF error # 0 THEN RETURN error END;
+  END;
+  IF moveFile(oldname, newname) = 0 THEN RETURN err() END;
+  RETURN 0
 END RenameFile;
 
 
