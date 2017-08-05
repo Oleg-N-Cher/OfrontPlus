@@ -20,6 +20,7 @@ TYPE
   ADR* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
 
   BOOL = INT32; DWORD = INT32;
+  LARGE_INTEGER = RECORD [1] low, high: INT32 END;
 
   ErrorCode*  = INTEGER;
   FileHandle* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
@@ -90,6 +91,7 @@ PROCEDURE -ECONNABORTED():          ErrorCode "WSAECONNABORTED";
 PROCEDURE -ENETUNREACH():           ErrorCode "WSAENETUNREACH";
 PROCEDURE -EHOSTUNREACH():          ErrorCode "WSAEHOSTUNREACH";
 PROCEDURE -INVALIDFILEATTRIBUTES(): ErrorCode "INVALID_FILE_ATTRIBUTES";
+PROCEDURE -INVALIDSETFILEPOINTER(): ErrorCode "INVALID_SET_FILE_POINTER";
 PROCEDURE -INVALIDFILESIZE():       ErrorCode "INVALID_FILE_SIZE";
 PROCEDURE -NOERROR():               ErrorCode "NO_ERROR";
 
@@ -418,39 +420,54 @@ BEGIN
 END Sync;
 
 
-PROCEDURE -largeInteger "LARGE_INTEGER li";
-
-PROCEDURE -setFilePointerEx(h: FileHandle; o: LONGINT; r: DWORD; VAR rc: BOOL)
-"li.QuadPart=o; *rc = (INTEGER)SetFilePointerEx((HANDLE)h, li, 0, (DWORD)r)";
+PROCEDURE -setFilePointer(hFile: FileHandle; lDistanceToMove: INTEGER;
+  VAR lpDistanceToMoveHigh: INTEGER; dwMoveMethod: DWORD): DWORD "(INTEGER)SetFilePointer((HANDLE)hFile, (LONG)lDistanceToMove, (PLONG)lpDistanceToMoveHigh, (DWORD)dwMoveMethod)";
 
 PROCEDURE -seekset(): INTEGER "FILE_BEGIN";
 PROCEDURE -seekcur(): INTEGER "FILE_CURRENT";
 PROCEDURE -seekend(): INTEGER "FILE_END";
 
-PROCEDURE Seek*(h: FileHandle; o: LONGINT; r: INTEGER): ErrorCode;
-VAR rc: BOOL;
+PROCEDURE Seek*(h: FileHandle; offset: LONGINT; r: INTEGER): ErrorCode;
+VAR pos: LARGE_INTEGER; error: ErrorCode;
 BEGIN
-  largeInteger;
-  setFilePointerEx(h, o, r, rc);
-  IF rc = 0 THEN RETURN err() ELSE RETURN 0 END
+  pos := SYSTEM.VAL(LARGE_INTEGER, offset);
+  IF setFilePointer(h, pos.low, pos.high, r) = INVALIDSETFILEPOINTER() THEN
+    error := err(); IF error # NOERROR() THEN RETURN error END;
+  END;
+  RETURN 0
 END Seek;
 
 
 PROCEDURE -setEndOfFile(h: FileHandle): BOOL "(INTEGER)SetEndOfFile((HANDLE)h)";
-PROCEDURE -getFilePos(h: FileHandle; VAR r: LONGINT; VAR rc: BOOL)
-"LARGE_INTEGER liz = {0}; *rc = (INTEGER)SetFilePointerEx((HANDLE)h, liz, &li, FILE_CURRENT); *r = (LONGINT)li.QuadPart";
+
+PROCEDURE GetFilePos(h: FileHandle; VAR r: LONGINT): ErrorCode;
+VAR pos: LARGE_INTEGER; error: ErrorCode;
+BEGIN
+  pos.high := 0;
+  pos.low := setFilePointer(h, 0, pos.high, seekcur());
+  IF pos.low = INVALIDSETFILEPOINTER() THEN
+    error := err(); IF error # NOERROR() THEN RETURN error END;
+  END;
+  r := SYSTEM.VAL(LONGINT, pos);
+  RETURN 0
+END GetFilePos;
 
 PROCEDURE TruncateFile*(h: FileHandle; limit: LONGINT): ErrorCode;
-VAR rc: BOOL; oldpos: LONGINT;
+VAR pos: LARGE_INTEGER; oldpos: LONGINT; error: ErrorCode;
 BEGIN
-  largeInteger;
-  getFilePos(h, oldpos, rc);
-  IF rc = 0                                          THEN RETURN err() END;
-  setFilePointerEx(h, limit, seekset(), rc);
-  IF rc = 0                                          THEN RETURN err() END;
-  IF setEndOfFile(h) = 0                             THEN RETURN err() END;
-  setFilePointerEx(h, oldpos, seekset(), rc);  (* Restore original file position *)
-  IF rc = 0                                          THEN RETURN err() END;
+  error := GetFilePos(h, oldpos);
+  IF error # 0                           THEN RETURN error END;
+  pos := SYSTEM.VAL(LARGE_INTEGER, limit);
+  IF setFilePointer(h, pos.low, pos.high, seekset()) = INVALIDSETFILEPOINTER()
+  THEN
+    error := err(); IF error # NOERROR() THEN RETURN error END;
+  END;
+  IF setEndOfFile(h) = 0                 THEN RETURN err() END;
+  pos := SYSTEM.VAL(LARGE_INTEGER, oldpos); (* Restore original file position *)
+  IF setFilePointer(h, pos.low, pos.high, seekset()) = INVALIDSETFILEPOINTER()
+  THEN
+    error := err(); IF error # NOERROR() THEN RETURN error END;
+  END;
   RETURN 0
 END TruncateFile;
 
@@ -522,6 +539,14 @@ END RenameFile;
 PROCEDURE -exit(code: INTEGER) "ExitProcess((UINT)code)";
 PROCEDURE ExitOS*(code: INTEGER);
 BEGIN exit(code) END ExitOS;
+
+
+PROCEDURE -getConsoleMode(h: FileHandle; VAR m: INT32): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
+
+PROCEDURE IsConsole*(h: FileHandle): BOOLEAN;
+VAR mode: INT32;
+BEGIN RETURN getConsoleMode(StdOut, mode)
+END IsConsole;
 
 
 PROCEDURE TestLittleEndian;
