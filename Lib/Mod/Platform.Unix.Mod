@@ -470,6 +470,12 @@ PROCEDURE ExitOS*(code: INTEGER);
 BEGIN exit(code) END ExitOS;
 
 
+PROCEDURE -isatty(fd: FileHandle): INTEGER "isatty(fd)";
+
+PROCEDURE IsConsole*(h: FileHandle): BOOLEAN;
+BEGIN RETURN isatty(h) # 0 END IsConsole;
+
+
 PROCEDURE TestLittleEndian;
   VAR i: INTEGER;
  BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
