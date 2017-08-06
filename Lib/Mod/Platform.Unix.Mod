@@ -457,9 +457,10 @@ END DirExists;
 
 PROCEDURE -rename(o,n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
 
-PROCEDURE RenameFile*(VAR o, n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile*(oldname, newname: ARRAY OF CHAR): ErrorCode;
 BEGIN
-  IF rename(o, n) < 0 THEN RETURN err() ELSE RETURN 0 END
+  IF rename(oldname, newname) < 0 THEN RETURN err() END;
+  RETURN 0
 END RenameFile;
 
 
