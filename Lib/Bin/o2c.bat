@@ -1,7 +1,7 @@
 @ECHO OFF
 CD ..\Obj
-SET PATH=%CD%\..\..\Bin
-SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\Mod
+SET PATH=.\..\..\Bin;%PATH%
+SET OBERON=.;.\..\Sym;.\..\Mod
 
 :: Ofront+
 
