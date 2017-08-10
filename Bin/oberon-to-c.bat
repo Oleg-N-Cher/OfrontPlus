@@ -1,7 +1,7 @@
 @ECHO OFF
-SET PATH=%CD%
 CD ..\Obj
-SET OBERON=%CD%;%CD%\..\Lib\Sym;%CD%\..\Sym;%CD%\..\Mod
+SET PATH=..\Bin;%PATH%
+SET OBERON=.\;.\..\Lib\Sym;.\..\Sym;.\..\Mod
 
 ofront+ -s OfrontErrors.Mod OfrontOPM.cmdln.Mod OfrontOPS.Mod OfrontOPT.Mod OfrontOPB.Mod OfrontOPP.Mod OfrontOPC.Mod OfrontOPV.Mod BrowserCmd.Mod -m OCatCmd.Mod -m OfrontCmd.Mod -m
 IF errorlevel 1 PAUSE
