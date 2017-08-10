@@ -41,7 +41,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		DefinedInBdy = 3+OPM.BodyFile; (* named type has been defined in body file *)
 
 
-		HeaderMsg = "Ofront+ 0.9 -";
+		HeaderMsg = "Ofront+ 1.0 -";
 		BasicIncludeFile = "SYSTEM";
 		Static = "static ";
 		Export = "export ";	(* particularily introduced for VC++ declspec() *)

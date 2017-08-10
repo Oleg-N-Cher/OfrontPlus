@@ -48,7 +48,7 @@
 	PROCEDURE Translate*;
 		VAR done: BOOLEAN;
 	BEGIN
-		OPM.OpenPar("Ofront+ (TM) - Oberon family of languages to C Translator v0.9", "ofront+");
+		OPM.OpenPar("Ofront+ (TM) - Oberon family of languages to C Translator v1.0", "ofront+");
 		(* gclock();   slightly faster translation but may lead to opening "too many files" *)
 		OPT.bytetyp.size := OPM.ByteSize;
 		OPT.sysptrtyp.size := OPM.PointerSize;
