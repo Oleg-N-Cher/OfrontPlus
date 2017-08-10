@@ -23,3 +23,9 @@ IF errorlevel 1 PAUSE
 %CC% ooc2Ascii.c ooc2ConvTypes.c ooc2RandomNumbers.c ooc2Strings.c
 IF errorlevel 1 PAUSE
 %AR% ooc2Ascii.o ooc2ConvTypes.o ooc2RandomNumbers.o ooc2Strings.o
+
+:: Free Oberon
+
+%CC% Types.c SDL2.c Out.c Graph.c Math.c -w
+IF errorlevel 1 PAUSE
+%AR% Types.o SDL2.o Out.o Graph.o Math.o
