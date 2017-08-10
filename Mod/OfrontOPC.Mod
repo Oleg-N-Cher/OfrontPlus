@@ -507,6 +507,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSIF str^.form = Pointer THEN
 					IF str^.BaseTyp^.comp # Record THEN DefineType(str^.BaseTyp) END
 				ELSIF str^.comp IN {Array, DynArr} THEN
+					IF (str^.BaseTyp^.strobj # NIL) & (str^.BaseTyp^.strobj^.linkadr = ProcessingType) THEN (*cyclic base type*)
+						OPM.Mark(244, str^ .txtpos); str^.BaseTyp^.strobj^.linkadr := PredefinedType
+					END ;
 					DefineType(str^.BaseTyp)
 				ELSIF str^.form = ProcTyp THEN
 					IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END ;
