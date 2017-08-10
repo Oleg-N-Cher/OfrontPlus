@@ -1,7 +1,7 @@
 @ECHO OFF
 CD ..\Obj64
-SET PATH=%CD%\..\..\Bin64
-SET OBERON=%CD%;%CD%\..\Sym64;%CD%\..\Mod
+SET PATH=.\..\..\Bin64;%PATH%
+SET OBERON=.;.\..\Sym64;.\..\Mod
 
 :: Ofront+
 
