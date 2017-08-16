@@ -1,0 +1,5 @@
+#!/bin/bash
+./o2c64
+./cc64
+rm ../Obj64/*.o
+#../Obj/*.c
