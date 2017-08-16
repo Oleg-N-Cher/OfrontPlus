@@ -1,3 +1,7 @@
+(*
+    (c) Destr
+*)
+
 MODULE Elo4ka; (** portable *)
 IMPORT G := Graph, Math;
 
@@ -20,14 +24,14 @@ BEGIN
   | 0: res := G.MakeCol(0, 255, 0); (* LightGreen *)
   | 1: res := G.MakeCol(255, 0, 0); (* LightRed   *)
   | 2: res := G.MakeCol(0, 0, 255); (* LightBlue  *)
-  | 3: res := G.MakeCol(170, 170, 170); (* White  *)
+  | 3: res := G.MakeCol(170, 170, 170);  (* Gray  *)
   END;
   color := (color + 1) MOD 4;
   RETURN res
 END NextColor;
 
 BEGIN
-  G.Settings(256, 192, {G.spread});
+  G.Settings(256, 192, {G.fullscreen, G.sharpPixels});
   screen := G.Init();
   alpha := 0;
   color := 0;
