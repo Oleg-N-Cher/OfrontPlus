@@ -21,8 +21,13 @@
      typedef          long      SYSTEM_ADRINT;
 #  endif
 #else
-   typedef unsigned int         SYSTEM_ADR;
-   typedef          int         SYSTEM_ADRINT;
+#  ifdef __OpenBSD__
+     typedef unsigned long      SYSTEM_ADR;
+     typedef          long      SYSTEM_ADRINT;
+#  else
+     typedef unsigned int       SYSTEM_ADR;
+     typedef          int       SYSTEM_ADRINT;
+#  endif
 #endif
 
 
