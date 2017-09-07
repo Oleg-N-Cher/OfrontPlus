@@ -862,7 +862,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		design(d, MinPrec); OPM.WriteString(" = __NEWARR(");
 		WHILE base^.comp = Array DO INC(nofdim); base := base^.BaseTyp END ;
 		IF (base^.comp = Record) & (OPC.NofPtrs(base) # 0) THEN
-			OPC.Ident(base^.strobj); OPM.WriteString(DynTypExt)
+			OPC.Andent(base); OPM.WriteString(DynTypExt)
 		ELSIF base^.form = Pointer THEN OPM.WriteString("POINTER__typ")
 		ELSE OPM.WriteString("NIL")
 		END ;
