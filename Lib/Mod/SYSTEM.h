@@ -281,7 +281,7 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 
 // Oberon-2 type bound procedures support
 #define __INITBP(t, proc, num)            *(t##__typ-(__TPROC0OFF+num))=(SYSTEM_ADRINT)proc
-#define __SEND(typ, num, funtyp, parlist) ((funtyp)((SYSTEM_ADRINT)*(typ-(__TPROC0OFF+num))))parlist
+#define __SEND(typ, procname, num, funtyp, parlist) ((funtyp)((SYSTEM_ADRINT)*(typ-(__TPROC0OFF+num))))parlist
 
 
 
