@@ -655,6 +655,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF typ^.comp = Record THEN RETURN typ^.align MOD 10000H
 			ELSE RETURN Base(typ^.BaseTyp)
 			END
+		ELSE OPM.err(58); RETURN 1
 		END
 	END Base;
 

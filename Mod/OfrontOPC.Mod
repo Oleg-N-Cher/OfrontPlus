@@ -639,6 +639,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF typ^.comp = Record THEN RETURN typ^.align MOD 10000H
 			ELSE RETURN Base(typ^.BaseTyp)
 			END
+		ELSE OPM.err(58); RETURN 1
 		END
 	END Base;
 
