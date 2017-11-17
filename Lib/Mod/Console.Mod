@@ -10,9 +10,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   PROCEDURE Flush*;
   VAR error: Platform.ErrorCode;
   BEGIN
-    error := Platform.Write(
-      Platform.StdOut,
-      SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(line)), pos); 
+    error := Platform.Write(Platform.StdOut, SYSTEM.ADR(line), pos);
     pos := 0;
   END Flush;
 

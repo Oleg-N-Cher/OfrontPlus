@@ -4,14 +4,14 @@ MODULE Reals;
   IMPORT S := SYSTEM, P := Platform;
 
   TYPE
-    SHORTINT = P.INT8; INTEGER = P.INT16; LONGINT = P.INT32; ADR = P.ADR;
+    SHORTINT = P.INT8; INTEGER = P.INT16; LONGINT = P.INT32; ADRINT = P.ADRINT;
 
 
-  PROCEDURE -Offset(adr: ADR; offset: LONGINT): ADR
-      "((Platform_ADR)((SYSTEM_ADRINT)adr + offset))"; 
+  PROCEDURE -Offset(adr: ADRINT; offset: LONGINT): ADRINT
+      "((SYSTEM_ADRINT)adr + offset)"; 
   PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
-  PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADR
-      "((Platform_ADR)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
+  PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADRINT
+      "((SYSTEM_ADRINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
 
   PROCEDURE Ten*(e: INTEGER): REAL;
     VAR r, power: LONGREAL;
@@ -73,7 +73,7 @@ MODULE Reals;
   END Convert;
   
   PROCEDURE ConvertL*(x: LONGREAL; n: INTEGER; VAR d: ARRAY OF CHAR);
-    VAR decpt, sign, i: LONGINT; buf: ADR;
+    VAR decpt, sign, i: LONGINT; buf: ADRINT;
   BEGIN
     (*x := x - 0.5; already rounded in ecvt*)
     buf := ecvt(x, n+2, decpt, sign);

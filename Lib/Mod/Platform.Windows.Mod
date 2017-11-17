@@ -1,5 +1,5 @@
 MODULE Platform; (** Windows *)
-IMPORT SYSTEM;
+IMPORT SYSTEM, Types;
 
 (* TODO:
    Use Unicode APIs with manual UTF8 conversion and prepend "\\?\" to
@@ -17,13 +17,13 @@ CONST
 
 TYPE
   INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
-  ADR* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
+  ADRINT* = Types.ADRINT; (* 32 or 64 bits *)
 
   BOOL = INT32; DWORD = INT32;
   LARGE_INTEGER = RECORD [1] low, high: INT32 END;
 
   ErrorCode*  = INTEGER;
-  FileHandle* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* 32 or 64 bits *)
+  FileHandle* = ADRINT; (* 32 or 64 bits *)
   (* In Windows, the file handle is used to identify a file. When a file is
      opened by a process using the CreateFile function, a file handle is
      associated with it until either the process terminates or the handle is
@@ -125,21 +125,21 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): ADR "((Platform_ADR)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
+PROCEDURE -allocate(size: ADRINT): ADRINT "((SYSTEM_ADRINT)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
 
 PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
 
-PROCEDURE OSAllocate*(size: INTEGER): ADR; (* 2 Gb will be sufficient *)
+PROCEDURE OSAllocate*(size: ADRINT): ADRINT;
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* If the function HeapAlloc fails and you have not specified HEAP_GENERATE_EXCEPTIONS, the return value is NULL. *)
   END;
-  SystemHalt(-25); RETURN NIL (* To remove __RETCHK *)
+  SystemHalt(-25); RETURN 0 (* To remove __RETCHK *)
 END OSAllocate;
 
-PROCEDURE -free(address: ADR) "HeapFree(GetProcessHeap(), 0, (void*)address)";
+PROCEDURE -free(address: ADRINT) "HeapFree(GetProcessHeap(), 0, (void*)address)";
 
-PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
+PROCEDURE OSFree*(address: ADRINT); BEGIN free(address) END OSFree;
 
 
 (* Program arguments and environmet access *)
@@ -266,16 +266,16 @@ PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 (* File system *)
 
-PROCEDURE -InvalidHandleValue*(): FileHandle "((Platform_FileHandle)(SYSTEM_ADRINT)-1)";
+PROCEDURE -InvalidHandleValue*(): FileHandle "(-1)";
 
 PROCEDURE -openrw (n: ARRAY OF CHAR): FileHandle
-"(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
+"(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
 PROCEDURE -openro (n: ARRAY OF CHAR): FileHandle
-"(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ              , FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
+"(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ              , FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
 PROCEDURE -opennew(n: ARRAY OF CHAR): FileHandle
-"(Platform_FileHandle)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
+"(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
 
 
 (* File APIs *)
@@ -383,10 +383,10 @@ BEGIN
 END FileSize;
 
 
-PROCEDURE -readfile (fd: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): BOOL
+PROCEDURE -readfile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
 "(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
 
-PROCEDURE Read*(h: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): ErrorCode;
+PROCEDURE Read*(h: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): ErrorCode;
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
@@ -398,15 +398,15 @@ PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCo
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
-  result := readfile(h, SYSTEM.VAL(ADR, SYSTEM.ADR(b)), LEN(b), n);
+  result := readfile(h, SYSTEM.ADR(b), LEN(b), n);
   IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
 
-PROCEDURE -writefile(fd: FileHandle; p: ADR; l: INTEGER; VAR dummy: DWORD): BOOL
+PROCEDURE -writefile(fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
 "(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)dummy, 0)";
 
-PROCEDURE Write*(h: FileHandle; p: ADR; l: INTEGER): ErrorCode;
+PROCEDURE Write*(h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
 VAR dummy: DWORD;
 BEGIN
   IF writefile(h, p, l, dummy) = 0 THEN RETURN err() ELSE RETURN 0 END
@@ -561,9 +561,9 @@ PROCEDURE TestLittleEndian;
  BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
 
 
-PROCEDURE -getstdinhandle():  FileHandle "(Platform_FileHandle)GetStdHandle(STD_INPUT_HANDLE)";
-PROCEDURE -getstdouthandle(): FileHandle "(Platform_FileHandle)GetStdHandle(STD_OUTPUT_HANDLE)";
-PROCEDURE -getstderrhandle(): FileHandle "(Platform_FileHandle)GetStdHandle(STD_ERROR_HANDLE)";
+PROCEDURE -getstdinhandle():  FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_INPUT_HANDLE)";
+PROCEDURE -getstdouthandle(): FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_OUTPUT_HANDLE)";
+PROCEDURE -getstderrhandle(): FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_ERROR_HANDLE)";
 PROCEDURE -getpid():          DWORD      "(INTEGER)GetCurrentProcessId()";
 
 BEGIN

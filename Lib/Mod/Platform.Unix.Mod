@@ -1,5 +1,5 @@
 MODULE Platform; (** Unix *)
-IMPORT SYSTEM;
+IMPORT SYSTEM, Types;
 
 
 CONST
@@ -16,13 +16,13 @@ CONST
 
 TYPE
   INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
-  ADR* = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bits *)
+  ADRINT* = Types.ADRINT;  (* 32 or 64 bits *)
   
-  TIME_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* time_t type is used
+  TIME_T = ADRINT;  (* time_t type is used
     instead of long, but which is also a 32-bit representation on some systems
     while there are even 64-bit representations on other systems. *)
   DEV_T = INT64;  (* 64 bit in Linux 2.2 *)
-  INO_T = POINTER [1] TO ARRAY [1] 1 OF CHAR;  (* 32 or 64 bits *)
+  INO_T = ADRINT;  (* 32 or 64 bits *)
 
   ErrorCode*  = INTEGER;
   FileHandle* = INTEGER;  (* In UNIX, a file handle is an opaque number
@@ -120,20 +120,20 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: INTEGER): ADR "((Platform_ADR)malloc((size_t)(size)))";
+PROCEDURE -allocate(size: ADRINT): ADRINT "((SYSTEM_ADRINT)malloc((size_t)(size)))";
 
 PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
 
-PROCEDURE OSAllocate*(size: INTEGER): ADR; (* 2 Gb will be sufficient *)
+PROCEDURE OSAllocate*(size: ADRINT): ADRINT;
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* malloc will return the null pointer when it fails. *)
   END;
-  SystemHalt(-25); RETURN NIL (* To remove __RETCHK *)
+  SystemHalt(-25); RETURN 0 (* To remove __RETCHK *)
 END OSAllocate;
 
-PROCEDURE -free(address: ADR) "free((void*)(address))";
-PROCEDURE OSFree*(address: ADR); BEGIN free(address) END OSFree;
+PROCEDURE -free(address: ADRINT) "free((void*)(address))";
+PROCEDURE OSFree*(address: ADRINT); BEGIN free(address) END OSFree;
 
 
 (* Program arguments and environment access *)
@@ -367,10 +367,10 @@ BEGIN
 END FileSize;
 
 
-PROCEDURE -readfile (fd: FileHandle; p: ADR; l: INTEGER): INTEGER
+PROCEDURE -readfile (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "read(fd, (void*)(p), l)";
 
-PROCEDURE Read*(h: FileHandle; p: ADR; l: INTEGER; VAR n: INTEGER): ErrorCode;
+PROCEDURE Read*(h: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): ErrorCode;
 BEGIN
   n := readfile(h, p, l);
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
@@ -378,15 +378,15 @@ END Read;
 
 PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCode;
 BEGIN
-  n := readfile(h, SYSTEM.VAL(ADR, SYSTEM.ADR(b)), LEN(b));
+  n := readfile(h, SYSTEM.ADR(b), LEN(b));
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
 
-PROCEDURE -writefile(fd: FileHandle; p: ADR; l: INTEGER): INTEGER
+PROCEDURE -writefile(fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "write(fd, (void*)(p), l)";
 
-PROCEDURE Write*(h: FileHandle; p: ADR; l: INTEGER): ErrorCode;
+PROCEDURE Write*(h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
   VAR written: INTEGER;
 BEGIN
   written := writefile(h, p, l);
