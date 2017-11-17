@@ -14,9 +14,9 @@ IF EXIST ..\Ofront.a DEL ..\Ofront.a
 
 :: Ofront+
 
-%CC% ..\Mod\SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+%CC% ..\Mod\SYSTEM.c Heap.c Types.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
 IF errorlevel 1 PAUSE
-%AR% SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+%AR% SYSTEM.o Heap.o Types.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
 
 :: OOC2
 
@@ -26,6 +26,6 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-%CC% Types.c SDL2.c Out.c Graph.c Math.c -w
+%CC% SDL2.c Out.c Graph.c Math.c Turtle.c -w
 IF errorlevel 1 PAUSE
-%AR% Types.o SDL2.o Out.o Graph.o Math.o
+%AR% SDL2.o Out.o Graph.o Math.o Turtle.o

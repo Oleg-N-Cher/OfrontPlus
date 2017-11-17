@@ -188,8 +188,8 @@ MODULE Heap;
   END INCREF;
 
 
-  PROCEDURE -ExternPlatformOSAllocate "extern SYSTEM_ADRINT Platform_OSAllocate(INTEGER size);";
-  PROCEDURE -OSAllocate(size: ADDRESS): ADDRESS "Platform_OSAllocate((INTEGER)(SYSTEM_ADR)(size))";
+  PROCEDURE -ExternPlatformOSAllocate "extern SYSTEM_ADRINT Platform_OSAllocate(SYSTEM_ADRINT size);";
+  PROCEDURE -OSAllocate(size: ADDRESS): ADDRESS "Platform_OSAllocate(size)";
 
   PROCEDURE NewChunk(blksz: ADDRESS): ADDRESS;
     VAR chnk, blk, end: ADDRESS;

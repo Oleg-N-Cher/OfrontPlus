@@ -16,7 +16,7 @@ VAR
 PROCEDURE Flush*;
 VAR error: Platform.ErrorCode;
 BEGIN
-  IF in > 0 THEN error := Platform.Write(Platform.StdOut, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(buf)), in) END;
+  IF in > 0 THEN error := Platform.Write(Platform.StdOut, SYSTEM.ADR(buf), in) END;
   in := 0;
 END Flush;
 
@@ -43,7 +43,7 @@ BEGIN
   IF in + l > LEN(buf) THEN Flush END;
   IF l > LEN(buf) THEN
     (* Doesn't fit buf. Bypass buffering. *)
-    error := Platform.Write(Platform.StdOut, SYSTEM.VAL(Platform.ADR, SYSTEM.ADR(str)), l)
+    error := Platform.Write(Platform.StdOut, SYSTEM.ADR(str), l)
   ELSE
     SYSTEM.MOVE(SYSTEM.ADR(str), SYSTEM.ADR(buf[in]), l); INC(in, SHORT(l));
   END
