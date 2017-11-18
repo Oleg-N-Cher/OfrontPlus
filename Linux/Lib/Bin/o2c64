@@ -4,7 +4,7 @@ export PATH="$PATH:../../Bin64"
 export OBERON=.:../Sym64:../../../Lib/Mod
 
 ## Ofront+
-ofront+ -s Heap64.Mod -apx Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
+ofront+ -s Heap64.Mod -apx Types64.Mod Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## OOC2
