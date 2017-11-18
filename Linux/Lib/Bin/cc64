@@ -6,9 +6,9 @@ if [ -f "../libOfront64.a" ]; then rm "../libOfront64.a"; fi
 
 ## Ofront+
 
-$CC ../../../Lib/Mod/SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+$CC ../../../Lib/Mod/SYSTEM.c Heap.c Types.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
 if [ $? != 0 ]; then exit 1; fi
-$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+$AR SYSTEM.o Heap.o Types.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
 
 ## OOC2
 
