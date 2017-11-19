@@ -67,7 +67,7 @@
 				EXIT (* end of argument vector *)
 			END ;
 			OPM.InitOptions;
-			(* Heap.GC(FALSE); *)
+			Heap.GC(FALSE);
 			Module(done);
 			IF ~done THEN Heap.FINALL; Kernel.Exit(1) END
 		END
