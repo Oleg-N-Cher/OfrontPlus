@@ -1237,7 +1237,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					ELSE
 						OPM.WriteString("0x"); OPM.WriteHex (caseVal);
 					END;
-		|	SInt, Int, LInt :
+		|	Byte, SInt, Int, LInt :
 					OPM.WriteInt (caseVal);
 		END;
 		OPM.WriteString(Colon);
