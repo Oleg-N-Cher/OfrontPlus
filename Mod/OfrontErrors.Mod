@@ -5,7 +5,7 @@ List of Ofront error numbers
 NW, RC, JT / 16.1.95
 *)
 
-PROCEDURE LogErrMsg*(n: INTEGER);
+PROCEDURE LogErrMsg*(n: SHORTINT);
 BEGIN
   CASE n OF
 (*
