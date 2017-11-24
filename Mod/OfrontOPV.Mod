@@ -84,21 +84,21 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		internal = 0;
 
 	TYPE
-		ExitInfo = RECORD level, label: INTEGER END ;
+		ExitInfo = RECORD level, label: SHORTINT END ;
 
 
 	VAR
 		assert, inxchk, mainprog, ansi: BOOLEAN;
-		stamp: INTEGER;	(* unique number for nested objects *)
-		recno: LONGINT;	(* number of anonymous record types *)
+		stamp: SHORTINT;	(* unique number for nested objects *)
+		recno: SHORTINT;	(* number of anonymous record types *)
 
 		exit: ExitInfo;	(* to check if EXIT is simply a break *)
-		nofExitLabels: INTEGER;
+		nofExitLabels: SHORTINT;
 		naturalAlignment: BOOLEAN;
 
 
-	PROCEDURE NaturalAlignment(size, max: LONGINT): LONGINT;
-		VAR i: LONGINT;
+	PROCEDURE NaturalAlignment(size, max: INTEGER): INTEGER;
+		VAR i: INTEGER;
 	BEGIN
 		IF size >= max THEN RETURN max
 		ELSE i := 1;
@@ -108,7 +108,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END NaturalAlignment;
 
 	PROCEDURE TypSize*(typ: OPT.Struct);
-		VAR f, c: INTEGER; offset, size, base, fbase, off0: LONGINT;
+		VAR f, c: SHORTINT; offset, size, base, fbase, off0: INTEGER;
 			fld: OPT.Object; btyp: OPT.Struct;
 	BEGIN
 		IF typ = OPT.undftyp THEN OPM.err(58)
@@ -166,7 +166,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	PROCEDURE ^Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
 
 	PROCEDURE GetTProcNum(obj: OPT.Object);
-		VAR oldPos: LONGINT; typ: OPT.Struct; redef: OPT.Object;
+		VAR oldPos: INTEGER; typ: OPT.Struct; redef: OPT.Object;
 	BEGIN
 		oldPos := OPM.errpos; OPM.errpos := obj^.scope^.adr;
 		typ := obj^.link^.typ;
@@ -188,7 +188,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END TraverseRecord;
 
 	PROCEDURE Stamp(VAR s: OPS.Name);
-		VAR i, j, k: INTEGER; n: ARRAY 10 OF CHAR;
+		VAR i, j, k: SHORTINT; n: ARRAY 10 OF CHAR;
 	BEGIN INC(stamp);
 		i := 0; j := stamp;
 		WHILE s[i] # 0X DO INC(i) END ;
@@ -200,7 +200,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END Stamp;
 
 	PROCEDURE Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
-		VAR mode: INTEGER; scope: OPT.Object; typ: OPT.Struct;
+		VAR mode: SHORTINT; scope: OPT.Object; typ: OPT.Struct;
 	BEGIN
 		IF obj # NIL THEN
 			Traverse(obj^.left, outerScope, exported);
@@ -253,7 +253,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 (* ____________________________________________________________________________________________________________________________________________________________________ *)
 
-	PROCEDURE Precedence (class, subclass, form, comp: INTEGER): INTEGER;
+	PROCEDURE Precedence (class, subclass, form, comp: SHORTINT): SHORTINT;
 	BEGIN
 		CASE class OF
 			Nconst, Nvar, Nfield, Nindex, Nproc, Ncall:
@@ -300,10 +300,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		END;
 	END Precedence;
 
-	PROCEDURE^ expr (n: OPT.Node; prec: INTEGER);
-	PROCEDURE^ design(n: OPT.Node; prec: INTEGER);
+	PROCEDURE^ expr (n: OPT.Node; prec: SHORTINT);
+	PROCEDURE^ design(n: OPT.Node; prec: SHORTINT);
 
-	PROCEDURE Len(n: OPT.Node; dim: LONGINT);
+	PROCEDURE Len(n: OPT.Node; dim: INTEGER);
 	BEGIN
 		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END ;
 		IF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN
@@ -320,7 +320,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		END
 	END SideEffects;
 
-	PROCEDURE Entier(n: OPT.Node; prec: INTEGER);
+	PROCEDURE Entier(n: OPT.Node; prec: SHORTINT);
 	BEGIN
 		IF n^.typ^.form IN {Real, LReal} THEN
 			OPM.WriteString(EntierFunc); expr(n, MinPrec); OPM.Write(CloseParen)
@@ -336,8 +336,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		END
 	END LEntier;
 
-	PROCEDURE Convert(n: OPT.Node; form, prec: INTEGER);
-		VAR from: INTEGER;
+	PROCEDURE Convert(n: OPT.Node; form, prec: SHORTINT);
+		VAR from: SHORTINT;
 	BEGIN from := n^.typ^.form;
 		CASE form OF
 		| Byte:
@@ -394,12 +394,14 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		ELSIF (n^.class = Nmop) & (n^.subcl = val) THEN
 			(*SYSTEM.VAL(typ, var par rec)*)
 			OPC.TypeOf(n^.left^.obj)
+		ELSIF n^.typ^.form = NilTyp THEN	(* NIL *)
+			OPM.WriteString("NIL")
 		ELSE	(* var par rec *)
 			OPC.TypeOf(n^.obj)
 		END
 	END TypeOf;
 
-	PROCEDURE Index(n, d: OPT.Node; prec, dim: INTEGER);
+	PROCEDURE Index(n, d: OPT.Node; prec, dim: SHORTINT);
 	BEGIN
 		IF ~inxchk
 		OR (n^.right^.class = Nconst) & ((n^.right^.conval^.intval = 0) OR (n^.left^.typ^.comp # DynArr)) THEN
@@ -410,10 +412,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		END
 	END Index;
 
-	PROCEDURE design(n: OPT.Node; prec: INTEGER);
+	PROCEDURE design(n: OPT.Node; prec: SHORTINT);
 		VAR obj: OPT.Object; typ: OPT.Struct;
-			class, designPrec, comp: INTEGER;
-			d, x: OPT.Node; dims, i: INTEGER;
+			class, designPrec, comp: SHORTINT;
+			d, x: OPT.Node; dims, i: SHORTINT;
 	BEGIN
 		comp := n^.typ^.comp; obj := n^.obj; class := n^.class;
 		designPrec := Precedence(class, n^.subcl, n^.typ^.form, comp);
@@ -508,7 +510,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END design;
 
 	PROCEDURE ActualPar(n: OPT.Node; fp: OPT.Object);
-		VAR typ, aptyp: OPT.Struct; comp, form, mode, prec, dim: INTEGER;
+		VAR typ, aptyp: OPT.Struct; comp, form, mode, prec, dim: SHORTINT;
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE n # NIL DO typ := fp^.typ;
@@ -579,12 +581,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		RETURN obj
 	END SuperProc;
 
-	PROCEDURE expr (n: OPT.Node; prec: INTEGER);
+	PROCEDURE expr (n: OPT.Node; prec: SHORTINT);
 		VAR
-			class: INTEGER;
-			subclass: INTEGER;
-			form: INTEGER;
-			exprPrec: INTEGER;
+			class: SHORTINT;
+			subclass: SHORTINT;
+			form: SHORTINT;
+			exprPrec: SHORTINT;
 			typ: OPT.Struct;
 			l, r: OPT.Node;
 			proc: OPT.Object;
@@ -655,7 +657,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		|	Ndop:
 					CASE subclass OF
 					  len:
-					  		Len(l, r^.conval^.intval)
+					  		Len(l, SHORT(r^.conval^.intval))
 					| in, ash, msk, bit, lsh, rot, div, mod:
 							CASE subclass OF
 							|	in:
@@ -776,7 +778,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	PROCEDURE^ stat(n: OPT.Node; outerProc: OPT.Object);
 
 	PROCEDURE IfStat(n: OPT.Node; withtrap: BOOLEAN; outerProc: OPT.Object);
-		VAR if: OPT.Node; obj: OPT.Object; typ: OPT.Struct; adr: LONGINT;
+		VAR if: OPT.Node; obj: OPT.Object; typ: OPT.Struct; adr: INTEGER;
 	BEGIN	(* n^.class IN {Nifelse, Nwith} *)
 		if := n^.left; (* name := ""; *)
 		WHILE if # NIL DO
@@ -811,7 +813,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 	PROCEDURE CaseStat(n: OPT.Node; outerProc: OPT.Object);
 		VAR switchCase, label: OPT.Node;
-			low, high: LONGINT; form, i: INTEGER;
+			low, high: INTEGER; form, i: SHORTINT;
 	BEGIN
 		OPM.WriteString("switch "); expr(n^.left, MaxPrec);
 		OPM.Write(Blank); OPC.BegBlk;
@@ -821,7 +823,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			label := switchCase^.left;
 			i := 0;
 			WHILE label # NIL DO (* label^.class = NConst *)
-				low := label^.conval^.intval;
+				low := SHORT(label^.conval^.intval);
 				high := label^.conval^.intval2;
 				WHILE low <= high DO
 					IF i = 0 THEN OPC.BegStat END ;
@@ -855,7 +857,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END ImplicitReturn;
 
 	PROCEDURE NewArr(d, x: OPT.Node);
-		VAR typ, base: OPT.Struct; nofdim, nofdyn: INTEGER;
+		VAR typ, base: OPT.Struct; nofdim, nofdyn: SHORTINT;
 	BEGIN
 		typ := d^.typ^.BaseTyp; base := typ; nofdim := 0; nofdyn := 0;
 		WHILE base^.comp = DynArr DO INC(nofdim); INC(nofdyn); base := base^.BaseTyp END ;
@@ -898,7 +900,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		VAR proc: OPT.Object; saved: ExitInfo; l, r: OPT.Node;
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
-			OPM.errpos := n^.conval^.intval;
+			OPM.errpos := SHORT(n^.conval^.intval);
 			IF n^.class # Ninittd THEN OPC.BegStat; END;
 			CASE n^.class OF
 				Nenter:
@@ -1045,7 +1047,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			|	Nwith:
 						IfStat(n, n^.subcl = 0, outerProc)
 			|	Ntrap:
-						OPC.Halt(n^.right^.conval^.intval)
+						OPC.Halt(SHORT(n^.right^.conval^.intval))
 			END ;
 			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop}) THEN OPC.EndStat END ;
 			n := n^.link

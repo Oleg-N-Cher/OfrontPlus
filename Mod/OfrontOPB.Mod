@@ -60,9 +60,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	VAR
 		typSize*: PROCEDURE(typ: OPT.Struct);
-		exp: INTEGER;	(*side effect of log*)
+		exp: SHORTINT;	(*side effect of log*)
 
-	PROCEDURE err(n: INTEGER);
+	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
 	END err;
 
@@ -87,7 +87,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		RETURN node
 	END NewLeaf;
 	
-	PROCEDURE Construct*(class: SHORTINT; VAR x: OPT.Node;  y: OPT.Node);
+	PROCEDURE Construct*(class: BYTE; VAR x: OPT.Node; y: OPT.Node);
 		VAR node: OPT.Node;
 	BEGIN
 		node := OPT.NewNode(class); node^.typ := OPT.notyp;
@@ -101,14 +101,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		last := y
 	END Link;
 	
-	PROCEDURE BoolToInt(b: BOOLEAN): LONGINT;
+	PROCEDURE BoolToInt(b: BOOLEAN): INTEGER;
 	BEGIN
 		IF b THEN RETURN 1 ELSE RETURN 0 END
 	END BoolToInt;
 	
 	PROCEDURE IntToBool(i: LONGINT): BOOLEAN;
 	BEGIN
-		IF i = 0 THEN RETURN FALSE ELSE RETURN TRUE END
+		RETURN i # 0
 	END IntToBool;
 	
 	PROCEDURE NewBoolConst*(boolval: BOOLEAN): OPT.Node;
@@ -181,7 +181,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		RETURN x
 	END NewRealConst;
 
-	PROCEDURE NewString*(VAR str: OPS.String; len: LONGINT): OPT.Node;
+	PROCEDURE NewString*(VAR str: OPS.String; len: INTEGER): OPT.Node;
 		VAR x: OPT.Node;
 	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst(); x^.typ := OPT.stringtyp;
@@ -198,7 +198,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		n^.conval^.ext[0] := ch; n^.conval^.intval := OPM.ConstNotAlloc; n^.obj := NIL
 	END CharToString;
 
-	PROCEDURE BindNodes(class: SHORTINT; typ: OPT.Struct; VAR x: OPT.Node; y: OPT.Node);
+	PROCEDURE BindNodes(class: BYTE; typ: OPT.Struct; VAR x: OPT.Node; y: OPT.Node);
 		VAR node: OPT.Node;
 	BEGIN
 		node := OPT.NewNode(class); node^.typ := typ;
@@ -226,7 +226,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END DeRef;
 
 	PROCEDURE Index*(VAR x: OPT.Node; y: OPT.Node);
-		VAR f: INTEGER; typ: OPT.Struct;
+		VAR f: SHORTINT; typ: OPT.Struct;
 	BEGIN
 		f := y^.typ^.form;
 		IF x^.class >= Nconst THEN err(79)
@@ -290,7 +290,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END TypTest;
 	
 	PROCEDURE In*(VAR x: OPT.Node; y: OPT.Node);
-		VAR f: INTEGER; k: LONGINT;
+		VAR f: SHORTINT; k: LONGINT;
 	BEGIN f := x^.typ^.form;
 		IF (x^.class = Ntype) OR (x^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)
 		ELSIF (f IN intSet) & (y^.typ^.form = Set) THEN
@@ -315,7 +315,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		RETURN x
 	END log;
 
-	PROCEDURE CheckRealType(f, nr: INTEGER; x: OPT.Const);
+	PROCEDURE CheckRealType(f, nr: SHORTINT; x: OPT.Const);
 		VAR min, max, r: LONGREAL;
 	BEGIN
 		IF f = Real THEN min := OPM.MinReal; max := OPM.MaxReal
@@ -329,10 +329,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.intval := OPM.ConstNotAlloc
 	END CheckRealType;
 	
-	PROCEDURE MOp*(op: SHORTINT; VAR x: OPT.Node);
-		VAR f: INTEGER; typ: OPT.Struct; z: OPT.Node;
+	PROCEDURE MOp*(op: BYTE; VAR x: OPT.Node);
+		VAR f: SHORTINT; typ: OPT.Struct; z: OPT.Node;
 		
-		PROCEDURE NewOp(op: SHORTINT; typ: OPT.Struct; z: OPT.Node): OPT.Node;
+		PROCEDURE NewOp(op: BYTE; typ: OPT.Struct; z: OPT.Node): OPT.Node;
 			VAR node: OPT.Node;
 		BEGIN
 			node := OPT.NewNode(Nmop); node^.subcl := op; node^.typ := typ;
@@ -357,7 +357,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF f IN intSet + realSet +{Set}THEN
 						IF z^.class = Nconst THEN
 							IF f IN intSet THEN
-								IF z^.conval^.intval = MIN(LONGINT) THEN err(203)
+								IF z^.conval^.intval = MIN(INTEGER) THEN err(203)
 								ELSE z^.conval^.intval := -z^.conval^.intval; SetIntType(z)
 								END
 							ELSIF f IN realSet THEN z^.conval^.realval := -z^.conval^.realval
@@ -372,7 +372,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF f IN intSet + realSet THEN
 						IF z^.class = Nconst THEN
 							IF f IN intSet THEN
-								IF z^.conval^.intval = MIN(LONGINT) THEN err(203)
+								IF z^.conval^.intval = MIN(INTEGER) THEN err(203)
 								ELSE z^.conval^.intval := ABS(z^.conval^.intval); SetIntType(z)
 								END
 							ELSE z^.conval^.realval := ABS(z^.conval^.realval)
@@ -421,7 +421,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END MOp;
 	
 	PROCEDURE CheckPtr(x, y: OPT.Node);
-		VAR g: INTEGER; p, q, t: OPT.Struct;
+		VAR g: SHORTINT; p, q, t: OPT.Struct;
 	BEGIN g := y^.typ^.form;
 		IF g = Pointer THEN
 			p := x^.typ^.BaseTyp; q := y^.typ^.BaseTyp;
@@ -476,12 +476,12 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		END
 	END CheckProc;
 
-	PROCEDURE ConstOp(op: INTEGER; x, y: OPT.Node);
-		VAR f, g: INTEGER; xval, yval: OPT.Const; xv, yv: LONGINT;
+	PROCEDURE ConstOp(op: SHORTINT; x, y: OPT.Node);
+		VAR f, g: SHORTINT; xval, yval: OPT.Const; xv, yv: LONGINT;
 				temp: BOOLEAN; (* temp avoids err 215 *)
 
-		PROCEDURE ConstCmp(): INTEGER;
-			VAR res: INTEGER;
+		PROCEDURE ConstCmp(): SHORTINT;
+			VAR res: SHORTINT;
 		BEGIN
 			CASE f OF
 			  Undef:
@@ -579,10 +579,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		  times:
 				IF f IN intSet THEN xv := xval^.intval; yv := yval^.intval;
 					IF (xv = 0) OR (yv = 0) OR	(* division with negative numbers is not defined *)
-						(xv > 0) & (yv > 0) & (yv <= MAX(LONGINT) DIV xv) OR
-						(xv > 0) & (yv < 0) & (yv >= MIN(LONGINT) DIV xv) OR
-						(xv < 0) & (yv > 0) & (xv >= MIN(LONGINT) DIV yv) OR
-						(xv < 0) & (yv < 0) & (xv # MIN(LONGINT)) & (yv # MIN(LONGINT)) & (-xv <= MAX(LONGINT) DIV (-yv)) THEN
+						(xv > 0) & (yv > 0) & (yv <= MAX(INTEGER) DIV xv) OR
+						(xv > 0) & (yv < 0) & (yv >= MIN(INTEGER) DIV xv) OR
+						(xv < 0) & (yv > 0) & (xv >= MIN(INTEGER) DIV yv) OR
+						(xv < 0) & (yv < 0) & (xv # MIN(INTEGER)) & (yv # MIN(INTEGER)) & (-xv <= MAX(INTEGER) DIV (-yv)) THEN
 						xval^.intval := xv * yv; SetIntType(x)
 					ELSE err(204)
 					END
@@ -636,8 +636,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				END
 		| plus:
 				IF f IN intSet THEN
-					temp := (yval^.intval >= 0) & (xval^.intval <= MAX(LONGINT) - yval^.intval);
-					IF temp OR (yval^.intval < 0) & (xval^.intval >= MIN(LONGINT) - yval^.intval) THEN 
+					temp := (yval^.intval >= 0) & (xval^.intval <= MAX(INTEGER) - yval^.intval);
+					IF temp OR (yval^.intval < 0) & (xval^.intval >= MIN(INTEGER) - yval^.intval) THEN 
 							INC(xval^.intval, yval^.intval); SetIntType(x)
 					ELSE err(206)
 					END
@@ -653,8 +653,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				END
 		| minus:
 				IF f IN intSet THEN
-					IF (yval^.intval >= 0) & (xval^.intval >= MIN(LONGINT) + yval^.intval) OR
-						(yval^.intval < 0) & (xval^.intval <= MAX(LONGINT) + yval^.intval) THEN 
+					IF (yval^.intval >= 0) & (xval^.intval >= MIN(INTEGER) + yval^.intval) OR
+						(yval^.intval < 0) & (xval^.intval <= MAX(INTEGER) + yval^.intval) THEN 
 							DEC(xval^.intval, yval^.intval); SetIntType(x)
 					ELSE err(207)
 					END
@@ -697,7 +697,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END ConstOp;
 
 	PROCEDURE Convert(VAR x: OPT.Node; typ: OPT.Struct);
-		VAR node: OPT.Node; f, g: INTEGER; k: LONGINT; r: LONGREAL;
+		VAR node: OPT.Node; f, g: SHORTINT; k: LONGINT; r: LONGREAL;
 	BEGIN f := x^.typ^.form; g := typ^.form;
 		IF x^.class = Nconst THEN
 			IF f IN intSet THEN
@@ -713,7 +713,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF g IN realSet THEN CheckRealType(g, 203, x^.conval)
 				ELSE (*g = LInt*)
 					r := x^.conval^.realval;
-					IF (r < MIN(LONGINT)) OR (r > MAX(LONGINT)) THEN err(203); r := 1 END ;
+					IF (r < MIN(INTEGER)) OR (r > MAX(INTEGER)) THEN err(203); r := 1 END ;
 					x^.conval^.intval := ENTIER(r); SetIntType(x)
 				END
 			ELSE (* (f IN {Char, Byte}) & (g IN {Byte} + intSet) OR (f = Undef) *)
@@ -727,10 +727,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.typ := typ
 	END Convert;
 
-	PROCEDURE Op*(op: SHORTINT; VAR x: OPT.Node; y: OPT.Node);
-		VAR f, g: INTEGER; t, z: OPT.Node; typ: OPT.Struct; do: BOOLEAN; val: LONGINT;
+	PROCEDURE Op*(op: BYTE; VAR x: OPT.Node; y: OPT.Node);
+		VAR f, g: SHORTINT; t, z: OPT.Node; typ: OPT.Struct; do: BOOLEAN; val: LONGINT;
 
-		PROCEDURE NewOp(op: SHORTINT; typ: OPT.Struct; VAR x: OPT.Node; y: OPT.Node);
+		PROCEDURE NewOp(op: BYTE; typ: OPT.Struct; VAR x: OPT.Node; y: OPT.Node);
 			VAR node: OPT.Node;
 		BEGIN
 			node := OPT.NewNode(Ndop); node^.subcl := op; node^.typ := typ;
@@ -955,7 +955,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END SetElem;
 	
 	PROCEDURE CheckAssign(x: OPT.Struct; ynode: OPT.Node);	(* x := y *)
-		VAR f, g: INTEGER; y, p, q: OPT.Struct;
+		VAR f, g: SHORTINT; y, p, q: OPT.Struct;
 	BEGIN
 		y := ynode^.typ; f := x^.form; g := y^.form;
 		IF (ynode^.class = Ntype) OR (ynode^.class = Nproc) & (f # ProcTyp) THEN err(126) END ;
@@ -1027,8 +1027,8 @@ avoid unnecessary intermediate variables in OFront
 *)
 	END CheckLeaf;
 	
-	PROCEDURE StPar0*(VAR par0: OPT.Node; fctno: INTEGER);	(* par0: first param of standard proc *)
-		VAR f: INTEGER; typ: OPT.Struct; x: OPT.Node;
+	PROCEDURE StPar0*(VAR par0: OPT.Node; fctno: SHORTINT);	(* par0: first param of standard proc *)
+		VAR f: SHORTINT; typ: OPT.Struct; x: OPT.Node;
 	BEGIN x := par0; f := x^.typ^.form;
 		CASE fctno OF
 		  haltfn: (*HALT*)
@@ -1200,10 +1200,10 @@ avoid unnecessary intermediate variables in OFront
 		par0 := x
 	END StPar0;
 
-	PROCEDURE StPar1*(VAR par0: OPT.Node; x: OPT.Node; fctno: SHORTINT);	(* x: second parameter of standard proc *)
-		VAR f, L: INTEGER; typ: OPT.Struct; p, t: OPT.Node; maxInt: LONGINT; maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
+	PROCEDURE StPar1*(VAR par0: OPT.Node; x: OPT.Node; fctno: BYTE);	(* x: second parameter of standard proc *)
+		VAR f, L: SHORTINT; typ: OPT.Struct; p, t: OPT.Node; maxInt: LONGINT; maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
 
-		PROCEDURE NewOp(class, subcl: SHORTINT; left, right: OPT.Node): OPT.Node;
+		PROCEDURE NewOp(class, subcl: BYTE; left, right: OPT.Node): OPT.Node;
 			VAR node: OPT.Node;
 		BEGIN
 			node := OPT.NewNode(class); node^.subcl := subcl;
@@ -1235,7 +1235,7 @@ avoid unnecessary intermediate variables in OFront
 		| lenfn: (*LEN*)
 				IF ~(f IN intSet) OR (x^.class # Nconst) THEN err(69)
 				ELSIF f = SInt THEN
-					L := SHORT(x^.conval^.intval); typ := p^.typ;
+					L := SHORT(SHORT(x^.conval^.intval)); typ := p^.typ;
 					WHILE (L > 0) & (typ^.comp IN {DynArr, Array}) DO typ := typ^.BaseTyp; DEC(L) END ;
 					IF (L # 0) OR ~(typ^.comp IN {DynArr, Array}) THEN err(132)
 					ELSE x^.obj := NIL;
@@ -1377,8 +1377,8 @@ avoid unnecessary intermediate variables in OFront
 		par0 := p
 	END StPar1;
 
-	PROCEDURE StParN*(VAR par0: OPT.Node; x: OPT.Node; fctno, n: INTEGER);	(* x: n+1-th param of standard proc *)
-		VAR node: OPT.Node; f: INTEGER; p: OPT.Node;
+	PROCEDURE StParN*(VAR par0: OPT.Node; x: OPT.Node; fctno, n: SHORTINT);	(* x: n+1-th param of standard proc *)
+		VAR node: OPT.Node; f: SHORTINT; p: OPT.Node;
 	BEGIN p := par0; f := x^.typ^.form;
 		IF fctno = newfn THEN (*NEW(p, ..., x...*)
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1402,8 +1402,8 @@ avoid unnecessary intermediate variables in OFront
 		par0 := p
 	END StParN;
 
-	PROCEDURE StFct*(VAR par0: OPT.Node; fctno: SHORTINT; parno: INTEGER);
-		VAR dim: INTEGER; x, p: OPT.Node;
+	PROCEDURE StFct*(VAR par0: OPT.Node; fctno: BYTE; parno: SHORTINT);
+		VAR dim: SHORTINT; x, p: OPT.Node;
 	BEGIN p := par0;
 		IF fctno <= ashfn THEN
 			IF (fctno = newfn) & (p^.typ # OPT.notyp) THEN
@@ -1450,7 +1450,7 @@ avoid unnecessary intermediate variables in OFront
 	END StFct;
 	
 	PROCEDURE DynArrParCheck(ftyp, atyp: OPT.Struct; fvarpar: BOOLEAN);
-		VAR f: INTEGER;
+		VAR f: SHORTINT;
 	BEGIN (* ftyp^.comp = DynArr *)
 		f := atyp^.comp; ftyp := ftyp^.BaseTyp; atyp := atyp^.BaseTyp;
 		IF fvarpar & (ftyp = OPT.bytetyp) THEN (* ok, but ... *)
@@ -1519,7 +1519,7 @@ avoid unnecessary intermediate variables in OFront
 		END
 	END Param;
 	
-	PROCEDURE StaticLink*(dlev: SHORTINT);
+	PROCEDURE StaticLink*(dlev: BYTE);
 		VAR scope: OPT.Object;
 	BEGIN
 		scope := OPT.topScope;
@@ -1530,7 +1530,7 @@ avoid unnecessary intermediate variables in OFront
 	END StaticLink;
 
 	PROCEDURE Call*(VAR x: OPT.Node; apar: OPT.Node; fp: OPT.Object);
-		VAR typ: OPT.Struct; p: OPT.Node; lev: SHORTINT;
+		VAR typ: OPT.Struct; p: OPT.Node; lev: BYTE;
 	BEGIN
 		IF x^.class = Nproc THEN typ := x^.typ;
 			lev := x^.obj^.mnolev;

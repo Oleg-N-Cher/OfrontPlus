@@ -55,7 +55,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MaxCases* = 256;
 		MaxCaseRange* = 512;
 
-		MaxStruct* = 255;
+		MaxStruct* = 2048;
 
 		(* maximal number of pointer fields in a record: *)
 		MaxPtr* = MAX(INTEGER);
@@ -95,12 +95,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
 		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
 		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
-		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: INTEGER;
+		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: SHORTINT;
 		MinSInt-, MinInt-, MaxSInt-, MaxInt-, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: LONGREAL;
 
 		noerr-: BOOLEAN;
-		curpos-: INTEGER; errpos*: LONGINT;	(* character and error position in source file *)
+		curpos-, errpos*: INTEGER;	(* character and error position in source file *)
 		breakpc-: INTEGER;	(* set by OPV.Init *)
 		currFile*: INTEGER;	(* current output file *)
 		level*: INTEGER;	(* procedure nesting level *)
@@ -254,7 +254,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		UNTIL ch = 0X
 	END MakeFileName;
 
-	PROCEDURE LogErrMsg(n: INTEGER);
+	PROCEDURE LogErrMsg(n: SHORTINT);
 		(*VAR S: Texts.Scanner; T: Texts.Text; ch: CHAR; i: INTEGER;
 			buf: ARRAY 1024 OF CHAR;*)
 	BEGIN
@@ -274,9 +274,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		OfrontErrors.LogErrMsg(n)
 	END LogErrMsg;
 
-	PROCEDURE Mark*(n: INTEGER; pos1: LONGINT);
-		VAR pos: INTEGER;
-	BEGIN pos := SHORT(pos1);
+	PROCEDURE Mark*(n: SHORTINT; pos: INTEGER);
+	BEGIN
 		IF useLineNo THEN
 			IF n >= 0 THEN
 				noerr := FALSE;
@@ -326,7 +325,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END Mark;
 
-	PROCEDURE err*(n: INTEGER);
+	PROCEDURE err*(n: SHORTINT);
 	BEGIN 
 		IF useLineNo & (errpos MOD 256 = 255) THEN (* line underflow from OPS.Get *)
 			Mark(n, errpos + 1)
@@ -335,22 +334,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END err;
 
-	PROCEDURE FPrint*(VAR fp: LONGINT; val: LONGINT);
-		VAR fp1, val1: INTEGER;
+	PROCEDURE FPrint*(VAR fp: INTEGER; val: INTEGER);
 	BEGIN
-	  fp1 := SHORT(fp); val1 := SHORT(val);
-		fp := SYSTEM.ROT(SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, fp1) / SYSTEM.VAL(SET, val1)), 1);
+		fp := SYSTEM.ROT(SYSTEM.VAL(INTEGER, SYSTEM.VAL(SET, fp) / SYSTEM.VAL(SET, val)), 1)
 	END FPrint;
 
-	PROCEDURE FPrintSet*(VAR fp: LONGINT; set: SET);
+	PROCEDURE FPrintSet*(VAR fp: INTEGER; set: SET);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, set))
 	END FPrintSet;
 
-	PROCEDURE FPrintReal*(VAR fp: LONGINT; real: REAL);
+	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: REAL);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, real))
 	END FPrintReal;
 
-	PROCEDURE FPrintLReal*(VAR fp: LONGINT; lr: LONGREAL);
+	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: LONGREAL);
 		VAR l, h: INTEGER;
 	BEGIN
 		SYSTEM.GET(SYSTEM.ADR(lr), l); SYSTEM.GET(SYSTEM.ADR(lr)+4, h);
@@ -359,19 +356,19 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- initialization ------------------------- *)
 
-	PROCEDURE GetProperty(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR size, align: INTEGER);
+	PROCEDURE GetProperty(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR size, align: SHORTINT);
 	BEGIN
 		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
-			IF S.class = Texts.Int THEN size := S.i; Texts.Scan(S) ELSE Mark(-157, -1) END ;
-			IF S.class = Texts.Int THEN align := S.i; Texts.Scan(S) ELSE Mark(-157, -1) END
+			IF S.class = Texts.Int THEN size := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END ;
+			IF S.class = Texts.Int THEN align := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END
 		ELSE Mark(-157, -1)
 		END
 	END GetProperty;
 
-	PROCEDURE GetProperty1(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR par: INTEGER; defval: INTEGER);
+	PROCEDURE GetProperty1(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR par: SHORTINT; defval: SHORTINT);
 	BEGIN
 		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
-			IF S.class = Texts.Int THEN par := S.i; Texts.Scan(S) ELSE Mark(-157, -1); par := defval END
+			IF S.class = Texts.Int THEN par := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1); par := defval END
 		ELSE par := defval
 		END
 	END GetProperty1;
@@ -536,7 +533,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		Files.WriteBytes(R[currFile], s, i)
 	END WriteStringVar;
 
-	PROCEDURE WriteHex* (i: LONGINT);
+	PROCEDURE WriteHex* (i: INTEGER);
 		VAR s: ARRAY 3 OF CHAR;
 			digit : INTEGER;
 	BEGIN
