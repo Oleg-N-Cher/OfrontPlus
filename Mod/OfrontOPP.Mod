@@ -758,7 +758,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		BEGIN
 			Expression(x); pos := OPM.errpos;
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-			ELSIF ~(x^.typ^.form IN {Char..LInt}) THEN err(125)
+			ELSIF ~(x^.typ^.form IN {Byte, Char..LInt}) THEN err(125)
 			END ;
 			CheckSym(of); cases := NIL; lastcase := NIL; n := 0;
 			LOOP
