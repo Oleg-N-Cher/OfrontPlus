@@ -92,7 +92,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		RETURN node
 	END NewLeaf;
 	
-	PROCEDURE Construct*(class: BYTE; VAR x: OPT.Node;  y: OPT.Node);
+	PROCEDURE Construct*(class: BYTE; VAR x: OPT.Node; y: OPT.Node);
 		VAR node: OPT.Node;
 	BEGIN
 		node := OPT.NewNode(class); node^.typ := OPT.notyp;
@@ -113,7 +113,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE IntToBool(i: LONGINT): BOOLEAN;
 	BEGIN
-		IF i = 0 THEN RETURN FALSE ELSE RETURN TRUE END
+		RETURN i # 0
 	END IntToBool;
 
 	PROCEDURE SetToInt (s: SET): INTEGER;
@@ -854,7 +854,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSE (*g = LInt*)
 					r := x^.conval^.realval;
 					IF (r < MIN(INTEGER)) OR (r > MAX(INTEGER)) THEN err(203); r := 1 END ;
-					x^.conval^.intval := SHORT(ENTIER(r)); SetIntType(x)
+					x^.conval^.intval := ENTIER(r); SetIntType(x)
 				END
 			ELSE (* (f IN {Char, Byte}) & (g IN {Byte} + intSet) OR (f = Undef) *)
 			END ;
