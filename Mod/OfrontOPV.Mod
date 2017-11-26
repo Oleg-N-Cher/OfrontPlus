@@ -520,13 +520,17 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			END ;
 			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
 				IF mode = VarPar THEN
-					IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END ;
-					OPM.Write("&"); prec := 9
+					IF n^.typ^.form # NilTyp THEN
+						IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END ;
+						OPM.Write("&")
+					END; prec := 9
 				ELSIF ansi THEN
 					IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN
 						OPM.WriteString("(CHAR*)")	(* force to unsigned char *)
 					ELSIF (form = Pointer) & (typ # n^.typ) & (n^.typ # OPT.niltyp) THEN
 						OPM.WriteString("(void*)")	(* type extension *)
+					ELSIF (comp = Record) & (n^.typ # typ) THEN (* record value projection *)
+						OPM.WriteString("*("); OPC.Andent(typ); OPM.WriteString("*)&"); prec := 9
 					END
 				ELSE
 					IF (form IN {Real, LReal}) & (n^.typ^.form IN {Byte, SInt, Int, LInt}) THEN (* real promotion *)
@@ -635,9 +639,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					|	odd:
 								OPM.WriteString("__ODD("); expr(l, MinPrec); OPM.Write(CloseParen)
 					|	adr: (*SYSTEM*)
-								IF OPM.PointerSize = OPM.IntSize THEN OPM.WriteString("(INTEGER)")
-								ELSE OPM.WriteString("(LONGINT)")
-								END;
+								OPM.WriteString("(SYSTEM_ADRINT)");
 								IF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
 									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END ;
