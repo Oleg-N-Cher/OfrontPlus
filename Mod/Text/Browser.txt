@@ -2,7 +2,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
-		TextModels, TextMappers, TextViews, TextControllers, Views, Files, Dialog;
+		TextModels, TextMappers, TextViews, TextControllers, Views, Files, Dialog, Strings;
 
 	CONST
 		(* object modes *)
@@ -79,7 +79,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						| Bool:
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
 						| Char:
-								IF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
+								IF obj^.conval^.intval = 22H THEN Wch("'"); Wch('"'); Wch("'")
+								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
 									Wch(22X); Wch(SHORT(CHR(obj^.conval^.intval))); Wch(22X)
 								ELSE
 									i := SHORT(obj^.conval^.intval) DIV 16;
@@ -104,7 +105,12 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						| LReal:
 								W.WriteReal(obj^.conval^.realval)
 						| String:
-								Ws(obj^.conval^.ext^)
+								Strings.Find (obj^.conval^.ext^$, 22X, 0, i);
+								IF i = -1 THEN
+									Wch(22X); Ws(obj^.conval^.ext^); Wch(22X)
+								ELSE
+									Wch("'"); Ws(obj^.conval^.ext^); Wch("'")
+								END
 						| NilTyp:
 								Ws("NIL")
 						END ;

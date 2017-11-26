@@ -2,7 +2,7 @@
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
-		Texts, Console, Args;
+		Texts, Console, Args, Strings;
 
 	CONST
 		OptionChar = "-";
@@ -72,7 +72,8 @@
 						| Bool:
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
 						| Char:
-								IF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
+								IF obj^.conval^.intval = 22H THEN Wch("'"); Wch('"'); Wch("'")
+								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
 									Wch(22X); Wch(CHR(obj^.conval^.intval)); Wch(22X)
 								ELSE
 									i := SHORT(obj^.conval^.intval) DIV 16;
@@ -97,7 +98,11 @@
 						| LReal:
 								Texts.WriteLongReal(W, obj^.conval^.realval, 23)
 						| String:
-								Ws(obj^.conval^.ext^)
+								IF Strings.Pos(22X, obj^.conval^.ext^, 0) = -1 THEN
+									Wch(22X); Ws(obj^.conval^.ext^); Wch(22X)
+								ELSE
+									Wch("'"); Ws(obj^.conval^.ext^); Wch("'")
+								END
 						| NilTyp:
 								Ws("NIL")
 						END ;
