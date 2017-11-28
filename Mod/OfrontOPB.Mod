@@ -4,6 +4,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 (* changes
 	2015-10-07 jt, support for SYSTEM.ADR("x"), i.e. applied to char constant, added in MOp
 	2017-03-16 davebrown, allow usage of SYSTEM.VAL in CONST section to explicitly define types of integer constants
+	2017-08-16 jt, second operand of INC/DEC may be any integer type not larger than first operand
 *)
 
 	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
@@ -1217,7 +1218,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSE
 					IF x^.typ # p^.typ THEN
 						IF (x^.class = Nconst) & (f IN intSet) THEN Convert(x, p^.typ)
-						ELSE err(111)
+						ELSIF ~(f IN intSet) OR (x^.typ^.size > p^.typ^.size) THEN err(111)
 						END
 					END ;
 					p := NewOp(Nassign, fctno, p, x);
