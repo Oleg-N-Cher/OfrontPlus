@@ -11,6 +11,8 @@
 @IF "%Mod%"=="Args2" SET Mod=Args
 @IF "%Mod%"=="Platform.Windows" SET Mod=Platform
 @IF "%Mod%"=="SYSTEM" SET Mod=..\C\SYSTEM
+@IF "%Mod%"=="Types32" EXIT
+@IF "%Mod%"=="Types64" SET Mod=Types
 @IF NOT "%Mod%"=="WinApi" GOTO MinGW
 @DEL WinApi.c
 @EXIT

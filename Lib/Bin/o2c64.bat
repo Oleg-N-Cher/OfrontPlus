@@ -15,7 +15,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+.exe -s SDL2.Mod Out.Mod Math.Mod
+ofront+.exe -s SDL2.Mod Out.Mod Graph.Mod Math.Mod Turtle.Mod
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym64 >NUL
