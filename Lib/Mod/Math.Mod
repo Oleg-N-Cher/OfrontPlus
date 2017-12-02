@@ -10,8 +10,16 @@ CONST
 VAR
   z: INTEGER;
 
-PROCEDURE -AAincludemath()	"#include <math.h>"; (* define the proper return types! *)
-PROCEDURE -AAincludewindows()	'#include "_windows.h"';
+PROCEDURE -AAincludemath	"#include <math.h>"; (* define the proper return types! *)
+PROCEDURE -AAincludewindows0	"#if defined(WIN32) || defined(_WIN32)";
+PROCEDURE -AAincludewindows1	'#  include "_windows.h"';
+PROCEDURE -AAincludewindows2	"#  define __Math_Randomize__ WinApi_GetTickCount()";
+PROCEDURE -AAincludewindows3	"#else";
+PROCEDURE -AAincludewindows4	"#  include <time.h>";
+PROCEDURE -AAincludewindows5	"#  define __Math_Randomize__ time(0)";
+PROCEDURE -AAincludewindows6	"#endif";
+
+PROCEDURE -randomize (): INTEGER	"__Math_Randomize__";
 
 PROCEDURE -sin (x: REAL): REAL	"(sin(x))";
 PROCEDURE -cos (x: REAL): REAL	"(cos(x))";
@@ -90,7 +98,7 @@ END RndRange;
 
 PROCEDURE Randomize* ; (* Initialize random generator *)
 BEGIN
-  PutSeed(getTickCount());
+  PutSeed(randomize());
 END Randomize;
 
 BEGIN

@@ -11,4 +11,8 @@ if [ $? != 0 ]; then exit 1; fi
 ofront+ -e ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
 if [ $? != 0 ]; then exit 1; fi
 
+## Free Oberon
+ofront+ -s SDL2.Mod Out.Mod Graph.Mod Math.Mod Turtle.Mod
+if [ $? != 0 ]; then exit 1; fi
+
 find . -type f -name "*.sym" -exec mv -f {} ../Sym \;
