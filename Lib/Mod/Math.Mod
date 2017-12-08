@@ -117,8 +117,8 @@ CONST
   HypInvTrigClipped* = 8; IllegalHypInvTrig* = 9; LossOfAccuracy* = 10; Underflow*      = 11;
 
 VAR
-  ErrorHandler*: PROCEDURE (errno : INTEGER);
-  err-: INTEGER;
+  ErrorHandler*: PROCEDURE (errno : SHORTINT);
+  err-: SHORTINT;
 
   a1: ARRAY 18 OF REAL; (* lookup table for power function *)
   a2: ARRAY 9 OF REAL;  (* lookup table for power function *)
@@ -130,7 +130,7 @@ VAR
   t: REAL;              (* internal variables *)
 
 
-PROCEDURE DefaultErrorHandler(errno : INTEGER);
+PROCEDURE DefaultErrorHandler(errno : SHORTINT);
 BEGIN err:=errno END DefaultErrorHandler;
 
 PROCEDURE ClearError*;
@@ -149,12 +149,12 @@ PROCEDURE fraction*(x: REAL): REAL;
 BEGIN
   IF x = ZERO THEN RETURN ZERO
   ELSE
-    s := SYSTEM.VAL(SYSTEM.SET32, x) * nMask + {24..29};
+    s := SYSTEM.VAL(SET, x) * nMask + {24..29};
     RETURN SYSTEM.VAL(REAL, s) * 2.0;
   END
 END fraction;
 
-PROCEDURE exponent*(x: REAL): INTEGER;
+PROCEDURE exponent*(x: REAL): SHORTINT;
 (*
    The value of the call exponent(x) shall be the exponent value of `x'
    that lies between `expoMin' and `expoMax'.  An exception shall occur
@@ -163,7 +163,7 @@ PROCEDURE exponent*(x: REAL): INTEGER;
 BEGIN
   IF x = ZERO THEN RETURN 0 (* NOTE: x=0.0 should raise exception *)
   ELSE
-    RETURN SHORT(SYSTEM.LSH(SYSTEM.VAL(SYSTEM.INT32, x), -23) MOD 256) - 127
+    RETURN SHORT(SYSTEM.LSH(SYSTEM.VAL(INTEGER, x), -23) MOD 256) - 127
   END
 END exponent;
 
@@ -177,20 +177,20 @@ BEGIN
   IF x < ZERO THEN RETURN -ONE ELSE RETURN ONE END
 END sign;
 
-PROCEDURE scale*(x: REAL; n: INTEGER): REAL;
+PROCEDURE scale*(x: REAL; n: SHORTINT): REAL;
 (*
   The value of the call scale(x,n) shall be the value x*radix^n if such
   a value exists; otherwise an execption shall occur and may be raised.
 *)
-  VAR exp: LONGINT; lexp: SET;
+  VAR exp: INTEGER; lexp: SET;
 BEGIN
   IF x = ZERO THEN RETURN ZERO END;
   exp := exponent(x) + n;                           (* new exponent *)
   IF    exp > expoMax THEN RETURN large * sign(x)   (* exception raised here *)
   ELSIF exp < expoMin THEN RETURN small * sign(x)   (* exception here as well *)
   END;
-  lexp := SYSTEM.VAL(SYSTEM.SET32, x) * nMask       (* sign and significand *)
-        + SYSTEM.VAL(SYSTEM.SET32, SYSTEM.LSH(exp+expOffset, 23));   (* shifted exponent bits *)
+  lexp := SYSTEM.VAL(SET, x) * nMask       (* sign and significand *)
+        + SYSTEM.VAL(SET, SYSTEM.LSH(exp+expOffset, 23));   (* shifted exponent bits *)
   RETURN SYSTEM.VAL(REAL, lexp)
 END scale;
 
@@ -233,12 +233,12 @@ PROCEDURE SinCos (x, y, sign: REAL): REAL;
     r3   = -0.1980741872E-3;
     r4   =  0.2601903036E-5;
   VAR
-    n: LONGINT; xn, f, g: REAL;
+    n: INTEGER; xn, f, g: REAL;
 BEGIN
   IF y >= ymax THEN ErrorHandler(LossOfAccuracy); RETURN ZERO END;
 
   (* determine the reduced number *)
-  n := ENTIER(y * piInv + HALF); xn := n;
+  n := SHORT(ENTIER(y * piInv + HALF)); xn := n;
   IF ODD(n) THEN sign := -sign END;
   x := ABS(x);
   IF x # y THEN xn := xn - HALF END;
@@ -255,7 +255,7 @@ BEGIN
   RETURN sign * g
 END SinCos;
 
-PROCEDURE div (x, y : LONGINT) : LONGINT;
+PROCEDURE div (x, y : INTEGER) : INTEGER;
 (* corrected MOD function *)
 BEGIN
   IF x < 0 THEN
@@ -271,11 +271,11 @@ END div;
 PROCEDURE^ arctan2* (xn, xd: REAL): REAL;
 PROCEDURE^ sincos* (x: REAL; VAR Sin, Cos: REAL);
 
-PROCEDURE round* (x: REAL): LONGINT;
+PROCEDURE round* (x: REAL): INTEGER;
   (* Returns the value of x rounded to the nearest integer *)
 BEGIN
-  IF x < ZERO THEN RETURN -ENTIER(HALF - x)
-  ELSE RETURN ENTIER(x + HALF)
+  IF x < ZERO THEN RETURN -SHORT(ENTIER(HALF - x))
+  ELSE RETURN SHORT(ENTIER(x + HALF))
   END
 END round;
 
@@ -284,7 +284,7 @@ PROCEDURE sqrt* (x: REAL): REAL;
   CONST
     P0 = 0.41731; P1 = 0.59016;
   VAR
-    xMant, yEst, z: REAL; xExp: INTEGER;
+    xMant, yEst, z: REAL; xExp: SHORTINT;
 BEGIN
   (* optimize zeros and check for illegal negative roots *)
   IF x = ZERO THEN RETURN ZERO END;
@@ -311,7 +311,7 @@ PROCEDURE exp* (x: REAL): REAL;
   CONST
     ln2 = 0.6931471805599453094172321D0;
     P0 = 0.24999999950E+0; P1 = 0.41602886268E-2; Q1 = 0.49987178778E-1;
-  VAR xn, g, p, q, z: REAL; n: LONGINT;
+  VAR xn, g, p, q, z: REAL; n: INTEGER;
 BEGIN
   (* Ensure we detect overflows and return 0 for underflows *)
   IF x >= LnInfinity THEN ErrorHandler(Overflow); RETURN large
@@ -333,7 +333,7 @@ PROCEDURE ln* (x: REAL): REAL;
   CONST
     c1 = 355.0/512.0; c2 = -2.121944400546905827679E-4;
     A0 = -0.5527074855E+0; B0 = -0.6632718214E+1;
-  VAR f, zn, zd, r, z, w, xn: REAL; n: INTEGER;
+  VAR f, zn, zd, r, z, w, xn: REAL; n: SHORTINT;
 BEGIN
   (* ensure illegal inputs are trapped and handled *)
   IF x <= ZERO THEN ErrorHandler(IllegalLog); RETURN -large END;
@@ -375,7 +375,7 @@ CONST
   twoByPi = 0.63661977236758134308;
   P1 = -0.958017723E-1; Q1 = -0.429135777E+0; Q2 = 0.971685835E-2;
 VAR
-  n: LONGINT;
+  n: INTEGER;
   y, xn, f, xnum, xden, g: REAL;
 BEGIN
   (* check for error limits *)
@@ -397,7 +397,7 @@ BEGIN
   END
 END tan;
 
-PROCEDURE asincos (x: REAL; flag: LONGINT; VAR i: LONGINT; VAR res: REAL);
+PROCEDURE asincos (x: REAL; flag: INTEGER; VAR i: INTEGER; VAR res: REAL);
 CONST
   P1 = 0.933935835E+0; P2 = -0.504400557E+0;
   Q0 = 0.560363004E+1; Q1 = -0.554846723E+1;
@@ -431,7 +431,7 @@ END asincos;
 PROCEDURE arcsin* (x: REAL): REAL;
   (* Returns the arcsine of x, in the range [ - pi/2, pi/2] where -1 <= x <= 1 *)
 VAR
-  res: REAL; i: LONGINT;
+  res: REAL; i: INTEGER;
 BEGIN
   asincos(x, 0, i, res);
   IF err # 0 THEN RETURN res END;
@@ -445,7 +445,7 @@ END arcsin;
 PROCEDURE arccos* (x: REAL): REAL;
   (* Returns the arccosine of x, in the range [0, pi] where -1 <= x <= 1 *)
 VAR
-  res: REAL; i: LONGINT;
+  res: REAL; i: INTEGER;
 BEGIN
   asincos(x, 1, i, res);
   IF err # 0 THEN RETURN res END;
@@ -473,7 +473,7 @@ CONST
   piByThree = 1.04719755119659774615;
   piBySix = 0.52359877559829887308;
 VAR
-  n: LONGINT; res, g: REAL;
+  n: INTEGER; res, g: REAL;
 BEGIN
   IF f > ONE THEN f := ONE/f; n := 2
   ELSE n := 0
@@ -514,7 +514,7 @@ PROCEDURE power* (base, exp: REAL): REAL;
     XMAX = 16 * (expoMax + 1) - 1;
     (* XMIN = 16 * expoMin; *) XMIN = -2016; (* to make it easier for voc; -- noch *)
   VAR z, g, R, v, u2, u1, w1, w2: REAL; w: LONGREAL;
-    m, p, i: INTEGER; mp, pp, iw1: LONGINT;
+    m, p, i: SHORTINT; mp, pp, iw1: INTEGER;
 BEGIN
   (* handle all possible error conditions *)
   IF base <= ZERO THEN
@@ -542,7 +542,7 @@ BEGIN
   u1 := (m * 16 - p) * OneOver16; w := LONG(exp) * (LONG(u1) + LONG(u2)); (* need extra precision *)
 
   (* calculations below were modified to work properly -- incorrect in cited reference? *)
-  iw1 := ENTIER(16 * w); w1 := iw1 * OneOver16; w2 := SHORT(w - w1);
+  iw1 := SHORT(ENTIER(16 * w)); w1 := iw1 * OneOver16; w2 := SHORT(w - w1);
 
   (* check for overflow/underflow *)
   IF iw1 > XMAX THEN ErrorHandler(Overflow); RETURN large
@@ -583,9 +583,9 @@ BEGIN
   END
 END log;
 
-PROCEDURE ipower* (x: REAL; base: INTEGER): REAL;
+PROCEDURE ipower* (x: REAL; base: SHORTINT): REAL;
 (* ipower(x, base) returns the x to the integer power base where Log2(x) < expoMax *)
-  VAR Exp: INTEGER; y: REAL; neg: BOOLEAN;
+  VAR Exp: SHORTINT; y: REAL; neg: BOOLEAN;
 
   PROCEDURE Adjust(xadj: REAL): REAL;
   BEGIN
@@ -627,7 +627,7 @@ PROCEDURE arctan2* (xn, xd: REAL): REAL;
    denominator xd is zero, then the numerator xn must not be zero.  All
    arguments are legal except xn = xd = 0. *)
 VAR
-  res: REAL; xpdiff: LONGINT;
+  res: REAL; xpdiff: INTEGER;
 BEGIN
   (* check for error conditions *)
   IF xd = ZERO THEN
@@ -741,7 +741,7 @@ BEGIN t := ABS(x);
   RETURN arcsinh(x/sqrt(ONE - x * x))
 END arctanh;
 
-PROCEDURE ToREAL(h: HUGEINT): REAL;
+PROCEDURE ToREAL(h: LONGINT): REAL;
 BEGIN RETURN SYSTEM.VAL(REAL, h)
 END ToREAL;
 
