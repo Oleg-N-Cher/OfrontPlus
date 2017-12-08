@@ -32,8 +32,8 @@ PROCEDURE Forward* (distance: REAL);
 VAR
   newx, newy: REAL;
 BEGIN
-  newx := x + distance*Math.Cos(angle * Math.Pi / 180);
-  newy := y + distance*Math.Sin(angle * Math.Pi / 180);
+  newx := x + distance*Math.cos(angle * Math.pi / 180);
+  newy := y + distance*Math.sin(angle * Math.pi / 180);
   IF penstatus = Pendown THEN
     G.Line(screen, Round(x), Round(y), Round(newx), Round(newy), color);
   END;
