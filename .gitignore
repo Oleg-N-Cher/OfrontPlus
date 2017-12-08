@@ -28,6 +28,10 @@ Obj/*.sym
 Obj64/*.c
 Obj64/*.o
 Obj64/*.sym
+Samples/*.c
+Samples/*.exe
+Samples64/*.c
+Samples64/*.exe
 ToDo/
 Work/*.c
 Work/*.exe
