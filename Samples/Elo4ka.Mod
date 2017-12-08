@@ -39,10 +39,10 @@ BEGIN
     G.ClearScreen;
     FOR b := 0 TO 64 DO
       FOR a := 0 TO 255 BY 8 DO
-        angle := Math.Pi/128*a+alpha+b;
-        yn := SHORT(ENTIER(Math.Cos(angle)*(R-b)));
+        angle := Math.pi/128*a+alpha+b;
+        yn := SHORT(ENTIER(Math.cos(angle)*(R-b)));
         IF yn > 0 THEN
-          xn := SHORT(ENTIER(Math.Sin(angle)*(R-b)));
+          xn := SHORT(ENTIER(Math.sin(angle)*(R-b)));
           G.PutPixel(screen, Xoff+xn, Yoff+yn DIV 2-(b*2), NextColor());
         END;
       END(*a*);
