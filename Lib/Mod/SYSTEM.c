@@ -142,19 +142,20 @@ void SYSTEM_INIT(INTEGER argc, void *argvadr)
   Heap_InitHeap();
 }
 
-SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ADRINT elemsz, int elemalgn, int nofdim, int nofdyn, ...)
+SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn, int nofdim, int nofdyn, ...)
 {
-    SYSTEM_ADRINT nofelems, size, dataoff, n, nptr, *x, *p, nofptrs, i, *ptab, off;
+    SYSTEM_ADRINT *x, *ptab;
+    SYSTEM_ARRLEN nofelems, size, dataoff, n, nptr, *p, nofptrs, i, off;
     va_list ap;
     va_start(ap, nofdyn);
     nofelems = 1;
     while (nofdim > 0) {
-        nofelems = nofelems * va_arg(ap, SYSTEM_ADRINT); nofdim--;
+        nofelems = nofelems * va_arg(ap, SYSTEM_ARRLEN); nofdim--;
         if (nofelems <= 0) __HALT(-20);
     }
     va_end(ap);
-    dataoff = nofdyn * sizeof(SYSTEM_ADRINT);
-    if (elemalgn > sizeof(SYSTEM_ADRINT)) {
+    dataoff = nofdyn * sizeof(SYSTEM_ARRLEN);
+    if (elemalgn > sizeof(SYSTEM_ARRLEN)) {
         n = dataoff % elemalgn;
         if (n != 0) dataoff += elemalgn - n;
     }
@@ -167,7 +168,7 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ADRINT elemsz, int elemalgn,
     else if (typ == (SYSTEM_ADRINT*)POINTER__typ) {
         /* element type is a pointer */
         x = Heap_NEWBLK(size + nofelems * sizeof(SYSTEM_ADRINT));
-        p = (SYSTEM_ADRINT*)(SYSTEM_ADRINT)x[-1];
+        p = (SYSTEM_ARRLEN*)(SYSTEM_ADRINT)x[-1];
         p[-nofelems] = *p;  /* build new type desc in situ: 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nofelems - 1; n = 1;   /* n =1 for skipping the size field */
         while (n <= nofelems) {*p = n*sizeof(SYSTEM_ADRINT); p++; n++;}
@@ -180,7 +181,7 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ADRINT elemsz, int elemalgn,
         while (ptab[nofptrs] >= 0) {nofptrs++;} /* number of pointers per element */
         nptr = nofelems * nofptrs;  /* total number of pointers */
         x = Heap_NEWBLK(size + nptr * sizeof(SYSTEM_ADRINT));
-        p = (SYSTEM_ADRINT*)(SYSTEM_ADRINT)x[- 1];
+        p = (SYSTEM_ARRLEN*)(SYSTEM_ADRINT)x[- 1];
         p[-nptr] = *p;  /* build new type desc in situ; 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nptr - 1; n = 0; off = dataoff;
         while (n < nofelems) {i = 0;
@@ -193,8 +194,8 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ADRINT elemsz, int elemalgn,
     if (nofdyn != 0) {
         /* setup len vector for index checks */
         va_start(ap, nofdyn);
-        p = x;
-        while (nofdyn > 0) {*p = va_arg(ap, SYSTEM_ADRINT); p++, nofdyn--;}
+        p = (SYSTEM_ARRLEN*)x;
+        while (nofdyn > 0) {*p = va_arg(ap, SYSTEM_ARRLEN); p++, nofdyn--;}
         va_end(ap);
     }
     Heap_Unlock();

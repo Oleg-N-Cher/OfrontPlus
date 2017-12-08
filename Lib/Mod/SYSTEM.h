@@ -30,6 +30,8 @@
 #  endif
 #endif
 
+typedef int SYSTEM_ARRLEN; // 32 bit.
+     
 
 // Declare memcpy in a way compatible with C compilers intrinsic
 // built in implementations.
@@ -230,7 +232,7 @@ extern void SYSTEM_ASSERT_FAIL(INTEGER code);
 
 extern SYSTEM_PTR Heap_NEWBLK (SYSTEM_ADRINT size);
 extern SYSTEM_PTR Heap_NEWREC (SYSTEM_ADRINT tag);
-extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ADRINT, int, int, int, ...);
+extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ARRLEN, int, int, int, ...);
 
 #define __SYSNEW(p, len) p = Heap_NEWBLK((SYSTEM_ADRINT)(len))
 #define __NEW(p, t)      p = Heap_NEWREC((SYSTEM_ADRINT)t##__typ)
