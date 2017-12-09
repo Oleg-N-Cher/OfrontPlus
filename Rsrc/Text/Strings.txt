@@ -124,7 +124,7 @@ insertMarkers	Insert Markers
 153	object or symbol file not opened (disk full?)
 154	recursive import not allowed
 155	generation of new symbol file not allowed
-156	parameter file not found
+156	default target machine address size and alignment used
 157	syntax error in parameter file
 177	IN only allowed for records and arrays
 200	not yet implemented

@@ -33,9 +33,8 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		OPM.LogWLn; done := OPM.noerr
 	END Module;
 
-	PROCEDURE InitParams(list: BOOLEAN);
+	PROCEDURE PropagateElementaryTypeSizes;
 	BEGIN
-		OPM.OpenPar(list);
 		OPT.bytetyp.size := OPM.ByteSize;
 		OPT.sysptrtyp.size := OPM.PointerSize;
 		OPT.chartyp.size := OPM.CharSize;
@@ -46,36 +45,39 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		OPT.lrltyp.size := OPM.LRealSize;
 		OPT.sinttyp.size := OPM.SIntSize;
 		OPT.booltyp.size := OPM.BoolSize;
-	END InitParams;
+	END PropagateElementaryTypeSizes;
 
 	PROCEDURE Translate*;
 		VAR done: BOOLEAN;
 	BEGIN
-		InitParams(FALSE);
+		OPM.OpenPar(FALSE);
 		OPM.Init(done);
 		OPM.InitOptions();
-		IF done THEN Module(done) END
+		PropagateElementaryTypeSizes;
+		IF done THEN Module(done) END (* Compile source to .c and .h files *)
 	END Translate;
 
 	PROCEDURE TranslateDone* (): BOOLEAN;
 		VAR done: BOOLEAN;
 	BEGIN
-		InitParams(FALSE);
+		OPM.OpenPar(FALSE);
 		OPM.Init(done);
 		OPM.InitOptions();
-		IF done THEN Module(done) END;
+		PropagateElementaryTypeSizes;
+		IF done THEN Module(done) END; (* Compile source to .c and .h files *)
 	RETURN done
 	END TranslateDone;
 
 	PROCEDURE TranslateModuleList*;
 		VAR done: BOOLEAN;
 	BEGIN
-		InitParams(TRUE);
+		OPM.OpenPar(TRUE);
 		LOOP
 			OPM.Init(done);
 			IF ~done THEN EXIT END ;
 			OPM.InitOptions;
-			Module(done);
+			PropagateElementaryTypeSizes;
+			Module(done); (* Compile source to .c and .h files *)
 			IF ~done THEN EXIT END
 		END
 	END TranslateModuleList;
