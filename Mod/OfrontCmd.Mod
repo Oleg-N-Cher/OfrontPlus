@@ -45,11 +45,9 @@
 		OPM.LogWLn; done := OPM.noerr
 	END Module;
 
-	PROCEDURE Translate*;
-		VAR done: BOOLEAN;
+	PROCEDURE PropagateElementaryTypeSizes;
+		VAR adrinttyp: OPT.Struct;
 	BEGIN
-		OPM.OpenPar("Ofront+ (TM) - Oberon family of languages to C Translator v1.0", "ofront+");
-		(* gclock();   slightly faster translation but may lead to opening "too many files" *)
 		OPT.bytetyp.size := OPM.ByteSize;
 		OPT.sysptrtyp.size := OPM.PointerSize;
 		OPT.chartyp.size := OPM.CharSize;
@@ -60,6 +58,14 @@
 		OPT.lrltyp.size := OPM.LRealSize;
 		OPT.sinttyp.size := OPM.SIntSize;
 		OPT.booltyp.size := OPM.BoolSize;
+	END PropagateElementaryTypeSizes; 
+
+	PROCEDURE Translate*;
+		VAR done: BOOLEAN;
+	BEGIN
+		OPM.OpenPar("Ofront+ (TM) - Oberon family of languages to C Translator v1.0", "ofront+");
+		(* gclock();   slightly faster translation but may lead to opening "too many files" *)
+
 		LOOP
 			OPM.Init("translating", done);
 			IF ~done THEN
@@ -67,8 +73,9 @@
 				EXIT (* end of argument vector *)
 			END ;
 			OPM.InitOptions;
+			PropagateElementaryTypeSizes;
 			Heap.GC(FALSE);
-			Module(done);
+			Module(done); (* Compile source to .c and .h files *)
 			IF ~done THEN Heap.FINALL; Kernel.Exit(1) END
 		END
 	END Translate;

@@ -91,6 +91,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
+		GlobalModel, Model-: CHAR; (* 1, 2: S8/I16/L32, C: S16/I32/L64 *)
+		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
+
 		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
 		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
 		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
@@ -161,10 +164,37 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "l": opt := opt / {lineno}
-			| "1": opt := opt + {oberon1} - {oberon2} - {compascal} - {oberon07}
-			| "2": opt := opt + {oberon2} - {oberon1} - {compascal} - {oberon07}
-			| "C": opt := opt + {compascal} - {oberon1} - {oberon2} - {oberon07}
-			| "7": opt := opt + {oberon07} - {oberon1} - {oberon2} - {compascal}
+			| "1": opt := opt + {oberon1} - {oberon2, compascal, oberon07}
+			| "C": opt := opt + {compascal} - {oberon1, oberon2, oberon07}
+			| "7": opt := opt + {oberon07} - {oberon1, oberon2, compascal}
+
+			(* Target machine address size and alignment
+					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
+					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
+					"48": 32 bit addresses, 64 bit alignment (e.g. Windows 32 bit on x86, Linux 32 bit on ARM).
+					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
+			*)
+			| "2":
+				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
+				ELSE
+					opt := opt + {oberon2} - {oberon1, compascal, oberon07}
+				END
+			| "4":
+				IF s[i+1] = "4" THEN AddressSize := 4; Alignment := 4; INC(i)
+				ELSIF s[i+1] = "8" THEN AddressSize := 4; Alignment := 8; INC(i)
+				ELSE
+					LogWStr("  warning: option "); LogW(OptionChar); LogW("4");
+					IF s[i+1] # 0X THEN LogW(s[i+1]); INC(i) END;
+					LogWStr(" ignored"); LogWLn
+				END
+			| "8":
+				IF s[i+1] = "8" THEN AddressSize := 8; Alignment := 8; INC(i)
+				ELSE
+					LogWStr("  warning: option "); LogW(OptionChar); LogW("8");
+					IF s[i+1] # 0X THEN LogW(s[i+1]); INC(i) END;
+					LogWStr(" ignored"); LogWLn
+				END
+
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END ;
 			INC(i)
@@ -172,6 +202,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END ScanOptions;
 
 	PROCEDURE ^GetProperties;
+
+	PROCEDURE -GetAlignment(VAR a: SHORTINT) "struct {char c; long long l;} _s; *a = (char*)&_s.l - (char*)&_s";
 
 	PROCEDURE OpenPar*(title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
 		VAR s: ARRAY 256 OF CHAR;
@@ -187,11 +219,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			(* Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "7" Oberon-07');
 			Console.Ln *)
 		ELSE
+			(* Set options to initial defaults *)
+			AddressSize := SIZE(SYSTEM.PTR); (* This compilers address size *)
+			GetAlignment(Alignment);          (* This compilers alignment *)
+			Model := "C";                     (* Size model of common Component Pascal implementations: S16/I32/L64 *)
 			GetProperties;
 			glbopt := defopt; S := 1; s := "";
 			Args.Get(1, s); stop := FALSE;
 			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END
-		END
+		END;
+
+		(* Record global option settings for this command line *)
+		GlobalAddressSize := AddressSize;
+		GlobalAlignment   := Alignment;
+		GlobalModel       := Model
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)

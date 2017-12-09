@@ -858,21 +858,22 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE GenHeaderMsg;
 	BEGIN
 		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg); 
-		IF OPM.extsf IN OPM.glbopt THEN OPM.Write("e") END;
-		IF OPM.newsf IN OPM.glbopt THEN OPM.Write("s") END;
-		IF OPM.mainprog IN OPM.glbopt THEN OPM.Write("m") END;
-		IF ~(OPM.inxchk IN OPM.glbopt) THEN OPM.Write("x") END;
-		IF OPM.vcpp IN OPM.glbopt THEN OPM.Write("v") END;
-		IF OPM.ranchk IN OPM.glbopt THEN OPM.Write("r") END;
-		IF ~(OPM.typchk IN OPM.glbopt) THEN OPM.Write("t") END;
-		IF ~(OPM.assert IN OPM.glbopt) THEN OPM.Write("a") END;
-		IF ~(OPM.ansi IN OPM.glbopt) THEN OPM.Write("k") END;
-		IF ~(OPM.ptrinit IN OPM.glbopt) THEN OPM.Write("p") END;
-		IF OPM.include0 IN OPM.glbopt THEN OPM.Write("i") END;
-		IF OPM.oberon1 IN OPM.glbopt THEN OPM.Write("1") END;
-		IF OPM.oberon2 IN OPM.glbopt THEN OPM.Write("2") END;
-		IF OPM.compascal IN OPM.glbopt THEN OPM.Write("C") END;
-		IF OPM.oberon07 IN OPM.glbopt THEN OPM.Write("7") END;
+		IF OPM.extsf IN OPM.opt THEN OPM.Write("e") END;
+		IF OPM.newsf IN OPM.opt THEN OPM.Write("s") END;
+		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m") END;
+		IF ~(OPM.inxchk IN OPM.opt) THEN OPM.Write("x") END;
+		IF OPM.vcpp IN OPM.opt THEN OPM.Write("v") END;
+		IF OPM.ranchk IN OPM.opt THEN OPM.Write("r") END;
+		IF ~(OPM.typchk IN OPM.opt) THEN OPM.Write("t") END;
+		IF ~(OPM.assert IN OPM.opt) THEN OPM.Write("a") END;
+		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
+		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
+		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
+		IF OPM.oberon1 IN OPM.opt THEN OPM.Write("1") END;
+		IF OPM.oberon2 IN OPM.opt THEN OPM.Write("2") END;
+		IF OPM.compascal IN OPM.opt THEN OPM.Write("C") END;
+		IF OPM.oberon07 IN OPM.opt THEN OPM.Write("7") END;
+		OPM.WriteString(" -"); OPM.WriteInt(OPM.AddressSize); OPM.WriteInt(OPM.Alignment);
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;
 

@@ -142,7 +142,7 @@ BEGIN
   | 153: Log.String("object or symbol file not opened (disk full?)")
   | 154: Log.String("recursive import not allowed")
   | 155: Log.String("generation of new symbol file not allowed")
-  | 156: Log.String("parameter file not found")
+  | 156: Log.String("default target machine address size and alignment used")
   | 157: Log.String("syntax error in parameter file")
 
 (*
