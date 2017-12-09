@@ -3,7 +3,7 @@ SET PATH=..\..\Bin;%PATH%
 SET OBERON=%CD%;%CD%\..\..\Lib\Sym
 
 FOR %%i IN (*.Mod) DO (
-  ofront+ -m %%i
+  ofront+ -mC -48 %%i
   IF errorlevel 1 PAUSE
 )
 

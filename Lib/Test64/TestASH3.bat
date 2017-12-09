@@ -1,7 +1,7 @@
 @SET PATH=..\Bin;..\..\Bin64;%PATH%
 @SET OBERON=%CD%;%CD%\..\Sym64
 
-@ofront+ -m ..\Test\TestASH3.Mod
+@ofront+ -mC -88 ..\Test\TestASH3.Mod
 @IF errorlevel 1 PAUSE
 @CALL gcc64.bat TestASH3.c -o TestASH3.exe
 

@@ -1,7 +1,7 @@
 @SET PATH=..\Bin;..\..\Bin;%PATH%
 @SET OBERON=%CD%;%CD%\..\Sym
 
-@ofront+ -m TestASH2.Mod
+@ofront+ -mC -48 TestASH2.Mod
 @IF errorlevel 1 PAUSE
 @CALL gcc.bat TestASH2.c -o TestASH2.exe
 
