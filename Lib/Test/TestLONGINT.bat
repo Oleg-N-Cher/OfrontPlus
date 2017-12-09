@@ -1,7 +1,7 @@
 @SET PATH=..\Bin;..\..\Bin;%PATH%
 @SET OBERON=%CD%;%CD%\..\Sym
 
-@ofront+ -m TestLONGINT.Mod
+@ofront+ -mC -48 TestLONGINT.Mod
 @IF errorlevel 1 PAUSE
 @CALL gcc.bat TestLONGINT.c -o TestLONGINT.exe
 

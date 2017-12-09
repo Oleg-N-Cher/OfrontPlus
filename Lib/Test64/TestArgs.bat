@@ -1,7 +1,7 @@
 @SET PATH=..\Bin;..\..\Bin64;%PATH%
 @SET OBERON=%CD%;%CD%\..\Sym64
 
-@ofront+ -m ..\Test\TestArgs.Mod
+@ofront+ -mC -88 ..\Test\TestArgs.Mod
 @IF errorlevel 1 PAUSE
 @CALL gcc64.bat TestArgs.c -o TestArgs.exe
 
