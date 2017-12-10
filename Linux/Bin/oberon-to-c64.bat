@@ -1,5 +1,5 @@
 @ECHO OFF
-SET PATH=%CD%\..\..\Bin64
+SET PATH=%CD%\..\..\Bin
 CD ..\Obj64
 SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64;%CD%\..\..\Mod
 
