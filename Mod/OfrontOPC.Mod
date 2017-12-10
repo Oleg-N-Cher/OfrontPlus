@@ -285,8 +285,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			WHILE typ^.comp = DynArr DO INC(nofdims); typ := typ^.BaseTyp END ;
 			OPM.WriteString(Struct); BegBlk;
 			BegStat;
-			IF OPM.ArrLenSize = OPM.SIntSize THEN Str1("SHORTINT len[#]", nofdims)
-			ELSIF OPM.ArrLenSize = OPM.IntSize THEN Str1("INTEGER len[#]", nofdims)
+			IF OPM.IndexSize = OPM.IntSize THEN Str1("INTEGER len[#]", nofdims)
 			ELSE Str1("LONGINT len[#]", nofdims)
 			END;
 			EndStat;
@@ -377,8 +376,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		dim := 1; typ := par^.typ^.BaseTyp;
 		WHILE typ^.comp = DynArr DO
 			IF ansiDefine THEN
-				IF OPM.ArrLenSize = OPM.SIntSize THEN OPM.WriteString(", SHORTINT ")
-				ELSIF OPM.ArrLenSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+				IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
 				ELSE OPM.WriteString(", LONGINT ")
 				END
 			ELSE OPM.WriteString(Comma)
@@ -723,8 +721,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF obj^.typ^.comp = DynArr THEN (* declare len parameter(s) *)
 					EndStat; BegStat;
 					base := OPT.linttyp;
-					IF OPM.ArrLenSize = OPM.SIntSize THEN OPM.WriteString("SHORTINT ")
-					ELSIF OPM.ArrLenSize = OPM.IntSize THEN OPM.WriteString("INTEGER ")
+					IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString("INTEGER ")
 					ELSE OPM.WriteString("LONGINT ")
 					END;
 					LenList(obj, FALSE, TRUE)
@@ -755,8 +752,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					COPY(obj^.name, name);  obj^.name := ""; DeclareObj(obj, FALSE); COPY(name, obj^.name)
 				END ;
 				IF obj^.typ^.comp = DynArr THEN
-					IF OPM.ArrLenSize = OPM.SIntSize THEN OPM.WriteString(", SHORTINT ")
-					ELSIF OPM.ArrLenSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+					IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
 					ELSE OPM.WriteString(", LONGINT ")
 					END;
 					LenList(obj, TRUE, showParamNames)
@@ -869,10 +865,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
-		IF OPM.oberon1 IN OPM.opt THEN OPM.Write("1") END;
-		IF OPM.oberon2 IN OPM.opt THEN OPM.Write("2") END;
-		IF OPM.compascal IN OPM.opt THEN OPM.Write("C") END;
-		IF OPM.oberon07 IN OPM.opt THEN OPM.Write("7") END;
+		IF OPM.Language # 0X THEN OPM.Write(OPM.Language) END;
 		OPM.WriteString(" -"); OPM.WriteInt(OPM.AddressSize); OPM.WriteInt(OPM.Alignment);
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;

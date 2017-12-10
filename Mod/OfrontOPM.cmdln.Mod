@@ -22,10 +22,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
-		oberon1* = 12;	(** 1 - compile Oberon-1 programs *)
-		oberon2* = 13; 	(** 2 - compile Oberon-2 programs *)
-		compascal* = 14;	(** C - compile Component Pascal programs *)
-		oberon07* = 15;	(** 7 - compile Oberon-07 programs *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi, lineno};	(* default options *)
 
 		nilval* = 0;
@@ -91,15 +87,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
-		GlobalModel, Model-: CHAR; (* 1, 2: S8/I16/L32, C: S16/I32/L64 *)
-		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
-
-		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
-		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
-		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
-		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
+		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-, LIntSize-,
+		SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, IndexSize-,
+		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-, LIntAlign-,
+		SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
 		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: SHORTINT;
-		MinSInt-, MinInt-, MaxSInt-, MaxInt-, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
+		MinSInt-, MinInt-, MaxSInt-, MaxInt-: INTEGER; MaxIndex-, MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: LONGREAL;
 
 		noerr-: BOOLEAN;
@@ -112,6 +105,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		objname*: ARRAY 64 OF CHAR;
 
 		opt-, glbopt-: SET;
+		GlobalLanguage, Language-: CHAR; (* "1", "2": S8/I16/L32 | "C": S16/I32/L64 *)
+		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 
 		lasterrpos: INTEGER;
 		inR: Texts.Reader;
@@ -164,11 +159,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "l": opt := opt / {lineno}
-			| "1": opt := opt + {oberon1} - {oberon2, compascal, oberon07}
-			| "C": opt := opt + {compascal} - {oberon1, oberon2, oberon07}
-			| "7": opt := opt + {oberon07} - {oberon1, oberon2, compascal}
+			| "1", "7", "C": Language := s[i]
 
-			(* Target machine address size and alignment
+			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
 					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
 					"48": 32 bit addresses, 64 bit alignment (e.g. Windows 32 bit on x86, Linux 32 bit on ARM).
@@ -176,8 +169,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
-				ELSE
-					opt := opt + {oberon2} - {oberon1, compascal, oberon07}
+				ELSE Language := "2"
 				END
 			| "4":
 				IF s[i+1] = "4" THEN AddressSize := 4; Alignment := 4; INC(i)
@@ -219,10 +211,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			(* Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "7" Oberon-07');
 			Console.Ln *)
 		ELSE
-			(* Set options to initial defaults *)
-			AddressSize := SIZE(SYSTEM.PTR); (* This compilers address size *)
-			GetAlignment(Alignment);          (* This compilers alignment *)
-			Model := "C";                     (* Size model of common Component Pascal implementations: S16/I32/L64 *)
+			(* set options to initial defaults *)
+			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
+			GetAlignment(Alignment);         (* this compilers alignment *)
+			Language := "C";                 (* default input language - Component Pascal: S16/I32/L64 *)
 			GetProperties;
 			glbopt := defopt; S := 1; s := "";
 			Args.Get(1, s); stop := FALSE;
@@ -230,9 +222,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END;
 
 		(* Record global option settings for this command line *)
-		GlobalAddressSize := AddressSize;
-		GlobalAlignment   := Alignment;
-		GlobalModel       := Model
+		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment;	GlobalLanguage := Language
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
@@ -406,14 +396,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END GetProperty;
 
-	PROCEDURE GetProperty1(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR par: SHORTINT; defval: SHORTINT);
-	BEGIN
-		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
-			IF S.class = Texts.Int THEN par := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1); par := defval END
-		ELSE par := defval
-		END
-	END GetProperty1;
-
 	PROCEDURE GetProperties();
 		VAR T: Texts.Text; S: Texts.Scanner; base: INTEGER;
 	BEGIN
@@ -424,7 +406,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		SetAlign := 4; RealAlign := 4; LRealAlign := 8; ProcAlign := 4; PointerAlign := 4; RecAlign := 1;
 		MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
 		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		MaxSet := 31; ArrLenSize := -1;
+		MaxSet := 31;
 		(* read Ofront.par *)
 		NEW(T); Texts.Open(T, "Ofront.par");
 		IF T.len # 0 THEN
@@ -443,7 +425,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			(* Size = 0: natural size aligned to next power of 2 up to RecAlign; e.g. i960
 				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
 			*)
-			GetProperty1(S, "ARRLEN", ArrLenSize, -1);	(* Size of the type of array length *)
 			GetProperty(S, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
 		ELSE Mark(-156, -1)
 		END ;
@@ -465,10 +446,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END ;
 		MaxSet := SetSize * 8 - 1;
-		MaxHDig := 2*LIntSize;		
-		IF ArrLenSize = -1 THEN ArrLenSize := LIntSize
-		ELSIF ~ ((ArrLenSize = SIntSize) OR (ArrLenSize = IntSize) OR (ArrLenSize = LIntSize)) THEN Mark(-157, -1)
-		END;
+		MaxHDig := 2*LIntSize;
+		IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
 		MaxIndex := 7FFFFFFFH	(*2147483647*)
 	END GetProperties;
 
