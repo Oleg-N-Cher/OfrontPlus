@@ -15,3 +15,10 @@ $AR SYSTEM.o Heap.o Types.o Platform.o Console.o Kernel.o Args.o Strings.o Files
 $CC ooc2Ascii.c ooc2ConvTypes.c ooc2RandomNumbers.c ooc2Strings.c
 if [ $? != 0 ]; then exit 1; fi
 $AR ooc2Ascii.o ooc2ConvTypes.o ooc2RandomNumbers.o ooc2Strings.o
+
+## Free Oberon
+
+$CC SDL2.c Out.c Graph.c Math.c Turtle.c -w
+if [ $? != 0 ]; then exit 1; fi
+$AR SDL2.o Out.o Graph.o Math.o Turtle.o
+
