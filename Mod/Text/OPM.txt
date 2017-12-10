@@ -25,10 +25,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
-		oberon1* = 12;	(** 1 - compile Oberon-1 programs *)
-		oberon2* = 13; 	(** 2 - compile Oberon-2 programs *)
-		compascal* = 14;	(** C - compile Component Pascal programs *)
-		oberon07* = 15;	(** 7 - compile Oberon-07 programs *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -91,15 +87,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		HeaderInclude* = 2;
 
 	VAR
-		GlobalModel, Model-: CHAR; (* 1, 2: S8/I16/L32, C: S16/I32/L64 *)
-		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
-
-		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-,
-		LIntSize-, SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, ArrLenSize-,
-		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-,
-		LIntAlign-, SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
-		ByteOrder-, BitOrder-, ForN-, MaxSet-, MaxHDig-: SHORTINT;
-		MinSInt-, MinInt-, MaxSInt-, MaxInt-, MaxIndex-: INTEGER; MinLInt-, MaxLInt-: LONGINT;
+		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-, LIntSize-,
+		SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, IndexSize-,
+		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-, LIntAlign-,
+		SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
+		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: SHORTINT;
+		MinSInt-, MinInt-, MaxSInt-, MaxInt-: INTEGER; MaxIndex-, MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: REAL;
 
 		noerr-: BOOLEAN;
@@ -112,6 +105,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		objname*: ARRAY 64 OF SHORTCHAR;
 
 		opt-, glbopt-: SET;
+		GlobalLanguage, Language-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C": S16/I32/L64 *)
+		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 		
 		lasterrpos: INTEGER;
 		inR: TextModels.Reader;
@@ -235,11 +230,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "l": opt := opt / {lineno}
-			| "1": opt := opt + {oberon1} - {oberon2, compascal, oberon07}
-			| "C": opt := opt + {compascal} - {oberon1, oberon2, oberon07}
-			| "7": opt := opt + {oberon07} - {oberon1, oberon2, compascal}
+			| "1", "7", "C": Language := SHORT(s[i])
 
-			(* Target machine address size and alignment
+			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
 					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
 					"48": 32 bit addresses, 64 bit alignment (e.g. Windows 32 bit on x86, Linux 32 bit on ARM).
@@ -247,8 +240,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
-				ELSE
-					opt := opt + {oberon2} - {oberon1} - {compascal} - {oberon07}
+				ELSE Language := "2"
 				END
 			| "4":
 				IF s[i+1] = "4" THEN AddressSize := 4; Alignment := 4; INC(i)
@@ -279,10 +271,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	PROCEDURE OpenPar*(list: BOOLEAN);	(* prepare for a sequence of translations *)
 		VAR ch: CHAR; pos, beg: INTEGER; c: TextControllers.Controller;
 	BEGIN
-		(* Set options to initial defaults *)
-		AddressSize := SIZE(SYSTEM.PTR); (* This compilers address size *)
-		GetAlignment(Alignment); (* This compilers alignment *)
-		Model := "C"; (* Size model of common Component Pascal implementations: S16/I32/L64 *)
+		(* set options to initial defaults *)
+		AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
+		GetAlignment(Alignment); (* this compilers alignment *)
+		Language := "C"; (* default input language - Component Pascal: S16/I32/L64 *)
 		GetProperties;
 		translateList := list; stop := FALSE;
 		c := TextControllers.Focus();  (* get the focus controller, if any *)
@@ -311,16 +303,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				IF options.ptrinit THEN INCL(glbopt, ptrinit) END ;
 				IF options.ranchk THEN INCL(glbopt, ranchk) END ;
 				IF options.typchk THEN INCL(glbopt, typchk) END ;
-				IF options.oberon1 THEN INCL(glbopt, oberon1) END ;
-				IF options.oberon2 THEN INCL(glbopt, oberon2) END ;
-				IF options.compascal THEN INCL(glbopt, compascal) END ;
-				IF options.oberon07 THEN INCL(glbopt, oberon07) END ;
 			END
 		ELSE stop := TRUE
 		END ;
 
 		(* Record global option settings for this command line *)
-		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment; GlobalModel := Model
+		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment; GlobalLanguage := Language
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
@@ -530,24 +518,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END
 	END GetProperty;
 
-	PROCEDURE GetProperty1(R: Files.Reader; IN name: ARRAY OF CHAR; VAR par: SHORTINT; defval: SHORTINT);
-		VAR ch: SHORTCHAR; i, oldpos: INTEGER; s: ARRAY 32 OF CHAR;
-	BEGIN
-		ch := " "; i := 0; oldpos := R.Pos();
-		WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-		WHILE (~R.eof) & (ch >" ") DO s[i] := ch; INC(i); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-		s[i] := 0X;
-		IF s = name THEN i := 0;
-			WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-			IF (~R.eof) & (ch >= "0") & (ch <= "9") THEN
-				WHILE (~R.eof) & (ch >= "0") & (ch <= "9") DO i := i * 10 + ORD(ch) - ORD("0"); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-				par := SHORT(i);
-			ELSE Mark(-157, -1); par := defval
-			END
-		ELSE par := defval; R.SetPos(oldpos)
-		END
-	END GetProperty1;
-
 	PROCEDURE GetProperties();
 		VAR F: Files.File; R: Files.Reader;
 	BEGIN
@@ -558,7 +528,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		SetAlign := 4; RealAlign := 4; LRealAlign := 8; ProcAlign := 4; PointerAlign := 4; RecAlign := 1;
 		MinSInt := -80H; MinInt := -8000H; MinLInt :=  80000000H;	(*-2147483648*)
 		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		MaxSet := 31; ArrLenSize := -1;
+		MaxSet := 31;
 		(* read Ofront.par *)
 		F := FilesOld("Ofront.par", CFsubdir);
 		IF F # NIL THEN
@@ -578,10 +548,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			(* Size = 0: natural size aligned to next power of 2 up to RecAlign; e.g. i960
 				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
 			*)
-			GetProperty1(R, "ARRLEN", ArrLenSize, -1);	(* Size of the type of array length *)
 			GetProperty(R, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
-			GetProperty1(R, "FOR", ForN, 0);	(* 0: Original (default); 1: Extended; 2: Experimenal *)
-			IF (ForN >= 0) & (ForN <= 2) THEN (* Ok *) ELSE ForN := 0; Mark(-157, -1) END
 		ELSE Mark(-156, -1)
 		END ;
 		IF RealSize = 4 THEN MaxReal := 3.402823466E38
@@ -600,9 +567,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END ;
 		MaxSet := SHORT(SetSize * 8 - 1);
 		MaxHDig := SHORT(2*LIntSize);
-		IF ArrLenSize = -1 THEN ArrLenSize := LIntSize
-		ELSIF ~ ((ArrLenSize = SIntSize) OR (ArrLenSize = IntSize) OR (ArrLenSize = LIntSize)) THEN Mark(-157, -1)
-		END;
+		IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
 		MaxIndex := 7FFFFFFFH	(*2147483647*)
 	END GetProperties;
 
@@ -870,10 +835,6 @@ suffix does not work in K&R *)
 		options.assert := assert IN defopt;
 		options.typchk := typchk IN defopt;
 		options.ptrinit := ptrinit IN defopt;
-		options.oberon1 := oberon1 IN defopt;
-		options.oberon2 := oberon2 IN defopt;
-		options.compascal := compascal IN defopt;
-		options.oberon07 := oberon07 IN defopt;
 		Dialog.MapString( "#ofront:directories", options.dirs)
 	END GetDefaultOptions;
 	

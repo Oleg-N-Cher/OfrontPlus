@@ -30,7 +30,7 @@
 #  endif
 #endif
 
-typedef int SYSTEM_ARRLEN; // 32 bit.
+typedef int SYSTEM_ARRLEN; // 32 or 64 bits, see also OPM.IndexSize and MaxIndex
      
 
 // Declare memcpy in a way compatible with C compilers intrinsic

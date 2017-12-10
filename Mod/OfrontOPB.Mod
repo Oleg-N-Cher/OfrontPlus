@@ -1243,8 +1243,7 @@ avoid unnecessary intermediate variables in OFront
 						IF typ^.comp = DynArr THEN
 							WHILE p^.class = Nindex DO p := p^.left; INC(x^.conval^.intval) END ;	(* possible side effect ignored *)
 							p := NewOp(Ndop, len, p, x);
-							IF OPM.ArrLenSize = OPM.SIntSize THEN p^.typ := OPT.sinttyp
-							ELSIF OPM.ArrLenSize = OPM.IntSize THEN p^.typ := OPT.inttyp
+							IF OPM.IndexSize = OPM.IntSize THEN p^.typ := OPT.inttyp
 							ELSE p^.typ := OPT.linttyp
 							END
 						ELSE p := x; p^.conval^.intval := typ^.n; SetIntType(p)
@@ -1418,8 +1417,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF (fctno = lenfn) & (parno = 1) THEN (*LEN*)
 					IF p^.typ^.comp = DynArr THEN dim := 0;
 						WHILE p^.class = Nindex DO p := p^.left; INC(dim) END ;	(* possible side effect ignored *)
-						IF OPM.ArrLenSize = OPM.SIntSize THEN BindNodes(Ndop, OPT.sinttyp, p, NewIntConst(dim))
-						ELSIF OPM.ArrLenSize = OPM.IntSize THEN BindNodes(Ndop, OPT.inttyp, p, NewIntConst(dim))
+						IF OPM.IndexSize = OPM.IntSize THEN BindNodes(Ndop, OPT.inttyp, p, NewIntConst(dim))
 						ELSE BindNodes(Ndop, OPT.linttyp, p, NewIntConst(dim))
 						END;
 						p^.subcl := len
