@@ -19,6 +19,14 @@ Linux/Obj/*.c
 Linux/Obj/*.o
 Linux/Obj64/*.c
 Linux/Obj64/*.o
+Linux/Samples/*
+!Linux/Samples/*.sh
+!Linux/Samples/*.par
+!Linux/Samples/*.png
+Linux/Samples64/*
+!Linux/Samples64/*.sh
+!Linux/Samples64/*.par
+!Linux/Samples64/*.png
 Linux/ocat
 Linux/ofront+
 Linux/showdef
