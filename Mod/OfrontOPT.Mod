@@ -1007,7 +1007,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 	PROCEDURE InitStruct(VAR typ: Struct; form: BYTE);
 	BEGIN
-		typ := NewStr(form, Basic); typ^.ref := form; typ^.size := OPM.ByteSize; typ^.allocated := TRUE;
+		typ := NewStr(form, Basic); typ^.ref := form; typ^.size := 1; typ^.allocated := TRUE;
 		typ^.strobj := NewObj(); typ^.pbfp := form; typ^.pvfp := form; typ^.fpdone := TRUE;
 		typ^.idfp := form; typ^.idfpdone := TRUE
 	END InitStruct;
@@ -1057,15 +1057,15 @@ BEGIN topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 	syslink := topScope^.right;
 	universe := topScope; topScope^.right := NIL;
 
-	EnterTyp("BYTE", Byte, OPM.ByteSize, bytetyp);
-	EnterTyp("CHAR", Char, OPM.CharSize, chartyp);
+	EnterTyp("BYTE", Byte, 1, bytetyp);
+	EnterTyp("CHAR", Char, 1, chartyp);
 	EnterTyp("SET", Set, OPM.SetSize, settyp);
 	EnterTyp("REAL", Real, OPM.RealSize, realtyp);
 	EnterTyp("INTEGER", Int, OPM.IntSize, inttyp);
 	EnterTyp("LONGINT",  LInt, OPM.LIntSize, linttyp);
 	EnterTyp("LONGREAL", LReal, OPM.LRealSize, lrltyp);
 	EnterTyp("SHORTINT", SInt, OPM.SIntSize, sinttyp);
-	EnterTyp("BOOLEAN", Bool, OPM.BoolSize, booltyp);
+	EnterTyp("BOOLEAN", Bool, 1, booltyp);
 	EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
 	EnterBoolConst("TRUE",  1);
 	EnterProc("HALT", haltfn);

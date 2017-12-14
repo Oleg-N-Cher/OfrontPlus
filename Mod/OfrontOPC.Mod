@@ -619,27 +619,27 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END Align;
 
-	PROCEDURE Base*(typ: OPT.Struct): INTEGER;
+	PROCEDURE SizeAlignment(size: INTEGER): INTEGER;
+		VAR alignment: INTEGER;
 	BEGIN
-		CASE typ^.form OF
-		| Byte: RETURN 1
-		| Char: RETURN OPM.CharAlign
-		| Bool: RETURN OPM.BoolAlign
-		| SInt: RETURN OPM.SIntAlign
-		| Int: RETURN OPM.IntAlign
-		| LInt: RETURN OPM.LIntAlign
-		| Real: RETURN OPM.RealAlign
-		| LReal: RETURN OPM.LRealAlign
-		| Set: RETURN OPM.SetAlign
-		| Pointer: RETURN OPM.PointerAlign
-		| ProcTyp: RETURN OPM.ProcAlign
-		| Comp:
+		IF size < OPM.Alignment THEN
+			(* Round up to next power of 2 *)
+			alignment := 1; WHILE alignment < size DO alignment := alignment * 2 END;
+		ELSE
+			alignment := OPM.Alignment
+		END;
+		RETURN alignment
+	END SizeAlignment;
+
+	PROCEDURE BaseAlignment*(typ: OPT.Struct): INTEGER;
+	BEGIN
+		IF typ^.form = Comp THEN
 			IF typ^.comp = Record THEN RETURN typ^.align MOD 10000H
-			ELSE RETURN Base(typ^.BaseTyp)
+			ELSE RETURN BaseAlignment(typ^.BaseTyp)
 			END
-		ELSE OPM.err(58); RETURN 1
-		END
-	END Base;
+		END;
+		RETURN SizeAlignment(typ^.size)
+	END BaseAlignment;
 
 	PROCEDURE FillGap(gap, off, align: INTEGER; VAR n, curAlign: INTEGER);
 		VAR adr: INTEGER;
@@ -672,7 +672,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) DO fld := fld.link END ;
 			ELSE
 				(* mimic OPV.TypSize to detect gaps caused by private fields *)
-				adr := off; fldAlign := Base(fld^.typ); Align(adr, fldAlign);
+				adr := off; fldAlign := BaseAlignment(fld^.typ); Align(adr, fldAlign);
 				gap := fld.adr - adr;
 				IF fldAlign > curAlign THEN curAlign := fldAlign END ;
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
