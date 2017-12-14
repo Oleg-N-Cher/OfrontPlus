@@ -87,15 +87,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
-		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-, LIntSize-,
-		SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, IndexSize-,
-		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-, LIntAlign-,
-		SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
-		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: SHORTINT;
+		SIntSize-, IntSize-, LIntSize-, SetSize-, RealSize-, LRealSize-,
+		PointerSize-, ProcSize-, IndexSize-, MaxSet-, MaxHDig-: SHORTINT;
 		MinSInt-, MinInt-, MaxSInt-, MaxInt-: INTEGER; MaxIndex-, MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: LONGREAL;
 
-		noerr-: BOOLEAN;
+		noerr-, warning156-: BOOLEAN;
 		curpos-, errpos*: INTEGER;	(* character and error position in source file *)
 		breakpc-: INTEGER;	(* set by OPV.Init *)
 		currFile*: INTEGER;	(* current output file *)
@@ -195,8 +192,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE ^GetProperties;
 
-	PROCEDURE -GetAlignment(VAR a: SHORTINT) "struct {char c; long long l;} _s; *a = (char*)&_s.l - (char*)&_s";
-
 	PROCEDURE OpenPar*(title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
@@ -210,29 +205,33 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('  option  = "m" | "s" | "e" | "i" | "l" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
 			(* Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "7" Oberon-07');
 			Console.Ln *)
+			Console.String('    "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
+			Console.String('    "44": 32 bit addresses, 32 bit alignment (Unix/Linux 32 bit on x86)'); Console.Ln;
+			Console.String('    "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
+			Console.String('    "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln; 
 		ELSE
 			(* set options to initial defaults *)
-			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
-			GetAlignment(Alignment);         (* this compilers alignment *)
-			Language := "C";                 (* default input language - Component Pascal: S16/I32/L64 *)
-			GetProperties;
+			Language := "C"; (* default input language: Component Pascal *)
+			AddressSize := -1; (* undefined *)
 			glbopt := defopt; S := 1; s := "";
 			Args.Get(1, s); stop := FALSE;
-			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END
-		END;
-
-		(* Record global option settings for this command line *)
-		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment;	GlobalLanguage := Language
+			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END;
+			(* Record global option settings for this command line *)
+			GlobalAddressSize := AddressSize; GlobalAlignment := Alignment;	GlobalLanguage := Language
+		END
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
-		opt := glbopt; s := ""; Args.Get(S, s);
+		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Language := GlobalLanguage;
+		opt := glbopt;
+		s := ""; Args.Get(S, s);
 		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END ;
 		IF lineno IN opt THEN useLineNo := TRUE; curpos := 256; errpos := curpos; lasterrpos := curpos - 10
 		ELSE useLineNo := FALSE;
-		END
+		END;
+		GetProperties
 	END InitOptions;
 
 	(* get the source for one translation; msg is "translating" or "compiling" *)
@@ -387,68 +386,43 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- initialization ------------------------- *)
 
-	PROCEDURE GetProperty(VAR S: Texts.Scanner; name: ARRAY OF CHAR; VAR size, align: SHORTINT);
-	BEGIN
-		IF (S.class = Texts.Name) & (S.s = name) THEN Texts.Scan(S);
-			IF S.class = Texts.Int THEN size := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END ;
-			IF S.class = Texts.Int THEN align := SHORT(S.i); Texts.Scan(S) ELSE Mark(-157, -1) END
-		ELSE Mark(-157, -1)
-		END
-	END GetProperty;
+	PROCEDURE -GetAlignment(VAR a: SHORTINT) "struct {char c; long long l;} _s; *a = (char*)&_s.l - (char*)&_s";
 
-	PROCEDURE GetProperties();
-		VAR T: Texts.Text; S: Texts.Scanner; base: INTEGER;
+	PROCEDURE GetProperties;
+		VAR base: INTEGER;
 	BEGIN
+		warning156 := AddressSize = -1;
+		IF warning156 THEN
+ 			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
+			GetAlignment(Alignment)          (* this compilers alignment *)
+		END;
 		(* default characteristics *)
-		ByteSize := 1; CharSize := 1; BoolSize := 1; SIntSize := 1; IntSize := 2; LIntSize := 4;
-		SetSize := 4; RealSize := 4; LRealSize := 8; ProcSize := 4; PointerSize := 4; RecSize := 1;
-		CharAlign := 1; BoolAlign := 1; SIntAlign := 1; IntAlign := 2; LIntAlign := 4;
-		SetAlign := 4; RealAlign := 4; LRealAlign := 8; ProcAlign := 4; PointerAlign := 4; RecAlign := 1;
-		MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
-		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		MaxSet := 31;
-		(* read Ofront.par *)
-		NEW(T); Texts.Open(T, "Ofront.par");
-		IF T.len # 0 THEN
-			Texts.OpenScanner(S, T, 0); Texts.Scan(S);
-			GetProperty(S, "CHAR", CharSize, CharAlign);
-			GetProperty(S, "BOOLEAN", BoolSize, BoolAlign);
-			GetProperty(S, "SHORTINT", SIntSize, SIntAlign);
-			GetProperty(S, "INTEGER", IntSize, IntAlign);
-			GetProperty(S, "LONGINT", LIntSize, LIntAlign);
-			GetProperty(S, "SET", SetSize, SetAlign);
-			GetProperty(S, "REAL", RealSize, RealAlign);
-			GetProperty(S, "LONGREAL", LRealSize, LRealAlign);
-			GetProperty(S, "PTR", PointerSize, PointerAlign);
-			GetProperty(S, "PROC", ProcSize, ProcAlign);
-			GetProperty(S, "RECORD", RecSize, RecAlign);
-			(* Size = 0: natural size aligned to next power of 2 up to RecAlign; e.g. i960
-				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
-			*)
-			GetProperty(S, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
-		ELSE Mark(-156, -1)
-		END ;
-		IF RealSize = 4 THEN MaxReal := 3.402823466D38
-		ELSIF RealSize = 8 THEN MaxReal := 1.7976931348623158D307 * 9.999999
-			(*should be 1.7976931348623158D308 *)
-		END ;
-		IF LRealSize = 4 THEN MaxLReal := 3.402823466D38
-		ELSIF LRealSize = 8 THEN MaxLReal := 1.7976931348623158D307 * 9.999999
-			(*should be 1.7976931348623158D308 *)
-		END ;
-		MinReal := -MaxReal;
-		MinLReal := -MaxLReal;
-		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
-		IF IntSize = 4 THEN MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
-		IF LIntSize = 8 THEN
+		IF (Language = "1") OR (Language = "2") THEN (* Oberon and Oberon-2 *)
+			SIntSize := 1; IntSize := 2; LIntSize := 4;
+			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
+			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
+			IndexSize := 2; (* size of the type of array index, see also SYSTEM_ARRLEN *)
+			MaxIndex := 7FFFH	(*32767*)
+		ELSE (* Component Pascal and Oberon-07 *)
+			SIntSize := 2; IntSize := 4; LIntSize := 8;
+			MinSInt := -8000H; MaxSInt := 7FFFH;
+			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
 			base := 63;
 			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), base);	(*-9223372036854775808*)
-			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
-		END ;
-		MaxSet := SetSize * 8 - 1;
-		MaxHDig := 2*LIntSize;
-		IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-		MaxIndex := 7FFFFFFFH	(*2147483647*)
+			MaxLInt := -(MinLInt+1)	(*9223372036854775807*);
+			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
+			MaxIndex := 7FFFFFFFH	(*2147483647*)
+		END;
+		IF (AddressSize = 2) & (Alignment = 1) THEN (* Z80 and other 8 bit CPUs *)
+			SetSize := 1; MaxSet := SetSize * 8 - 1
+		ELSE
+			SetSize := 4; MaxSet := 31
+		END;
+		RealSize := 4; MaxReal := 3.402823466D38; MinReal := -MaxReal; LRealSize := 8;
+		MaxLReal := 1.7976931348623158D307 * 9.999999 (*should be 1.7976931348623158D308 *);
+		MinLReal := -MaxLReal;
+		ProcSize := AddressSize; PointerSize := AddressSize;
+		MaxHDig := 2*LIntSize
 	END GetProperties;
 
 	(* ------------------------- Read Symbol File ------------------------- *)

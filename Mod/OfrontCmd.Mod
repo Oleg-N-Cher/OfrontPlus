@@ -48,16 +48,13 @@
 	PROCEDURE PropagateElementaryTypeSizes;
 		VAR adrinttyp: OPT.Struct;
 	BEGIN
-		OPT.bytetyp.size := OPM.ByteSize;
 		OPT.sysptrtyp.size := OPM.PointerSize;
-		OPT.chartyp.size := OPM.CharSize;
 		OPT.settyp.size := OPM.SetSize;
 		OPT.realtyp.size := OPM.RealSize;
 		OPT.inttyp.size := OPM.IntSize;
 		OPT.linttyp.size := OPM.LIntSize;
 		OPT.lrltyp.size := OPM.LRealSize;
 		OPT.sinttyp.size := OPM.SIntSize;
-		OPT.booltyp.size := OPM.BoolSize;
 	END PropagateElementaryTypeSizes; 
 
 	PROCEDURE Translate*;
@@ -76,6 +73,7 @@
 			PropagateElementaryTypeSizes;
 			Heap.GC(FALSE);
 			Module(done); (* Compile source to .c and .h files *)
+			IF OPM.warning156 THEN OPM.Mark(-156, -1) END;
 			IF ~done THEN Heap.FINALL; Kernel.Exit(1) END
 		END
 	END Translate;

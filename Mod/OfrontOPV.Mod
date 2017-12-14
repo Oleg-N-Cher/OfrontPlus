@@ -115,21 +115,21 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		ELSIF typ^.size = -1 THEN
 			f := typ^.form; c := typ^.comp;
 			IF c = Record THEN btyp := typ^.BaseTyp;
-				IF btyp = NIL THEN offset := 0; base := OPM.RecAlign;
+				IF btyp = NIL THEN offset := 0; base := 1;
 				ELSE TypSize(btyp); offset := btyp^.size - btyp^.sysflag DIV 100H; base := btyp^.align
 				END;
 				fld := typ^.link;
 				WHILE (fld # NIL) & (fld^.mode = Fld) DO
 					btyp := fld^.typ; TypSize(btyp);
-					size := btyp^.size; fbase := OPC.Base(btyp);
+					size := btyp^.size; fbase := OPC.BaseAlignment(btyp);
 					OPC.Align(offset, fbase);
 					fld^.adr := offset; INC(offset, size);
 					IF fbase > base THEN base := fbase END ;
 					fld := fld^.link
-				END ;
+				END;
+				(* base is now the largest alignment of any field *)
 				off0 := offset;
 				IF offset = 0 THEN offset := 1 END ;	(* 1 byte filler to avoid empty struct *)
-				IF OPM.RecSize = 0 THEN base := NaturalAlignment(offset, OPM.RecAlign) END ;
 				OPC.Align(offset, base);
 				IF (typ^.strobj = NIL) & (typ^.align MOD 10000H = 0) THEN INC(recno); INC(base, recno * 10000H) END ;
 				typ^.size := offset; typ^.align := base;
@@ -871,7 +871,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		ELSE OPM.WriteString("NIL")
 		END ;
 		OPM.WriteString(", "); OPM.WriteInt(base^.size); OPM.PromoteIntConstToLInt();	(* element size *)
-		OPM.WriteString(", "); OPM.WriteInt(OPC.Base(base));	(* element alignment *)
+		OPM.WriteString(", "); OPM.WriteInt(OPC.BaseAlignment(base));	(* element alignment *)
 		OPM.WriteString(", "); OPM.WriteInt(nofdim);	(* total number of dimensions = number of additional parameters *) 
 		OPM.WriteString(", "); OPM.WriteInt(nofdyn);	(* number of dynamic dimensions *)
 		WHILE typ # base DO
