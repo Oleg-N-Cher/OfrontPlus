@@ -112,19 +112,6 @@ extern void Heap_Lock();
 extern void Heap_Unlock();
 
 
-void SYSTEM_HALT(INTEGER code)
-{
-  if (SYSTEM_HaltHandler!=0) SYSTEM_HaltHandler(code);
-  exit(code);
-}
-
-void SYSTEM_ASSERT_FAIL(INTEGER code)
-{
-  if (SYSTEM_AssertFailHandler!=0) SYSTEM_AssertFailHandler(code);
-  exit(code);
-}
-
-
 // Program startup
 
 extern void Heap_InitHeap();
@@ -220,6 +207,17 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32
 
+    void SYSTEM_HALT(INTEGER code) {
+      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code);
+      exit(code);
+    }
+
+    void SYSTEM_ASSERT_FAIL(INTEGER code) {
+      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code);
+      exit(code);
+    }
+
+
     SystemSignalHandler handler[3] = {0};
 
     // Provide signal handling for Unix based systems
@@ -249,6 +247,17 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
     }
 
 #else
+
+    void SYSTEM_HALT(INTEGER code) {
+      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code);
+      ExitProcess((UINT)(code));
+    }
+
+    void SYSTEM_ASSERT_FAIL(INTEGER code) {
+      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code);
+      ExitProcess((UINT)(code));
+    }
+
 
     // Provides Windows callback handlers for signal-like scenarios
 #   include "_windows.h"
