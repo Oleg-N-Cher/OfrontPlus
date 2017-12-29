@@ -624,7 +624,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		IF size < OPM.Alignment THEN
 			(* Round up to next power of 2 *)
-			alignment := 1; WHILE alignment < size DO alignment := alignment * 2 END;
+			alignment := 1; WHILE alignment < size DO alignment := alignment * 2 END
 		ELSE
 			alignment := OPM.Alignment
 		END;
@@ -972,7 +972,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.WriteLn;
 		IF mainprog THEN
 			IF ansi THEN
-				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn;
+				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn
 			ELSE
 				OPM.WriteString("main(argc, argv)"); OPM.WriteLn;
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
@@ -1214,27 +1214,51 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END;
 	END Cmp;
 
+	PROCEDURE WriteCharLiteral(ch: CHAR); (* with escape for special printable characters *)
+	BEGIN
+		IF (ch >= " ") & (ch <= "~") THEN
+			OPM.Write(SingleQuote);
+			IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END;
+			OPM.Write(ch); OPM.Write(SingleQuote)
+		ELSE
+			OPM.WriteString("0x"); OPM.WriteHex(ORD(ch))
+		END
+	END WriteCharLiteral;
+
+	PROCEDURE WriteStringLiteral(str: ARRAY OF CHAR; len: INTEGER);
+		VAR ch: CHAR; i: INTEGER;
+	BEGIN
+		OPM.Write(Quotes);
+		i := 0;
+		WHILE i < len DO ch := str[i];
+			IF (ch >= " ") & (ch <= "~") THEN
+				IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END;
+				OPM.Write(ch)
+			ELSE
+				OPM.WriteString("\x"); OPM.WriteHex(ORD(ch));
+				(* terminate \x escape sequence without implementation dependency *)
+				IF i + 1 < len THEN (* strings in Component Pascal may contain a special char *)
+					CASE str[i + 1] OF
+					"0".."9", "a".."f", "A".."F": OPM.Write(Quotes); OPM.Write(Quotes)
+					ELSE
+					END
+				END
+			END;
+			INC(i)
+		END;
+		OPM.Write(Quotes)
+	END WriteStringLiteral;
+
 	PROCEDURE Case*(caseVal: INTEGER; form: SHORTINT);
-	VAR
-		ch: CHAR;
 	BEGIN
 		OPM.WriteString(CaseStat);
 		CASE form OF
 		|	Char :
-					ch := CHR (caseVal);
-					IF (ch >= " ") & (ch <= "~") THEN
-						OPM.Write(SingleQuote);
-						IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\"); OPM.Write(ch);
-						ELSE OPM.Write(ch);
-						END;
-						OPM.Write(SingleQuote);
-					ELSE
-						OPM.WriteString("0x"); OPM.WriteHex (caseVal);
-					END;
+					WriteCharLiteral(CHR(caseVal))
 		|	Byte, SInt, Int, LInt :
-					OPM.WriteInt (caseVal);
+					OPM.WriteInt(caseVal)
 		END;
-		OPM.WriteString(Colon);
+		OPM.WriteString(Colon)
 	END Case;
  
 	PROCEDURE SetInclude* (exclude: BOOLEAN);
@@ -1264,22 +1288,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END Len;
 
 	PROCEDURE Constant* (con: OPT.Const; form: SHORTINT);
-		VAR i, len: SHORTINT; ch: CHAR; s: SET;
-			hex: INTEGER; skipLeading: BOOLEAN;
+		VAR i: SHORTINT; s: SET; hex: INTEGER; skipLeading: BOOLEAN;
 	BEGIN
 		CASE form OF
 		|	Bool, Byte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
 		|	Char:
-					ch := CHR(con^.intval);
-					IF (ch >= " ") & (ch <= "~") THEN
-						OPM.Write(SingleQuote);
-						IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END ;
-						OPM.Write(ch);
-						OPM.Write(SingleQuote)
-					ELSE
-						OPM.WriteString("0x"); OPM.WriteHex(SHORT(con^.intval))
-					END
+					WriteCharLiteral(CHR(con^.intval))
 		|	Real:
 					OPM.WriteReal(con^.realval, "f")
 		|	LReal:
@@ -1301,15 +1316,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					UNTIL i = 0;
 					IF skipLeading THEN OPM.Write("0") END
 		|	String:
-					OPM.Write(Quotes);
-					len := SHORT(con^.intval2) - 1; i := 0;
-					WHILE i < len DO ch := con^.ext^[i];
-						IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END ;
-						OPM.Write(ch); INC(i)
-					END ;
-					OPM.Write(Quotes)
+					WriteStringLiteral(con^.ext^, con^.intval2 - 1)
 		|	NilTyp:
-					OPM.WriteString(NilConst);
+					OPM.WriteString(NilConst)
 		END;
 	END Constant;
 
