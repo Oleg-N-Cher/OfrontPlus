@@ -635,27 +635,27 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END
 	END Align;
 
-	PROCEDURE Base*(typ: OPT.Struct): INTEGER;
+	PROCEDURE SizeAlignment(size: INTEGER): INTEGER;
+		VAR alignment: INTEGER;
 	BEGIN
-		CASE typ^.form OF
-		| Byte: RETURN 1
-		| Char: RETURN OPM.CharAlign
-		| Bool: RETURN OPM.BoolAlign
-		| SInt: RETURN OPM.SIntAlign
-		| Int: RETURN OPM.IntAlign
-		| LInt: RETURN OPM.LIntAlign
-		| Real: RETURN OPM.RealAlign
-		| LReal: RETURN OPM.LRealAlign
-		| Set: RETURN OPM.SetAlign
-		| Pointer: RETURN OPM.PointerAlign
-		| ProcTyp: RETURN OPM.ProcAlign
-		| Comp:
+		IF size < OPM.Alignment THEN
+			(* Round up to next power of 2 *)
+			alignment := 1; WHILE alignment < size DO alignment := alignment * 2 END
+		ELSE
+			alignment := OPM.Alignment
+		END;
+		RETURN alignment
+	END SizeAlignment;
+
+	PROCEDURE BaseAlignment*(typ: OPT.Struct): INTEGER;
+	BEGIN
+		IF typ^.form = Comp THEN
 			IF typ^.comp = Record THEN RETURN typ^.align MOD 10000H
-			ELSE RETURN Base(typ^.BaseTyp)
+			ELSE RETURN BaseAlignment(typ^.BaseTyp)
 			END
-		ELSE OPM.err(58); RETURN 1
-		END
-	END Base;
+		END;
+		RETURN SizeAlignment(typ^.size)
+	END BaseAlignment;
 
 	PROCEDURE FillGap(gap, off, align: INTEGER; VAR n, curAlign: INTEGER);
 		VAR adr: INTEGER;
@@ -688,7 +688,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) DO fld := fld.link END ;
 			ELSE
 				(* mimic OPV.TypSize to detect gaps caused by private fields *)
-				adr := off; fldAlign := Base(fld^.typ); Align(adr, fldAlign);
+				adr := off; fldAlign := BaseAlignment(fld^.typ); Align(adr, fldAlign);
 				gap := fld.adr - adr;
 				IF fldAlign > curAlign THEN curAlign := fldAlign END ;
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
@@ -1039,7 +1039,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		OPM.WriteLn;
 		IF mainprog THEN
 			IF ansi THEN
-				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn;
+				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn
 			ELSE
 				OPM.WriteString("main(argc, argv)"); OPM.WriteLn;
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
@@ -1281,27 +1281,51 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END;
 	END Cmp;
 
+	PROCEDURE WriteCharLiteral(ch: SHORTCHAR); (* with escape for special printable characters *)
+	BEGIN
+		IF (ch >= " ") & (ch <= "~") THEN
+			OPM.Write(SingleQuote);
+			IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END;
+			OPM.Write(ch); OPM.Write(SingleQuote)
+		ELSE
+			OPM.WriteString("0x"); OPM.WriteHex(ORD(ch))
+		END
+	END WriteCharLiteral;
+
+	PROCEDURE WriteStringLiteral(IN str: ARRAY OF SHORTCHAR; len: INTEGER);
+		VAR ch: SHORTCHAR; i: INTEGER;
+	BEGIN
+		OPM.Write(Quotes);
+		i := 0;
+		WHILE i < len DO ch := str[i];
+			IF (ch >= " ") & (ch <= "~") THEN
+				IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END;
+				OPM.Write(ch)
+			ELSE
+				OPM.WriteString("\x"); OPM.WriteHex(ORD(ch));
+				(* terminate \x escape sequence without implementation dependency *)
+				IF i + 1 < len THEN (* strings in Component Pascal may contain a special char *)
+					CASE str[i + 1] OF
+					"0".."9", "a".."f", "A".."F": OPM.Write(Quotes); OPM.Write(Quotes)
+					ELSE
+					END
+				END
+			END;
+			INC(i)
+		END;
+		OPM.Write(Quotes)
+	END WriteStringLiteral;
+
 	PROCEDURE Case*(caseVal: INTEGER; form: SHORTINT);
-	VAR
-		ch: SHORTCHAR;
 	BEGIN
 		OPM.WriteString(CaseStat);
 		CASE form OF
 		|	Char :
-					ch := SHORT(CHR (caseVal));
-					IF (ch >= " ") & (ch <= "~") THEN
-						OPM.Write(SingleQuote);
-						IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\"); OPM.Write(ch);
-						ELSE OPM.Write(ch);
-						END;
-						OPM.Write(SingleQuote);
-					ELSE
-						OPM.WriteString("0x"); OPM.WriteHex (caseVal);
-					END;
+					WriteCharLiteral(SHORT(CHR(caseVal)))
 		|	Byte, SInt, Int, LInt :
-					OPM.WriteInt (caseVal);
+					OPM.WriteInt(caseVal)
 		END;
-		OPM.WriteString(Colon);
+		OPM.WriteString(Colon)
 	END Case;
  
 	PROCEDURE SetInclude* (exclude: BOOLEAN);
@@ -1331,22 +1355,13 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END Len;
 
 	PROCEDURE Constant* (con: OPT.Const; form: SHORTINT);
-		VAR i, len: SHORTINT; ch: SHORTCHAR; s: SET;
-			hex: INTEGER; skipLeading: BOOLEAN;
+		VAR i: SHORTINT; s: SET; hex: INTEGER; skipLeading: BOOLEAN;
 	BEGIN
 		CASE form OF
 		|	Bool, Byte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
 		|	Char:
-					ch := SHORT(CHR(con^.intval));
-					IF (ch >= " ") & (ch <= "~") THEN
-						OPM.Write(SingleQuote);
-						IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END ;
-						OPM.Write(ch);
-						OPM.Write(SingleQuote)
-					ELSE
-						OPM.WriteString("0x"); OPM.WriteHex(SHORT(con^.intval))
-					END
+					WriteCharLiteral(SHORT(CHR(con^.intval)))
 		|	Real:
 					OPM.WriteReal(con^.realval, "f")
 		|	LReal:
@@ -1368,15 +1383,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					UNTIL i = 0;
 					IF skipLeading THEN OPM.Write("0") END
 		|	String:
-					OPM.Write(Quotes);
-					len := SHORT(SHORT(con^.intval2) - 1); i := 0;
-					WHILE i < len DO ch := con^.ext^[i];
-						IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END ;
-						OPM.Write(ch); INC(i)
-					END ;
-					OPM.Write(Quotes)
+					WriteStringLiteral(con^.ext^, con^.intval2 - 1)
 		|	NilTyp:
-					OPM.WriteString(NilConst);
+					OPM.WriteString(NilConst)
 		END;
 	END Constant;
 
