@@ -1,5 +1,5 @@
 @ECHO OFF
-IF NOT /%XDev%==/ GOTO XDev
+IF NOT "%XDev%"=="" GOTO XDev
 ECHO Please set system variable XDev=X:\Path\To\XDev
 PAUSE
 EXIT
@@ -8,7 +8,7 @@ EXIT
 
 CD ..\Obj
 SET PATH=%XDev%\WinDev\Bin\MinGW\bin
-SET CC=gcc.exe -I . -I ..\Mod -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -c
+SET CC=gcc.exe -I. -I..\Mod -m32 -s -Os -g0 -fvisibility=hidden -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c
 SET AR=ar.exe -rc ..\Ofront.a
 IF EXIST ..\Ofront.a DEL ..\Ofront.a
 
