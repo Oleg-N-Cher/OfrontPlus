@@ -165,7 +165,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
 			*)
 			| "2":
-				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
+				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 4; INC(i)
 				ELSE Language := "2"
 				END
 			| "4":
@@ -412,7 +412,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
 			MaxIndex := 7FFFFFFFH (*2147483647*)
 		END;
-		IF (AddressSize = 2) & (Alignment = 1) THEN (* Z80 and other 8 bit CPUs *)
+		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
 			SetSize := 1; MaxSet := SetSize * 8 - 1
 		ELSE
 			SetSize := 4; MaxSet := 31
