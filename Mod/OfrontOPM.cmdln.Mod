@@ -148,7 +148,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "s": opt := opt / {newsf}
 			| "m": opt := opt / {mainprog}
 			| "x": opt := opt / {inxchk}
-			| "v": opt := opt / {vcpp};
+			| "v": opt := opt / {vcpp}
 			| "r": opt := opt / {ranchk}
 			| "t": opt := opt / {typchk}
 			| "a": opt := opt / {assert}
@@ -203,12 +203,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
 			Console.String('  option  = "m" | "s" | "e" | "i" | "l" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
-			(* Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "7" Oberon-07');
-			Console.Ln *)
+			Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "7" Oberon-07'); Console.Ln;
 			Console.String('    "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
-			Console.String('    "44": 32 bit addresses, 32 bit alignment (Unix/Linux 32 bit on x86)'); Console.Ln;
+			Console.String('    "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;
 			Console.String('    "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
-			Console.String('    "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln; 
+			Console.String('    "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln
 		ELSE
 			(* set options to initial defaults *)
 			Language := "C"; (* default input language: Component Pascal *)
@@ -402,7 +401,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
 			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
 			IndexSize := 2; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFH	(*32767*)
+			MaxIndex := 7FFFH (*32767*)
 		ELSE (* Component Pascal and Oberon-07 *)
 			SIntSize := 2; IntSize := 4; LIntSize := 8;
 			MinSInt := -8000H; MaxSInt := 7FFFH;
@@ -411,7 +410,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), base);	(*-9223372036854775808*)
 			MaxLInt := -(MinLInt+1)	(*9223372036854775807*);
 			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFFFFFH	(*2147483647*)
+			MaxIndex := 7FFFFFFFH (*2147483647*)
 		END;
 		IF (AddressSize = 2) & (Alignment = 1) THEN (* Z80 and other 8 bit CPUs *)
 			SetSize := 1; MaxSet := SetSize * 8 - 1
