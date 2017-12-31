@@ -6,11 +6,11 @@
 :XDev
 @SET WinDev=%XDev%\WinDev
 @SET PATH=%WinDev%\Bin\MinGW64\bin
-@SET lib=-I ..\Lib\Obj64 -I ..\Lib\Mod
-@SET gcc=gcc.exe -Os -fno-exceptions -fno-asynchronous-unwind-tables %lib%
+@SET lib=-I..\Lib\Obj64 -I..\Lib\Mod
+@SET CC=gcc.exe -m64 -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables %lib%
 
 @SET Mod=%1
 @IF %Mod%==OfrontOPM.cmdln SET Mod=OfrontOPM
 
-%gcc% -c %Mod%.c
+%CC% -c %Mod%.c
 @IF errorlevel 1 PAUSE
