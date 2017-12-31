@@ -248,6 +248,8 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #else
 
+#   include "_windows.h"
+
     void SYSTEM_HALT(INTEGER code) {
       if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code);
       ExitProcess((UINT)(code));
@@ -260,7 +262,6 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 
     // Provides Windows callback handlers for signal-like scenarios
-#   include "_windows.h"
 
     SystemSignalHandler SystemInterruptHandler = 0;
     SystemSignalHandler SystemQuitHandler      = 0;
