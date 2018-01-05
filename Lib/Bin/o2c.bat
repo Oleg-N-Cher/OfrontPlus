@@ -13,9 +13,14 @@ IF errorlevel 1 PAUSE
 ofront+ -eC -48 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
 IF errorlevel 1 PAUSE
 
+:: POW
+
+ofront+ -eC -48 powStrings.Mod
+IF errorlevel 1 PAUSE
+
 :: Free Oberon
 
-ofront+ -sC -48 SDL2.Mod Out.Mod Graph.Mod Math.Mod Turtle.Mod
+ofront+ -sC -48 SDL2.Mod SDL2mixer.Mod Out.Mod Graph.Mod Math.Mod Sound.Mod Turtle.Mod
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
