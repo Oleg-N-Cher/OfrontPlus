@@ -6,10 +6,10 @@ English text below
 Для запуска транслятора из командной строки вам нужно три вещи:
 
 
-1. Если работа происходит в одном каталоге, то ничего. Если в нескольких,
-   важно чтобы транслятор мог найти символьные файлы *.sym, необходимые для
-   трансляции, т.к. в них хранится информация о модулях. Поэтому задайте
-   переменную OBERON, содержащую пути для поиска:
+1. Если работа происходит в нескольких папках, то важно чтобы транслятор
+   мог найти символьные файлы *.sym, необходимые для трансляции, т.к.
+   в них хранится информация об интерфейсах импортируемых модулей.
+   Поэтому задайте переменную OBERON, содержащую пути для поиска:
 
    UNIX / Linux 32:
 
@@ -27,22 +27,14 @@ English text below
 
    SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64
 
-   Включайте в поиск текущий каталог, т.к. там обычно хранится файл Ofront.par
 
+2. Необходимо задать разрядность и выравнивание типов данных для целевых
+   Си-файлов. Это делается с помощью опций:
 
-2. Необходимо задать размеры всех типов данных и их выравнивание. Это
-   платформенно-зависимые вещи, и вы можете для UNIX / Windows соответствующей
-   разрядности просто взять готовый Ofront.par из поставки Ofront+
-
-   UNIX / Linux:
-
-   Linux/Lib/Obj и Linux/Lib/Obj64
-
-   Windows:
-
-   Lib\Obj и Lib\Obj64
-
-   Для других платформ понадобится создавать Ofront.par вручную.
+   -21: адрес 16 бит, SIZE(SET) = 1 байт (напр. проц. Zilog Z80)
+   -44: адрес 32 бита, выравнивание 32 бита (UNIX/Linux 32 бит на x86)
+   -48: адрес 32 бита, выравнивание 64 бита (Windows 32 бит, Linux 32 бит/ARM)
+   -88: адрес 64 бита, выравнивание 64 бита (64-битные платформы)
 
 
 3. При вызове компилятора Си включайте в поиск каталоги Lib/Mod (там хранится SYSTEM.h) и Lib/Obj* нужной разрядности, а также библиотеку Ofront:
@@ -69,9 +61,9 @@ English text below
 To start the translator from the command line you need three things:
 
 
-1. If the work takes place in the single directory, it's ok; If in several,
-   it is important that the translator can find the symbol files * .sym,
-   necessary for translation, as they stored information on the modules.
+1. If the work takes place in several directories, it is important that
+   the translator can find the symbol files * .sym, necessary for translation,
+   as they stored information on the interfaces of imported modules.
    So specify variable OBERON, containing the path to search for:
 
    UNIX / Linux 32:
@@ -90,24 +82,14 @@ To start the translator from the command line you need three things:
 
    SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64
 
-   Add into the search the current directory too, as there usually lives
-   the file Ofront.par
 
+2. You must specify the address size and alignment of data types for
+   the target C files. This is done using the options:
 
-2. You must set the size of all data types, and their alignment. These
-   are platform-specific things, and you can use for UNIX / Windows with
-   appropriate bit depth just take a ready Ofront.par from Ofront+
-   distribution.
-
-   UNIX / Linux:
-
-   Linux/Lib/Obj and Linux/Lib/Obj64
-
-   Windows:
-
-   Lib\Obj and Lib\Obj64
-
-   For other platforms you'll need to create Ofront.par manually.
+   -21: 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)
+   -44: 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)
+   -48: 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)
+   -88: 64 bit addresses, 64 bit alignment (64 bit platforms)
 
 
 3. When invoke C compiler, include the directories Lib/Mod (SYSTEM.h lives there) and Lib/Obj* of wanted bit depth, and the library Ofront:
