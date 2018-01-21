@@ -400,22 +400,21 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			SIntSize := 1; IntSize := 2; LIntSize := 4;
 			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
 			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-			IndexSize := 2; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFH (*32767*)
 		ELSE (* Component Pascal and Oberon-07 *)
 			SIntSize := 2; IntSize := 4; LIntSize := 8;
 			MinSInt := -8000H; MaxSInt := 7FFFH;
 			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
 			base := 63;
 			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), base);	(*-9223372036854775808*)
-			MaxLInt := -(MinLInt+1)	(*9223372036854775807*);
-			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFFFFFH (*2147483647*)
+			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
 		END;
 		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
-			SetSize := 1; MaxSet := SetSize * 8 - 1
+			SetSize := 1; MaxSet := SetSize * 8 - 1;
+			IndexSize := 2; MaxIndex := 7FFFH (*32767*)
 		ELSE
-			SetSize := 4; MaxSet := 31
+			SetSize := 4; MaxSet := 31;
+			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
+			MaxIndex := 7FFFFFFFH (*2147483647*)
 		END;
 		RealSize := 4; MaxReal := 3.402823466D38; MinReal := -MaxReal; LRealSize := 8;
 		MaxLReal := 1.7976931348623158D307 * 9.999999 (*should be 1.7976931348623158D308 *);
