@@ -1,0 +1,227 @@
+COMPILER Oberon2
+
+/*
+Source: http://www.zel.org/aos/o2report.htm
+
+The Programming Language Oberon-2
+
+H. Mössenböck, N. Wirth, Institut für Computersysteme, ETH Zürich, 1992-1996
+
+Changes:
+ - Enclosed all keywords with double quotes
+ - Renamed start symbol "Module" to Oberon2
+ - Added production ImportListMember
+   Please note that the optional part of the production is different from 
+   the original. This solves a LL(1) conflict, but introduces a slightly
+   different meaning: in the original grammar, the emphasis is on the
+   imported module name, which might be referenced via an alias name.
+   This definition emphasis the alias name, which now may be backed up
+   by a module with a different name....
+ - Moved the token "PROCEDURE" out of the ProcDecl and ForwardDecl
+   productions into the DeclSeq production to solve a LL(1) conflict.
+ - Added a new production for non terminal number
+ - Added two conflict resolvers
+*/
+
+public static void main(String[] args) {
+    Scanner scanner = new Scanner(args[0]);
+    Parser parser = new Parser(scanner);
+    parser.Parse();
+    System.out.println("Done.");
+}
+
+private HashSet<String> modules = new HashSet<String>();
+
+/* Returns true if the next ident is a module name */
+private boolean isModule() {
+	if (la.kind == _ident) {
+	  return modules.contains(la.val);
+	}
+	return false;
+}
+
+/* Returns true if the current look ahead symbol is
+   part of the current scanned designator. */
+private boolean isDesignatorPart() {
+  switch (la.kind) {
+    case _dot:
+    case _lbrack:
+    case _arrow:
+  		return true;
+    case _lpar:
+      /* Semantic analysis is missing! */
+      /* Assumes for now a procedure invocation. */
+      return false;
+    default:
+      return false;
+  }
+}
+
+CHARACTERS
+  letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  digit     = "0123456789".
+  hexDigit	= "0123456789ABCDEF".
+  cr        = '\r'.
+  lf        = '\n'.
+  tab       = '\t'.
+  stringCh  = ANY - "'" - '"' - cr - lf.
+
+TOKENS
+  ident     = letter { letter | digit }.
+  integer   = digit { digit }
+              | digit { digit } CONTEXT ("..")
+              | digit { hexDigit } "H".
+  real      = digit { digit } "." { digit } [("E" | "D") ["+" | "-"] digit {digit}].
+  string    = '"' { stringCh | "'" } '"' | "'" { stringCh | '"' } "'".
+  character = digit { hexDigit } "X".
+  
+  dot       = ".".
+  lbrack    = "[".
+  arrow     = "^". 
+  lpar      = "(".
+
+COMMENTS FROM "(*" TO "*)" NESTED
+
+IGNORE cr + lf + tab
+
+PRODUCTIONS
+
+Oberon2
+  = "MODULE" ident ";" [ImportList] DeclSeq ["BEGIN" StatementSeq] "END" ident ".".
+
+ImportList
+  = "IMPORT" ImportListMember {"," ImportListMember } ";".
+
+ImportListMember
+  = ident (. modules.add(t.val); .) [":=" ident ].
+
+DeclSeq
+  = { "CONST" {ConstDecl ";" } | "TYPE" {TypeDecl ";"} | "VAR" {VarDecl ";"}} 
+    { "PROCEDURE" (ProcDecl | ForwardDecl) ";"}.
+
+ConstDecl
+  = IdentDef "=" ConstExpr.
+
+TypeDecl
+  = IdentDef "=" Type.
+
+VarDecl
+  = IdentList ":" Type.
+
+ProcDecl
+  = [Receiver] IdentDef [FormalPars] ";" DeclSeq ["BEGIN" StatementSeq] "END" ident.
+
+ForwardDecl
+  = "^" [Receiver] IdentDef [FormalPars].
+
+FormalPars
+  = "(" [FPSection {";" FPSection}] ")" [":" Qualident].
+
+FPSection
+  = ["VAR"] ident {"," ident} ":" Type.
+
+Receiver
+  = "(" ["VAR"] ident ":" ident ")".
+
+Type
+  = Qualident
+  | "ARRAY" [ConstExpr {"," ConstExpr}] "OF" Type 
+  | "RECORD" ["("Qualident")"] FieldList {";" FieldList} "END"
+  | "POINTER" "TO" Type
+  | "PROCEDURE" [FormalPars]
+  .
+
+FieldList
+  = [IdentList ":" Type].
+
+StatementSeq
+  = Statement {";" Statement}.
+
+Statement
+  = [ Designator (":=" Expr | ["(" [ExprList] ")"])
+      | "IF" Expr "THEN" StatementSeq 
+        {"ELSIF" Expr "THEN" StatementSeq} 
+        ["ELSE" StatementSeq] 
+        "END" 
+      | "CASE" Expr "OF" Case 
+        {"|" Case} 
+        ["ELSE" StatementSeq] 
+        "END" 
+      | "WHILE" Expr "DO" StatementSeq "END" 
+      | "REPEAT" StatementSeq "UNTIL" Expr 
+      | "FOR" ident ":=" Expr "TO" Expr ["BY" ConstExpr] "DO" StatementSeq "END" 
+      | "LOOP" StatementSeq "END"
+      | "WITH" Guard "DO" StatementSeq 
+        {"|" Guard "DO" StatementSeq} 
+        ["ELSE" StatementSeq] 
+        "END"
+      | "EXIT" 
+      | "RETURN" [Expr]
+    ]
+  .
+
+Case
+  = [CaseLabels {"," CaseLabels} ":" StatementSeq]. 
+
+CaseLabels
+  = ConstExpr [".." ConstExpr].
+
+Guard
+  = Qualident ":" Qualident.
+
+ConstExpr
+  = Expr.
+
+Expr
+  = SimpleExpr [Relation SimpleExpr].
+
+SimpleExpr
+  = ["+" | "-"] Term {AddOp Term}. 
+
+Term
+  = Factor {MulOp Factor}.
+Factor
+  = Designator ["(" [ExprList] ")"]
+  | number 
+  | character 
+  | string 
+  | "NIL"
+  | Set
+  | "(" Expr ")"
+  | "~" Factor
+  .
+
+Set
+  = "{" [Element {"," Element}] "}". 
+
+Element
+  = Expr [".." Expr].
+
+Relation
+  = "=" | "#" | "<" | "<=" | ">" | ">=" | "IN" | "IS".
+
+AddOp
+  = "+" | "-" | "OR".
+
+MulOp
+  = "*" | "/" | "DIV" | "MOD" | "&". 
+
+Designator
+  = Qualident { IF(isDesignatorPart()) ("." ident | "[" ExprList "]" | "^" | "(" Qualident ")") }.
+
+ExprList
+  = Expr {"," Expr}.
+
+IdentList
+  = IdentDef {"," IdentDef}.
+
+Qualident
+  = [IF(isModule()) ident "."] ident.
+
+IdentDef
+  = ident ["*" | "-"].
+
+number
+  = integer | real.
+
+END Oberon2.
