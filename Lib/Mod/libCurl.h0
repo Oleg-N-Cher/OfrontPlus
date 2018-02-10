@@ -1,0 +1,6 @@
+#ifndef Curl__h0
+#define Curl__h0
+
+__EXTERN int curl_easy_setopt(void *, int, ...);
+
+#endif

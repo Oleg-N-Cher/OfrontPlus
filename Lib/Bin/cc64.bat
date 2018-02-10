@@ -35,3 +35,9 @@ IF errorlevel 1 PAUSE
 %CC% SDL2.c SDL2mixer.c Out.c Graph.c Math.c Sound.c Turtle.c -w
 IF errorlevel 1 PAUSE
 %AR% SDL2.o SDL2mixer.o Out.o Graph.o Math.o Sound.o Turtle.o
+
+:: libCurl
+
+%CC% libCurl.c NetHttp.c
+IF errorlevel 1 PAUSE
+%AR% libCurl.o NetHttp.o

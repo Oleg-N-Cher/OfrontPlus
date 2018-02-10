@@ -23,4 +23,8 @@ IF errorlevel 1 PAUSE
 ofront+ -sC -48 SDL2.Mod SDL2mixer.Mod Out.Mod Graph.Mod Math.Mod Sound.Mod Turtle.Mod
 IF errorlevel 1 PAUSE
 
+:: libCurl
+ofront+ -sC -48 libCurl.Mod NetHttp.Mod
+IF errorlevel 1 PAUSE
+
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
