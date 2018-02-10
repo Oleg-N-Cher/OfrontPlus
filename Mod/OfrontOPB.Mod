@@ -1327,11 +1327,11 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class = Nconst) & (x^.typ^.form IN intSet) & (p^.typ^.form IN intSet) THEN
 					(* Convert integer constants in place allowing usage in CONST section *)
 					IF (p^.typ^.size = 4) & (x^.conval^.intval >= 80000000H) & (x^.conval^.intval <= 0FFFFFFFFH) THEN
-						x^.conval^.intval := x^.conval^.intval - 100000000H
+						DEC(x^.conval^.intval, 100000000H)
 					ELSIF (p^.typ^.size = 2) & (x^.conval^.intval >= 8000H) & (x^.conval^.intval <= 0FFFFH) THEN
-						x^.conval^.intval := x^.conval^.intval - 10000H
+						DEC(x^.conval^.intval, 10000H)
 					ELSIF (p^.typ^.size = 1) & (x^.conval^.intval >= 80H) & (x^.conval^.intval <= 0FFH) THEN
-						x^.conval^.intval := x^.conval^.intval - 100H
+						DEC(x^.conval^.intval, 100H)
 					END;
 					Convert(x, p^.typ)
 				ELSE
