@@ -573,9 +573,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
 			MaxIndex := 7FFFFFFFH (*2147483647*)
 		END;
-		;AddressSize := PointerSize; Alignment := AddressSize;
-		IF (LIntSize = 8) & (LIntAlign = 4) THEN Alignment := 4 END;
-		IF AddressSize = 2 THEN Alignment := 4 END
+		;AddressSize := PointerSize; Alignment := LIntAlign
 	END GetProperties;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
