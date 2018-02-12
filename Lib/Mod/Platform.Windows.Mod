@@ -280,21 +280,21 @@ PROCEDURE -opennew(n: ARRAY OF CHAR): FileHandle
 
 (* File APIs *)
 
-PROCEDURE OldRO*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(n: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(n);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
-PROCEDURE OldRW*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(n: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(n);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
-PROCEDURE NewFile*(VAR n: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(n: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(n);
@@ -484,7 +484,7 @@ END DeleteFile;
 PROCEDURE -setCurrentDirectory(n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
 PROCEDURE -getCurrentDirectory(VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
 
-PROCEDURE Chdir*(VAR n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE Chdir*(n: ARRAY [1] OF CHAR): ErrorCode;
   VAR r: BOOL;
 BEGIN
   r := setCurrentDirectory(n);
