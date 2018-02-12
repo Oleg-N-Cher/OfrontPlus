@@ -51,15 +51,11 @@ BEGIN
     (* Copy data from old buffer to the new buffer *)
     SYSTEM.MOVE(
       SYSTEM.ADR(self.data[0]), SYSTEM.ADR(newbuf[0]), self.datasize);
-    (*FOR n := 0 TO self.datasize - 1 DO newbuf^[n] := self.data^[n] END;*)
     self.data := newbuf;
   END;
   (* Copy the received data to the buffer *)
-  FOR n := 0 TO cur_size - 1 DO
-    SYSTEM.GET(ptr + n, self.data[self.datasize + n]);
-  END;
-  INC(self.datasize, cur_size);
-  self.data[self.datasize] := 0X;
+  SYSTEM.MOVE(ptr, SYSTEM.ADR(self.data[self.datasize]), cur_size);
+  INC(self.datasize, cur_size); self.data[self.datasize] := 0X;
   RETURN cur_size
 END write_callback;
 
