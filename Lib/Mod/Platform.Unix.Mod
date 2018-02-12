@@ -278,21 +278,21 @@ PROCEDURE -opennew(n: ARRAY OF CHAR): INTEGER "open((char*)n, O_CREAT | O_TRUNC 
 
 (* File APIs *)
 
-PROCEDURE OldRO*(VAR name: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(name: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(name);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRO;
 
-PROCEDURE OldRW*(VAR name: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(name: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(name);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
 END OldRW;
 
-PROCEDURE NewFile*(VAR name: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(name: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(name);
@@ -432,7 +432,7 @@ END DeleteFile;
 PROCEDURE -chdir(n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
 PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
-PROCEDURE Chdir*(VAR n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE Chdir*(n: ARRAY [1] OF CHAR): ErrorCode;
   VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
