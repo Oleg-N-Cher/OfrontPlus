@@ -87,11 +87,11 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE qualident(VAR id: OPT.Object);
 		VAR obj: OPT.Object; lev: BYTE;
 	BEGIN (*sym = ident*)
-		OPT.Find(obj); OPS.Get(sym);
+		OPT.Find(OPS.name, obj); OPS.Get(sym);
 		IF (sym = period) & (obj # NIL) & (obj^.mode = Mod) THEN
 			OPS.Get(sym);
 			IF sym = ident THEN
-				OPT.FindImport(obj, obj); OPS.Get(sym)
+				OPT.FindImport(OPS.name, obj, obj); OPS.Get(sym)
 			ELSE err(ident); obj := NIL
 			END
 		END ;
@@ -227,12 +227,12 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		VAR id: OPT.Object;
 	BEGIN typ := OPT.NewStr(Pointer, Basic); CheckSysFlag(typ^.sysflag, 0);
 		CheckSym(to);
-		IF sym = ident THEN OPT.Find(id);
+		IF sym = ident THEN OPT.Find(OPS.name, id);
 			IF id = NIL THEN
 				IF nofFwdPtr < LEN(FwdPtr) THEN FwdPtr[nofFwdPtr] := typ; INC(nofFwdPtr)
 				ELSE err(224)
 				END ;
-				typ^.link := OPT.NewObj(); COPY(OPS.name, typ^.link^.name);
+				typ^.link := OPT.NewObj(); typ^.link^.name := OPT.NewName(OPS.name);
 				typ^.BaseTyp := OPT.undftyp; OPS.Get(sym) (*forward ref*)
 			ELSE qualident(id);
 				IF id^.mode = Typ THEN
@@ -487,7 +487,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			| longreal: x := OPB.NewRealConst(OPS.lrlval, OPT.lrltyp)
 			END ;
 			OPS.Get(sym)
-		ELSIF sym = string THEN
+		ELSIF sym = string THEN IF OPS.rawstr THEN err(3) END;
 			x := OPB.NewString(OPS.str, SHORT(OPS.intval)); OPS.Get(sym)
 		ELSIF sym = nil THEN
 			x := OPB.Nil(); OPS.Get(sym)
@@ -550,7 +550,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	BEGIN typ := OPT.undftyp; rec := NIL;
 		IF sym = var THEN OPS.Get(sym); mode := VarPar ELSE mode := Var END ;
 		name := OPS.name; CheckSym(ident); CheckSym(colon);
-		IF sym = ident THEN OPT.Find(obj); OPS.Get(sym);
+		IF sym = ident THEN OPT.Find(OPS.name, obj); OPS.Get(sym);
 			IF obj = NIL THEN err(0)
 			ELSIF obj^.mode # Typ THEN err(72)
 			ELSE typ := obj^.typ; rec := typ;
@@ -581,26 +581,33 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			forward: BOOLEAN;
 
 		PROCEDURE GetCode;
-			VAR ext: OPT.ConstExt; n: SHORTINT; c: LONGINT;
+			VAR ext: OPT.ConstExt; i, n: INTEGER; c: LONGINT; s: ARRAY 256 OF SHORTCHAR;
 		BEGIN
-			ext := OPT.NewExt(); proc^.conval^.ext := ext; n := 0;
+			n := 0;
 			IF sym = string THEN
-				WHILE OPS.str[n] # 0X DO ext[n+1] := OPS.str[n]; INC(n) END ;
-				ext^[0] := CHR(n); OPS.Get(sym)
+				IF OPS.intval # 1 THEN
+					NEW(ext, OPS.intval - 1);
+					WHILE OPS.str[n] # 0X DO ext[n] := OPS.str[n]; INC(n) END ;
+				END ;
+				OPS.Get(sym)
 			ELSE
 				LOOP
-					IF sym = number THEN c := OPS.intval; INC(n);
-						IF (c < 0) OR (c > 255) OR (n = OPT.MaxConstLen) THEN
-							err(64); c := 1; n := 1
+					IF sym = number THEN c := OPS.intval;
+						IF (c < 0) OR (c > 255) OR (n = 256) THEN
+							err(63); c := 1; n := 0
 						END ;
-						OPS.Get(sym); ext^[n] := CHR(c)
+						OPS.Get(sym); s[n] := SHORT(CHR(c))
 					END ;
+					INC(n);
 					IF sym = comma THEN OPS.Get(sym)
 					ELSIF sym = number THEN err(comma)
-					ELSE ext^[0] := CHR(n); EXIT
+					ELSE EXIT
 					END
-				END
+				END;
+				NEW(ext, n); i := 0;
+				WHILE i < n DO ext[i] := s[i]; INC(i) END;
 			END ;
+			proc^.conval^.ext := ext;
 			INCL(proc^.conval^.setval, hasBody)
 		END GetCode;
 
@@ -628,7 +635,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			OPB.Enter(procdec, statseq, proc); x := procdec;
 			x^.conval := OPT.NewConst(); x^.conval^.intval := c;
 			IF sym = ident THEN
-				IF OPS.name # proc^.name THEN err(4) END ;
+				IF OPS.name # proc^.name^ THEN err(4) END ;
 				OPS.Get(sym)
 			ELSE err(ident)
 			END
@@ -689,7 +696,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			OPS.Get(sym)
 		END ;
 		IF (sym = lparen) & (OPM.Language # "1") & (OPM.Language # "7") THEN TProcDecl
-		ELSIF sym = ident THEN OPT.Find(fwd);
+		ELSIF sym = ident THEN OPT.Find(OPS.name, fwd);
 			name := OPS.name; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
 			IF (fwd # NIL) & ((fwd^.mnolev # level) OR (fwd^.mode = SProc)) THEN fwd := NIL END ;
@@ -847,7 +854,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
 					CheckSym(to); Expression(y); pos := OPM.errpos;
 					IF y^.class # Nconst THEN
-						name := "@@"; OPT.Insert(name, t); t^.name := "@for";	(* avoid err 1 *)
+						name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
 						t^.mode := Var; t^.typ := x^.left^.typ;
 						obj := OPT.topScope^.scope;
 						IF obj = NIL THEN OPT.topScope^.scope := t
@@ -967,7 +974,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					IF obj^.typ^.comp IN {Record, Array, DynArr} THEN
 						i := 0;
 						WHILE i < nofFwdPtr DO typ := FwdPtr[i]; INC(i);
-							IF typ^.link^.name = obj^.name THEN typ^.BaseTyp := obj^.typ; typ^.link^.name := "" END
+							IF typ^.link^.name^ = obj^.name^ THEN typ^.BaseTyp := obj^.typ; typ^.link^.name := OPT.null END
 						END
 					END ;
 					CheckSym(semicolon)
@@ -1001,7 +1008,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		END ;
 		i := 0;
 		WHILE i < nofFwdPtr DO
-			IF FwdPtr[i]^.link^.name # "" THEN err(128) END ;
+			IF FwdPtr[i]^.link^.name # OPT.null THEN err(128) END ;
 			FwdPtr[i] := NIL;	(* garbage collection *)
 			INC(i)
 		END ;

@@ -3,22 +3,21 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	IMPORT OPM := OfrontOPM;
 	
 	CONST
-		MaxStrLen* = 256;
 		MaxIdLen = 40;
 	
 	TYPE
 		Name* = ARRAY MaxIdLen OF CHAR;
-		String* = ARRAY MaxStrLen OF CHAR;
+		String* = POINTER TO ARRAY OF CHAR;
 
-	(* name, str, numtyp, intval, realval, lrlval are implicit results of Get *)
+	(* name, str/rawstr, numtyp, intval, realval, lrlval are implicit results of Get *)
 
 	VAR
 		name*: Name;
-		str*: String;
-		numtyp*: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
-		intval*: LONGINT;	(* integer value or string length (incl. 0X) *)
-		realval*: REAL;
-		lrlval*: LONGREAL;
+		str-: String; rawstr-: BOOLEAN;	(* illegal character in string *)
+		numtyp-: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
+		intval-: LONGINT;	(* integer value or string length (incl. 0X) *)
+		realval-: REAL;
+		lrlval-: LONGREAL;
 
 	(*symbols:
 	    |  0          1          2          3          4
@@ -65,19 +64,29 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END err;
 	
 	PROCEDURE Str(VAR sym: BYTE);
-		VAR i: SHORTINT; och: CHAR;
-	BEGIN i := 0; och := ch;
+		VAR i: INTEGER; och: CHAR;
+			s: ARRAY 256 OF CHAR; t: POINTER TO ARRAY OF CHAR;
+	BEGIN i := 0; och := ch; rawstr := FALSE;
 		LOOP OPM.Get(ch);
 			IF ch = och THEN EXIT END ;
-			IF ch < " " THEN err(3); EXIT END ;
-			IF i = MaxStrLen-1 THEN err(241); EXIT END ;
-			str[i] := ch; INC(i)
+			IF (ch = 9X) OR (ch = 0DX) THEN rawstr := TRUE
+			ELSIF (ch < " ") THEN err(3); EXIT
+			END;
+			IF i < LEN(s) - 1 THEN s[i] := ch
+			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(str, 2 * LEN(s)); COPY(s, str^); str[i] := ch
+			ELSIF i < LEN(str^) - 1 THEN str[i] := ch
+			ELSE t := str; t[i] := 0X; NEW(str, 2 * LEN(t^)); COPY(t^, str^); str[i] := ch
+			END;
+			INC(i)
 		END ;
-		OPM.Get(ch); str[i] := 0X; intval := i + 1;
-		IF intval = 2 THEN
-			sym := number; numtyp := 1; intval := ORD(str[0])
-		ELSE sym := string
-		END
+		IF i = 1 THEN sym := number; numtyp := 1; intval := ORD(s[0])
+		ELSE
+			sym := string; numtyp := 0; intval := i + 1; NEW(str, intval);
+			IF i < LEN(s) THEN s[i] := 0X; COPY(s, str^);
+			ELSE str[i] := 0X
+			END
+		END;
+		OPM.Get(ch)
 	END Str;
 
 	PROCEDURE Identifier(VAR sym: BYTE);

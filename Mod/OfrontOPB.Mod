@@ -5,6 +5,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	2015-10-07 jt, support for SYSTEM.ADR("x"), i.e. applied to char constant, added in MOp
 	2017-03-16 davebrown, allow usage of SYSTEM.VAL in CONST section to explicitly define types of integer constants
 	2017-08-16 jt, second operand of INC/DEC may be any integer type not larger than first operand
+	2018-02-14 olegncher, issue #44: unlimited length of strings (as in BB)
 *)
 
 	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
@@ -182,19 +183,19 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		RETURN x
 	END NewRealConst;
 
-	PROCEDURE NewString*(VAR str: OPS.String; len: INTEGER): OPT.Node;
+	PROCEDURE NewString*(str: OPS.String; len: INTEGER): OPT.Node;
 		VAR x: OPT.Node;
 	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst(); x^.typ := OPT.stringtyp;
 		x^.conval^.intval := OPM.ConstNotAlloc; x^.conval^.intval2 := len;
-		x^.conval^.ext := OPT.NewExt(); x^.conval^.ext^ := str;
+		x^.conval^.ext := str;
 		RETURN x
 	END NewString;
 	
 	PROCEDURE CharToString(n: OPT.Node);
 		VAR ch: CHAR;
 	BEGIN
-		n^.typ := OPT.stringtyp; ch := CHR(n^.conval^.intval); n^.conval^.ext := OPT.NewExt();
+		n^.typ := OPT.stringtyp; ch := CHR(n^.conval^.intval); NEW(n^.conval^.ext, 2);
 		IF ch = 0X THEN n^.conval^.intval2 := 1 ELSE n^.conval^.intval2 := 2; n^.conval^.ext[1] := 0X END ;
 		n^.conval^.ext[0] := ch; n^.conval^.intval := OPM.ConstNotAlloc; n^.obj := NIL
 	END CharToString;
@@ -218,7 +219,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		ELSIF typ^.form = Pointer THEN
 			IF typ = OPT.sysptrtyp THEN err(57) END ;
 			btyp := typ^.BaseTyp; strobj := typ^.strobj; bstrobj := btyp^.strobj;
-			IF (strobj # NIL) & (strobj^.name # "") & (bstrobj # NIL) & (bstrobj^.name # "") THEN
+			IF (strobj # NIL) & (strobj^.name # OPT.null) & (bstrobj # NIL) & (bstrobj^.name # OPT.null) THEN
 				btyp^.pbused := TRUE
 			END ;
 			BindNodes(Nderef, btyp, x, NIL)
@@ -453,7 +454,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(115)
 					END
 				END ;
-				IF (fp^.mode # ap^.mode) OR checkNames & (fp^.name # ap^.name) THEN err(115) END ;
+				IF (fp^.mode # ap^.mode) OR checkNames & (fp^.name^ # ap^.name^) THEN err(115) END ;
 				ap := ap^.link
 			ELSE err(116)
 			END ;
@@ -954,7 +955,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		END ;
 		x^.typ := OPT.settyp
 	END SetElem;
-	
+
 	PROCEDURE CheckAssign(x: OPT.Struct; ynode: OPT.Node);	(* x := y *)
 		VAR f, g: SHORTINT; y, p, q: OPT.Struct;
 	BEGIN
