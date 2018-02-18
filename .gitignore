@@ -1,4 +1,5 @@
 Arch/
+Code/
 Lib/Obj/*.c
 Lib/Obj/*.o
 Lib/Obj/*.sym
@@ -40,6 +41,8 @@ Samples/*.c
 Samples/*.exe
 Samples64/*.c
 Samples64/*.exe
+Sym/
+Sym64/
 ToDo/
 Work/*.c
 Work/*.exe
