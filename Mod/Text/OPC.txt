@@ -159,8 +159,8 @@ starsLevel: INTEGER;
 	BEGIN
 		mode := obj^.mode; level := obj^.mnolev;
 		IF (mode IN {Var, Typ, LProc}) & (level > 0) OR (mode IN {Fld, VarPar}) THEN
-			OPM.WriteStringVar(obj^.name);
-			h := PerfectHash(obj^.name);
+			OPM.WriteStringVar(obj^.name^);
+			h := PerfectHash(obj^.name^);
 			IF hashtab[h] >= 0 THEN
 				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
 			END
@@ -168,7 +168,7 @@ starsLevel: INTEGER;
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
 				IF mode = TProc THEN Ident(obj^.link^.typ^.strobj)
 				ELSIF level < 0 THEN (* use unaliased module name *)
-					OPM.WriteStringVar(OPT.GlbMod[-level].name);
+					OPM.WriteStringVar(OPT.GlbMod[-level].name^);
 					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END ;
 				ELSE OPM.WriteString(OPM.modName)
 				END ;
@@ -176,7 +176,7 @@ starsLevel: INTEGER;
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END ;
-			OPM.WriteStringVar(obj^.name)
+			OPM.WriteStringVar(obj^.name^)
 		END
 	END Ident;
 
@@ -398,7 +398,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE par # NIL DO
-			IF macro THEN OPM.WriteStringVar(par.name)
+			IF macro THEN OPM.WriteStringVar(par.name^)
 			ELSE
 				IF (par^.mode = Var) & (par^.typ^.form = Real) THEN OPM.Write("_") END ;
 				Ident(par)
@@ -407,8 +407,8 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				IF par^.typ^.comp = DynArr THEN
 					OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
 				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) THEN
-					OPM.WriteString(Comma); OPM.WriteStringVar(par.name); OPM.WriteString(TagExt)
-				END ;
+					OPM.WriteString(Comma); OPM.WriteStringVar(par.name^); OPM.WriteString(TagExt)
+				END
 			END;
 			par := par^.link;
 			IF par # NIL THEN OPM.WriteString(Comma) END
@@ -458,7 +458,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
 		base := typ^.BaseTyp; mno := obj^.adr DIV 10000H;
 		WHILE (base # NIL) & (mno < base^.n) DO typ := base; base := typ^.BaseTyp END ;
-		OPT.FindField(obj^.name, typ, obj);
+		OPT.FindField(obj^.name^, typ, obj);
 		RETURN obj
 	END BaseTProc;
 
@@ -565,11 +565,11 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					END ;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
-					OPM.WriteStringVar(obj^.name); DeclareParams(obj^.link, TRUE, FALSE);
+					OPM.WriteStringVar(obj^.name^); DeclareParams(obj^.link, TRUE, FALSE);
 					OPM.WriteLn; OPM.WriteString("__EXTERN ");
 					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
 					IF obj^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END; OPM.Write(Blank);
-					OPM.WriteStringVar(obj^.name); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
+					OPM.WriteStringVar(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 				END;
 				OPM.WriteLn
 			END ;
@@ -610,7 +610,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		Andent(typ); OPM.WriteString("__desc");
 		Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
 		OPM.Write('"');
-		IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name) END ;
+		IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name^) END ;
 		Str1('", #), {', typ^.size);
 		nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.PointerSize);
 		EndStat
@@ -826,7 +826,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
 						OPM.WriteString(", SYSTEM_ADRINT *");
 						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
-					END ;
+					END
 				END;
 				IF (obj^.link = NIL) OR (obj^.link.mode = TProc) THEN EXIT END ;
 				OPM.WriteString(", ");
@@ -974,7 +974,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF (obj^.mode = XProc) & (obj^.history # removed) THEN
 				IF (obj^.vis # 0) & (obj^.link = NIL) & (obj^.typ = OPT.notyp) THEN (*command*)
 					BegStat; OPM.WriteString('__REGCMD("');
-					OPM.WriteStringVar(obj.name); OPM.WriteString('", '); Ident(obj); OPM.Write(")"); EndStat
+					OPM.WriteStringVar(obj.name^); OPM.WriteString('", '); Ident(obj); OPM.Write(")"); EndStat
 				END
 			END ;
 			RegCmds(obj^.right)
@@ -987,7 +987,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			InitImports(obj^.left);
 			IF (obj^.mode = Mod) & (obj^.mnolev # 0) THEN
 				BegStat; OPM.WriteString("__IMPORT(");
-				OPM.WriteStringVar(OPT.GlbMod[-obj^.mnolev].name); OPM.WriteString("__init");
+				OPM.WriteStringVar(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init");
 				OPM.Write(CloseParen); EndStat
 			END ;
 			InitImports(obj^.right)
@@ -1073,15 +1073,15 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		VAR scope: OPT.Object;
 	BEGIN
 		scope := proc^.scope;
-		OPM.WriteString(Static); OPM.WriteString(Struct); OPM.WriteStringVar(scope^.name); OPM.Write(Blank);
+		OPM.WriteString(Static); OPM.WriteString(Struct); OPM.WriteStringVar(scope^.name^); OPM.Write(Blank);
 		BegBlk;
 		IdentList(proc^.link, 3); (* parameters *)
 		IdentList(scope^.scope, 3); (* local variables *)
 		BegStat; (* scope link field declaration *)
-		OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name);
+		OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name^);
 		OPM.Write(Blank); OPM.Write(Star); OPM.WriteString(LinkName); EndStat;
 		EndBlk0; OPM.Write(Blank);
-		OPM.Write(Star); OPM.WriteStringVar (scope^.name); OPM.WriteString(GlobalScope); EndStat; OPM.WriteLn;
+		OPM.Write(Star); OPM.WriteStringVar (scope^.name^); OPM.WriteString(GlobalScope); EndStat; OPM.WriteLn;
 		ProcPredefs (scope^.right, 0);
 		OPM.WriteLn;
 	END DefineInter;
@@ -1100,7 +1100,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		scope := proc^.scope;
 		IdentList(scope^.scope, 0);
 		IF ~scope^.leaf THEN (* declare intermediate procedure scope record variable*)
-			BegStat; OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name);
+			BegStat; OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name^);
 			OPM.Write(Blank); OPM.WriteString(LocalScope); EndStat
 		END ;
 		IF NeedsRetval(proc) THEN BegStat; Ident(proc^.typ^.strobj); OPM.WriteString(" __retval"); EndStat END ;
@@ -1190,8 +1190,8 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			END;
 			(* now link new scope *)
 			BegStat; OPM.WriteString(LocalScope); OPM.Write(Dot); OPM.WriteString(LinkName);
-			OPM.WriteString(Becomes); OPM.WriteStringVar(scope^.name); OPM.WriteString(GlobalScope); EndStat;
-			BegStat; OPM.WriteStringVar(scope^.name); OPM.WriteString(GlobalScope); OPM.WriteString(Becomes);
+			OPM.WriteString(Becomes); OPM.WriteStringVar(scope^.name^); OPM.WriteString(GlobalScope); EndStat;
+			BegStat; OPM.WriteStringVar(scope^.name^); OPM.WriteString(GlobalScope); OPM.WriteString(Becomes);
 			OPM.Write("&"); OPM.WriteString(LocalScope); EndStat
 		END
 	END EnterProc;
@@ -1206,7 +1206,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF ~proc^.scope^.leaf THEN
 				(* link scope pointer of nested proc back to previous scope *)
 				IF indent THEN BegStat ELSE indent := TRUE END ;
-				OPM.WriteStringVar(proc^.scope^.name); OPM.WriteString(GlobalScope);
+				OPM.WriteStringVar(proc^.scope^.name^); OPM.WriteString(GlobalScope);
 				OPM.WriteString(Becomes); OPM.WriteString(LocalScope); OPM.Write(Dot); OPM.WriteString(LinkName);
 				EndStat
 			END;
@@ -1241,7 +1241,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		ELSIF (level # OPM.level) & (level > 0) THEN (* intermediate var *)
 			comp := obj^.typ^.comp;
 			IF (obj^.mode # VarPar) & (comp # DynArr) THEN OPM.Write(Star); END;
-			OPM.WriteStringVar(obj^.scope^.name); OPM.WriteString(GlobalScope);
+			OPM.WriteStringVar(obj^.scope^.name^); OPM.WriteString(GlobalScope);
 			OPM.WriteString("->"); Ident(obj)
 		ELSE
 			Ident(obj)
@@ -1254,7 +1254,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		ASSERT(ap.typ.comp = Record);
 		IF ap.mode = VarPar THEN
 			IF ap.mnolev # OPM.level THEN	(*intermediate level var-par record; possible WITH-guarded*)
-				OPM.WriteStringVar(ap^.scope^.name); OPM.WriteString("_s->"); Ident(ap)
+				OPM.WriteStringVar(ap^.scope^.name^); OPM.WriteString("_s->"); Ident(ap)
 			ELSE (*local var-par record*)
 				Ident(ap)
 			END ;

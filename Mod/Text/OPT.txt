@@ -224,13 +224,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		i := FirstRef; WHILE i < maxStruct DO impCtxt.ref[i] := NIL; impCtxt.old[i] := NIL; INC(i) END
 	END Close;
 
-	PROCEDURE FindImport*(IN name: OPS.Name; mod: Object; VAR res: Object);
+	PROCEDURE FindImport*(mod: Object; VAR res: Object);
 		VAR obj: Object;
 	BEGIN obj := mod^.scope;
 		LOOP
 			IF obj = NIL THEN EXIT END ;
-			IF name < obj^.name^ THEN obj := obj^.left
-			ELSIF name > obj^.name^ THEN obj := obj^.right
+			IF OPS.name < obj^.name^ THEN obj := obj^.left
+			ELSIF OPS.name > obj^.name^ THEN obj := obj^.right
 			ELSE (*found*)
 				IF (obj^.mode = Typ) & (obj^.vis = internal) THEN obj := NIL
 				ELSE obj^.used := TRUE
@@ -504,7 +504,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END InsertImport;
 
-	PROCEDURE InName(VAR name: OPS.String);
+	PROCEDURE InName(OUT name: OPS.String);
 		VAR i: SHORTINT; ch: SHORTCHAR; n: OPS.Name;
 	BEGIN i := 0;
 		REPEAT
