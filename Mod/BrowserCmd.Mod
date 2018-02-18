@@ -52,7 +52,7 @@
 			IF ~first THEN Ws("; ") ELSE first := FALSE END ;
 			IF option = "x" THEN Wi(par^.adr); Wch(" ") END ;
 			IF par^.mode = VarPar THEN Ws("VAR ") END ;
-			Ws(par^.name); Ws(": "); Wtype(par^.typ);
+			Ws(par^.name^); Ws(": "); Wtype(par^.typ);
 			par := par^.link
 		END ;
 		IF paren THEN Wch(")") END ;
@@ -67,7 +67,7 @@
 			IF obj^.mode IN mode THEN
 				CASE obj^.mode OF
 				| Con:
-						Indent(2); Ws(obj^.name); Ws(" = ");
+						Indent(2); Ws(obj^.name^); Ws(" = ");
 						CASE obj^.typ^.form OF
 						| Bool:
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
@@ -112,12 +112,12 @@
 							IF obj^.typ^.strobj = obj THEN	(* canonical name *)
 								Wtype(obj^.typ); Ws(" = "); Wstruct(obj^.typ)
 							ELSE	(* alias *)
-								Ws(obj^.name); Ws(" = "); Wtype(obj^.typ)
+								Ws(obj^.name^); Ws(" = "); Wtype(obj^.typ)
 							END ;
 							Wch(";"); Wln
 						END
 				| Var:
-						Indent(2); Ws(obj^.name);
+						Indent(2); Ws(obj^.name^);
 						IF obj^.vis = externalR THEN Ws("-: ") ELSE Ws(": ") END ;
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
@@ -125,7 +125,7 @@
 						IF obj^.mode = IProc THEN Wch("+")
 						ELSIF obj^.mode = CProc THEN Wch("-")
 						END ;
-						Ws(obj^.name);
+						Ws(obj^.name^);
 						Wsign(obj^.typ, obj^.link);
 						IF obj^.mode = CProc THEN
 							ext := obj^.conval^.ext; m := ORD(ext^[0]); i := 1; Ws('  "');
@@ -140,17 +140,16 @@
 	END Objects;
 
 	PROCEDURE Wmthd(obj: OPT.Object);
-		VAR
 	BEGIN
 		IF obj # NIL THEN
 			Wmthd(obj^.left);
-			IF (obj^.mode = TProc) & ((obj^.name # OPM.HdTProcName) OR (option = "x")) THEN
+			IF (obj^.mode = TProc) & ((obj^.name^ # OPM.HdTProcName) OR (option = "x")) THEN
 				Indent(3); Ws("PROCEDURE (");
 				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN Ws("VAR ") END ;
-					Ws(obj^.link^.name); Ws(": "); Wtype(obj^.link^.typ)
+					Ws(obj^.link^.name^); Ws(": "); Wtype(obj^.link^.typ)
 				END ;
-				Ws(") "); Ws(obj^.name);
+				Ws(") "); Ws(obj^.name^);
 				Wsign(obj^.typ, obj^.link^.link);
 				Wch(";");
 				IF option = "x" THEN Indent(1);
@@ -193,7 +192,7 @@
 						WHILE (fld # NIL) & (fld^.mode = Fld) DO
 							IF (option = "x") OR (fld^.name[0] # "@") THEN Indent(3);
 								IF option = "x" THEN Wi(fld^.adr); Wch(" ") END ;
-								Ws(fld^.name);
+								Ws(fld^.name^);
 								IF fld^.vis = externalR THEN Wch("-") END ;
 								Ws(": "); Wtype(fld^.typ); Wch(";");
 								Wln
@@ -215,11 +214,11 @@
 	BEGIN
 		obj := typ^.strobj;
 		IF obj^.name # OPT.null THEN
-			IF typ^.mno # 0 THEN Ws(OPT.GlbMod[typ^.mno].name); Wch(".")
+			IF typ^.mno # 0 THEN Ws(OPT.GlbMod[typ^.mno].name^); Wch(".")
 			ELSIF typ = OPT.sysptrtyp THEN Ws("SYSTEM.")
 			ELSIF obj^.vis = internal THEN Wch("#")
 			END ;
-			Ws(obj^.name)
+			Ws(obj^.name^)
 		ELSE
 			IF (option = "x") & (typ^.ref > OPM.MaxStruct) THEN Wch("#"); Wi(typ^.ref - OPM.MaxStruct); Wch(" ") END ;
 			Wstruct(typ)
@@ -251,7 +250,7 @@
 			Header("IMPORT"); i := 1; first := TRUE;
 			WHILE i < OPT.nofGmod DO
 				IF first THEN first := FALSE; Indent(2) ELSE Ws(", ") END ;
-				Ws(OPT.GlbMod[i].name);
+				Ws(OPT.GlbMod[i].name^);
 				INC(i)
 			END ;
 			IF ~first THEN Wch(";"); Wln END ;

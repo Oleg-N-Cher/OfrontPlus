@@ -156,8 +156,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		mode := obj^.mode; level := obj^.mnolev;
 		IF (mode IN {Var, Typ, LProc}) & (level > 0) OR (mode IN {Fld, VarPar}) THEN
-			OPM.WriteStringVar(obj^.name);
-			h := PerfectHash(obj^.name);
+			OPM.WriteStringVar(obj^.name^);
+			h := PerfectHash(obj^.name^);
 			IF hashtab[h] >= 0 THEN
 				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
 			END
@@ -165,7 +165,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
 				IF mode = TProc THEN Ident(obj^.link^.typ^.strobj)
 				ELSIF level < 0 THEN (* use unaliased module name *)
-					OPM.WriteStringVar(OPT.GlbMod[-level].name);
+					OPM.WriteStringVar(OPT.GlbMod[-level].name^);
 					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END ;
 				ELSE OPM.WriteString(OPM.modName)
 				END ;
@@ -173,7 +173,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END ;
-			OPM.WriteStringVar(obj^.name)
+			OPM.WriteStringVar(obj^.name^)
 		END
 	END Ident;
 
@@ -201,7 +201,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END Stars;
 
-	PROCEDURE ^AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
+	PROCEDURE ^AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
 
 	PROCEDURE DeclareObj(dcl: OPT.Object; scopeDef: BOOLEAN);
 		VAR
@@ -227,7 +227,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
 				IF openClause THEN OPM.Write(CloseParen); openClause := FALSE END ;
 				IF form = ProcTyp THEN
-					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE)
+					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE, TRUE)
 					ELSE OPM.WriteString(")()")
 					END ;
 					EXIT
@@ -387,20 +387,22 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END LenList;
 
-	PROCEDURE DeclareParams(par: OPT.Object; macro: BOOLEAN);
+	PROCEDURE DeclareParams(par: OPT.Object; macro, showOberonParams: BOOLEAN);
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE par # NIL DO
-			IF macro THEN OPM.WriteStringVar(par.name)
+			IF macro THEN OPM.WriteStringVar(par.name^)
 			ELSE
 				IF (par^.mode = Var) & (par^.typ^.form = Real) THEN OPM.Write("_") END ;
 				Ident(par)
 			END ;
-			IF par^.typ^.comp = DynArr THEN
-				OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
-			ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) THEN
-				OPM.WriteString(Comma); OPM.WriteStringVar(par.name); OPM.WriteString(TagExt)
-			END ;
+			IF showOberonParams THEN
+				IF par^.typ^.comp = DynArr THEN
+					OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
+				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) THEN
+					OPM.WriteString(Comma); OPM.WriteStringVar(par.name^); OPM.WriteString(TagExt)
+				END
+			END;
 			par := par^.link;
 			IF par # NIL THEN OPM.WriteString(Comma) END
 		END ;
@@ -449,7 +451,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
 		base := typ^.BaseTyp; mno := obj^.adr DIV 10000H;
 		WHILE (base # NIL) & (mno < base^.n) DO typ := base; base := typ^.BaseTyp END ;
-		OPT.FindField(obj^.name, typ, obj);
+		OPT.FindField(obj^.name^, typ, obj);
 		RETURN obj
 	END BaseTProc;
 
@@ -460,7 +462,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF (obj^.mode = TProc) & (obj = BaseTProc(obj)) & ((OPM.currFile # OPM.HeaderFile) OR (obj^.vis = external)) THEN
 				OPM.WriteString("#define __");
 				Ident(obj);
-				DeclareParams(obj^.link, TRUE);
+				DeclareParams(obj^.link, TRUE, TRUE);
 				OPM.WriteString(" __SEND(");
 				IF obj^.link^.typ^.form = Pointer THEN
 					OPM.WriteString("__TYPEOF("); Ident(obj^.link); OPM.Write(")")
@@ -471,12 +473,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END ;
 				OPM.WriteString("(*)");
 				IF ansi THEN
-					AnsiParamList(obj^.link, FALSE);
+					AnsiParamList(obj^.link, FALSE, TRUE);
 				ELSE
 					OPM.WriteString("()");
 				END ;
 				OPM.WriteString(", ");
-				DeclareParams(obj^.link, TRUE);
+				DeclareParams(obj^.link, TRUE, TRUE);
 				OPM.Write(")"); OPM.WriteLn
 			END ;
 			DefineTProcMacros(obj^.right, empty)
@@ -556,11 +558,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					END ;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
-					OPM.WriteStringVar(obj^.name); DeclareParams(obj^.link, TRUE, FALSE);
+					OPM.WriteStringVar(obj^.name^); DeclareParams(obj^.link, TRUE, FALSE);
 					OPM.WriteLn; OPM.WriteString("__EXTERN ");
 					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
-					IF obj^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END; OPM.Write(Blank);
-					OPM.WriteStringVar(obj^.name); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
+					(*IF obj^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END; OPM.Write(Blank);*)
+					OPM.WriteStringVar(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 				END;
 				OPM.WriteLn
 			END ;
@@ -601,7 +603,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		Andent(typ); OPM.WriteString("__desc");
 		Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
 		OPM.Write('"');
-		IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name) END ;
+		IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name^) END ;
 		Str1('", #), {', typ^.size);
 		nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.PointerSize);
 		EndStat
@@ -747,7 +749,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF ~first THEN EndStat END
 	END IdentList;
 
-	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
+	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
 		VAR name: ARRAY 40 OF CHAR;
 	BEGIN
 		OPM.Write("(");
@@ -760,15 +762,17 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSE
 					COPY(obj^.name^, name); obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := OPT.NewName(name)
 				END ;
-				IF obj^.typ^.comp = DynArr THEN
-					IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
-					ELSE OPM.WriteString(", LONGINT ")
-					END;
-					LenList(obj, TRUE, showParamNames)
-				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
-					OPM.WriteString(", SYSTEM_ADRINT *");
-					IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
-				END ;
+				IF showOberonParams THEN
+					IF obj^.typ^.comp = DynArr THEN
+						IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+						ELSE OPM.WriteString(", LONGINT ")
+						END;
+						LenList(obj, TRUE, showParamNames)
+					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
+						OPM.WriteString(", SYSTEM_ADRINT *");
+						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
+					END
+				END;
 				IF (obj^.link = NIL) OR (obj^.link.mode = TProc) THEN EXIT END ;
 				OPM.WriteString(", ");
 				obj := obj^.link
@@ -782,11 +786,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF proc^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(proc^.typ^.strobj) END ;
 		OPM.Write(Blank); Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
-			AnsiParamList(proc^.link, TRUE);
+			AnsiParamList(proc^.link, TRUE, TRUE);
 			IF ~define THEN OPM.Write(";") END ;
 			OPM.WriteLn;
 		ELSIF define THEN
-			DeclareParams(proc^.link, FALSE);
+			DeclareParams(proc^.link, FALSE, TRUE);
 			OPM.WriteLn;
 			Indent(1); IdentList(proc^.link, 2(* map REAL to double *)); Indent(-1)
 		ELSE OPM.WriteString("();"); OPM.WriteLn
@@ -820,7 +824,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF obj # NIL THEN
 			IncludeImports(obj^.left, vis);
 			IF (obj^.mode = Mod) & (obj^.mnolev # 0) & (OPT.GlbMod[-obj^.mnolev].vis >= vis) THEN	(* @self and SYSTEM have mnolev = 0 *)
-				Include(OPT.GlbMod[-obj^.mnolev].name)	(* use unaliased module name *)
+				Include(OPT.GlbMod[-obj^.mnolev].name^)	(* use unaliased module name *)
 			END;
 			IncludeImports(obj^.right, vis);
 		END;
@@ -914,7 +918,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF (obj^.mode = XProc) & (obj^.history # removed) THEN
 				IF (obj^.vis # 0) & (obj^.link = NIL) & (obj^.typ = OPT.notyp) THEN (*command*)
 					BegStat; OPM.WriteString('__REGCMD("');
-					OPM.WriteStringVar(obj.name); OPM.WriteString('", '); Ident(obj); OPM.Write(")"); EndStat
+					OPM.WriteStringVar(obj.name^); OPM.WriteString('", '); Ident(obj); OPM.Write(")"); EndStat
 				END
 			END ;
 			RegCmds(obj^.right)
@@ -927,7 +931,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			InitImports(obj^.left);
 			IF (obj^.mode = Mod) & (obj^.mnolev # 0) THEN
 				BegStat; OPM.WriteString("__IMPORT(");
-				OPM.WriteStringVar(OPT.GlbMod[-obj^.mnolev].name); OPM.WriteString("__init");
+				OPM.WriteStringVar(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init");
 				OPM.Write(CloseParen); EndStat
 			END ;
 			InitImports(obj^.right)
@@ -1013,15 +1017,15 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR scope: OPT.Object;
 	BEGIN
 		scope := proc^.scope;
-		OPM.WriteString(Static); OPM.WriteString(Struct); OPM.WriteStringVar(scope^.name); OPM.Write(Blank);
+		OPM.WriteString(Static); OPM.WriteString(Struct); OPM.WriteStringVar(scope^.name^); OPM.Write(Blank);
 		BegBlk;
 		IdentList(proc^.link, 3); (* parameters *)
 		IdentList(scope^.scope, 3); (* local variables *)
 		BegStat; (* scope link field declaration *)
-		OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name);
+		OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name^);
 		OPM.Write(Blank); OPM.Write(Star); OPM.WriteString(LinkName); EndStat;
 		EndBlk0; OPM.Write(Blank);
-		OPM.Write(Star); OPM.WriteStringVar (scope^.name); OPM.WriteString(GlobalScope); EndStat; OPM.WriteLn;
+		OPM.Write(Star); OPM.WriteStringVar (scope^.name^); OPM.WriteString(GlobalScope); EndStat; OPM.WriteLn;
 		ProcPredefs (scope^.right, 0);
 		OPM.WriteLn;
 	END DefineInter;
@@ -1040,7 +1044,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		scope := proc^.scope;
 		IdentList(scope^.scope, 0);
 		IF ~scope^.leaf THEN (* declare intermediate procedure scope record variable*)
-			BegStat; OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name);
+			BegStat; OPM.WriteString(Struct); OPM.WriteStringVar (scope^.name^);
 			OPM.Write(Blank); OPM.WriteString(LocalScope); EndStat
 		END ;
 		IF NeedsRetval(proc) THEN BegStat; Ident(proc^.typ^.strobj); OPM.WriteString(" __retval"); EndStat END ;
@@ -1130,8 +1134,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			END;
 			(* now link new scope *)
 			BegStat; OPM.WriteString(LocalScope); OPM.Write(Dot); OPM.WriteString(LinkName);
-			OPM.WriteString(Becomes); OPM.WriteStringVar(scope^.name); OPM.WriteString(GlobalScope); EndStat;
-			BegStat; OPM.WriteStringVar(scope^.name); OPM.WriteString(GlobalScope); OPM.WriteString(Becomes);
+			OPM.WriteString(Becomes); OPM.WriteStringVar(scope^.name^); OPM.WriteString(GlobalScope); EndStat;
+			BegStat; OPM.WriteStringVar(scope^.name^); OPM.WriteString(GlobalScope); OPM.WriteString(Becomes);
 			OPM.Write("&"); OPM.WriteString(LocalScope); EndStat
 		END
 	END EnterProc;
@@ -1146,7 +1150,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF ~proc^.scope^.leaf THEN
 				(* link scope pointer of nested proc back to previous scope *)
 				IF indent THEN BegStat ELSE indent := TRUE END ;
-				OPM.WriteStringVar(proc^.scope^.name); OPM.WriteString(GlobalScope);
+				OPM.WriteStringVar(proc^.scope^.name^); OPM.WriteString(GlobalScope);
 				OPM.WriteString(Becomes); OPM.WriteString(LocalScope); OPM.Write(Dot); OPM.WriteString(LinkName);
 				EndStat
 			END;
@@ -1181,7 +1185,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		ELSIF (level # OPM.level) & (level > 0) THEN (* intermediate var *)
 			comp := obj^.typ^.comp;
 			IF (obj^.mode # VarPar) & (comp # DynArr) THEN OPM.Write(Star); END;
-			OPM.WriteStringVar(obj^.scope^.name); OPM.WriteString(GlobalScope);
+			OPM.WriteStringVar(obj^.scope^.name^); OPM.WriteString(GlobalScope);
 			OPM.WriteString("->"); Ident(obj)
 		ELSE
 			Ident(obj)
@@ -1194,7 +1198,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		ASSERT(ap.typ.comp = Record);
 		IF ap.mode = VarPar THEN
 			IF ap.mnolev # OPM.level THEN	(*intermediate level var-par record; possible WITH-guarded*)
-				OPM.WriteStringVar(ap^.scope^.name); OPM.WriteString("_s->"); Ident(ap)
+				OPM.WriteStringVar(ap^.scope^.name^); OPM.WriteString("_s->"); Ident(ap)
 			ELSE (*local var-par record*)
 				Ident(ap)
 			END ;

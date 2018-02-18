@@ -91,7 +91,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		IF (sym = period) & (obj # NIL) & (obj^.mode = Mod) THEN
 			OPS.Get(sym);
 			IF sym = ident THEN
-				OPT.FindImport(OPS.name, obj, obj); OPS.Get(sym)
+				OPT.FindImport(obj, obj); OPS.Get(sym)
 			ELSE err(ident); obj := NIL
 			END
 		END ;
@@ -364,7 +364,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 										IF (proc^.link = NIL) OR (proc^.link^.link # y^.obj) THEN err(75) END ;
 										typ := y^.obj^.typ;
 										IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-										OPT.FindField(x^.obj^.name, typ^.BaseTyp, proc);
+										OPT.FindField(x^.obj^.name^, typ^.BaseTyp, proc);
 										IF proc # NIL THEN x^.subcl := super ELSE err(74) END
 									ELSE err(75)
 									END
@@ -581,7 +581,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			forward: BOOLEAN;
 
 		PROCEDURE GetCode;
-			VAR ext: OPT.ConstExt; i, n: INTEGER; c: LONGINT; s: ARRAY 256 OF SHORTCHAR;
+			VAR ext: OPT.ConstExt; i, n: INTEGER; c: LONGINT; s: ARRAY 256 OF CHAR;
 		BEGIN
 			n := 0;
 			IF sym = string THEN
@@ -596,7 +596,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 						IF (c < 0) OR (c > 255) OR (n = 256) THEN
 							err(63); c := 1; n := 0
 						END ;
-						OPS.Get(sym); s[n] := SHORT(CHR(c))
+						OPS.Get(sym); s[n] := CHR(c)
 					END ;
 					INC(n);
 					IF sym = comma THEN OPS.Get(sym)
@@ -605,7 +605,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					END
 				END;
 				NEW(ext, n); i := 0;
-				WHILE i < n DO ext[i] := s[i]; INC(i) END;
+				WHILE i < n DO ext^[i] := s[i]; INC(i) END;
 			END ;
 			proc^.conval^.ext := ext;
 			INCL(proc^.conval^.setval, hasBody)
