@@ -171,7 +171,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		oldPos := OPM.errpos; OPM.errpos := obj^.scope^.adr;
 		typ := obj^.link^.typ;
 		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-		OPT.FindField(obj^.name, typ^.BaseTyp, redef);
+		OPT.FindField(obj^.name^, typ^.BaseTyp, redef);
 		IF redef # NIL THEN obj^.adr := 10000H*(redef^.adr DIV 10000H) (*mthno*);
 			IF ~(isRedef IN obj^.conval^.setval) THEN OPM.err(119) END
 		ELSE INC(obj^.adr, 10000H*typ^.n); INC(typ^.n)
@@ -197,7 +197,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		REPEAT n[k] := CHR((j MOD 10) + ORD("0")); j := j DIV 10; INC(k) UNTIL j = 0;
 		REPEAT DEC(k); res[i] := n[k]; INC(i) UNTIL k = 0;
 		res[i] := 0X;
-		IF LEN(s^) <= i THEN NEW(s, i+1) END; COPY(res^, s^)
+		IF LEN(s^) <= i THEN NEW(s, i+1) END; COPY(res, s^)
 	END Stamp;
 
 	PROCEDURE Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
@@ -476,7 +476,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					IF OPM.typchk IN OPM.opt THEN
 						IF typ^.comp = Record THEN OPM.WriteString(GuardRecFunc); 
 							IF obj^.mnolev # OPM.level THEN (*intermediate level var-par record*)
-								OPM.WriteStringVar(obj^.scope^.name); OPM.WriteString("__curr->"); OPC.Ident(obj)
+								OPM.WriteStringVar(obj^.scope^.name^); OPM.WriteString("__curr->"); OPC.Ident(obj)
 							ELSE (*local var-par record*)
 								OPC.Ident(obj)
 							END ;
@@ -582,7 +582,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		VAR obj: OPT.Object; typ: OPT.Struct;
 	BEGIN typ := n^.right^.typ;	(* receiver type *)
 		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-		OPT.FindField(n^.left^.obj^.name, typ^.BaseTyp, obj);
+		OPT.FindField(n^.left^.obj^.name^, typ^.BaseTyp, obj);
 		RETURN obj
 	END SuperProc;
 
@@ -792,7 +792,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				IF typ^.comp = Record THEN
 					(* introduce alias pointer for var records; T1 *name__ = rec; *)
 					OPC.BegStat; OPC.Ident(if^.left^.obj); OPM.WriteString(" *");
-					OPM.WriteString(obj.name); OPM.WriteString("__ = (void*)");
+					OPM.WriteString(obj.name^); OPM.WriteString("__ = (void*)");
 					obj^.adr := 0; (* for nested WITH with same variable; always take the original name *)
 					OPC.CompleteIdent(obj);
 					OPC.EndStat

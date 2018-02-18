@@ -65,12 +65,12 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	
 	PROCEDURE Str(VAR sym: BYTE);
 		VAR i: INTEGER; och: CHAR;
-			s: ARRAY 256 OF CHAR; t: POINTER TO ARRAY OF CHAR;
+			s: ARRAY 256 OF CHAR; t: String;
 	BEGIN i := 0; och := ch; rawstr := FALSE;
 		LOOP OPM.Get(ch);
 			IF ch = och THEN EXIT END ;
 			IF (ch = 9X) OR (ch = 0DX) THEN rawstr := TRUE
-			ELSIF (ch < " ") THEN err(3); EXIT
+			ELSIF ch < " " THEN err(3); EXIT
 			END;
 			IF i < LEN(s) - 1 THEN s[i] := ch
 			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(str, 2 * LEN(s)); COPY(s, str^); str[i] := ch

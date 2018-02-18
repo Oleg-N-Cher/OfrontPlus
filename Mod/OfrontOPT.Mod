@@ -3,20 +3,18 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 (*
 2002-08-20 jt: NewStr: txtpos remains 0 for structs read from symbol file
 2016-10-12 jt: issue #7: FPrintStr improved: constant added to btyp^.pbfp for avoiding a collision pattern
+2018-02-14 olegncher: issue #44: unlimited length of strings (as in BB)
 *)
 
 	IMPORT
 		OPS := OfrontOPS, OPM := OfrontOPM;
-
-	CONST
-		MaxConstLen* = OPS.MaxStrLen;
 
 	TYPE
 		Const* = POINTER TO ConstDesc;
 		Object* = POINTER TO ObjDesc;
 		Struct* = POINTER TO StrDesc;
 		Node* = POINTER TO NodeDesc;
-		ConstExt* = POINTER TO OPS.String;
+		ConstExt* = OPS.String;
 
 		ConstDesc* = RECORD
 			ext*: ConstExt;	(* string or code for code proc *)
@@ -28,7 +26,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 		ObjDesc* = RECORD
 			left*, right*, link*, scope*: Object;
-			name*: OPS.Name;
+			name*: OPS.String;	(* name = null OR name^ # "" *)
 			leaf*: BOOLEAN;
 			mode*, mnolev*: BYTE;	(* mnolev < 0 -> mno = -mnolev *)
 			vis*: BYTE;	(* internal, external, externalR *)
@@ -74,6 +72,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		GlbMod*: ARRAY maxImps OF Object;	(* ^.right = first object, ^.name = module import name (not alias) *)
 		SelfName*: OPS.Name;	(* name of module being compiled *)
 		SYSimported*: BOOLEAN;
+		null-: OPS.String;	(* "" *)
 		
 	CONST
 		(* object modes *)
@@ -147,7 +146,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	
 	PROCEDURE NewObj*(): Object;
 		VAR obj: Object;
-	BEGIN NEW(obj); RETURN obj
+	BEGIN NEW(obj); obj^.name := null; RETURN obj
 	END NewObj;
 	
 	PROCEDURE NewStr*(form, comp: BYTE): Struct;
@@ -161,11 +160,15 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR node: Node;
 	BEGIN NEW(node); node^.class := class; RETURN node
 	END NewNode;
-	
-	PROCEDURE NewExt*(): ConstExt;
-		VAR ext: ConstExt;
-	BEGIN NEW(ext); RETURN ext
-	END NewExt;
+
+	PROCEDURE NewName* ((*IN*) name: ARRAY OF CHAR): OPS.String;
+		VAR i: INTEGER; p: OPS.String;
+	BEGIN
+		i := 0; WHILE name[i] # 0X DO INC(i) END;
+		IF i > 0 THEN NEW(p, i + 1); COPY(name, p^); RETURN p
+		ELSE RETURN null
+		END
+	END NewName;
 
 	PROCEDURE OpenScope*(level: BYTE; owner: Object);
 		VAR head: Object;
@@ -179,11 +182,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN IF topScope # NIL THEN topScope := topScope^.left END
 	END CloseScope;
 
-	PROCEDURE Init*(VAR name: OPS.Name; opt: SET);
+	PROCEDURE Init*(VAR(*IN*) name: ARRAY OF CHAR; opt: SET);
 		CONST nsf = 4; fpc = 8; esf = 9;
 	BEGIN
 		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
-		SelfName := name; topScope^.name := name;
+		COPY(name, SelfName); topScope^.name := NewName(name);
 		GlbMod[0] := topScope; nofGmod := 1;
 		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE
 	END Init;
@@ -201,8 +204,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN obj := mod^.scope;
 		LOOP
 			IF obj = NIL THEN EXIT END ;
-			IF OPS.name < obj^.name THEN obj := obj^.left
-			ELSIF OPS.name > obj^.name THEN obj := obj^.right
+			IF OPS.name < obj^.name^ THEN obj := obj^.left
+			ELSIF OPS.name > obj^.name^ THEN obj := obj^.right
 			ELSE (*found*)
 				IF (obj^.mode = Typ) & (obj^.vis = internal) THEN obj := NIL
 				ELSE obj^.used := TRUE
@@ -213,14 +216,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := obj
 	END FindImport;
 
-	PROCEDURE Find*(VAR res: Object);
+	PROCEDURE Find*(VAR(*IN*) name: OPS.Name; VAR res: Object);
 		VAR obj, head: Object;
 	BEGIN head := topScope;
 		LOOP obj := head^.right;
 			LOOP
 				IF obj = NIL THEN EXIT END ;
-				IF OPS.name < obj^.name THEN obj := obj^.left
-				ELSIF OPS.name > obj^.name THEN obj := obj^.right
+				IF name < obj^.name^ THEN obj := obj^.left
+				ELSIF name > obj^.name^ THEN obj := obj^.right
 				ELSE (* found, obj^.used not set for local objects *) EXIT
 				END
 			END ;
@@ -231,13 +234,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := obj
 	END Find;
 
-	PROCEDURE FindField*(VAR name: OPS.Name; typ: Struct; VAR res: Object);
+	PROCEDURE FindField*(VAR(*IN*) name: ARRAY OF CHAR; typ: Struct; VAR res: Object);
 		VAR obj: Object;
 	BEGIN 
 		WHILE typ # NIL DO obj := typ^.link;
 			WHILE obj # NIL DO
-				IF name < obj^.name THEN obj := obj^.left
-				ELSIF name > obj^.name THEN obj := obj^.right
+				IF name < obj^.name^ THEN obj := obj^.left
+				ELSIF name > obj^.name^ THEN obj := obj^.right
 				ELSE (*found*) res := obj; RETURN
 				END
 			END ;
@@ -246,18 +249,18 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := NIL
 	END FindField;
 
-	PROCEDURE Insert*(VAR name: OPS.Name; VAR obj: Object);
+	PROCEDURE Insert*(VAR(*IN*) name: OPS.Name; VAR obj: Object);
 		VAR ob0, ob1: Object; left: BOOLEAN; mnolev: BYTE;
 	BEGIN ob0 := topScope; ob1 := ob0^.right; left := FALSE;
 		LOOP
 			IF ob1 # NIL THEN
-				IF name < ob1^.name THEN ob0 := ob1; ob1 := ob0^.left; left := TRUE
-				ELSIF name > ob1^.name THEN ob0 := ob1; ob1 := ob0^.right; left := FALSE
+				IF name < ob1^.name^ THEN ob0 := ob1; ob1 := ob0^.left; left := TRUE
+				ELSIF name > ob1^.name^ THEN ob0 := ob1; ob1 := ob0^.right; left := FALSE
 				ELSE (*double def*) err(1); ob0 := ob1; ob1 := ob0^.right
 				END
 			ELSE (*insert*) ob1 := NewObj(); ob1^.leaf := TRUE;
 				IF left THEN ob0^.left := ob1 ELSE ob0^.right := ob1 END ;
-				ob1^.left := NIL; ob1^.right := NIL; COPY(name, ob1^.name);
+				ob1^.left := NIL; ob1^.right := NIL; ob1^.name := NewName(name);
 				mnolev := topScope^.mnolev; ob1^.mnolev := mnolev;
 				EXIT
 			END
@@ -293,8 +296,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			typ^.idfpdone := TRUE;	(* may be recursive, temporary idfp is 0 in that case *)
 			idfp := 0; f := typ^.form; c := typ^.comp; OPM.FPrint(idfp, f); OPM.FPrint(idfp, c);
 			btyp := typ^.BaseTyp; strobj := typ^.strobj;
-			IF (strobj # NIL) & (strobj^.name # "") THEN
-				FPrintName(idfp, GlbMod[typ^.mno]^.name); FPrintName(idfp, strobj^.name)
+			IF (strobj # NIL) & (strobj^.name # null) THEN
+				FPrintName(idfp, GlbMod[typ^.mno]^.name^); FPrintName(idfp, strobj^.name^)
 			END ;
 			IF (f = Pointer) OR (c = Record) & (btyp # NIL) OR (c = DynArr) THEN
 				IdFPrint(btyp); OPM.FPrint(idfp, btyp^.idfp)
@@ -324,9 +327,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 						END
 					END
 				END
-			ELSIF OPM.ExpHdPtrFld & ((typ^.form = Pointer) OR (fld^.name = OPM.HdPtrName)) THEN
+			ELSIF OPM.ExpHdPtrFld & ((typ^.form = Pointer) OR (fld^.name^ = OPM.HdPtrName)) THEN
 				OPM.FPrint(pvfp, Pointer); OPM.FPrint(pvfp, adr); INC(nofhdfld)
-			ELSIF OPM.ExpHdProcFld & ((typ^.form = ProcTyp) OR (fld^.name = OPM.HdProcName)) THEN
+			ELSIF OPM.ExpHdProcFld & ((typ^.form = ProcTyp) OR (fld^.name^ = OPM.HdProcName)) THEN
 				OPM.FPrint(pvfp, ProcTyp); OPM.FPrint(pvfp, adr); INC(nofhdfld)
 			END
 		END FPrintHdFld;
@@ -335,7 +338,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		BEGIN
 			WHILE (fld # NIL) & (fld^.mode = Fld) DO
 				IF (fld^.vis # internal) & visible THEN
-					OPM.FPrint(pbfp, fld^.vis); FPrintName(pbfp, fld^.name); OPM.FPrint(pbfp, fld^.adr);
+					OPM.FPrint(pbfp, fld^.vis); FPrintName(pbfp, fld^.name^); OPM.FPrint(pbfp, fld^.adr);
 					FPrintStr(fld^.typ); OPM.FPrint(pbfp, fld^.typ^.pbfp); OPM.FPrint(pvfp, fld^.typ^.pvfp)
 				ELSE FPrintHdFld(fld^.typ, fld, fld^.adr + adr)
 				END ;
@@ -350,7 +353,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				IF obj^.mode = TProc THEN
 					IF obj^.vis # internal THEN
 						OPM.FPrint(pbfp, TProc); OPM.FPrint(pbfp, obj^.adr DIV 10000H);
-						FPrintSign(pbfp, obj^.typ, obj^.link); FPrintName(pbfp, obj^.name)
+						FPrintSign(pbfp, obj^.typ, obj^.link); FPrintName(pbfp, obj^.name^)
 					ELSIF OPM.ExpHdTProc THEN
 						OPM.FPrint(pvfp, TProc); OPM.FPrint(pvfp, obj^.adr DIV 10000H)
 					END
@@ -368,7 +371,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			f := typ^.form; c := typ^.comp; btyp := typ^.BaseTyp;
 			IF f = Pointer THEN
 				strobj := typ^.strobj; bstrobj := btyp^.strobj;
-				IF (strobj = NIL) OR (strobj^.name = "") OR (bstrobj = NIL) OR (bstrobj^.name = "") THEN
+				IF (strobj = NIL) OR (strobj^.name = null) OR (bstrobj = NIL) OR (bstrobj^.name = null) THEN
 					FPrintStr(btyp); OPM.FPrint(pbfp, btyp^.pbfp + 12345(*constant added for fixing issue #7*)); pvfp := pbfp
 				(* else use idfp as pbfp and as pvfp, do not call FPrintStr(btyp) here, else cycle not broken *)
 				END
@@ -380,14 +383,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				nofhdfld := 0; FPrintFlds(typ^.link, 0, TRUE);
 				IF nofhdfld > OPM.MaxHdFld THEN OPM.Mark(225, typ^.txtpos) END ;
 				FPrintTProcs(typ^.link); OPM.FPrint(pvfp, pbfp); strobj := typ^.strobj;
-				IF (strobj = NIL) OR (strobj^.name = "") THEN pbfp := pvfp END
+				IF (strobj = NIL) OR (strobj^.name = null) THEN pbfp := pvfp END
 			END ;
 			typ^.pbfp := pbfp; typ^.pvfp := pvfp
 		END
 	END FPrintStr;
 
 	PROCEDURE FPrintObj*(obj: Object);
-		VAR fprint: INTEGER; f, m: SHORTINT; rval: REAL; ext: ConstExt;
+		VAR fprint, f, m: INTEGER; rval: REAL; ext: ConstExt;
 	BEGIN
 		IF ~obj^.fpdone THEN
 			fprint := 0; obj^.fpdone := TRUE;
@@ -414,8 +417,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				FPrintSign(fprint, obj^.typ, obj^.link)
 			ELSIF obj^.mode = CProc THEN
 				FPrintSign(fprint, obj^.typ, obj^.link); ext := obj^.conval^.ext;
-				m := ORD(ext^[0]); f := 1; OPM.FPrint(fprint, m);
-				WHILE f <= m DO OPM.FPrint(fprint, ORD(ext^[f])); INC(f) END
+				IF ext # NIL THEN
+					m := LEN(ext^); f := 0; OPM.FPrint(fprint, m);
+					WHILE f < m DO OPM.FPrint(fprint, ORD(ext^[f])); INC(f) END
+				ELSE OPM.FPrint(fprint, 0);
+				END
 			ELSIF obj^.mode = Typ THEN
 				FPrintStr(obj^.typ); OPM.FPrint(fprint, obj^.typ^.pbfp)
 			END ;
@@ -427,12 +433,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR i, j: SHORTINT; ch: CHAR;
 	BEGIN
 		IF obj^.mnolev # 0 THEN
-			COPY(GlbMod[-obj^.mnolev]^.name, OPM.objname); i := 0;
+			COPY(GlbMod[-obj^.mnolev]^.name^, OPM.objname); i := 0;
 			WHILE OPM.objname[i] # 0X DO INC(i) END ;
 			OPM.objname[i] := "."; j := 0; INC(i);
 			REPEAT ch := obj^.name[j]; OPM.objname[i] := ch; INC(j); INC(i) UNTIL ch = 0X;
 		ELSE
-			COPY(obj^.name, OPM.objname)
+			COPY(obj^.name^, OPM.objname)
 		END ;
 		IF errno = 249 THEN
 			IF OPM.noerr THEN err(errno) END
@@ -453,14 +459,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF root = NIL THEN root := obj; old := NIL
 		ELSE
 			ob0 := root; ob1 := ob0^.right; left := FALSE;
-			IF obj^.name < ob0^.name THEN ob1 := ob0^.left; left := TRUE
-			ELSIF obj^.name > ob0^.name THEN ob1 := ob0^.right; left := FALSE
+			IF obj^.name^ < ob0^.name^ THEN ob1 := ob0^.left; left := TRUE
+			ELSIF obj^.name^ > ob0^.name^ THEN ob1 := ob0^.right; left := FALSE
 			ELSE old := ob0; RETURN
 			END ;
 			LOOP
 				IF ob1 # NIL THEN
-					IF obj^.name < ob1^.name THEN ob0 := ob1; ob1 := ob1^.left; left := TRUE
-					ELSIF obj^.name > ob1^.name THEN ob0 := ob1; ob1 := ob1^.right; left := FALSE
+					IF obj^.name^ < ob1^.name^ THEN ob0 := ob1; ob1 := ob1^.left; left := TRUE
+					ELSIF obj^.name^ > ob1^.name^ THEN ob0 := ob1; ob1 := ob1^.right; left := FALSE
 					ELSE old := ob1; EXIT
 					END
 				ELSE ob1 := obj;
@@ -471,28 +477,29 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END InsertImport;
 
-	PROCEDURE InName(VAR name: ARRAY OF CHAR);
-		VAR i: SHORTINT; ch: CHAR;
+	PROCEDURE InName(VAR(*OUT*) name: OPS.String);
+		VAR i: SHORTINT; ch: CHAR; n: OPS.Name;
 	BEGIN i := 0;
 		REPEAT
-			OPM.SymRCh(ch); name[i] := ch; INC(i)
-		UNTIL ch = 0X
+			OPM.SymRCh(ch); n[i] := ch; INC(i)
+		UNTIL ch = 0X;
+		IF i > 1 THEN NEW(name, i); COPY(n, name^) ELSE name := null END
 	END InName;
 	
 	PROCEDURE InMod(VAR mno: BYTE);	(* mno is global *)
-		VAR head: Object; name: OPS.Name; mn: INTEGER; i: BYTE;
+		VAR head: Object; name: OPS.String; mn: INTEGER; i: BYTE;
 	BEGIN
 		mn := SHORT(OPM.SymRInt());
 		IF mn = 0 THEN mno := impCtxt.glbmno[0]
 		ELSE
 			IF mn = Smname THEN
 				InName(name);
-				IF (name = SelfName) & ~impCtxt.self THEN err(154) END ;
+				IF (name^ = SelfName) & ~impCtxt.self THEN err(154) END ;
 				i := 0;
-				WHILE (i < nofGmod) & (name # GlbMod[i].name) DO INC(i) END ;
+				WHILE (i < nofGmod) & (name^ # GlbMod[i].name^) DO INC(i) END ;
 				IF i < nofGmod THEN mno := i	(*module already present*)
 				ELSE
-					head := NewObj(); head^.mode := Head; COPY(name, head^.name);
+					head := NewObj(); head^.mode := Head; head^.name := name;
 					mno := nofGmod; head^.mnolev := -mno;
 					IF nofGmod < maxImps THEN
 						GlbMod[mno] := head; INC(nofGmod)
@@ -507,7 +514,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InMod;
 
 	PROCEDURE InConstant(f: INTEGER; conval: Const);
-		VAR ch: CHAR; i: SHORTINT; ext: ConstExt; rval: REAL;
+		VAR ch: CHAR; i: SHORTINT; ext, t: ConstExt; rval: REAL; str: OPS.Name;
 	BEGIN
 		CASE f OF
 		| Char, Bool:
@@ -523,10 +530,18 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			OPM.SymRLReal(conval^.realval);
 			conval^.intval := OPM.ConstNotAlloc
 		| String:
-			ext := NewExt(); conval^.ext := ext; i := 0;
+			i := 0;
 			REPEAT
-				OPM.SymRCh(ch); ext^[i] := ch; INC(i)
+				OPM.SymRCh(ch);
+				IF i < LEN(str) - 1 THEN str[i] := ch
+				ELSIF i = LEN(str) - 1 THEN str[i] := 0X; NEW(ext, 2 * LEN(str)); COPY(str, ext^); ext[i] := ch
+				ELSIF i < LEN(ext^) - 1 THEN ext[i] := ch
+				ELSE t := ext; t[i] := 0X; NEW(ext, 2 * LEN(t^)); COPY(t^, ext^); ext[i] := ch
+				END;
+				INC(i)
 			UNTIL ch = 0X;
+			IF i < LEN(str) THEN NEW(ext, i); COPY(str, ext^) END;
+			conval.ext := ext;
 			conval^.intval2 := i;
 			conval^.intval := OPM.ConstNotAlloc
 		| NilTyp:
@@ -561,7 +576,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			obj^.adr := SHORT(OPM.SymRInt())
 		ELSE
 			obj^.mode := Fld;
-			IF tag = Shdptr THEN obj^.name := OPM.HdPtrName ELSE obj^.name := OPM.HdProcName END ;
+			IF tag = Shdptr THEN obj^.name := NewName(OPM.HdPtrName) ELSE obj^.name := NewName(OPM.HdProcName) END ;
 			obj^.typ := undftyp; obj^.vis := internal;
 			obj^.adr := SHORT(OPM.SymRInt())
 		END ;
@@ -578,7 +593,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			InSign(mno, obj^.typ, obj^.link); obj^.vis := external; InName(obj^.name);
 			obj^.adr := 10000H*SHORT(OPM.SymRInt())
 		ELSE	(* tag = Shdtpro *)
-			obj^.mode := TProc; obj^.name := OPM.HdTProcName;
+			obj^.mode := TProc; obj^.name := NewName(OPM.HdTProcName);
 			obj^.link := NewObj();	(* dummy, easier in Browser *)
 			obj^.typ := undftyp; obj^.vis := internal;
 			obj^.adr := 10000H*SHORT(OPM.SymRInt())
@@ -587,7 +602,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InTProc;
 
 	PROCEDURE InStruct(VAR typ: Struct);
-		VAR mno: BYTE; ref: SHORTINT; tag: INTEGER; name: OPS.Name;
+		VAR mno: BYTE; ref: SHORTINT; tag: INTEGER; name: OPS.String;
 			t: Struct; obj, last, fld, old, dummy: Object;
 	BEGIN
 		tag := SHORT(OPM.SymRInt());
@@ -596,9 +611,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			ref := impCtxt.nofr; INC(impCtxt.nofr);
 			IF ref < impCtxt.minr THEN impCtxt.minr := ref END ;
 			InMod(mno); InName(name); obj := NewObj();
-			IF name = "" THEN
+			IF name = null THEN
 				IF impCtxt.self THEN old := NIL	(* do not insert type desc anchor here, but in OPL *)
-				ELSE obj^.name := "@"; InsertImport(obj, GlbMod[mno].right, old(*=NIL*)); obj^.name := ""
+				ELSE obj^.name := NewName("@"); InsertImport(obj, GlbMod[mno].right, old(*=NIL*)); obj^.name := null
 				END ;
 				typ := NewStr(Undef, Basic)
 			ELSE obj^.name := name; InsertImport(obj, GlbMod[mno].right, old);
@@ -658,7 +673,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				WHILE ref < impCtxt.nofr DO
 					t := impCtxt.ref[ref]; FPrintStr(t);
 					obj := t^.strobj;	(* obj^.typ^.strobj = obj, else obj^.fprint differs (alias) *)
-					IF obj^.name # "" THEN FPrintObj(obj) END ;
+					IF obj^.name # null THEN FPrintObj(obj) END ;
 					old := impCtxt.old[ref];
 					IF old # NIL THEN t^.strobj := old;	(* restore strobj *)
 						IF impCtxt.self THEN
@@ -690,8 +705,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InStruct;
 
 	PROCEDURE InObj(mno: BYTE): Object;	(* first number in impCtxt.nextTag *)
-		VAR i, s: SHORTINT; ch: CHAR; obj, old: Object; typ: Struct;
-			tag: INTEGER; ext: ConstExt;
+		VAR ch: CHAR; obj, old: Object; typ: Struct;
+			i, s, tag: INTEGER; ext: ConstExt;
 	BEGIN
 		tag := impCtxt.nextTag;
 		IF tag = Stype THEN
@@ -709,9 +724,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				| Sxpro: obj^.mode := XProc
 				| Sipro: obj^.mode := IProc
 				| Scpro: obj^.mode := CProc;
-					ext := NewExt(); obj^.conval^.ext := ext;
-					s := SHORT(SHORT(OPM.SymRInt())); ext^[0] := CHR(s); i := 1;
-					WHILE i <= s DO OPM.SymRCh(ext^[i]); INC(i) END
+					s := SHORT(OPM.SymRInt());
+					IF s # 0 THEN 
+						NEW(ext, s); i := 0;
+						WHILE i < s DO OPM.SymRCh(ext^[i]); INC(i) END
+					ELSE ext := NIL
+					END;
+					obj^.conval^.ext := ext
 				END
 			ELSIF tag = Salias THEN
 				obj^.mode := Typ; InStruct(obj^.typ)
@@ -723,7 +742,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			InName(obj^.name)
 		END ;
 		FPrintObj(obj);
-		IF (obj^.mode = Var) & ((obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = "")) THEN
+		IF (obj^.mode = Var) & ((obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null)) THEN
 			(* compute a global fingerprint to avoid structural type equivalence for anonymous types *)
 			OPM.FPrint(impCtxt.reffp, obj^.typ^.ref - maxStruct)
 		END ;
@@ -794,7 +813,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF expCtxt.locmno[mno] < 0 THEN (* new mod *)
 			OPM.SymWInt(Smname);
 			expCtxt.locmno[mno] := expCtxt.nofm; INC(expCtxt.nofm);
-			OutName(GlbMod[mno].name)
+			OutName(GlbMod[mno].name^)
 		ELSE OPM.SymWInt(-expCtxt.locmno[mno])
 		END
 	END OutMod;
@@ -816,9 +835,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					END
 				END
 			END
-		ELSIF OPM.ExpHdPtrFld & ((typ^.form = Pointer) OR (fld^.name = OPM.HdPtrName)) THEN
+		ELSIF OPM.ExpHdPtrFld & ((typ^.form = Pointer) OR (fld^.name^ = OPM.HdPtrName)) THEN
 			OPM.SymWInt(Shdptr); OPM.SymWInt(adr); INC(nofhdfld)
-		ELSIF OPM.ExpHdProcFld & ((typ^.form = ProcTyp) OR (fld^.name = OPM.HdProcName)) THEN
+		ELSIF OPM.ExpHdProcFld & ((typ^.form = ProcTyp) OR (fld^.name^ = OPM.HdProcName)) THEN
 			OPM.SymWInt(Shdpro); OPM.SymWInt(adr); INC(nofhdfld)
 		END
 	END OutHdFld;
@@ -828,7 +847,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		WHILE (fld # NIL) & (fld^.mode = Fld) DO
 			IF (fld^.vis # internal) & visible THEN
 				IF fld^.vis = externalR THEN OPM.SymWInt(Srfld) ELSE OPM.SymWInt(Sfld) END ;
-				OutStr(fld^.typ); OutName(fld^.name); OPM.SymWInt(fld^.adr)
+				OutStr(fld^.typ); OutName(fld^.name^); OPM.SymWInt(fld^.adr)
 			ELSE OutHdFld(fld^.typ, fld, fld^.adr + adr)
 			END ;
 			fld := fld^.link
@@ -842,7 +861,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF par^.mode = Var THEN OPM.SymWInt(Svalpar) ELSE OPM.SymWInt(Svarpar) END ;
 			OutStr(par^.typ);
 			OPM.SymWInt(par^.adr);
-			OutName(par^.name); par := par^.link
+			OutName(par^.name^); par := par^.link
 		END ;
 		OPM.SymWInt(Send)
 	END OutSign;
@@ -858,7 +877,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				END ;
 				IF OPM.ExpHdTProc OR (obj^.vis # internal) THEN
 					IF obj^.vis # internal THEN
-						OPM.SymWInt(Stpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name);
+						OPM.SymWInt(Stpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^);
 						OPM.SymWInt(obj^.adr DIV 10000H)
 					ELSE
 						OPM.SymWInt(Shdtpro);
@@ -879,7 +898,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			typ^.ref := expCtxt.ref; INC(expCtxt.ref);
 			IF expCtxt.ref >= maxStruct THEN err(228) END ;
 			OutMod(typ^.mno); strobj := typ^.strobj;
-			IF (strobj # NIL) & (strobj^.name # "") THEN OutName(strobj^.name);
+			IF (strobj # NIL) & (strobj^.name # null) THEN OutName(strobj^.name^);
 				CASE strobj^.history OF
 				| pbmodified: FPrintErr(strobj, 252)
 				| pvmodified: FPrintErr(strobj, 251)
@@ -936,7 +955,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END OutConstant;
 
 	PROCEDURE OutObj(obj: Object);
-		VAR i, j: SHORTINT; ext: ConstExt;
+		VAR i, j: INTEGER; ext: ConstExt;
 	BEGIN
 		IF obj # NIL THEN
 			OutObj(obj^.left);
@@ -951,22 +970,22 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					END ;
 					CASE obj^.mode OF
 					| Con:
-						OutConstant(obj); OutName(obj^.name)
+						OutConstant(obj); OutName(obj^.name^)
 					| Typ:
 						IF obj^.typ^.strobj = obj THEN OPM.SymWInt(Stype); OutStr(obj^.typ)
-						ELSE OPM.SymWInt(Salias); OutStr(obj^.typ); OutName(obj^.name)
+						ELSE OPM.SymWInt(Salias); OutStr(obj^.typ); OutName(obj^.name^)
 						END
 					| Var:
 						IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END ;
-						OutStr(obj^.typ); OutName(obj^.name);
-						IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = "") THEN
+						OutStr(obj^.typ); OutName(obj^.name^);
+						IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
 							(* compute fingerprint to avoid structural type equivalence *)
 							OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
 						END
 					| XProc:
-						OPM.SymWInt(Sxpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name)
+						OPM.SymWInt(Sxpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^)
 					| IProc:
-						OPM.SymWInt(Sipro); OutSign(obj^.typ, obj^.link); OutName(obj^.name)
+						OPM.SymWInt(Sipro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^)
 					| CProc:
 						IF obj^.name^ # "_init" THEN
 							OPM.SymWInt(Scpro); OutSign(obj^.typ, obj^.link); ext := obj^.conval^.ext;
@@ -1037,7 +1056,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
-BEGIN topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
+BEGIN
+	NEW(null, 1); null^[0] := 0X;
+	topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 	InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
 	InitStruct(stringtyp, String); InitStruct(niltyp, NilTyp);
 	undftyp^.BaseTyp := undftyp;
