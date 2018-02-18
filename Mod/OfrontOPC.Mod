@@ -4,7 +4,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	2000-04-30 jt, synchronized with BlackBox version, in particular
 		various promotion rules changed (long) => (LONGINT), xxxL avoided
 	2015-10-07 jt, fixed endless recursion in Stars for imported fields of anonymous type POINTER TO DynArr;
-		param typ has a strobj pointer to an anonymous object, i.e. typ.strobj.name = ""
+		param typ has a strobj pointer to an anonymous object, i.e. typ.strobj.name = OPT.null
+	2018-02-14 olegncher, issue #44: unlimited length of strings (as in BB)
 *)
 
 	IMPORT OPT := OfrontOPT, OPM := OfrontOPM;
@@ -158,7 +159,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			OPM.WriteStringVar(obj^.name);
 			h := PerfectHash(obj^.name);
 			IF hashtab[h] >= 0 THEN
-				IF keytab[hashtab[h]] = obj^.name THEN OPM.Write(Underscore) END
+				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
 			END
 		ELSE
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
@@ -180,7 +181,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR pointers: SHORTINT;
 	BEGIN
 		openClause := FALSE;
-		IF ((typ^.strobj = NIL) OR (typ^.strobj^.name = "")) & (typ^.comp # Record) THEN
+		IF ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) & (typ^.comp # Record) THEN
 			IF typ^.comp IN {Array, DynArr} THEN
 				Stars (typ^.BaseTyp, openClause);
 				openClause := (typ^.comp = Array)
@@ -188,7 +189,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.Write(OpenParen); OPM.Write(Star)
 			ELSE
 				pointers := 0;
-				WHILE ((typ^.strobj = NIL) OR (typ^.strobj^.name = "")) & (typ^.form = Pointer) DO
+				WHILE ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) & (typ^.form = Pointer) DO
 					INC (pointers); typ := typ^.BaseTyp
 				END ;
 				IF pointers > 0 THEN
@@ -214,13 +215,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF openClause THEN OPM.Write(OpenParen) END ;
 			OPM.Write(Star)
 		END ;
-		IF dcl.name # "" THEN Ident(dcl) END ;
+		IF dcl.name # OPT.null THEN Ident(dcl) END ;
 		IF varPar & openClause THEN OPM.Write(CloseParen) END ;
 		openClause := FALSE;
 		LOOP
 			form := typ^.form;
 			comp := typ^.comp;
-			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # "")) OR (form = NoTyp) OR (comp = Record) THEN EXIT
+			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null)) OR (form = NoTyp) OR (comp = Record) THEN EXIT
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
 				openClause := TRUE
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
@@ -250,8 +251,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	PROCEDURE Undefined(obj: OPT.Object): BOOLEAN;
 	BEGIN 
-		(* imported anonymous types have obj^.name = ""; used e.g. for repeating inherited fields *)
-		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # 3+OPM.currFile ) & (obj^.linkadr # PredefinedType) OR (obj^.name = "")
+		(* imported anonymous types have obj^.name = OPT.null; used e.g. for repeating inherited fields *)
+		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # 3+OPM.currFile ) & (obj^.linkadr # PredefinedType) OR (obj^.name = OPT.null)
 	END Undefined;
 
 	PROCEDURE ^FieldList (typ: OPT.Struct; last: BOOLEAN; VAR off, n, curAlign: INTEGER);
@@ -271,7 +272,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			Ident(obj)
 		ELSIF typ^.comp = Record THEN
 			OPM.WriteString(Struct); Andent(typ);
-			IF (prev.form # Pointer) & ((obj # NIL) OR (dcl.name = "")) THEN
+			IF (prev.form # Pointer) & ((obj # NIL) OR (dcl.name = OPT.null)) THEN
 				(* named record type not yet declared OR anonymous record with empty name *)
 				IF (typ^.BaseTyp # NIL) & (typ^.BaseTyp^.strobj.vis # internal) THEN
 					OPM.WriteString(" { /* "); Ident(typ^.BaseTyp^.strobj); OPM.WriteString(" */"); OPM.WriteLn; Indent(1)
@@ -290,7 +291,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			END;
 			EndStat;
 			BegStat; NEW(obj); NEW(obj.typ);	(* aux. object for easy declaration *)
-			obj.typ.form := Comp; obj.typ.comp := Array; obj.typ.n := 1; obj.typ.BaseTyp := typ; obj.mode := Fld; obj.name := "data"; 
+			obj.typ.form := Comp; obj.typ.comp := Array; obj.typ.n := 1; obj.typ.BaseTyp := typ; obj.mode := Fld; obj.name := OPT.NewName("data");
 			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank);  DeclareObj(obj, FALSE);
 			EndStat; EndBlk0
 		END
@@ -305,7 +306,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF btyp # NIL THEN n := NofPtrs(btyp) ELSE n := 0 END ;
 			fld := typ^.link;
 			WHILE (fld # NIL) & (fld^.mode = Fld) DO
-				IF fld^.name # OPM.HdPtrName THEN n := n + NofPtrs(fld^.typ)
+				IF fld^.name^ # OPM.HdPtrName THEN n := n + NofPtrs(fld^.typ)
 				ELSE INC(n)
 				END ;
 				fld := fld^.link
@@ -330,7 +331,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF btyp # NIL THEN PutPtrOffsets(btyp, adr, cnt) END ;
 			fld := typ^.link;
 			WHILE (fld # NIL) & (fld^.mode = Fld) DO
-				IF fld^.name # OPM.HdPtrName THEN PutPtrOffsets(fld^.typ, adr + fld^.adr, cnt)
+				IF fld^.name^ # OPM.HdPtrName THEN PutPtrOffsets(fld^.typ, adr + fld^.adr, cnt)
 				ELSE
 					OPM.WriteInt(adr + fld^.adr); OPM.WriteString(", "); INC(cnt);
 					IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
@@ -535,24 +536,32 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE Prefixed(x: OPT.ConstExt; y: ARRAY OF CHAR): BOOLEAN;
 		VAR i: SHORTINT;
 	BEGIN i := 0;
-		WHILE x[i+1] = y[i] DO INC(i) END ;
+		WHILE x[i] = y[i] DO INC(i) END ;
 		RETURN y[i] = 0X
 	END Prefixed;
 
 	PROCEDURE CProcDefs(obj: OPT.Object; vis: SHORTINT);
-		VAR i: SHORTINT; ext: OPT.ConstExt;
+		VAR i: INTEGER; ext: OPT.ConstExt;
 	BEGIN
 		IF obj # NIL THEN
 			CProcDefs(obj^.left, vis);
 			(* bug: obj.history cannot be used to cover unexported and deleted CProcs; use special flag obj.adr = 1 *)
 			IF (obj^.mode = CProc) & (obj^.vis >= vis) & (obj^.adr = 1) THEN
-				ext := obj.conval.ext; i := 1;
-				IF (ext[1] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN 
-					OPM.WriteString("#define "); Ident(obj);
-					DeclareParams(obj^.link, TRUE);
-					OPM.Write(Tab);
-				END ;
-				FOR i := i TO ORD(obj.conval.ext[0]) DO OPM.Write(obj.conval.ext[i]) END;
+				ext := obj.conval.ext;
+				IF ext # NIL THEN
+					IF (ext^[0] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN 
+						OPM.WriteString("#define "); Ident(obj);
+						DeclareParams(obj^.link, TRUE, TRUE);
+						OPM.Write(Tab);
+					END ;
+					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
+				ELSE
+					OPM.WriteStringVar(obj^.name); DeclareParams(obj^.link, TRUE, FALSE);
+					OPM.WriteLn; OPM.WriteString("__EXTERN ");
+					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
+					IF obj^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END; OPM.Write(Blank);
+					OPM.WriteStringVar(obj^.name); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
+				END;
 				OPM.WriteLn
 			END ;
 			CProcDefs(obj^.right, vis)
@@ -576,9 +585,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			typ := n^.typ;
 			IF (typ^.strobj = NIL) & ((OPM.currFile = OPM.BodyFile) OR (typ.ref < OPM.MaxStruct)) THEN
 				DefineType(typ);	(* declare base and field types, if any *)
-				NEW(o); o.typ := typ; o.name := ""; DeclareBase(o); EndStat; OPM.WriteLn
+				NEW(o); o.typ := typ; o.name := OPT.null; DeclareBase(o); EndStat; OPM.WriteLn
 				(* simply defines a named struct, but not a type;
-					o.name = "" signals field list expansion for DeclareBase in this very special case *)
+					o.name = OPT.null signals field list expansion for DeclareBase in this very special case *)
 			END ;
 			n := n^.link
 		END
@@ -739,7 +748,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END IdentList;
 
 	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
-		VAR name: ARRAY 32 OF CHAR;
+		VAR name: ARRAY 40 OF CHAR;
 	BEGIN
 		OPM.Write("(");
 		IF (obj = NIL) OR (obj^.mode = TProc) THEN OPM.WriteString("void")
@@ -749,7 +758,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF showParamNames THEN 
 					OPM.Write(Blank); DeclareObj(obj, FALSE)
 				ELSE
-					COPY(obj^.name, name);  obj^.name := ""; DeclareObj(obj, FALSE); COPY(name, obj^.name)
+					COPY(obj^.name^, name); obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := OPT.NewName(name)
 				END ;
 				IF obj^.typ^.comp = DynArr THEN
 					IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")

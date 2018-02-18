@@ -108,7 +108,7 @@
 						END ;
 						Wch(";"); Wln
 				| Typ:
-						IF obj^.name # "" THEN Indent(2);
+						IF obj^.name # OPT.null THEN Indent(2);
 							IF obj^.typ^.strobj = obj THEN	(* canonical name *)
 								Wtype(obj^.typ); Ws(" = "); Wstruct(obj^.typ)
 							ELSE	(* alias *)
@@ -146,7 +146,7 @@
 			Wmthd(obj^.left);
 			IF (obj^.mode = TProc) & ((obj^.name # OPM.HdTProcName) OR (option = "x")) THEN
 				Indent(3); Ws("PROCEDURE (");
-				IF obj^.name # OPM.HdTProcName THEN
+				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN Ws("VAR ") END ;
 					Ws(obj^.link^.name); Ws(": "); Wtype(obj^.link^.typ)
 				END ;
@@ -214,7 +214,7 @@
 		VAR obj: OPT.Object;
 	BEGIN
 		obj := typ^.strobj;
-		IF obj^.name # "" THEN
+		IF obj^.name # OPT.null THEN
 			IF typ^.mno # 0 THEN Ws(OPT.GlbMod[typ^.mno].name); Wch(".")
 			ELSIF typ = OPT.sysptrtyp THEN Ws("SYSTEM.")
 			ELSIF obj^.vis = internal THEN Wch("#")
