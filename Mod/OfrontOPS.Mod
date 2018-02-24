@@ -62,7 +62,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
 	END err;
-	
+
 	PROCEDURE Str(VAR sym: BYTE);
 		VAR i: INTEGER; och: CHAR;
 			s: ARRAY 256 OF CHAR; t: String;
@@ -73,17 +73,18 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			ELSIF ch < " " THEN err(3); EXIT
 			END;
 			IF i < LEN(s) - 1 THEN s[i] := ch
-			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(str, 2 * LEN(s)); COPY(s, str^); str[i] := ch
-			ELSIF i < LEN(str^) - 1 THEN str[i] := ch
-			ELSE t := str; t[i] := 0X; NEW(str, 2 * LEN(t^)); COPY(t^, str^); str[i] := ch
+			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(str, 2 * LEN(s)); COPY(s, str^); str^[i] := ch
+			ELSIF i < LEN(str^) - 1 THEN str^[i] := ch
+			ELSE t := str; t^[i] := 0X; NEW(str, 2 * LEN(t^)); COPY(t^, str^); str^[i] := ch
 			END;
 			INC(i)
-		END ;
-		IF i = 1 THEN sym := number; numtyp := 1; intval := ORD(s[0])
+		END;
+		IF i = 1 THEN sym := number; numtyp := 1; intval := ORD(s[0]);
+			IF s[0] < " " THEN err(3) END
 		ELSE
 			sym := string; numtyp := 0; intval := i + 1; NEW(str, intval);
-			IF i < LEN(s) THEN s[i] := 0X; COPY(s, str^);
-			ELSE str[i] := 0X
+			IF i < LEN(s) THEN s[i] := 0X; COPY(s, str^)
+			ELSE str^[i] := 0X
 			END
 		END;
 		OPM.Get(ch)
