@@ -420,7 +420,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				IF ext # NIL THEN
 					m := LEN(ext^); f := 0; OPM.FPrint(fprint, m);
 					WHILE f < m DO OPM.FPrint(fprint, ORD(ext^[f])); INC(f) END
-				ELSE OPM.FPrint(fprint, 0);
+				ELSE OPM.FPrint(fprint, 0)
 				END
 			ELSIF obj^.mode = Typ THEN
 				FPrintStr(obj^.typ); OPM.FPrint(fprint, obj^.typ^.pbfp)
@@ -514,7 +514,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InMod;
 
 	PROCEDURE InConstant(f: INTEGER; conval: Const);
-		VAR ch: CHAR; i: SHORTINT; ext, t: ConstExt; rval: REAL; str: OPS.Name;
+		VAR ch: CHAR; i: INTEGER; ext, t: ConstExt; rval: REAL; str: OPS.Name;
 	BEGIN
 		CASE f OF
 		| Char, Bool:
@@ -723,9 +723,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				CASE tag OF
 				| Sxpro: obj^.mode := XProc
 				| Sipro: obj^.mode := IProc
-				| Scpro: obj^.mode := CProc;
-					s := SHORT(OPM.SymRInt());
-					IF s # 0 THEN 
+				| Scpro: obj^.mode := CProc; s := SHORT(OPM.SymRInt());
+					IF s > 0 THEN 
 						NEW(ext, s); i := 0;
 						WHILE i < s DO OPM.SymRCh(ext^[i]); INC(i) END
 					ELSE ext := NIL
@@ -802,8 +801,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*-------------------------- Export --------------------------*)
 
-	PROCEDURE OutName(VAR name: ARRAY OF CHAR);
-		VAR i: SHORTINT; ch: CHAR;
+	PROCEDURE OutName(VAR(*IN*) name: ARRAY OF CHAR);
+		VAR i: INTEGER; ch: CHAR;
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.SymWCh(ch); INC(i) UNTIL ch = 0X
 	END OutName;
@@ -987,12 +986,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					| IProc:
 						OPM.SymWInt(Sipro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^)
 					| CProc:
-						IF obj^.name^ # "_init" THEN
-							OPM.SymWInt(Scpro); OutSign(obj^.typ, obj^.link); ext := obj^.conval^.ext;
-							i := 0; j := LEN(ext^); OPM.SymWInt(j);
-							WHILE i < j DO OPM.SymWCh(ext^[i]); INC(i) END ;
-							OutName(obj^.name^)
-						END
+						OPM.SymWInt(Scpro); OutSign(obj^.typ, obj^.link); ext := obj^.conval^.ext;
+						i := 0; IF ext # NIL THEN j := LEN(ext^) ELSE j := 0 END; OPM.SymWInt(j);
+						WHILE i < j DO OPM.SymWCh(ext^[i]); INC(i) END;
+						OutName(obj^.name^)
 					END
 				END
 			END ;

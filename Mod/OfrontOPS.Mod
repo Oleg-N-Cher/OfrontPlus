@@ -73,9 +73,9 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			ELSIF ch < " " THEN err(3); EXIT
 			END;
 			IF i < LEN(s) - 1 THEN s[i] := ch
-			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(str, 2 * LEN(s)); COPY(s, str^); str^[i] := ch
-			ELSIF i < LEN(str^) - 1 THEN str^[i] := ch
-			ELSE t := str; t^[i] := 0X; NEW(str, 2 * LEN(t^)); COPY(t^, str^); str^[i] := ch
+			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(t, 2 * LEN(s)); COPY(s, t^); t^[i] := ch
+			ELSIF i < LEN(t^) - 1 THEN t^[i] := ch
+			ELSE str := t; str^[i] := 0X; NEW(t, 2 * LEN(str^)); COPY(str^, t^); t^[i] := ch
 			END;
 			INC(i)
 		END;
@@ -84,7 +84,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		ELSE
 			sym := string; numtyp := 0; intval := i + 1; NEW(str, intval);
 			IF i < LEN(s) THEN s[i] := 0X; COPY(s, str^)
-			ELSE str^[i] := 0X
+			ELSE t^[i] := 0X; COPY(t^, str^)
 			END
 		END;
 		OPM.Get(ch)
