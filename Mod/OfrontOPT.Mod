@@ -271,7 +271,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 (*-------------------------- Fingerprinting --------------------------*)
 
 	PROCEDURE FPrintName(VAR fp: INTEGER; VAR name: ARRAY OF CHAR);
-		VAR i: SHORTINT; ch: CHAR;
+		VAR i: INTEGER; ch: CHAR;
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.FPrint(fp, ORD(ch)); INC(i) UNTIL ch = 0X
 	END FPrintName;

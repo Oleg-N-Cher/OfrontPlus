@@ -60,7 +60,7 @@
 	END Wsign;
 
 	PROCEDURE Objects(obj: OPT.Object; mode: SET);
-		VAR i: INTEGER; m: SHORTINT; s: SET; ext: OPT.ConstExt;
+		VAR i, m: INTEGER; s: SET; ext: OPT.ConstExt;
 	BEGIN
 		IF obj # NIL THEN
 			Objects(obj^.left, mode);
@@ -121,17 +121,18 @@
 						IF obj^.vis = externalR THEN Ws("-: ") ELSE Ws(": ") END ;
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
-						Indent(1); Ws("PROCEDURE ");
-						IF obj^.mode = IProc THEN Wch("+")
-						ELSIF obj^.mode = CProc THEN Wch("-")
+						Indent(1); Ws("PROCEDURE");
+						IF obj^.mode = IProc THEN Ws("+ ")
+						ELSIF obj^.mode = CProc THEN Ws("- ")
 						END ;
 						Ws(obj^.name^);
 						Wsign(obj^.typ, obj^.link);
-						IF obj^.mode = CProc THEN
-							ext := obj^.conval^.ext; m := ORD(ext^[0]); i := 1; Ws('  "');
-							WHILE i <= m DO Wch(ext^[i]); INC(i) END ;
-							Wch('"');
-						END ;
+						IF obj^.mode = CProc THEN ext := obj^.conval^.ext;
+							IF ext # NIL THEN m := LEN(ext^); i := 0; Ws('  "');
+								WHILE i < m DO Wch(ext^[i]); INC(i) END;
+								Wch('"')
+							END
+						END;
 						Wch(";"); Wln
 				END
 			END ;
