@@ -177,8 +177,8 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 // Runtime checks
 
-#define __X(i, ub)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT(-2),0))
-#define __XF(i, ub)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub))
+#define __X(i, ub, mod, line, col)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT_NEW(-2, mod, line, col),0))
+#define __XF(i, ub, mod, line, col)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub))
 #define __R(i, ub)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT(-8),0))
 #define __RF(i, ub)  SYSTEM_RCHK((LONGINT)(i),(LONGINT)(ub))
 #define __RETCHK     __retchk: __HALT(-3); return 0;
@@ -221,11 +221,12 @@ extern void Heap_FINALL();
 
 // Assertions and Halts
 
-extern void SYSTEM_HALT(INTEGER code);
-extern void SYSTEM_ASSERT_FAIL(INTEGER code);
+extern void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER line, INTEGER col);
+extern void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER line, INTEGER col);
 
-#define __HALT(code)         SYSTEM_HALT(code)
-#define __ASSERT(cond, code) if (!(cond)) SYSTEM_ASSERT_FAIL(code)
+#define __HALT(code)                      SYSTEM_HALT(code, "", -1, -1)
+#define __HALT_NEW(code, mod, line, col)  SYSTEM_HALT(code, mod, line, col)
+#define __ASSERT(cond, code) if (!(cond)) SYSTEM_ASSERT_FAIL(code, "", -1, -1)
 
 
 // Memory allocation

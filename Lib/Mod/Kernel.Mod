@@ -2,7 +2,8 @@ MODULE Kernel;
 IMPORT SYSTEM, Heap, Platform, Out := Console;
 
 TYPE
-  HaltProcedure = PROCEDURE(code: INTEGER);
+  CString = Platform.ADRINT;
+  HaltProcedure = PROCEDURE(code: INTEGER; mod: CString; line, col: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
 
 VAR
@@ -66,21 +67,32 @@ END DisplayHaltCode;
 
 *)
 
+PROCEDURE OutModuleName(s: CString);
+VAR
+  i: INTEGER; ch: CHAR;
+BEGIN
+  Out.Ln;
+  i := 0; SYSTEM.GET(s, ch);
+  WHILE ch # 0X DO Out.Char(ch); INC(i); SYSTEM.GET(s + i, ch) END;
+  Out.Char(" ")
+END OutModuleName;
 
-PROCEDURE Halt*(code: INTEGER);
+PROCEDURE Halt*(code: INTEGER; mod: CString; line, col: INTEGER);
 BEGIN
   Heap.FINALL;
   HaltCode := code;
-  Out.String("Terminated by Halt("); Out.Int(code, 0); Out.String("). ");
+  OutModuleName(mod); Out.Int(line, 0); Out.Char(":"); Out.Int(col, 0);
+  Out.String(" Terminated by Halt("); Out.Int(code, 0); Out.String("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
   Out.Ln;
   Platform.ExitOS(code)
 END Halt;
 
-PROCEDURE AssertFail*(code: INTEGER);
+PROCEDURE AssertFail*(code: INTEGER; mod: CString; line, col: INTEGER);
 BEGIN
   Heap.FINALL;
-  Out.String("Assertion failure.");
+  OutModuleName(mod); Out.Int(line, 0); Out.Char(":"); Out.Int(col, 0);
+  Out.String(" Assertion failure.");
   IF code # 0 THEN
     Out.String(" ASSERT code "); Out.Int(code, 0); Out.Char(".")
   END;
@@ -93,8 +105,8 @@ BEGIN
   Platform.ExitOS(code)
 END Exit;
 
-PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code);";
-PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code);";
+PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER line, INTEGER col);";
+PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER line, INTEGER col);";
 
 PROCEDURE -SetHaltHandler (p: HaltProcedure) "SYSTEM_HaltHandler = p";
 PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
@@ -102,5 +114,5 @@ PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
 PROCEDURE SetHalt*(p: HaltProcedure); BEGIN SetHaltHandler(p) END SetHalt;
 
 BEGIN
-  HaltCode := -128; SetHalt(Halt); SetAssertFail(AssertFail);
+  HaltCode := -128; SetHalt(Halt); SetAssertFail(AssertFail)
 END Kernel.
