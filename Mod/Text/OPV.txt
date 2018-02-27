@@ -409,7 +409,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 			expr(n^.right, prec)
 		ELSE
 			IF SideEffects(n^.right) THEN OPM.WriteString("__XF(") ELSE OPM.WriteString("__X(") END ;
-			expr(n^.right, MinPrec); OPM.WriteString(Comma); Len(d, dim); OPM.Write(CloseParen)
+			expr(n^.right, MinPrec); OPM.WriteString(Comma); Len(d, dim); OPM.WriteModPos; OPM.Write(CloseParen)
 		END
 	END Index;
 
