@@ -274,30 +274,36 @@ PROCEDURE -InvalidHandleValue*(): FileHandle "(-1)";
 PROCEDURE -openrw (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDWR)";
 PROCEDURE -openro (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDONLY)";
 PROCEDURE -opennew(n: ARRAY OF CHAR): INTEGER "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
+PROCEDURE -mkdir(pathname: ARRAY OF CHAR): INTEGER "mkdir((char*)pathname, 0775)";
 
 
 (* File APIs *)
 
-PROCEDURE OldRO*(name: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := openro(name);
-  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  fd := openro(pathname);
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(name: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := openrw(name);
-  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  fd := openrw(pathname);
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(name: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := opennew(name);
-  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  fd := opennew(pathname);
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
+
+PROCEDURE NewDir*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+BEGIN
+  IF mkdir(pathname) # 0 THEN RETURN err() ELSE RETURN 0 END
+END NewDir;
 
 
 PROCEDURE -closefile (fd: FileHandle): INTEGER "close(fd)";
