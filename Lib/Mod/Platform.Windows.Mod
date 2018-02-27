@@ -277,29 +277,37 @@ PROCEDURE -openro (n: ARRAY OF CHAR): FileHandle
 PROCEDURE -opennew(n: ARRAY OF CHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
 
+PROCEDURE -createDirectory(lpPathName: ARRAY OF CHAR): BOOL
+"CreateDirectory((char*)lpPathName, (LPSECURITY_ATTRIBUTES)0)";
+
 
 (* File APIs *)
 
-PROCEDURE OldRO*(n: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := openro(n);
-  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  fd := openro(pathname);
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(n: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := openrw(n);
-  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  fd := openrw(pathname);
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(n: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
-  fd := opennew(n);
-  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END;
+  fd := opennew(pathname);
+  IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
+
+PROCEDURE NewDir*(pathname: ARRAY [1] OF CHAR): ErrorCode;
+BEGIN
+  IF createDirectory(pathname) = 0 THEN RETURN err() ELSE RETURN 0 END
+END NewDir;
 
 
 PROCEDURE -closeHandle(h: FileHandle): BOOL "(INTEGER)CloseHandle((HANDLE)h)";
