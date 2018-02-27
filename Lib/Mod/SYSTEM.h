@@ -177,7 +177,7 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 // Runtime checks
 
-#define __X(i, ub, mod, line, col)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT_NEW(-2, mod, line, col),0))
+#define __X(i, ub, mod, line, col)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT_NEW(-2,mod,line,col), 0))
 #define __XF(i, ub, mod, line, col)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub))
 #define __R(i, ub)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT(-8),0))
 #define __RF(i, ub)  SYSTEM_RCHK((LONGINT)(i),(LONGINT)(ub))

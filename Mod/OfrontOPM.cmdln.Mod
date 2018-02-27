@@ -582,6 +582,16 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN WriteString(Platform.newLine)
 	END WriteLn;
 
+	PROCEDURE WriteModPos* ;
+	BEGIN
+		WriteString(', "'); WriteString(modName); Write('"'); WriteString(", ");
+		IF useLineNo THEN
+			WriteInt(errpos DIV 256); WriteString(", "); WriteInt(errpos MOD 256)
+		ELSE
+			WriteInt(errpos); WriteString(", -1")
+		END
+	END WriteModPos;
+
 	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);
 		VAR R1: Files.Rider; buffer: ARRAY 4096 OF CHAR;
 	BEGIN
