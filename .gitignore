@@ -2,6 +2,8 @@ Arch/
 Code/
 Lib/Obj/
 Lib/Obj64/
+Lib/Sym/
+Lib/Sym64/
 Lib/Test/*.c
 Lib/Test/*.exe
 Lib/Test64/*.c
