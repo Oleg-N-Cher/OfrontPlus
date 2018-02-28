@@ -224,9 +224,9 @@ extern void Heap_FINALL();
 extern void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER pos);
 extern void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER pos);
 
-#define __HALT(code)                      SYSTEM_HALT(code, "", -1)
-#define __HALT_NEW(code, mod, pos)        SYSTEM_HALT(code, mod, pos)
-#define __ASSERT(cond, code) if (!(cond)) SYSTEM_ASSERT_FAIL(code, "", -1)
+#define __HALT(code)                                SYSTEM_HALT(code, "", -1)
+#define __HALT_NEW(code, mod, pos)                  SYSTEM_HALT(code, mod, pos)
+#define __ASSERT(cond, code, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(code, mod, pos)
 
 
 // Memory allocation
