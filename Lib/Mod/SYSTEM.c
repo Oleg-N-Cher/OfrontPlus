@@ -21,15 +21,15 @@
 
 INTEGER SYSTEM_ArgCount;
 void   *SYSTEM_ArgVector;
-void  (*SYSTEM_AssertFailHandler)(INTEGER code, CHAR *mod, INTEGER line, INTEGER col);
-void  (*SYSTEM_HaltHandler)(INTEGER code, CHAR *mod, INTEGER line, INTEGER col);
+void  (*SYSTEM_AssertFailHandler)(INTEGER code, CHAR *mod, INTEGER pos);
+void  (*SYSTEM_HaltHandler)(INTEGER code, CHAR *mod, INTEGER pos);
 void   *SYSTEM_MainStackFrame; /* adr of main proc stack frame, used for stack collection */
 
 
 // Procedure verions of SYSTEM.H versions used when a multiply accessed
 // parameter has side effects.
 
-LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub) {return __X(i, ub, "", -1, -1);}
+LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub) {return __X(i, ub, "", -1);}
 LONGINT SYSTEM_RCHK(LONGINT i, LONGINT ub) {return __R(i, ub);}
 INTEGER SYSTEM_ASH (INTEGER x, INTEGER n)  {return __ASH(x, n, INTEGER);}
 LONGINT SYSTEM_ASHL(LONGINT x, INTEGER n)  {return __ASH(x, n, LONGINT);}
@@ -207,13 +207,13 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32
 
-    void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER line, INTEGER col) {
-      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code, mod, line, col);
+    void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code, mod, pos);
       exit(code);
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER line, INTEGER col) {
-      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code, mod, line, col);
+    void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code, mod, pos);
       exit(code);
     }
 
@@ -250,13 +250,13 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #   include "_windows.h"
 
-    void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER line, INTEGER col) {
-      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code, mod, line, col);
+    void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code, mod, pos);
       ExitProcess((UINT)(code));
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER line, INTEGER col) {
-      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code, mod, line, col);
+    void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code, mod, pos);
       ExitProcess((UINT)(code));
     }
 
