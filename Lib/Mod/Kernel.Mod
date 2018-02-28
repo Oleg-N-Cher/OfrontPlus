@@ -67,22 +67,21 @@ END DisplayHaltCode;
 
 *)
 
-PROCEDURE OutModuleName(s: CString);
+PROCEDURE OutModName(s: CString; pos: INTEGER);
 VAR
   i: INTEGER; ch: CHAR;
 BEGIN
   Out.Ln;
   i := 0; SYSTEM.GET(s, ch);
   WHILE ch # 0X DO Out.Char(ch); INC(i); SYSTEM.GET(s + i, ch) END;
-  Out.Char(" ")
-END OutModuleName;
+  Out.Char(" "); Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256, 0)
+END OutModName;
 
 PROCEDURE Halt*(code: INTEGER; mod: CString; pos: INTEGER);
 BEGIN
   Heap.FINALL;
   HaltCode := code;
-  OutModuleName(mod); Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256, 0);
-  Out.String(" Terminated by Halt("); Out.Int(code, 0); Out.String("). ");
+  OutModName(mod, pos); Out.String(" Terminated by Halt("); Out.Int(code, 0); Out.String("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
   Out.Ln;
   Platform.ExitOS(code)
@@ -91,8 +90,7 @@ END Halt;
 PROCEDURE AssertFail*(code: INTEGER; mod: CString; pos: INTEGER);
 BEGIN
   Heap.FINALL;
-  OutModuleName(mod); Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256, 0);
-  Out.String(" Assertion failure.");
+  OutModName(mod, pos); Out.String(" Assertion failure.");
   IF code # 0 THEN
     Out.String(" ASSERT code "); Out.Int(code, 0); Out.Char(".")
   END;

@@ -998,7 +998,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			|	Nifelse:
 						IF n^.subcl # assertfn THEN IfStat(n, FALSE, outerProc)
 						ELSIF assert THEN OPM.WriteString("__ASSERT("); expr(n^.left^.left^.left, MinPrec); OPM.WriteString(Comma);
-							OPM.WriteInt(n^.left^.right^.right^.conval^.intval); OPM.Write(CloseParen); OPC.EndStat
+							OPM.WriteInt(n^.left^.right^.right^.conval^.intval); OPM.WriteModPos; OPM.Write(CloseParen); OPC.EndStat
 						END
 			|	Ncase:
 						INC(exit.level); CaseStat(n, outerProc); DEC(exit.level)
