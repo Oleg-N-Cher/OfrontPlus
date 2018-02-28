@@ -24,7 +24,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		include0* = 8;	(* include M.h0 in header file and M.c0 in body file if such files exist *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
-		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -123,7 +122,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		workDir, subsys: Files.Name;
 		SFsubdir, CFsubdir: ARRAY 5 + 2 OF CHAR;
 		oldSFile, newSFile, HFile, BFile, HIFile: Files.File;
-		stop, useLineNo: BOOLEAN;	(*useLineNo not supported under Windows *)
+		stop: BOOLEAN;
 
 		options*: RECORD
 			mainprog*, newsf*, extsf*, ansii*, include0*, vcpp*, inxchk*, assert*, ranchk*, typchk*, ptrinit*,
@@ -229,7 +228,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "k": opt := opt / {ansi}
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
-			| "l": opt := opt / {lineno}
 			| "1", "7", "C": Language := SHORT(s[i])
 
 			(* target machine address size and alignment
@@ -321,9 +319,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				ScanOptions(inS.string, opt); inS.Scan
 			END
 		END;
-		IF lineno IN opt THEN useLineNo := TRUE; curpos := 256; errpos := curpos; lasterrpos := curpos - 10
-		ELSE useLineNo := FALSE;
-		END
+		curpos := 256; errpos := curpos; lasterrpos := curpos - 10
 	END InitOptions;
 
 	PROCEDURE Init*(VAR done: BOOLEAN);	(* get the source for one translation *)
@@ -754,12 +750,7 @@ suffix does not work in K&R *)
 
 	PROCEDURE WriteModPos* ;
 	BEGIN
-		WriteString(', "'); WriteString(modName); Write('"'); WriteString(", ");
-		IF useLineNo THEN
-			WriteInt(errpos DIV 256); WriteString(", "); WriteInt(errpos MOD 256)
-		ELSE
-			WriteInt(errpos); WriteString(", -1")
-		END
+		WriteString(', "'); WriteString(modName); WriteString('", '); WriteInt(errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Writer; F: Files.File);
