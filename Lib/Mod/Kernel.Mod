@@ -3,7 +3,7 @@ IMPORT SYSTEM, Heap, Platform, Out := Console;
 
 TYPE
   CString = Platform.ADRINT;
-  HaltProcedure = PROCEDURE(code: INTEGER; mod: CString; line, col: INTEGER);
+  HaltProcedure = PROCEDURE(code: INTEGER; mod: CString; pos: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
 
 VAR
@@ -77,21 +77,21 @@ BEGIN
   Out.Char(" ")
 END OutModuleName;
 
-PROCEDURE Halt*(code: INTEGER; mod: CString; line, col: INTEGER);
+PROCEDURE Halt*(code: INTEGER; mod: CString; pos: INTEGER);
 BEGIN
   Heap.FINALL;
   HaltCode := code;
-  OutModuleName(mod); Out.Int(line, 0); Out.Char(":"); Out.Int(col, 0);
+  OutModuleName(mod); Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256, 0);
   Out.String(" Terminated by Halt("); Out.Int(code, 0); Out.String("). ");
   IF code < 0 THEN DisplayHaltCode(code) END;
   Out.Ln;
   Platform.ExitOS(code)
 END Halt;
 
-PROCEDURE AssertFail*(code: INTEGER; mod: CString; line, col: INTEGER);
+PROCEDURE AssertFail*(code: INTEGER; mod: CString; pos: INTEGER);
 BEGIN
   Heap.FINALL;
-  OutModuleName(mod); Out.Int(line, 0); Out.Char(":"); Out.Int(col, 0);
+  OutModuleName(mod); Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256, 0);
   Out.String(" Assertion failure.");
   IF code # 0 THEN
     Out.String(" ASSERT code "); Out.Int(code, 0); Out.Char(".")
@@ -105,8 +105,8 @@ BEGIN
   Platform.ExitOS(code)
 END Exit;
 
-PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER line, INTEGER col);";
-PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER line, INTEGER col);";
+PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER pos);";
+PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER pos);";
 
 PROCEDURE -SetHaltHandler (p: HaltProcedure) "SYSTEM_HaltHandler = p";
 PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
