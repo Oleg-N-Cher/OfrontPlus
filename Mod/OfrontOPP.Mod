@@ -581,32 +581,37 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			forward: BOOLEAN;
 
 		PROCEDURE GetCode;
-			VAR ext: OPT.ConstExt; i, n: INTEGER; c: LONGINT; s: ARRAY 256 OF CHAR;
+			VAR ext: OPT.ConstExt; n, c, i: INTEGER; s: OPS.String;
+
+			PROCEDURE EnsureLen(len: INTEGER);
+				VAR j: INTEGER; s2: OPS.String;
+			BEGIN
+				IF len > LEN(s^) THEN	(* if overflow then increase size of array s *)
+					NEW(s2, LEN(s^) * 2); FOR j := 0 TO n - 1 DO s2^[j] := s^[j] END; s := s2
+				END
+			END EnsureLen;
+
 		BEGIN
-			n := 0;
-			IF sym = string THEN
-				IF OPS.intval # 1 THEN
-					NEW(ext, OPS.intval - 1);
-					WHILE OPS.str[n] # 0X DO ext[n] := OPS.str[n]; INC(n) END ;
-				END ;
-				OPS.Get(sym)
-			ELSE
-				LOOP
-					IF sym = number THEN c := OPS.intval;
-						IF (c < 0) OR (c > 255) OR (n = 256) THEN
-							err(63); c := 1; n := 0
-						END ;
-						OPS.Get(sym); s[n] := CHR(c)
-					END ;
-					INC(n);
-					IF sym = comma THEN OPS.Get(sym)
-					ELSIF sym = number THEN err(comma)
-					ELSE EXIT
-					END
+			n := 0; NEW(s, 128);
+			LOOP
+				IF sym = number THEN c := SHORT(OPS.intval); EnsureLen(n + 1);
+					IF OPS.numtyp # char THEN err(63); c := 1; n := 0
+					ELSIF (mode = CProc) & (CHR(c) < " ") THEN err(3) 
+					END;
+					s^[n] := CHR(c); INC(n)
+				ELSIF sym = string THEN IF (mode = CProc) & OPS.rawstr THEN err(3) END;
+					c := SHORT(OPS.intval) - 1 (*exclude 0X*); EnsureLen(n + c);
+					FOR i := 0 TO c - 1 DO s^[n + i] := OPS.str^[i] END;
+					INC(n, c)
+				ELSIF sym = semicolon THEN EXIT
+				ELSE err(63)
 				END;
-				NEW(ext, n); i := 0;
-				WHILE i < n DO ext^[i] := s[i]; INC(i) END;
-			END ;
+				OPS.Get(sym); IF sym = comma THEN OPS.Get(sym) ELSE EXIT END
+			END;
+			IF n # 0 THEN NEW(ext, n); i := 0;
+				WHILE i < n DO ext[i] := s[i]; INC(i) END;
+			ELSE ext := NIL
+			END;
 			proc^.conval^.ext := ext;
 			INCL(proc^.conval^.setval, hasBody)
 		END GetCode;
@@ -686,12 +691,13 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	
 	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc;
 		IF (sym # ident) & (sym # lparen) THEN
-			IF sym = times THEN	(* mode set later in OPB.CheckAssign *)
-			ELSIF sym = arrow THEN forward := TRUE
-			ELSIF sym = plus THEN mode := IProc
-			ELSIF sym = minus THEN mode := CProc
+			CASE sym OF
+			| times: (* mode set later in OPB.CheckAssign *)
+			| arrow: forward := TRUE
+			| plus : mode := IProc
+			| minus: mode := CProc
 			ELSE err(ident)
-			END ;
+			END;
 			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ;
 			OPS.Get(sym)
 		END ;
