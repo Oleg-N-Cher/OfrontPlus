@@ -21,8 +21,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		include0* = 8;	(* include M.h0 in header file and M.c0 in body file if such files exist *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
-		lineno* = 11;	(* emit line numbers rather than text positions in error messages *)
-		defopt* = {inxchk, typchk, ptrinit, assert, ansi, lineno};	(* default options *)
+		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
 (*
@@ -114,7 +113,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		oldSFile, newSFile, HFile, BFile, HIFile: Files.File;
 
 		S: INTEGER;
-		stop, useLineNo: BOOLEAN;
+		stop: BOOLEAN;
 
 		OBERON:  ARRAY 1024 OF CHAR;
 
@@ -155,7 +154,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "k": opt := opt / {ansi}
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
-			| "l": opt := opt / {lineno}
 			| "1", "7", "C": Language := s[i]
 
 			(* target machine address size and alignment
@@ -202,8 +200,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String("SYNOPSIS"); Console.Ln;
 			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
-			Console.String('  option  = "m" | "s" | "e" | "i" | "l" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
-			Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "7" Oberon-07'); Console.Ln;
+			Console.String('  option  = "m" | "s" | "e" | "i" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
+			(*Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "Z" Oberon-Z'); Console.Ln;*)
 			Console.String('    "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
 			Console.String('    "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;
 			Console.String('    "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
@@ -227,9 +225,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		opt := glbopt;
 		s := ""; Args.Get(S, s);
 		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END ;
-		IF lineno IN opt THEN useLineNo := TRUE; curpos := 256; errpos := curpos; lasterrpos := curpos - 10
-		ELSE useLineNo := FALSE;
-		END;
+		curpos := 256; errpos := curpos; lasterrpos := curpos - 10;
 		GetProperties
 	END InitOptions;
 
@@ -258,16 +254,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE Get*(VAR ch: CHAR);	(* read next character from source text, 0X if eof *)
 	BEGIN
 		Texts.Read(inR, ch);
-		IF useLineNo THEN 
-			IF ch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
-			ELSIF curpos MOD 256 # 255 THEN INC(curpos)
-				(* at 255 means:  >= 255 *)
-			END
-		ELSIF ch = 0DX THEN
-			curpos := Texts.Pos(inR)	(* supports CR LF mapping *)
-		ELSE
-			INC(curpos)
-		END ;
+		IF ch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
+		ELSIF curpos MOD 256 # 255 THEN INC(curpos)
+			(* at 255 means:  >= 255 *)
+		END;
 		IF (ch < 09X) & ~inR.eot THEN ch := " " END
 	END Get;
 	
@@ -305,58 +295,35 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE Mark*(n: SHORTINT; pos: INTEGER);
 	BEGIN
-		IF useLineNo THEN
-			IF n >= 0 THEN
-				noerr := FALSE;
-				IF (pos < lasterrpos) OR (lasterrpos + 9 < pos) THEN lasterrpos := pos; LogWLn; LogWStr("  ");
-					IF n < 249 THEN LogWStr("  line "); LogWNum(pos DIV 256, 1);
-						LogWStr("  pos "); LogWNum(pos MOD 256, 1); LogErrMsg(n)
-					ELSIF n = 255 THEN LogWStr("  line "); LogWNum(pos DIV 256, 1);
-						LogWStr("  pos "); LogWNum(pos MOD 256, 1); LogWStr("  pc "); LogWNum(breakpc, 1)
-					ELSIF n = 254 THEN LogWStr("pc not found")
-					ELSE LogWStr(objname);
-						IF n = 253 THEN LogWStr(" is new, compile with option e")
-						ELSIF n = 252 THEN LogWStr(" is redefined, compile with option s")
-						ELSIF n = 251 THEN LogWStr(" is redefined (private part only), compile with option s")
-						ELSIF n = 250 THEN LogWStr(" is no longer visible, compile with option s")
-						ELSIF n = 249 THEN LogWStr(" is not consistently imported, recompile imports")
-						END
+		IF n >= 0 THEN
+			noerr := FALSE;
+			IF (pos < lasterrpos) OR (lasterrpos + 9 < pos) THEN lasterrpos := pos; LogWLn; LogWStr("  ");
+				IF n < 249 THEN LogWStr("  line "); LogWNum(pos DIV 256, 1);
+					LogWStr("  pos "); LogWNum(pos MOD 256, 1); LogErrMsg(n)
+				ELSIF n = 255 THEN LogWStr("  line "); LogWNum(pos DIV 256, 1);
+					LogWStr("  pos "); LogWNum(pos MOD 256, 1); LogWStr("  pc "); LogWNum(breakpc, 1)
+				ELSIF n = 254 THEN LogWStr("pc not found")
+				ELSE LogWStr(objname);
+					IF n = 253 THEN LogWStr(" is new, compile with option e")
+					ELSIF n = 252 THEN LogWStr(" is redefined, compile with option s")
+					ELSIF n = 251 THEN LogWStr(" is redefined (private part only), compile with option s")
+					ELSIF n = 250 THEN LogWStr(" is no longer visible, compile with option s")
+					ELSIF n = 249 THEN LogWStr(" is not consistently imported, recompile imports")
 					END
 				END
-			ELSE
-				IF pos >= 0 THEN LogWLn;
-					LogWStr("  line "); LogWNum(pos DIV 256, 1); LogWStr("  pos "); LogWNum(pos MOD 256, 1)
-				END ;
-				LogErrMsg(n);
-				IF pos < 0 THEN LogWLn END
 			END
 		ELSE
-			IF n >= 0 THEN
-				noerr := FALSE;
-				IF (pos < lasterrpos) OR (lasterrpos + 9 < pos) THEN lasterrpos := pos; LogWLn; LogWStr("  ");
-					IF n < 249 THEN LogWStr("  pos"); LogWNum(pos, 6); LogErrMsg(n)
-					ELSIF n = 255 THEN LogWStr("pos"); LogWNum(pos, 6); LogWStr("  pc "); LogWNum(breakpc, 1)
-					ELSIF n = 254 THEN LogWStr("pc not found")
-					ELSE LogWStr(objname);
-						IF n = 253 THEN LogWStr(" is new, compile with option e")
-						ELSIF n = 252 THEN LogWStr(" is redefined, compile with option s")
-						ELSIF n = 251 THEN LogWStr(" is redefined (private part only), compile with option s")
-						ELSIF n = 250 THEN LogWStr(" is no longer visible, compile with option s")
-						ELSIF n = 249 THEN LogWStr(" is not consistently imported, recompile imports")
-						END
-					END
-				END
-			ELSE
-				IF pos >= 0 THEN LogWLn; LogWStr("  pos"); LogWNum(pos, 6) END ;
-				LogErrMsg(n);
-				IF pos < 0 THEN LogWLn END
-			END
+			IF pos >= 0 THEN LogWLn;
+				LogWStr("  line "); LogWNum(pos DIV 256, 1); LogWStr("  pos "); LogWNum(pos MOD 256, 1)
+			END ;
+			LogErrMsg(n);
+			IF pos < 0 THEN LogWLn END
 		END
 	END Mark;
 
 	PROCEDURE err*(n: SHORTINT);
 	BEGIN 
-		IF useLineNo & (errpos MOD 256 = 255) THEN (* line underflow from OPS.Get *)
+		IF errpos MOD 256 = 255 THEN (* line underflow from OPS.Get *)
 			Mark(n, errpos + 1)
 		ELSE
 			Mark(n, errpos)
@@ -584,12 +551,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE WriteModPos* ;
 	BEGIN
-		WriteString(', "'); WriteString(modName); Write('"'); WriteString(", ");
-		IF useLineNo THEN
-			WriteInt(errpos DIV 256); WriteString(", "); WriteInt(errpos MOD 256)
-		ELSE
-			WriteInt(errpos); WriteString(", -1")
-		END
+		WriteString(', "'); WriteString(modName); WriteString('", '); WriteInt(errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);
