@@ -9,7 +9,7 @@ if [ "$modName" == "OfrontCmd" ] || [ "$modName" == "BrowserCmd" ] || [ "$modNam
   ../Bin64/ofront+ -msC -88 ../../Mod/$modName.Mod
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
-  gcc $modName.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -Wl,--gc-sections -I../../Lib/Mod -I../Lib/Obj64 -L../Lib $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} -lOfront64 -ldl
+  gcc $modName.c -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections -I../../Lib/Mod -I../Lib/Obj64 -L../Lib $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} -lOfront64 -ldl
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 
@@ -19,7 +19,7 @@ else
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
   mv -f $modName.sym ../Sym64
-  gcc -c $modName.c -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -I../../Lib/Mod -I../Lib/Obj64
+  gcc -c $modName.c -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections -I../../Lib/Mod -I../Lib/Obj64
   errCode=$?
   if [ $errCode != 0 ]; then echo "ERROR #"$errCode; exit 1; fi
 

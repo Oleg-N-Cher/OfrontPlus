@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ../Obj64
-export CC="gcc -I . -I ../../../Lib/Mod -s -Os -fno-exceptions -fno-asynchronous-unwind-tables -c"
+export CC="gcc -I. -I../../../Lib/Mod -m64 -Os -g0 -fvisibility=hidden -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 export AR="ar -rc ../libOfront64.a"
 if [ -f "../libOfront64.a" ]; then rm "../libOfront64.a"; fi
 
