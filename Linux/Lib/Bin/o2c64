@@ -11,8 +11,16 @@ if [ $? != 0 ]; then exit 1; fi
 ofront+ -eC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
 if [ $? != 0 ]; then exit 1; fi
 
+## POW
+ofront+ -eC -88 powStrings.Mod
+if [ $? != 0 ]; then exit 1; fi
+
 ## Free Oberon
-ofront+ -sC -88 SDL2.Mod Out.Mod Graph.Mod Math.Mod Turtle.Mod
+ofront+ -sC -88 SDL2.Mod SDL2mixer.Mod Out.Mod Graph.Mod Math.Mod Sound.Mod Turtle.Mod
+if [ $? != 0 ]; then exit 1; fi
+
+## libCurl
+ofront+ -sC -88 libCurl.Mod NetHttp.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 find . -type f -name "*.sym" -exec mv -f {} ../Sym64 \;
