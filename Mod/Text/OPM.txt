@@ -319,7 +319,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				ScanOptions(inS.string, opt); inS.Scan
 			END
 		END;
-		curpos := 256; errpos := curpos; lasterrpos := curpos - 10
 	END InitOptions;
 
 	PROCEDURE Init*(VAR done: BOOLEAN);	(* get the source for one translation *)
@@ -750,7 +749,7 @@ suffix does not work in K&R *)
 
 	PROCEDURE WriteModPos* ;
 	BEGIN
-		WriteString(', "'); WriteString(modName); WriteString('", '); WriteInt(errpos)
+		WriteString(', "'); WriteString(modName); WriteString('", '); WriteInt(-errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Writer; F: Files.File);
