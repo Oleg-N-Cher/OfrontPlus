@@ -73,8 +73,12 @@ VAR
 BEGIN
   Out.Ln;
   i := 0; SYSTEM.GET(s, ch);
-  WHILE ch # 0X DO Out.Char(ch); INC(i); SYSTEM.GET(s + i, ch) END;
-  Out.Char(" "); Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256, 0)
+  WHILE ch # 0X DO Out.Char(ch); INC(i); SYSTEM.GET(s + i, ch) END; Out.Char(" ");
+  IF pos > 0 THEN
+    Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256 + 1, 0)
+  ELSE
+    Out.Int(-pos)
+  END
 END OutModName;
 
 PROCEDURE Halt*(code: INTEGER; mod: CString; pos: INTEGER);
