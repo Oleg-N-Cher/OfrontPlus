@@ -74,10 +74,10 @@ BEGIN
   Out.Ln;
   i := 0; SYSTEM.GET(s, ch);
   WHILE ch # 0X DO Out.Char(ch); INC(i); SYSTEM.GET(s + i, ch) END; Out.Char(" ");
-  IF pos > 0 THEN
+  IF pos > 0 THEN (* pos > 0: line*256 + column *)
     Out.Int(pos DIV 256, 0); Out.Char(":"); Out.Int(pos MOD 256 + 1, 0)
-  ELSE
-    Out.Int(-pos)
+  ELSE (* pos <= 0: raw text position *)
+    Out.Int(-pos, 0)
   END
 END OutModName;
 
