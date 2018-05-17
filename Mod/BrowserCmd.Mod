@@ -122,13 +122,14 @@
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
 						Indent(1); Ws("PROCEDURE");
-						IF obj^.mode = IProc THEN Ws("+ ")
-						ELSIF obj^.mode = CProc THEN Ws("- ")
-						END ;
+						IF obj^.mode = IProc THEN Wch("+")
+						ELSIF obj^.mode = CProc THEN Wch("-")
+						END;
+						Wch(" "); IF obj^.sysflag # 0 THEN Ws("[stdcall] ") END;
 						Ws(obj^.name^);
 						Wsign(obj^.typ, obj^.link);
 						IF obj^.mode = CProc THEN ext := obj^.conval^.ext;
-							IF ext # NIL THEN m := LEN(ext^); i := 0; Ws('  "');
+							IF ext # NIL THEN m := LEN(ext^); i := 0; Ws(' "');
 								WHILE i < m DO Wch(ext^[i]); INC(i) END;
 								Wch('"')
 							END
@@ -179,7 +180,7 @@
 		| Pointer:
 				Ws("POINTER "); SysFlag; Ws("TO "); Wtype(typ^.BaseTyp)
 		| ProcTyp:
-				Ws("PROCEDURE "); SysFlag; Wsign(typ^.BaseTyp, typ^.link)
+				Ws("PROCEDURE"); IF typ^.sysflag # 0 THEN Ws(" [stdcall]") END; Wsign(typ^.BaseTyp, typ^.link)
 		| Comp:
 				CASE typ^.comp OF
 				| Array:
@@ -201,7 +202,7 @@
 							fld := fld^.link
 						END ;
 						Wmthd(typ^.link);
-						Indent(2); Ws("END ");
+						Indent(2); Ws("END");
 						IF option = "x" THEN Indent(1);
 							Ws("(* size: "); Wi(typ^.size); Ws(" align: "); Wi(typ^.align);
 							Ws(" nofm: "); Wi(typ^.n); Ws(" *)")

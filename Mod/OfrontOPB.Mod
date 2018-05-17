@@ -454,7 +454,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(115)
 					END
 				END ;
-				IF (fp^.mode # ap^.mode) OR checkNames & (fp^.name^ # ap^.name^) THEN err(115) END ;
+				IF (fp^.mode # ap^.mode) OR (fp^.sysflag # ap^.sysflag) OR (fp^.vis # ap^.vis)
+					OR checkNames & (fp^.name^ # ap^.name^) THEN err(115) END;
 				ap := ap^.link
 			ELSE err(116)
 			END ;
@@ -465,7 +466,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE CheckProc(x: OPT.Struct; y: OPT.Object);	(* proc var x := proc y, check compatibility *)
 	BEGIN
-		IF y^.mode IN {XProc, IProc, LProc} THEN
+		IF (y^.mode IN {XProc, IProc, LProc}) & (x^.sysflag = y^.sysflag) THEN
 			IF y^.mode = LProc THEN
 				IF y^.mnolev = 0 THEN y^.mode := XProc
 				ELSE err(73)

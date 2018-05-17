@@ -122,12 +122,11 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		ELSE vis := internal
 		END
 	END CheckMark;
-	
+
 	PROCEDURE CheckSysFlag(VAR sysflag: SHORTINT; default: SHORTINT);
 		VAR x: OPT.Node; sf: LONGINT;
 	BEGIN
-		IF sym = lbrak THEN OPS.Get(sym);
-			IF ~OPT.SYSimported THEN err(135) END ;
+		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
 			ConstExpression(x);
 			IF x^.typ^.form IN intSet THEN sf := x^.conval^.intval;
 				IF (sf < 0) OR (sf > OPM.MaxSysFlag) THEN err(220); sf := 0 END
@@ -137,6 +136,17 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		ELSE sysflag := default
 		END
 	END CheckSysFlag;
+
+	PROCEDURE CheckSysFlagProc(VAR sysflag: SHORTINT);
+	BEGIN
+		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
+			IF (sym = ident) & (OPS.name = "stdcall") THEN OPS.Get(sym); sysflag := 1
+			ELSE OPS.Get(sym); err(220); sysflag := 0
+			END;
+			CheckSym(rbrak)
+		ELSE sysflag := 0
+		END
+	END CheckSysFlagProc;
 
 	PROCEDURE RecordType(VAR typ, banned: OPT.Struct);
 		VAR fld, first, last, base: OPT.Object;
@@ -317,7 +327,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		ELSIF sym = pointer THEN
 			OPS.Get(sym); PointerType(typ)
 		ELSIF sym = procedure THEN
-			OPS.Get(sym); typ := OPT.NewStr(ProcTyp, Basic); CheckSysFlag(typ^.sysflag, 0);
+			OPS.Get(sym); typ := OPT.NewStr(ProcTyp, Basic); CheckSysFlagProc(typ^.sysflag);
 			IF sym = lparen THEN
 				OPS.Get(sym); OPT.OpenScope(level, NIL);
 				FormalParameters(typ^.link, typ^.BaseTyp); OPT.CloseScope
@@ -579,6 +589,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			name: OPS.Name;
 			mode, vis: BYTE;
 			forward: BOOLEAN;
+			sys: SHORTINT;
 
 		PROCEDURE GetCode;
 			VAR ext: OPT.ConstExt; n, c, i: INTEGER; s: OPS.String;
@@ -592,24 +603,26 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			END EnsureLen;
 
 		BEGIN
-			n := 0; NEW(s, 128);
+			n := 0; NEW(s, 128); IF sym = comma THEN err(13) END;
 			LOOP
 				IF sym = number THEN c := SHORT(OPS.intval); EnsureLen(n + 1);
 					IF OPS.numtyp # char THEN err(63); c := 1; n := 0
-					ELSIF (mode = CProc) & (CHR(c) < " ") THEN err(3) 
+					ELSIF CHR(c) < " " THEN err(3) 
 					END;
-					s^[n] := CHR(c); INC(n)
-				ELSIF sym = string THEN IF (mode = CProc) & OPS.rawstr THEN err(3) END;
-					c := SHORT(OPS.intval) - 1 (*exclude 0X*); EnsureLen(n + c);
+					OPS.Get(sym); s^[n] := CHR(c); INC(n)
+				ELSIF sym = string THEN IF OPS.rawstr THEN err(3) END;
+					c := SHORT(OPS.intval) - 1 (*exclude 0X*);
+					IF c = 0 (*empty string*) THEN err(63) END; EnsureLen(n + c);
 					FOR i := 0 TO c - 1 DO s^[n + i] := OPS.str^[i] END;
-					INC(n, c)
-				ELSIF sym = semicolon THEN EXIT
-				ELSE err(63)
+					OPS.Get(sym); INC(n, c)
 				END;
-				OPS.Get(sym); IF sym = comma THEN OPS.Get(sym) ELSE EXIT END
+				IF sym = comma THEN OPS.Get(sym); IF (sym # number) & (sym # string) THEN err(13) END
+				ELSIF (sym = number) OR (sym = string) THEN err(comma)
+				ELSE EXIT
+				END
 			END;
-			IF n # 0 THEN NEW(ext, n); i := 0;
-				WHILE i < n DO ext[i] := s[i]; INC(i) END;
+			IF n # 0 THEN NEW(ext, n); i := 0; IF sys # 0 THEN err(127) END;
+				WHILE i < n DO ext^[i] := s^[i]; INC(i) END;
 			ELSE ext := NIL
 			END;
 			proc^.conval^.ext := ext;
@@ -619,6 +632,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		PROCEDURE GetParams;
 		BEGIN
 			proc^.vis := vis; proc^.mode := mode; proc^.typ := OPT.notyp;
+			proc^.sysflag := SHORT(sys);
 			proc^.conval := OPT.NewConst(); proc^.conval^.setval := {};
 			IF sym = lparen THEN
 				OPS.Get(sym); FormalParameters(proc^.link, proc^.typ)
@@ -689,19 +703,19 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			END
 		END TProcDecl;
 	
-	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc;
+	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc; sys := 0;
 		IF (sym # ident) & (sym # lparen) THEN
 			CASE sym OF
-			| times: (* mode set later in OPB.CheckAssign *)
-			| arrow: forward := TRUE
-			| plus : mode := IProc
-			| minus: mode := CProc
-			ELSE err(ident)
+			| times: OPS.Get(sym) (* mode set later in OPB.CheckAssign *)
+			| arrow: forward := TRUE; OPS.Get(sym)
+			| plus: mode := IProc; OPS.Get(sym)
+			| minus: mode := CProc; OPS.Get(sym)
+			ELSE
 			END;
-			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END ;
-			OPS.Get(sym)
-		END ;
-		IF (sym = lparen) & (OPM.Language # "1") & (OPM.Language # "7") THEN TProcDecl
+			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END;
+			CheckSysFlagProc(sys)
+		END;
+		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Language # "1") & (OPM.Language # "7") THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(OPS.name, fwd);
 			name := OPS.name; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
@@ -709,6 +723,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			IF (fwd # NIL) & (fwd^.mode IN {LProc, XProc}) & ~(hasBody IN fwd^.conval^.setval) THEN
 				(* there exists a corresponding forward declaration *)
 				proc := OPT.NewObj(); proc^.leaf := TRUE;
+				IF (mode IN {IProc, CProc}) OR (fwd^.sysflag # sys) THEN err(133) END;
 				IF fwd^.vis # vis THEN err(118) END
 			ELSE
 				IF fwd # NIL THEN err(1); fwd := NIL END ;
