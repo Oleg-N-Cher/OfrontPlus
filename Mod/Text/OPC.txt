@@ -1,4 +1,4 @@
-MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 16.5.98 *)
+﻿MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 16.5.98 *)
 (* C source code generator version
 
 	2000-04-30 jt, synchronized with BlackBox version, in particular
@@ -715,11 +715,11 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END FieldList;
 	
 	PROCEDURE WriteConstArr (VAR obj: OPT.Object; typ: OPT.Struct); 
-	(* ????????? ??????????? "??????????? ??????". typ - ??????? ??????? ??????? *)
+	(* генерация конструкция "константный массив". typ - текущий уровень массива *)
 	VAR apar: OPT.Node; i: INTEGER; 
 	
 		PROCEDURE WriteElem (arr: OPT.ConstArr; i: INTEGER; form: BYTE);
-		(* ??????? ? ??????? i-? ??????? ???????????? ??????? arr *)
+		(* выводит в листинг i-й элемент константного массива arr *)
 		BEGIN
 			WITH 
 			|  arr : OPT.ConstArrOfByte DO
@@ -730,22 +730,22 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END WriteElem;	
 		
 	BEGIN
-		OPM.WriteString("{"); (* ?????? (  *)
+		OPM.WriteString("{"); (* скобка (  *)
 		i := 0;
-		IF  typ^.BaseTyp^.form # 15  THEN (* ?????? ?? ??????? ????????? *)
+		IF  typ^.BaseTyp^.form # 15  THEN (* массив из простых элементов *)
 			FOR i := 0 TO typ^.n-2 DO  
 						WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); OPM.WriteString(",");
 						IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END;
 			END;
-			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); (* ????????? ??????? *)	
-			INC(obj^.conval^.intval, typ^.n); (* ???? ?????????? ???????? *)					
-		ELSE (* ?????? ?? ???????? *)
+			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); (* последний элемент *)	
+			INC(obj^.conval^.intval, typ^.n); (* учли выведенные элементы *)					
+		ELSE (* массив из массивов *)
 			FOR i := 0 TO typ^.n-2 DO
-				WriteConstArr (obj, typ^.BaseTyp);  (* ??????????? ????????? ?????????? *)	
+				WriteConstArr (obj, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)	
 				OPM.WriteString(","); OPM.WriteLn;
 				BegStat;
 			END;
-			WriteConstArr (obj, typ^.BaseTyp); (* ????????? ??????? *)
+			WriteConstArr (obj, typ^.BaseTyp); (* последний элемент *)
 		END;	
 		OPM.WriteString("}"); 
 	END WriteConstArr;
@@ -758,7 +758,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
 				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR 
-				((obj^.conval # NIL) & (obj^.conval^.arr # NIL)) THEN	(* ?????? ?????.?????? ????????*)
+				((obj^.conval # NIL) & (obj^.conval^.arr # NIL)) THEN	(* каждый конст.массив отдельно*)
 				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;
@@ -766,12 +766,12 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					BegStat;
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
-						IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* ?????.?????? *)
+						IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
 								OPM.WriteString("__CONSTARR ");
 						ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
 						ELSE OPM.WriteString(Export)
 						END
-					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN  (* ?????.?????? *)
+					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN  (* конст.массив *)
 								OPM.WriteString("__CONSTARRLOC ")
 					END;
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
@@ -795,7 +795,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					base := NIL
 				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) & (obj^.typ^.form = Pointer) THEN
 					OPM.WriteString(" = NIL")
-				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN (* ???????? ?????.??????? *)
+				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN (* элементы конст.массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
 					BegStat; 
 					obj^.conval^.intval := 0;
