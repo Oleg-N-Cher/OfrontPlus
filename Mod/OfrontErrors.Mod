@@ -134,6 +134,7 @@ BEGIN
   | 130: Log.String("WITH clause does not specify a variable")
   | 131: Log.String("LEN not applied to array")
   | 132: Log.String("dimension in LEN too large or negative")
+  | 133: Log.String("system flag doesn't match forward declaration")
   | 135: Log.String("SYSTEM not imported")
 
   | 150: Log.String("key inconsistency of imported module")

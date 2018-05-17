@@ -47,6 +47,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		Static = "static ";
 		Export = "export ";	(* particularily introduced for VC++ declspec() *)
 		Extern = "import ";	(* particularily introduced for VC++ declspec() *)
+		EXTERN = "__EXTERN ";	(* import from a dynamic library *)
+		STDCALL = "__STDCALL ";	(* stdcall calling convention *)
 		Struct = "struct ";
 		LocalScope = "_s"; (* name of a local intermediate scope (variable name) *)
 		GlobalScope = "_s"; (* pointer to current scope extension *)
@@ -186,7 +188,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				Stars (typ^.BaseTyp, openClause);
 				openClause := (typ^.comp = Array)
 			ELSIF typ^.form = ProcTyp THEN
-				OPM.Write(OpenParen); OPM.Write(Star)
+				OPM.Write(OpenParen);
+				IF typ^.sysflag # 0 THEN OPM.WriteString(STDCALL) END; OPM.Write(Star)
 			ELSE
 				pointers := 0;
 				WHILE ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) & (typ^.form = Pointer) DO
@@ -552,20 +555,22 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ext := obj.conval.ext;
 				IF ext # NIL THEN
 					IF (ext^[0] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN 
-						OPM.WriteString("#define "); Ident(obj);
-						DeclareParams(obj^.link, TRUE, TRUE);
-						OPM.Write(Tab);
-					END ;
+						OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
+						OPM.Write(Tab)
+					END;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
-					OPM.WriteStringVar(obj^.name^); DeclareParams(obj^.link, TRUE, FALSE);
-					OPM.WriteLn; OPM.WriteString("__EXTERN ");
+					OPM.WriteString(EXTERN);
 					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
-					(*IF obj^.sysflag # 0 THEN OPM.WriteString(" __CALL_1") END; OPM.Write(Blank);*)
+					OPM.Write(Blank); IF obj^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 					OPM.WriteStringVar(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
+					OPM.WriteLn;
+					OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
+					OPM.Write(Tab);
+					OPM.WriteStringVar(obj^.name^); DeclareParams(obj^.link, TRUE, FALSE)
 				END;
 				OPM.WriteLn
-			END ;
+			END;
 			CProcDefs(obj^.right, vis)
 		END
 	END CProcDefs;
@@ -783,12 +788,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	PROCEDURE ProcHeader(proc: OPT.Object; define: BOOLEAN);
 	BEGIN
-		IF proc^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(proc^.typ^.strobj) END ;
-		OPM.Write(Blank); Ident(proc); OPM.Write(Blank);
+		IF proc^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(proc^.typ^.strobj) END;
+		OPM.Write(Blank); IF proc^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+		Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
 			AnsiParamList(proc^.link, TRUE, TRUE);
-			IF ~define THEN OPM.Write(";") END ;
-			OPM.WriteLn;
+			IF ~define THEN OPM.Write(";") END;
+			OPM.WriteLn
 		ELSIF define THEN
 			DeclareParams(proc^.link, FALSE, TRUE);
 			OPM.WriteLn;
