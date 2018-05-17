@@ -1,4 +1,4 @@
-MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
+﻿MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 (*
 2002-04-11  jt: SHORT(SHORT(-mno)) used for -mno for BB 1.4
 2002-08-20  jt: NewStr: txtpos remains 0 for structs read from symbol files
@@ -40,7 +40,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			intval2*: INTEGER;	(* string length, proc var size or larger case label *)
 			setval*: SET;	(* constant value, procedure body present or "ELSE" present in case *)
 			realval*: REAL;	(* real or longreal constant value *)
-			arr*: ConstArr; (*  ??? ?????? ???????????? ??????? *)
+			arr*: ConstArr; (*  для данных константного массива *)
 		END ;
 
 		ObjDesc* = EXTENSIBLE RECORD
