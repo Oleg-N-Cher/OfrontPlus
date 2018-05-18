@@ -497,7 +497,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			| longreal: x := OPB.NewRealConst(OPS.lrlval, OPT.lrltyp)
 			END ;
 			OPS.Get(sym)
-		ELSIF sym = string THEN IF OPS.rawstr THEN err(3) END;
+		ELSIF sym = string THEN
 			x := OPB.NewString(OPS.str, SHORT(OPS.intval)); OPS.Get(sym)
 		ELSIF sym = nil THEN
 			x := OPB.Nil(); OPS.Get(sym)
@@ -610,7 +610,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					ELSIF CHR(c) < " " THEN err(3) 
 					END;
 					OPS.Get(sym); s^[n] := CHR(c); INC(n)
-				ELSIF sym = string THEN IF OPS.rawstr THEN err(3) END;
+				ELSIF sym = string THEN
 					c := SHORT(OPS.intval) - 1 (*exclude 0X*);
 					IF c = 0 (*empty string*) THEN err(63) END; EnsureLen(n + c);
 					FOR i := 0 TO c - 1 DO s^[n + i] := OPS.str^[i] END;
