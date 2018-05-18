@@ -548,18 +548,22 @@
 							OPB.Param(apar, fp); (* проверим на совместимость*)
 							(* тут нужно положить элемент в кусок памяти *)
 							WITH 
-							| y : OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
+							| y: OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
 										y.val[x^.conval^.intval+i] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
-									ELSE  err(64) END;
-							| y : OPT.ConstArrOfSInt DO (* типы с размером в 2 байта *)
+									ELSE err(64) END;
+							| y: OPT.ConstArrOfSInt DO (* типы с размером в 2 байта *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
 										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval)); 
-									ELSE  err(64) END;
-							| y : OPT.ConstArrOfInt DO (* типы с размером в 4 байта *)
+									ELSE err(64) END;
+							| y: OPT.ConstArrOfInt DO (* типы с размером в 4 байта *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
 										y.val[x^.conval^.intval+i] := SHORT(apar^.conval^.intval);
-									ELSE  err(64) END;
+									ELSE err(64) END;
+							| y: OPT.ConstArrOfLInt DO (* типы с размером в 8 байт *)
+									IF x^.conval^.intval+i < LEN(y.val^) THEN
+										y.val[x^.conval^.intval+i] := apar^.conval^.intval
+									ELSE err(64) END
 							END;
 						END;
 						INC(i);
