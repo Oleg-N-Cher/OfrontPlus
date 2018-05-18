@@ -9,11 +9,11 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		Name* = ARRAY MaxIdLen OF CHAR;
 		String* = POINTER TO ARRAY OF CHAR;
 
-	(* name, str/rawstr, numtyp, intval, realval, lrlval are implicit results of Get *)
+	(* name, str, numtyp, intval, realval, lrlval are implicit results of Get *)
 
 	VAR
 		name*: Name;
-		str-: String; rawstr-: BOOLEAN;	(* illegal character in string *)
+		str-: String;
 		numtyp-: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
 		intval-: LONGINT;	(* integer value or string length (incl. 0X) *)
 		realval-: REAL;
@@ -66,12 +66,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	PROCEDURE Str(VAR sym: BYTE);
 		VAR i: INTEGER; och: CHAR;
 			s: ARRAY 256 OF CHAR; t: String;
-	BEGIN i := 0; och := ch; rawstr := FALSE;
+	BEGIN i := 0; och := ch;
 		LOOP OPM.Get(ch);
-			IF ch = och THEN EXIT END ;
-			IF (ch = 9X) OR (ch = 0DX) THEN rawstr := TRUE
-			ELSIF ch < " " THEN err(3); EXIT
-			END;
+			IF ch = och THEN EXIT END;
+			IF ch < " " THEN err(3); EXIT END;
 			IF i < LEN(s) - 1 THEN s[i] := ch
 			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(t, 2 * LEN(s)); COPY(s, t^); t^[i] := ch
 			ELSIF i < LEN(t^) - 1 THEN t^[i] := ch
