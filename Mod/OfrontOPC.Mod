@@ -604,24 +604,28 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR nofptrs: INTEGER;
 			o: OPT.Object;
 	BEGIN
-		BegStat; OPM.WriteString("__TDESC("); 
-		Andent(typ); OPM.WriteString("__desc");
-		Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
-		OPM.Write('"');
-		IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name^) END ;
-		Str1('", #), {', typ^.size);
-		nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.PointerSize);
-		EndStat
+		IF ~ODD(typ^.sysflag) THEN
+			BegStat; OPM.WriteString("__TDESC("); 
+			Andent(typ); OPM.WriteString("__desc");
+			Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
+			OPM.Write('"');
+			IF typ^.strobj # NIL THEN OPM.WriteStringVar(typ^.strobj^.name^) END ;
+			Str1('", #), {', typ^.size);
+			nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.PointerSize);
+			EndStat
+		END
 	END TDescDecl;
 
 	PROCEDURE InitTDesc*(typ: OPT.Struct);
 	BEGIN
-		BegStat; OPM.WriteString("__INITYP(");
-		Andent(typ); OPM.WriteString(", ");
-		IF typ^.BaseTyp # NIL THEN Andent(typ^.BaseTyp) ELSE Andent(typ) END ;
-		Str1(", #)", typ^.extlev);
-		EndStat;
-		IF typ^.strobj # NIL THEN InitTProcs(typ^.strobj, typ^.link) END
+		IF ~ODD(typ^.sysflag) THEN
+			BegStat; OPM.WriteString("__INITYP(");
+			Andent(typ); OPM.WriteString(", ");
+			IF typ^.BaseTyp # NIL THEN Andent(typ^.BaseTyp) ELSE Andent(typ) END ;
+			Str1(", #)", typ^.extlev);
+			EndStat;
+			IF typ^.strobj # NIL THEN InitTProcs(typ^.strobj, typ^.link) END
+		END
 	END InitTDesc;
 
 	PROCEDURE Align*(VAR adr: INTEGER; base: INTEGER);
@@ -741,7 +745,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					ELSE OPM.WriteString("LONGINT ")
 					END;
 					LenList(obj, FALSE, TRUE)
-				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
+				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & ~ODD(obj^.typ^.sysflag) THEN
 					EndStat; BegStat;
 					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
@@ -841,7 +845,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		WHILE (n # NIL) & (n^.class = Ninittd) DO
 			typ := n^.typ;
-			IF (vis = internal) OR (typ^.ref < OPM.MaxStruct (*type needed in symbol file*)) THEN
+			IF ~ODD(typ^.sysflag) & ((vis = internal) OR (typ^.ref < OPM.MaxStruct (*type needed in symbol file*))) THEN
 				BegStat;
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
