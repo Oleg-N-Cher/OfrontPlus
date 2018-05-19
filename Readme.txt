@@ -33,6 +33,8 @@ Ofront+ differences from Ofront/voc
 
   10. Constant arrays, BITS(), IN/OUT procedure parameters (only in Ofront+ for BlackBox).
 
+  11. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
+
 
 Get it!
 =======
