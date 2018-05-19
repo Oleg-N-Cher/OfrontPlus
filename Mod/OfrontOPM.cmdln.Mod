@@ -196,7 +196,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF Args.argc = 1 THEN stop := TRUE;
 			Console.Ln;
 			Console.String(title); Console.Ln;
-			Console.String("Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2017"); Console.Ln; Console.Ln;
+			Console.String("Copyright (c) Software Templ OEG, 1995-2007 & VEDAsoft Oberon Club, 2013-2018"); Console.Ln; Console.Ln;
 			Console.String("SYNOPSIS"); Console.Ln;
 			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
