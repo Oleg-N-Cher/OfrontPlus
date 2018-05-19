@@ -181,9 +181,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 
 		PROCEDURE SysFlag;
 		BEGIN
-			IF typ^.sysflag # 0 THEN
-				Ws(" ["); Wi(typ^.sysflag); Wch("]")
-			END
+			IF ODD(typ^.sysflag) THEN Ws(" [notag]") END
 		END SysFlag;
 
 	BEGIN
