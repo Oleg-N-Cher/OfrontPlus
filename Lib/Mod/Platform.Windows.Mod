@@ -492,14 +492,14 @@ END DeleteFile;
 PROCEDURE -setCurrentDirectory(n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
 PROCEDURE -getCurrentDirectory(VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
 
-PROCEDURE Chdir*(n: ARRAY [notag] OF CHAR): ErrorCode;
+PROCEDURE ChDir*(n: ARRAY [notag] OF CHAR): ErrorCode;
   VAR r: BOOL;
 BEGIN
   r := setCurrentDirectory(n);
   IF r = 0 THEN RETURN err() END;
   getCurrentDirectory(CWD);
   RETURN 0
-END Chdir;
+END ChDir;
 
 
 PROCEDURE -getFileAttributes(name: ARRAY OF CHAR): DWORD
