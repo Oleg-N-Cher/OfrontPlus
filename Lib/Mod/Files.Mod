@@ -590,7 +590,7 @@ Especially Length would become fairly complex.
 
   PROCEDURE ChangeDirectory*(path: ARRAY [1] OF CHAR; VAR res: INTEGER);
   BEGIN
-    res := Platform.Chdir(path)
+    res := Platform.ChDir(path)
   END ChangeDirectory;
 
   PROCEDURE FlipBytes(VAR src, dest: ARRAY OF BYTE);

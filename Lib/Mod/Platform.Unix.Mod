@@ -438,12 +438,12 @@ END DeleteFile;
 PROCEDURE -chdir(n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
 PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
-PROCEDURE Chdir*(n: ARRAY [notag] OF CHAR): ErrorCode;
+PROCEDURE ChDir*(n: ARRAY [notag] OF CHAR): ErrorCode;
   VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
   IF r < 0 THEN RETURN err() ELSE RETURN 0 END
-END Chdir;
+END ChDir;
 
 
 PROCEDURE FileExists*(pathname: ARRAY OF CHAR): BOOLEAN;
