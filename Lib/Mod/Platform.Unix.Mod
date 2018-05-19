@@ -30,15 +30,15 @@ TYPE
     The only operations that can be carried out with the file handle in UNIX
     are to copy and compare it for equality with another file handle. *)
 
-  FileIdentity* = RECORD
+  FileIdentity* = RECORD [notag]
     volume: DEV_T;   (* dev on Unix filesystems, volume serial number on NTFS *)
     index:  INO_T;   (* inode on Unix filesystems, file id on NTFS *)
     mtime:  TIME_T;  (* File modification time, value is system dependent *)
   END;
 
-  EnvPtr  = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
-  ArgPtr  = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
-  ArgVec* = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
+  EnvPtr  = POINTER [notag] TO ARRAY [notag] 1024 OF CHAR;
+  ArgPtr  = POINTER [notag] TO ARRAY [notag] 1024 OF CHAR;
+  ArgVec* = POINTER [notag] TO ARRAY [notag] 1024 OF ArgPtr;
 
 
 VAR
@@ -279,28 +279,28 @@ PROCEDURE -mkdir(pathname: ARRAY OF CHAR): INTEGER "mkdir((char*)pathname, 0775)
 
 (* File APIs *)
 
-PROCEDURE OldRO*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewDir*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 BEGIN
   IF mkdir(pathname) # 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
@@ -438,7 +438,7 @@ END DeleteFile;
 PROCEDURE -chdir(n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
 PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
-PROCEDURE Chdir*(n: ARRAY [1] OF CHAR): ErrorCode;
+PROCEDURE Chdir*(n: ARRAY [notag] OF CHAR): ErrorCode;
   VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
