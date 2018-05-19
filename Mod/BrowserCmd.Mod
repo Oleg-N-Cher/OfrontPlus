@@ -169,7 +169,7 @@
 		PROCEDURE SysFlag;
 		BEGIN
 			IF typ^.sysflag # 0 THEN
-				Wch("["); Wi(typ^.sysflag); Ws("] ")
+				Ws(" ["); Wi(typ^.sysflag); Wch("]")
 			END
 		END SysFlag;
 
@@ -178,18 +178,18 @@
 		| Undef:
 				Ws("Undef")
 		| Pointer:
-				Ws("POINTER "); SysFlag; Ws("TO "); Wtype(typ^.BaseTyp)
+				Ws("POINTER"); SysFlag; Ws(" TO "); Wtype(typ^.BaseTyp)
 		| ProcTyp:
 				Ws("PROCEDURE"); IF typ^.sysflag # 0 THEN Ws(" [stdcall]") END; Wsign(typ^.BaseTyp, typ^.link)
 		| Comp:
 				CASE typ^.comp OF
 				| Array:
-						Ws("ARRAY "); SysFlag; Wi(typ^.n); Ws(" OF "); Wtype(typ^.BaseTyp)
+						Ws("ARRAY"); SysFlag; Wch(" "); Wi(typ^.n); Ws(" OF "); Wtype(typ^.BaseTyp)
 				| DynArr:
-						Ws("ARRAY "); SysFlag; Ws("OF "); Wtype(typ^.BaseTyp)
+						Ws("ARRAY"); SysFlag; Ws(" OF "); Wtype(typ^.BaseTyp)
 				| Record:
-						Ws("RECORD ");SysFlag;
-						IF typ^.BaseTyp # NIL THEN Wch("("); Wtype(typ^.BaseTyp); Wch(")") END ;
+						Ws("RECORD"); SysFlag;
+						IF typ^.BaseTyp # NIL THEN Ws(" ("); Wtype(typ^.BaseTyp); Wch(")") END;
 						Wln; fld := typ^.link;
 						WHILE (fld # NIL) & (fld^.mode = Fld) DO
 							IF (option = "x") OR (fld^.name[0] # "@") THEN Indent(3);
