@@ -20,7 +20,7 @@ TYPE
   ADRINT* = Types.ADRINT; (* 32 or 64 bits *)
 
   BOOL = INT32; DWORD = INT32;
-  LARGE_INTEGER = RECORD [1] low, high: INT32 END;
+  LARGE_INTEGER = RECORD [notag] low, high: INT32 END;
 
   ErrorCode*  = INTEGER;
   FileHandle* = ADRINT; (* 32 or 64 bits *)
@@ -31,7 +31,7 @@ TYPE
      address. Although HANDLE is typedef'd as void *, that's just to make it
      more opaque because it prohibits arithmetic. *)
 
-  FileIdentity* = RECORD
+  FileIdentity* = RECORD [notag]
     volume:    DWORD;(* dev on Unix filesystems, volume serial number on NTFS *)
     indexhigh: DWORD;  (* inode on Unix filesystems, file id on NTFS *)
     indexlow:  DWORD;
@@ -39,8 +39,8 @@ TYPE
     mtimelow:  DWORD;  (* File modification time, value is system dependent *)
   END;
 
-  ArgPtr  = POINTER [1] TO ARRAY [1] 1024 OF CHAR;
-  ArgVec* = POINTER [1] TO ARRAY [1] 1024 OF ArgPtr;
+  ArgPtr  = POINTER [notag] TO ARRAY [notag] 1024 OF CHAR;
+  ArgVec* = POINTER [notag] TO ARRAY [notag] 1024 OF ArgPtr;
 
 
 VAR
@@ -283,28 +283,28 @@ PROCEDURE -createDirectory(lpPathName: ARRAY OF CHAR): BOOL
 
 (* File APIs *)
 
-PROCEDURE OldRO*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(pathname: ARRAY [1] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir*(pathname: ARRAY [1] OF CHAR): ErrorCode;
+PROCEDURE NewDir*(pathname: ARRAY [notag] OF CHAR): ErrorCode;
 BEGIN
   IF createDirectory(pathname) = 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
@@ -380,7 +380,7 @@ END MTimeAsClock;
 PROCEDURE -getFileSize(h: FileHandle; VAR sizehigh: DWORD): DWORD "(INTEGER)GetFileSize((HANDLE)h, (LPDWORD)sizehigh)";
 
 PROCEDURE FileSize*(h: FileHandle; VAR len: LONGINT): ErrorCode;
-VAR size: RECORD [1] low, high: DWORD END; error: ErrorCode;
+VAR size: RECORD [notag] low, high: DWORD END; error: ErrorCode;
 BEGIN
   size.low := getFileSize(h, size.high);
   IF size.low = INVALIDFILESIZE() THEN
@@ -492,7 +492,7 @@ END DeleteFile;
 PROCEDURE -setCurrentDirectory(n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
 PROCEDURE -getCurrentDirectory(VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
 
-PROCEDURE Chdir*(n: ARRAY [1] OF CHAR): ErrorCode;
+PROCEDURE Chdir*(n: ARRAY [notag] OF CHAR): ErrorCode;
   VAR r: BOOL;
 BEGIN
   r := setCurrentDirectory(n);
