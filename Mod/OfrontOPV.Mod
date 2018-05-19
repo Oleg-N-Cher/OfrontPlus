@@ -550,7 +550,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			IF (form = LInt) & (n^.class = Nconst)
 			& (n^.conval^.intval <= OPM.MaxInt) & (n^.conval^.intval >= OPM.MinInt) THEN
 				OPM.PromoteIntConstToLInt()
-			ELSIF (comp = Record) & (mode = VarPar) THEN
+			ELSIF (comp = Record) & ~ODD(typ^.sysflag) & (mode = VarPar) THEN
 				OPM.WriteString(", "); TypeOf(n)
 			ELSIF comp = DynArr THEN
 				IF n^.class = Nconst THEN (* ap is string constant *)
