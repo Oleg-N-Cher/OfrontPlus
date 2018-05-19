@@ -168,8 +168,10 @@
 
 		PROCEDURE SysFlag;
 		BEGIN
-			IF typ^.sysflag # 0 THEN
+			IF (option = "x") & (typ^.sysflag # 0) THEN
 				Ws(" ["); Wi(typ^.sysflag); Wch("]")
+			ELSIF ODD(typ^.sysflag) THEN
+				Ws(" [notag]")
 			END
 		END SysFlag;
 
