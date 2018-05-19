@@ -1,22 +1,22 @@
 @ECHO OFF
 SET txt=..\Bin\odc2txt.exe
-%txt% ..\Ofront\Mod\Browser.odc ..\Ofront\Mod\Text\Browser.txt
+%txt% Mod\Browser.odc Mod\Text\Browser.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\Cmd.odc ..\Ofront\Mod\Text\Cmd.txt
+%txt% Mod\Cmd.odc Mod\Text\Cmd.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPB.odc ..\Ofront\Mod\Text\OPB.txt
+%txt% Mod\OPB.odc Mod\Text\OPB.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPC.odc ..\Ofront\Mod\Text\OPC.txt
+%txt% Mod\OPC.odc Mod\Text\OPC.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPM.odc ..\Ofront\Mod\Text\OPM.txt
+%txt% Mod\OPM.odc Mod\Text\OPM.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPP.odc ..\Ofront\Mod\Text\OPP.txt
+%txt% Mod\OPP.odc Mod\Text\OPP.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPS.odc ..\Ofront\Mod\Text\OPS.txt
+%txt% Mod\OPS.odc Mod\Text\OPS.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPT.odc ..\Ofront\Mod\Text\OPT.txt
+%txt% Mod\OPT.odc Mod\Text\OPT.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Mod\OPV.odc ..\Ofront\Mod\Text\OPV.txt
+%txt% Mod\OPV.odc Mod\Text\OPV.txt
 IF errorlevel 1 PAUSE
-%txt% ..\Ofront\Rsrc\Strings.odc ..\Ofront\Rsrc\Text\Strings.txt
+%txt% Rsrc\Strings.odc Rsrc\Text\Strings.txt
 IF errorlevel 1 PAUSE
