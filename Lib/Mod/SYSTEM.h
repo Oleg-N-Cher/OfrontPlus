@@ -206,7 +206,19 @@ extern void       Heap_INCREF();
 #define __ENDMOD              return m
 #define __IMPORT(name__init)  Heap_INCREF(name__init())
 
-#define __EXTERN __attribute__((dllimport))
+#if defined _WIN32 || defined __CYGWIN__
+#  ifdef __GNUC__
+#    define __EXTERN __attribute__((dllimport))
+#  else
+#    define __EXTERN __declspec(dllimport)
+#  endif
+#else
+#  if __GNUC__ >= 4 && !defined(__OS2__)
+#    define __EXTERN __attribute__((visibility("default")))
+#  else
+#    define __EXTERN
+#  endif
+#endif
 #define __STDCALL __attribute__((__stdcall__))
 
 // Main module initialization, registration and finalization
