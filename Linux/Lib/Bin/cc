@@ -24,6 +24,12 @@ $AR powStrings.o
 
 ## Free Oberon
 
-$CC SDL2.c SDL2mixer.c Out.c Graph.c Math.c Sound.o Turtle.c -w
+$CC SDL2.c SDL2mixer.c Out.c Graph.c Math.c Sound.c Turtle.c -w
 if [ $? != 0 ]; then exit 1; fi
 $AR SDL2.o SDL2mixer.o Out.o Graph.o Math.o Sound.o Turtle.o
+
+## libCurl
+
+$CC libCurl.c NetHttp.c
+if [ $? != 0 ]; then exit 1; fi
+$AR libCurl.o NetHttp.o
