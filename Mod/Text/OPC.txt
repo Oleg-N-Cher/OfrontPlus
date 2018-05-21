@@ -814,7 +814,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END IdentList;
 
 	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
-		VAR name: ARRAY 40 OF SHORTCHAR;
+		VAR name: OPT.ConstExt(*OPS.String*);
 	BEGIN
 		OPM.Write("(");
 		IF (obj = NIL) OR (obj^.mode = TProc) THEN OPM.WriteString("void")
@@ -824,7 +824,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				IF showParamNames THEN 
 					OPM.Write(Blank); DeclareObj(obj, FALSE)
 				ELSE
-					name := obj^.name$; obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := OPT.NewName(name)
+					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := name
 				END ;
 				IF showOberonParams THEN
 					IF obj^.typ^.comp = DynArr THEN
