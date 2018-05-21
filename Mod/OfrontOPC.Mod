@@ -759,7 +759,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END IdentList;
 
 	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
-		VAR name: ARRAY 40 OF CHAR;
+		VAR name: OPT.ConstExt(*OPS.String*);
 	BEGIN
 		OPM.Write("(");
 		IF (obj = NIL) OR (obj^.mode = TProc) THEN OPM.WriteString("void")
@@ -769,7 +769,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF showParamNames THEN 
 					OPM.Write(Blank); DeclareObj(obj, FALSE)
 				ELSE
-					COPY(obj^.name^, name); obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := OPT.NewName(name)
+					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := name
 				END ;
 				IF showOberonParams THEN
 					IF obj^.typ^.comp = DynArr THEN
