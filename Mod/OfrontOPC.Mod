@@ -777,7 +777,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 						ELSE OPM.WriteString(", LONGINT ")
 						END;
 						LenList(obj, TRUE, showParamNames)
-					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) THEN
+					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & ~ODD(obj^.typ^.sysflag) THEN
 						OPM.WriteString(", SYSTEM_ADRINT *");
 						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
 					END
