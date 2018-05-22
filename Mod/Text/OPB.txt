@@ -1613,7 +1613,7 @@ avoid unnecessary intermediate variables in OFront
 		VAR f: SHORTINT;
 	BEGIN (* ftyp^.comp = DynArr *)
 		f := atyp^.comp; ftyp := ftyp^.BaseTyp; atyp := atyp^.BaseTyp;
-		IF OPT.SYSimported & (ftyp = OPT.bytetyp) THEN (* ok, but ... *)
+		IF ftyp = OPT.bytetyp THEN (* ok, but ... *)
 			IF ~(f IN {Array, DynArr}) OR ~(atyp^.form IN {Byte..SInt}) THEN err(-301) END (* ... warning 301 *)
 		ELSIF f IN {Array, DynArr} THEN
 			IF ftyp^.comp = DynArr THEN DynArrParCheck(ftyp, atyp, fvarpar)
