@@ -1301,7 +1301,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE Len* (obj: OPT.Object; array: OPT.Struct; dim: INTEGER);
 	BEGIN
 		IF array^.comp = DynArr THEN
-			(* ASSERT(ODD(array^.sysflag)); *)
+			IF ODD(array^.sysflag) THEN OPM.err(136) END;
 			CompleteIdent(obj); OPM.WriteString(LenExt);
 			IF dim # 0 THEN OPM.WriteInt(dim) END
 		ELSE (* array *)
