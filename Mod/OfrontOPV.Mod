@@ -439,15 +439,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					END ;
 					OPC.Ident(n^.obj)
 		|	Nderef:
-					IF n^.subcl # 0 THEN
-						expr(n^.left, designPrec)
-					ELSE
-						IF n^.typ^.comp IN {Array, DynArr} THEN
-							IF ODD(n^.typ^.sysflag) THEN expr(n^.left, designPrec)
-							ELSE expr(n^.left, 10); OPM.WriteString("->data")
-							END
-						ELSE OPM.Write(Deref); expr(n^.left, designPrec)
-						END
+					IF n^.typ^.comp = DynArr THEN design(n^.left, 10); OPM.WriteString("->data")
+					ELSE OPM.Write(Deref); design(n^.left, designPrec)
 					END
 		|	Nindex:
 					d := n^.left;
