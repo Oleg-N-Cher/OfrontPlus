@@ -31,9 +31,11 @@ Ofront+ differences from Ofront/voc
 
   9. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) & 0DX+0AX (Windows).
 
-  10. Constant arrays, BITS(), IN/OUT procedure parameters (only in Ofront+ for BlackBox).
+  10. Constant arrays, BITS() (only in Ofront+ for BlackBox).
 
-  11. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
+  11. IN procedure parameters (as in Component Pascal).
+
+  12. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
 
 
 Get it!
