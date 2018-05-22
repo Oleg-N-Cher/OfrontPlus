@@ -451,7 +451,8 @@ type
     error* : Integer;
   END;
 
-PROCEDURE -AAIncludeSDL2mixerh0 '#include "SDL2mixer.h0"';
+PROCEDURE -AAIncludeSDL2h0* '#include "SDL2.h0"';
+PROCEDURE -AAIncludeSDL2mixerh0* '#include "SDL2mixer.h0"';
 
 (*
   {$IFNDEF __GPC__}
@@ -493,7 +494,7 @@ PROCEDURE -Mix_QuerySpec* (VAR frequency: Integer;
 PROCEDURE -Mix_LoadWAV_RW* (src: PRWops; freesrc: Integer): PMix_Chunk;
 
 PROCEDURE -Mix_LoadWAV* (file: PChar): PMix_Chunk
-  'Mix_LoadWAV_RW(SDL_RWFromFile((SYSTEM_PTR)file, (SYSTEM_PTR)"rb"), 1)';
+  'Mix_LoadWAV_RW((SYSTEM_ADRINT)SDL_RWFromFile((SYSTEM_PTR)file, (SYSTEM_PTR)"rb"), 1)';
 
 PROCEDURE -Mix_LoadMUS* (file: PChar): PMix_Music;
 
@@ -506,7 +507,7 @@ PROCEDURE -Mix_LoadMUS_RW* (rw: PRWops): PMix_Music;
 PROCEDURE -Mix_QuickLoad_WAV* (mem: PUInt8): PMix_Chunk;
 
 (* Free an audio chunk previously loaded *)
-PROCEDURE -Mix_FreeChunk* (chunk: PMix_Chunk) "Mix_FreeChunk(chunk)";
+PROCEDURE -Mix_FreeChunk* (chunk: PMix_Chunk);
 
 PROCEDURE -Mix_FreeMusic* (music: PMix_Music);
 
@@ -965,7 +966,7 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_GetChunk'{$ELSE} SDL_MixerLibName{$END
 {$EXTERNALSYM Mix_GetChunk}
 *)
 (* Close the mixer, halting all playing audio *)
-PROCEDURE -Mix_CloseAudio* "Mix_CloseAudio()";
+PROCEDURE -Mix_CloseAudio* ;
 
 (* We'll use SDL for reporting errors }
 procedure Mix_SetError( fmt : PChar );

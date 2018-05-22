@@ -38,7 +38,7 @@ extern int IMG_Init(int);
 extern void *IMG_Load(void *);
 extern void IMG_Quit(void);
 extern int SDL_Init(UINT32);
-extern int InitSubSystem(UINT32);
+extern int SDL_InitSubSystem(UINT32);
 extern void *SDL_LoadBMP_RW(void *, int);
 extern int SDL_LockSurface(void *);
 extern UINT32 SDL_MapRGB(void *, UINT8, UINT8, UINT8);

@@ -298,7 +298,7 @@ PROCEDURE -AAIncludeSDL2h0 '#include "SDL2.h0"';
 PROCEDURE -Init*(flags: SET): SHORTINT "SDL_Init(flags)";
 PROCEDURE -InitSubSystem* (flags: SET): INTEGER "SDL_InitSubSystem(flags)";
 PROCEDURE -Quit* "SDL_Quit()";
-PROCEDURE -QuitSubSystem*(flags: SET) "SDL_QuitSubSystem()";
+PROCEDURE -QuitSubSystem*(flags: SET) "SDL_QuitSubSystem(flags)";
 
 PROCEDURE -CreateWindow*(title: ARRAY OF CHAR; x, y, w, h: INTEGER;
     flags: SET): Window "(void *)SDL_CreateWindow(title, x, y, w, h, flags)";
