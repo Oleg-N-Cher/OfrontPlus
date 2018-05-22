@@ -104,7 +104,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		objname*: ARRAY 64 OF SHORTCHAR;
 
 		opt-, glbopt-: SET;
-		GlobalLanguage, Language-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C": S16/I32/L64 *)
+		GlobalLanguage, Language-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 		
 		lasterrpos: INTEGER;
@@ -228,7 +228,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "k": opt := opt / {ansi}
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
-			| "1", "7", "C": Language := SHORT(s[i])
+			| "1", "3", "C", "7"(*undocumented*): Language := SHORT(s[i])
 
 			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).

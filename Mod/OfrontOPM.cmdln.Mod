@@ -101,7 +101,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		objname*: ARRAY 64 OF CHAR;
 
 		opt-, glbopt-: SET;
-		GlobalLanguage, Language-: CHAR; (* "1", "2": S8/I16/L32 | "C": S16/I32/L64 *)
+		GlobalLanguage, Language-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 
 		lasterrpos: INTEGER;
@@ -154,7 +154,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "k": opt := opt / {ansi}
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
-			| "1", "7", "C": Language := s[i]
+			| "1", "3", "C", "7"(*undocumented*): Language := s[i]
 
 			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
@@ -201,7 +201,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
 			Console.String('  option  = "m" | "s" | "e" | "i" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
-			(*Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "Z" Oberon-Z'); Console.Ln;*)
+			Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "3" Oberon-3'); Console.Ln;
 			Console.String('    "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
 			Console.String('    "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;
 			Console.String('    "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
