@@ -74,7 +74,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 
-  PROCEDURE Err(s: ARRAY [1] OF CHAR; f: File; errcode: Platform.ErrorCode);
+  PROCEDURE Err(IN s: ARRAY OF CHAR; f: File; errcode: Platform.ErrorCode);
   BEGIN
     Console.Ln; Console.String("-- "); Console.String(s); Console.String(": ");
     IF f # NIL THEN
@@ -86,7 +86,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     HALT(99)
   END Err;
 
-  PROCEDURE MakeFileName(dir, name: ARRAY [1] OF CHAR; VAR dest: ARRAY OF CHAR);
+  PROCEDURE MakeFileName(IN dir, name: ARRAY OF CHAR; VAR dest: ARRAY OF CHAR);
     VAR i, j: INTEGER;
   BEGIN i := 0; j := 0;
     WHILE dir[i] # 0X DO dest[i] := dir[i]; INC(i) END;
@@ -95,7 +95,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     dest[i] := 0X
   END MakeFileName;
 
-  PROCEDURE GetTempName(finalName: ARRAY [1] OF CHAR; VAR name: ARRAY OF CHAR);
+  PROCEDURE GetTempName(IN finalName: ARRAY OF CHAR; VAR name: ARRAY OF CHAR);
     VAR n, i, j: INTEGER;
   BEGIN
     INC(tempno); n := tempno; i := 0;
@@ -221,7 +221,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   PROCEDURE Length* (f: File): LONGINT;
   BEGIN RETURN f.len END Length;
 
-  PROCEDURE New* (name: ARRAY [1] OF CHAR): File;
+  PROCEDURE New* (IN name: ARRAY OF CHAR): File;
     VAR f: File;
   BEGIN
     NEW(f); f.workName := ""; COPY(name, f.registerName);
@@ -256,7 +256,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     dir[i] := 0X
   END ScanPath;
 
-  PROCEDURE HasDir(VAR name: ARRAY OF CHAR): BOOLEAN;
+  PROCEDURE HasDir(IN name: ARRAY OF CHAR): BOOLEAN;
     VAR i: INTEGER; ch: CHAR;
   BEGIN i := 0; ch := name[0];
     WHILE (ch # 0X) & (ch # pathDelimiter) DO INC(i); ch := name[i] END;
@@ -283,7 +283,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     RETURN NIL
   END CacheEntry;
 
-  PROCEDURE Old*(name: ARRAY [1] OF CHAR): File;
+  PROCEDURE Old*(IN name: ARRAY OF CHAR): File;
     VAR
       f:         File;
       fd:        Platform.FileHandle;
@@ -459,7 +459,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     r.offset := offset + 1; r.res := 0
   END WriteByte;
 
-  PROCEDURE WriteBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
+  PROCEDURE WriteBytes* (VAR r: Rider; IN x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
     IF n > LEN(x) THEN IdxTrap END;
@@ -512,10 +512,10 @@ but this would also affect Set, Length, and Flush.
 Especially Length would become fairly complex.
 *)
 
-  PROCEDURE Delete*(name: ARRAY [1] OF CHAR; VAR res: INTEGER);
+  PROCEDURE Delete*(IN name: ARRAY OF CHAR; VAR res: INTEGER);
   BEGIN res := Platform.DeleteFile(name) END Delete;
 
-  PROCEDURE Rename* (old, new: ARRAY [1] OF CHAR; VAR res: INTEGER);
+  PROCEDURE Rename* (IN old, new: ARRAY OF CHAR; VAR res: INTEGER);
     VAR
       fdold, fdnew: Platform.FileHandle;
       n: INTEGER;
@@ -588,7 +588,7 @@ Especially Length would become fairly complex.
     END
   END Register;
 
-  PROCEDURE ChangeDirectory*(path: ARRAY [1] OF CHAR; VAR res: INTEGER);
+  PROCEDURE ChangeDirectory*(IN path: ARRAY OF CHAR; VAR res: INTEGER);
   BEGIN
     res := Platform.ChDir(path)
   END ChangeDirectory;
@@ -742,7 +742,7 @@ Especially Length would become fairly complex.
   BEGIN FlipBytes(x, b); WriteBytes(R, b, 8)
   END WriteLReal;
 
-  PROCEDURE WriteString* (VAR R: Rider; x: ARRAY [1] OF CHAR);
+  PROCEDURE WriteString* (VAR R: Rider; IN x: ARRAY OF CHAR);
     VAR i: INTEGER;
   BEGIN i := 0;
     WHILE x[i] # 0X DO INC(i) END;
@@ -775,7 +775,7 @@ Especially Length would become fairly complex.
     END
   END Finalize;
 
-  PROCEDURE SetSearchPath*(path: ARRAY [1] OF CHAR);
+  PROCEDURE SetSearchPath*(IN path: ARRAY OF CHAR);
     VAR pathlen: INTEGER;
   BEGIN
     pathlen := Strings.Length(path);

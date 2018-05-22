@@ -283,28 +283,28 @@ PROCEDURE -createDirectory(lpPathName: ARRAY OF CHAR): BOOL
 
 (* File APIs *)
 
-PROCEDURE OldRO*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir*(pathname: ARRAY [notag] OF CHAR): ErrorCode;
+PROCEDURE NewDir*(IN pathname: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF createDirectory(pathname) = 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
@@ -483,7 +483,7 @@ END TruncateFile;
 
 PROCEDURE -deleteFile(n: ARRAY OF CHAR): BOOL "(INTEGER)DeleteFile((char*)n)";
 
-PROCEDURE DeleteFile*(VAR n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE DeleteFile*(IN n: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF deleteFile(n) = 0 THEN RETURN err() ELSE RETURN 0 END
 END DeleteFile;
@@ -492,7 +492,7 @@ END DeleteFile;
 PROCEDURE -setCurrentDirectory(n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
 PROCEDURE -getCurrentDirectory(VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
 
-PROCEDURE ChDir*(n: ARRAY [notag] OF CHAR): ErrorCode;
+PROCEDURE ChDir*(IN n: ARRAY OF CHAR): ErrorCode;
   VAR r: BOOL;
 BEGIN
   r := setCurrentDirectory(n);
