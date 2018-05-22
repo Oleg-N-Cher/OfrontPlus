@@ -378,7 +378,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		IF showParamName THEN Ident(par); OPM.WriteString(LenExt) END ;
 		dim := 1; typ := par^.typ^.BaseTyp;
-		WHILE typ^.comp = DynArr DO
+		WHILE (typ^.comp = DynArr) & ~ODD(typ^.sysflag) DO
 			IF ansiDefine THEN
 				IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
 				ELSE OPM.WriteString(", LONGINT ")
@@ -400,9 +400,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				Ident(par)
 			END ;
 			IF showOberonParams THEN
-				IF par^.typ^.comp = DynArr THEN
+				IF (par^.typ^.comp = DynArr) & ~ODD(par^.typ^.sysflag) THEN
 					OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
-				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) THEN
+				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) & ~ODD(par^.typ^.sysflag) THEN
 					OPM.WriteString(Comma); OPM.WriteStringVar(par.name^); OPM.WriteString(TagExt)
 				END
 			END;
@@ -738,7 +738,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.Write(Blank);
 				IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.Write("_") END ;
 				DeclareObj(obj, vis = 3);
-				IF obj^.typ^.comp = DynArr THEN (* declare len parameter(s) *)
+				IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN (* declare len parameter(s) *)
 					EndStat; BegStat;
 					base := OPT.linttyp;
 					IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString("INTEGER ")
@@ -772,7 +772,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := name
 				END ;
 				IF showOberonParams THEN
-					IF obj^.typ^.comp = DynArr THEN
+					IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN
 						IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
 						ELSE OPM.WriteString(", LONGINT ")
 						END;
@@ -1111,7 +1111,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					ELSIF var^.mode # VarPar THEN OPM.Write("&")
 					END ;
 					Ident(var);
-					IF var^.typ^.comp = DynArr THEN
+					IF (var^.typ^.comp = DynArr) & ~ODD(var^.typ^.sysflag) THEN
 						typ := var^.typ; dim := 0;
 						REPEAT (* copy len(s) *)
 							OPM.WriteString("; ");
@@ -1121,7 +1121,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 							IF dim # 0 THEN OPM.WriteInt(dim) END ;
 							typ := typ^.BaseTyp
 						UNTIL typ^.comp # DynArr;
-					ELSIF (var^.mode = VarPar) & (var^.typ^.comp = Record) THEN
+					ELSIF (var^.mode = VarPar) & (var^.typ^.comp = Record) & ~ODD(var^.typ^.sysflag) THEN
 						OPM.WriteString("; ");
 						OPM.WriteString(LocalScope); OPM.Write(Dot); Ident(var); OPM.WriteString(TagExt);
 						OPM.WriteString(Becomes); Ident(var); OPM.WriteString(TagExt)
@@ -1302,6 +1302,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE Len* (obj: OPT.Object; array: OPT.Struct; dim: INTEGER);
 	BEGIN
 		IF array^.comp = DynArr THEN
+			(* ASSERT(ODD(array^.sysflag)); *)
 			CompleteIdent(obj); OPM.WriteString(LenExt);
 			IF dim # 0 THEN OPM.WriteInt(dim) END
 		ELSE (* array *)
