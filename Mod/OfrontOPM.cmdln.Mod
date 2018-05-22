@@ -478,7 +478,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.WriteChar(R[currFile], ch)
 	END Write;
 
-	PROCEDURE WriteString*(s: ARRAY [1] OF CHAR);
+	PROCEDURE WriteString*(IN s: ARRAY OF CHAR);
 		VAR i: INTEGER;
 	BEGIN i := 0;
 		WHILE s[i] # 0X DO INC(i) END ;

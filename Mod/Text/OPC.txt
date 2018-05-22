@@ -1258,7 +1258,6 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END CompleteIdent;
 
 	PROCEDURE TypeOf*(ap: OPT.Object);
-		VAR i: SHORTINT;
 	BEGIN
 		ASSERT(ap.typ.comp = Record);
 		IF ap.mode = VarPar THEN
@@ -1357,7 +1356,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	PROCEDURE Len* (obj: OPT.Object; array: OPT.Struct; dim: INTEGER);
 	BEGIN
 		IF array^.comp = DynArr THEN
-			(* ASSERT(ODD(array^.sysflag)); *)
+			IF ODD(array^.sysflag) THEN OPM.err(136) END;
 			CompleteIdent(obj); OPM.WriteString(LenExt);
 			IF dim # 0 THEN OPM.WriteInt(dim) END
 		ELSE (* array *)

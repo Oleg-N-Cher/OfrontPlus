@@ -19,7 +19,10 @@
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
 		(* module visibility of objects *)
-		internal = 0; external = 1; externalR = 2;
+		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
+
+		(* sysflags *)
+		nilBit = 1;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -49,9 +52,12 @@
 		paren := res OR (par # NIL);
 		IF paren THEN Ws(" (") END ;
 		WHILE par # NIL DO
-			IF ~first THEN Ws("; ") ELSE first := FALSE END ;
-			IF option = "x" THEN Wi(par^.adr); Wch(" ") END ;
-			IF par^.mode = VarPar THEN Ws("VAR ") END ;
+			IF ~first THEN Ws("; ") ELSE first := FALSE END;
+			IF option = "x" THEN Wi(par^.adr); Wch(" ") END;
+			IF par^.mode = VarPar THEN
+				IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END;
+				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
+			END;
 			Ws(par^.name^); Ws(": "); Wtype(par^.typ);
 			par := par^.link
 		END ;
@@ -148,7 +154,12 @@
 			IF (obj^.mode = TProc) & ((obj^.name^ # OPM.HdTProcName) OR (option = "x")) THEN
 				Indent(3); Ws("PROCEDURE (");
 				IF obj^.name^ # OPM.HdTProcName THEN
-					IF obj^.link^.mode = VarPar THEN Ws("VAR ") END ;
+					IF obj^.link^.mode = VarPar THEN
+						IF obj^.link^.vis = inPar THEN Ws("IN ")
+						ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ")
+						END;
+						IF ODD(obj^.link^.sysflag DIV nilBit) THEN Ws("[nil] ") END
+					END;
 					Ws(obj^.link^.name^); Ws(": "); Wtype(obj^.link^.typ)
 				END ;
 				Ws(") "); Ws(obj^.name^);

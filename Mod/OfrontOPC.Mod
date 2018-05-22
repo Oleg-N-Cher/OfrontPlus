@@ -1203,7 +1203,6 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END CompleteIdent;
 
 	PROCEDURE TypeOf*(ap: OPT.Object);
-		VAR i: SHORTINT;
 	BEGIN
 		ASSERT(ap.typ.comp = Record);
 		IF ap.mode = VarPar THEN

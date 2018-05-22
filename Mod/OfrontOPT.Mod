@@ -30,7 +30,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			leaf*: BOOLEAN;
 			sysflag*: BYTE;
 			mode*, mnolev*: BYTE;	(* mnolev < 0 -> mno = -mnolev *)
-			vis*: BYTE;	(* internal, external, externalR *)
+			vis*: BYTE;	(* internal, external, externalR, inPar, outPar *)
 			history*: BYTE;	(* relevant if name # "" *)
 			used*, fpdone*: BOOLEAN;
 			fprint*: INTEGER;
@@ -101,16 +101,20 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		bitfn = 28; valfn = 29; sysnewfn = 30; movefn = 31;
 		
 		(* module visibility of objects *)
-		internal = 0; external = 1; externalR = 2;
+		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
 		(* history of imported objects *)
 		inserted = 0; same = 1; pbmodified = 2; pvmodified = 3; removed = 4; inconsistent = 5;
+
+		(* sysflags *)
+		inBit = 2; outBit = 4;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
 		Svalpar = 23; Svarpar = 24; Sfld = 25; Srfld = 26; Shdptr = 27; Shdpro = 28; Stpro = 29; Shdtpro = 30;
 		Sxpro = 31; Sipro = 32; Scpro = 33; Sstruct = 34; Ssys = 35; Sptr = 36; Sarr = 37; Sdarr = 38; Srec = 39; Spro = 40;
-		
+		Sinpar = 25; Soutpar = 26;
+
 	TYPE
 		ImpCtxt = RECORD
 			nextTag, reffp: INTEGER;
@@ -566,8 +570,16 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF last = NIL THEN par := new ELSE last^.link := new END;
 			IF tag = Ssys THEN
 				new^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt());
+				IF ODD(new^.sysflag DIV inBit) THEN new^.vis := inPar
+				ELSIF ODD(new^.sysflag DIV outBit) THEN new^.vis := outPar
+				END
 			END;			
-			IF tag = Svalpar THEN new^.mode := Var ELSE new^.mode := VarPar END ;
+			IF tag = Svalpar THEN new^.mode := Var
+			ELSE new^.mode := VarPar;
+				IF tag = Sinpar THEN new^.vis := inPar
+				ELSIF tag = Soutpar THEN new^.vis := outPar
+				END
+			END;
 			InStruct(new^.typ); new^.adr := SHORT(OPM.SymRInt()); InName(new^.name);
 			last := new; tag := SHORT(OPM.SymRInt())
 		END
@@ -871,7 +883,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		OutStr(result);
 		WHILE par # NIL DO
 			IF par^.sysflag # 0 THEN OPM.SymWInt(Ssys); OPM.SymWInt(par^.sysflag) END;
-			IF par^.mode = Var THEN OPM.SymWInt(Svalpar) ELSE OPM.SymWInt(Svarpar) END;
+			IF par^.mode = Var THEN OPM.SymWInt(Svalpar)
+			ELSIF par^.vis = inPar THEN OPM.SymWInt(Sinpar)
+			ELSIF par^.vis = outPar THEN OPM.SymWInt(Soutpar)
+			ELSE OPM.SymWInt(Svarpar) END;
 			OutStr(par^.typ);
 			OPM.SymWInt(par^.adr);
 			OutName(par^.name^); par := par^.link
@@ -1139,7 +1154,7 @@ Objects:
    ------------------------------------------------
     Undef |                                         Not used
     Var   | vadr           next              regopt Glob or loc var or proc value parameter
-    VarPar| vadr           next              regopt Procedure var parameter
+    VarPar| vadr           next              regopt Procedure var parameter (vis = 0 | inPar | outPar)
     Con   |        val                              Constant
     Fld   | off            next                     Record field
     Typ   |                                         Named type

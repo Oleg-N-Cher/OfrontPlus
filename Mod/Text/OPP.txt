@@ -288,7 +288,7 @@
 		VAR mode, vis: BYTE; sys: SHORTINT;
 				par, first, last, res: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
-		IF (sym = ident) OR (sym = var) OR (sym = in) THEN
+		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Language = "C")) THEN
 			LOOP
 				sys := 0; vis := 0;
 				IF sym = var THEN OPS.Get(sym); mode := VarPar
@@ -300,6 +300,9 @@
 				LOOP
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
+						IF (mode = Var) & ((OPM.Language = "3") OR (OPM.Language = "7")) THEN
+							mode := VarPar; vis := inPar (* read only array or record *)
+						END;
 						par^.mode := mode; par^.link := NIL; par^.vis := vis; par^.sysflag := SHORT(sys);
 						IF first = NIL THEN first := par END ;
 						IF firstPar = NIL THEN firstPar := par ELSE last^.link := par END ;
@@ -313,7 +316,7 @@
 					END
 				END ;
 				CheckSym(colon); Type(typ, OPT.notyp);
-				IF mode = Var THEN typ^.pvused := TRUE END ;
+				IF mode = Var THEN typ^.pvused := TRUE END;
 				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
 				END;
@@ -412,7 +415,7 @@
 									ELSE err(75)
 									END
 								ELSIF (x^.left^.readonly) & (obj^.link^.mode = VarPar) & (obj^.link^.vis = 0) THEN err(76)
-								END ;
+								END;
 								IF (obj^.typ # OPT.notyp) & (sym # lparen) THEN err(lparen) END
 							END
 						ELSE err(53)
@@ -706,8 +709,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		VAR obj: OPT.Object;
 	BEGIN typ := OPT.undftyp; rec := NIL; vis := 0;
 		IF sym = var THEN OPS.Get(sym); mode := VarPar
-		ELSIF sym = in THEN OPS.Get(sym); mode := VarPar; vis := inPar	(* ??? *)
-		ELSE mode := Var END ;
+		ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+		ELSE mode := Var END;
 		name := OPS.name; CheckSym(ident); CheckSym(colon);
 		IF sym = ident THEN OPT.Find(OPS.name, obj); OPS.Get(sym);
 			IF obj = NIL THEN err(0)
@@ -1411,8 +1414,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					OPT.Insert(OPS.name, obj); CheckMark(obj^.vis);
 					obj^.typ := OPT.sinttyp; obj^.mode := Var;	(* Var to avoid recursive definition *)
 					IF sym = eql THEN
-						OPS.Get(sym);
-						ConstExpression(x)
+						OPS.Get(sym); ConstExpression(x)
 					ELSIF sym = becomes THEN
 						err(eql); OPS.Get(sym); ConstExpression(x)
 					ELSE err(eql); x := OPB.NewIntConst(1)
