@@ -119,6 +119,7 @@ insertMarkers	Insert Markers
 132	dimension in LEN too large or negative
 133	system flag doesn't match forward declaration
 135	SYSTEM not imported
+136	LEN applied to untagged array
 138	NEW not allowed for untagged structures
 139	test applied to untagged record
 150	key inconsistency of imported module
