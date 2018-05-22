@@ -73,7 +73,7 @@ BEGIN
   |  67: Log.String("actual parameter corresponding to open array is not an array")
   |  68: Log.String("control variable must be integer")
   |  69: Log.String("parameter must be an integer constant")
-  |  70: Log.String("pointer or VAR record required as formal receiver")
+  |  70: Log.String("pointer or VAR / IN record required as formal receiver")
   |  71: Log.String("pointer expected as actual receiver")
   |  72: Log.String("procedure must be bound to a record of the same scope")
   |  73: Log.String("procedure must have level 0")
@@ -90,7 +90,7 @@ BEGIN
   |  84: Log.String("dereferenced variable is not a pointer")
   |  85: Log.String("guard or test type is not an extension of variable type")
   |  86: Log.String("guard or testtype is not a pointer")
-  |  87: Log.String("guarded or tested variable is neither a pointer nor a VAR-parameter record")
+  |  87: Log.String("guarded or tested variable is neither a pointer nor a VAR- or IN-parameter record")
   |  88: Log.String("open array not allowed as variable, record field or array element")
 
   |  92: Log.String("operand of IN not an integer, or not a set")
@@ -123,8 +123,8 @@ BEGIN
   | 119: Log.String("redefinition textually precedes procedure bound to base type")
   | 120: Log.String("type of expression following IF, WHILE, UNTIL or ASSERT is not BOOLEAN")
   | 121: Log.String("called object is not a procedure (or is an interrupt procedure)")
-  | 122: Log.String("actual VAR-parameter is not a variable")
-  | 123: Log.String("type of actual parameter is not identical with that of formal VAR-parameter")
+  | 122: Log.String("actual VAR-, IN-, or OUT-parameter is not a variable")
+  | 123: Log.String("type is not identical with that of formal VAR-, IN-, or OUT-parameter")
   | 124: Log.String("type of result expression differs from that of procedure")
   | 125: Log.String("type of case expression is neither INTEGER nor CHAR")
   | 126: Log.String("this expression cannot be a type or a procedure")
@@ -148,6 +148,7 @@ BEGIN
   | 155: Log.String("generation of new symbol file not allowed")
   | 156: Log.String("default target machine address size and alignment used")
   | 157: Log.String("syntax error in parameter file")
+  | 177: Log.String("IN only allowed for records and arrays")
 
 (*
     2. Limitations of implementation

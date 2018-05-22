@@ -300,9 +300,6 @@
 				LOOP
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
-						IF (mode = Var) & ((OPM.Language = "3") OR (OPM.Language = "7")) THEN
-							mode := VarPar; vis := inPar (* read only array or record *)
-						END;
 						par^.mode := mode; par^.link := NIL; par^.vis := vis; par^.sysflag := SHORT(sys);
 						IF first = NIL THEN first := par END ;
 						IF firstPar = NIL THEN firstPar := par ELSE last^.link := par END ;
@@ -314,11 +311,18 @@
 					ELSIF sym = var THEN err(comma); OPS.Get(sym)
 					ELSE EXIT
 					END
-				END ;
+				END;
 				CheckSym(colon); Type(typ, OPT.notyp);
 				IF mode = Var THEN typ^.pvused := TRUE END;
 				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
+				END;
+				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Language = "3") OR (OPM.Language = "7")) THEN
+					par := first;
+					WHILE par # NIL DO
+						par^.mode := VarPar; par^.vis := inPar; (* read only array or record *)
+						par := par^.link
+					END
 				END;
 				(* typ^.pbused is set when parameter type name is parsed *)
 				WHILE first # NIL DO first^.typ := typ; first := first^.link END ;
