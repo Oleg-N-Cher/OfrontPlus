@@ -279,28 +279,28 @@ PROCEDURE -mkdir(pathname: ARRAY OF CHAR): INTEGER "mkdir((char*)pathname, 0775)
 
 (* File APIs *)
 
-PROCEDURE OldRO*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir*(pathname: ARRAY [notag] OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewDir*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 BEGIN
   IF mkdir(pathname) # 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
@@ -429,7 +429,7 @@ END TruncateFile;
 
 PROCEDURE -unlink(n: ARRAY OF CHAR): INTEGER "unlink((char*)n)";
 
-PROCEDURE DeleteFile*(VAR n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE DeleteFile*(IN n: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF unlink(n) < 0 THEN RETURN err() ELSE RETURN 0 END
 END DeleteFile;
@@ -438,7 +438,7 @@ END DeleteFile;
 PROCEDURE -chdir(n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
 PROCEDURE -getcwd(VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
-PROCEDURE ChDir*(n: ARRAY [notag] OF CHAR): ErrorCode;
+PROCEDURE ChDir*(IN n: ARRAY OF CHAR): ErrorCode;
   VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
