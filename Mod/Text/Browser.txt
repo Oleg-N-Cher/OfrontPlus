@@ -53,12 +53,12 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		paren := res OR (par # NIL);
 		IF paren THEN Ws(" (") END ;
 		WHILE par # NIL DO
-			IF ~first THEN Ws("; ") ELSE first := FALSE END ;
-			IF option = "x" THEN Wi(par^.adr); Wch(" ") END ;
+			IF ~first THEN Ws("; ") ELSE first := FALSE END;
+			IF option = "x" THEN Wi(par^.adr); Wch(" ") END;
 			IF par^.mode = VarPar THEN
 				IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END;
 				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
-			END ;
+			END;
 			Ws(par^.name^); Ws(": "); Wtype(par^.typ);
 			par := par^.link
 		END ;
@@ -161,7 +161,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ")
 						END;
 						IF ODD(obj^.link^.sysflag DIV nilBit) THEN Ws("[nil] ") END
-					END ;
+					END;
 					Ws(obj^.link^.name^); Ws(": "); Wtype(obj^.link^.typ)
 				END ;
 				Ws(") "); Ws(obj^.name^);
@@ -181,7 +181,11 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 
 		PROCEDURE SysFlag;
 		BEGIN
-			IF ODD(typ^.sysflag) THEN Ws(" [notag]") END
+			IF (option = "x") & (typ^.sysflag # 0) THEN
+				Ws(" ["); Wi(typ^.sysflag); Wch("]")
+			ELSIF ODD(typ^.sysflag) THEN
+				Ws(" [notag]")
+			END
 		END SysFlag;
 
 	BEGIN

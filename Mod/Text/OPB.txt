@@ -80,7 +80,7 @@
 		  Var:
 				node := OPT.NewNode(Nvar); node^.readonly := (obj^.vis = externalR) & (obj^.mnolev < 0)
 		| VarPar:
-				node := OPT.NewNode(Nvarpar); node^.readonly := obj^.vis = inPar;
+				node := OPT.NewNode(Nvarpar); node^.readonly := obj^.vis = inPar
 		| Con:
 				node := OPT.NewNode(Nconst); node^.conval := OPT.NewConst();
 				node^.conval^ := obj^.conval^	(* string is not copied, only its ref *)
@@ -1613,7 +1613,7 @@ avoid unnecessary intermediate variables in OFront
 		VAR f: SHORTINT;
 	BEGIN (* ftyp^.comp = DynArr *)
 		f := atyp^.comp; ftyp := ftyp^.BaseTyp; atyp := atyp^.BaseTyp;
-		IF fvarpar & (ftyp = OPT.bytetyp) THEN (* ok, but ... *)
+		IF OPT.SYSimported & (ftyp = OPT.bytetyp) THEN (* ok, but ... *)
 			IF ~(f IN {Array, DynArr}) OR ~(atyp^.form IN {Byte..SInt}) THEN err(-301) END (* ... warning 301 *)
 		ELSIF f IN {Array, DynArr} THEN
 			IF ftyp^.comp = DynArr THEN DynArrParCheck(ftyp, atyp, fvarpar)
@@ -1650,7 +1650,7 @@ avoid unnecessary intermediate variables in OFront
 		END
 	END PrepCall;
 
-	PROCEDURE Param*(ap: OPT.Node; fp: OPT.Object);	(* checks parameter compatibilty *)
+	PROCEDURE Param*(ap: OPT.Node; fp: OPT.Object); (* checks parameter compatibilty *)
 		VAR q: OPT.Struct;
 	BEGIN
 		IF fp.typ.form # Undef THEN

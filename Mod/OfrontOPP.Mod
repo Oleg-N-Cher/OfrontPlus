@@ -25,6 +25,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		loop = 50; with = 51; exit = 52; return = 53; array = 54;
 		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
 		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
+		out = 71;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -53,10 +54,13 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		super = 1;
 		
 		(* module visibility of objects *)
-		internal = 0; external = 1; externalR = 2;
+		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
 		(* procedure flags (conval^.setval) *)
 		hasBody = 1; isRedef = 2; slNeeded = 3;
+
+		(* sysflags *)
+		nilBit = 1;
 
 	TYPE
 		CaseTable = ARRAY OPM.MaxCases OF
@@ -141,6 +145,17 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		ELSE sysflag := default
 		END
 	END CheckSysFlag;
+
+	PROCEDURE CheckSysFlagVarPar(VAR sysflag: SHORTINT);
+	BEGIN
+		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
+			IF (sym = ident) & (OPS.name = "nil") THEN OPS.Get(sym); sysflag := nilBit
+			ELSE OPS.Get(sym); err(220); sysflag := 0
+			END;
+			CheckSym(rbrak)
+		ELSE sysflag := 0
+		END
+	END CheckSysFlagVarPar;
 
 	PROCEDURE CheckSysFlagProc(VAR sysflag: SHORTINT);
 	BEGIN
@@ -266,16 +281,25 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	END PointerType;
 	
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct);
-		VAR mode: BYTE;
+		VAR mode, vis: BYTE; sys: SHORTINT;
 				par, first, last, res: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
-		IF (sym = ident) OR (sym = var) THEN
+		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Language = "C")) THEN
 			LOOP
-				IF sym = var THEN OPS.Get(sym); mode := VarPar ELSE mode := Var END ;
+				sys := 0; vis := 0;
+				IF sym = var THEN OPS.Get(sym); mode := VarPar
+				ELSIF sym = in THEN OPS.Get(sym); mode := VarPar; vis := inPar
+				ELSIF sym = out THEN OPS.Get(sym); mode := VarPar; vis := outPar
+				ELSE mode := Var
+				END;
+				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
 				LOOP
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
-						par^.mode := mode; par^.link := NIL;
+						IF (mode = Var) & ((OPM.Language = "3") OR (OPM.Language = "7")) THEN
+							mode := VarPar; vis := inPar (* read only array or record *)
+						END;
+						par^.mode := mode; par^.link := NIL; par^.vis := vis; par^.sysflag := SHORT(sys);
 						IF first = NIL THEN first := par END ;
 						IF firstPar = NIL THEN firstPar := par ELSE last^.link := par END ;
 						last := par
@@ -288,7 +312,10 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					END
 				END ;
 				CheckSym(colon); Type(typ, OPT.notyp);
-				IF mode = Var THEN typ^.pvused := TRUE END ;
+				IF mode = Var THEN typ^.pvused := TRUE END;
+				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
+					err(177)
+				END;
 				(* typ^.pbused is set when parameter type name is parsed *)
 				WHILE first # NIL DO first^.typ := typ; first := first^.link END ;
 				IF sym = semicolon THEN OPS.Get(sym)
@@ -383,7 +410,8 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 										IF proc # NIL THEN x^.subcl := super ELSE err(74) END
 									ELSE err(75)
 									END
-								END ;
+								ELSIF (x^.left^.readonly) & (obj^.link^.mode = VarPar) & (obj^.link^.vis = 0) THEN err(76)
+								END;
 								IF (obj^.typ # OPT.notyp) & (sym # lparen) THEN err(lparen) END
 							END
 						ELSE err(53)
@@ -560,10 +588,12 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		END
 	END Expression;
 
-	PROCEDURE Receiver(VAR mode: BYTE; VAR name: OPS.Name; VAR typ, rec: OPT.Struct);
+	PROCEDURE Receiver(VAR mode, vis: BYTE; VAR name: OPS.Name; VAR typ, rec: OPT.Struct);
 		VAR obj: OPT.Object;
-	BEGIN typ := OPT.undftyp; rec := NIL;
-		IF sym = var THEN OPS.Get(sym); mode := VarPar ELSE mode := Var END ;
+	BEGIN typ := OPT.undftyp; rec := NIL; vis := 0;
+		IF sym = var THEN OPS.Get(sym); mode := VarPar
+		ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+		ELSE mode := Var END;
 		name := OPS.name; CheckSym(ident); CheckSym(colon);
 		IF sym = ident THEN OPT.Find(OPS.name, obj); OPS.Get(sym);
 			IF obj = NIL THEN err(0)
@@ -668,12 +698,12 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		PROCEDURE TProcDecl;
 			VAR baseProc: OPT.Object;
 				objTyp, recTyp: OPT.Struct;
-				objMode: BYTE;
+				objMode, objVis: BYTE;
 				objName: OPS.Name;
 		BEGIN
 			OPS.Get(sym); mode := TProc;
 			IF level > 0 THEN err(73) END ;
-			Receiver(objMode, objName, objTyp, recTyp);
+			Receiver(objMode, objVis, objName, objTyp, recTyp);
 			IF sym = ident THEN
 				name := OPS.name; CheckMark(vis);
 				OPT.FindField(name, recTyp, fwd);
@@ -691,7 +721,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					recTyp^.link := OPT.topScope^.right; OPT.CloseScope; 
 				END ;
 				INC(level); OPT.OpenScope(level, proc);
-				OPT.Insert(objName, proc^.link); proc^.link^.mode := objMode; proc^.link^.typ := objTyp;
+				OPT.Insert(objName, proc^.link); proc^.link^.mode := objMode; proc^.link^.vis := objVis; proc^.link^.typ := objTyp;
 				GetParams;
 				IF baseProc # NIL THEN
 					IF (objMode # baseProc^.link^.mode) OR ~Extends(objTyp, baseProc^.link^.typ) THEN err(115) END ;
