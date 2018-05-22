@@ -136,6 +136,8 @@ BEGIN
   | 132: Log.String("dimension in LEN too large or negative")
   | 133: Log.String("system flag doesn't match forward declaration")
   | 135: Log.String("SYSTEM not imported")
+  | 138: Log.String("NEW not allowed for untagged structures")
+  | 139: Log.String("test applied to untagged record")
 
   | 150: Log.String("key inconsistency of imported module")
   | 151: Log.String("incorrect symbol file")

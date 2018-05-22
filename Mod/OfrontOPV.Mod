@@ -147,7 +147,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				typ^.size := OPM.ProcSize;
 			ELSIF c = DynArr THEN
 				btyp := typ^.BaseTyp; TypSize(btyp);
-				IF btyp^.comp = DynArr THEN typ^.size := btyp^.size + 4	(* describes dim not size *)
+				IF ODD(typ^.sysflag) THEN typ^.size := 4
+				ELSIF btyp^.comp = DynArr THEN typ^.size := btyp^.size + 4	(* describes dim not size *)
 				ELSE typ^.size := 8
 				END ;
 			END
@@ -405,7 +406,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	PROCEDURE Index(n, d: OPT.Node; prec, dim: SHORTINT);
 	BEGIN
 		IF ~inxchk
-		OR (n^.right^.class = Nconst) & ((n^.right^.conval^.intval = 0) OR (n^.left^.typ^.comp # DynArr)) THEN
+		OR (n^.right^.class = Nconst) & ((n^.right^.conval^.intval = 0) OR (n^.left^.typ^.comp # DynArr))
+		OR (n^.left^.typ^.comp = DynArr) & ODD(n^.left^.typ^.sysflag) THEN
 			expr(n^.right, prec)
 		ELSE
 			IF SideEffects(n^.right) THEN OPM.WriteString("__XF(") ELSE OPM.WriteString("__X(") END ;
@@ -437,8 +439,15 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					END ;
 					OPC.Ident(n^.obj)
 		|	Nderef:
-					IF n^.typ^.comp = DynArr THEN design(n^.left, 10); OPM.WriteString("->data")
-					ELSE OPM.Write(Deref); design(n^.left, designPrec)
+					IF n^.subcl # 0 THEN
+						expr(n^.left, designPrec)
+					ELSE
+						IF n^.typ^.comp IN {Array, DynArr} THEN
+							IF ODD(n^.typ^.sysflag) THEN expr(n^.left, designPrec)
+							ELSE expr(n^.left, 10); OPM.WriteString("->data")
+							END
+						ELSE OPM.Write(Deref); expr(n^.left, designPrec)
+						END
 					END
 		|	Nindex:
 					d := n^.left;
@@ -550,9 +559,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			IF (form = LInt) & (n^.class = Nconst)
 			& (n^.conval^.intval <= OPM.MaxInt) & (n^.conval^.intval >= OPM.MinInt) THEN
 				OPM.PromoteIntConstToLInt()
-			ELSIF (comp = Record) & ~ODD(typ^.sysflag) & (mode = VarPar) THEN
-				OPM.WriteString(", "); TypeOf(n)
-			ELSIF comp = DynArr THEN
+			ELSIF (comp = Record) & (mode = VarPar) THEN
+				IF ~ODD(typ^.sysflag) THEN OPM.WriteString(", "); TypeOf(n) END
+			ELSIF (comp = DynArr) & ~ODD(typ^.sysflag) THEN
 				IF n^.class = Nconst THEN (* ap is string constant *)
 					OPM.WriteString(Comma);
 					IF OPM.IndexSize > OPM.IntSize THEN OPM.WriteString("(LONGINT)") END;
@@ -867,6 +876,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		design(d, MinPrec); OPM.WriteString(" = __NEWARR(");
 		WHILE base^.comp = Array DO INC(nofdim); base := base^.BaseTyp END ;
 		IF (base^.comp = Record) & (OPC.NofPtrs(base) # 0) THEN
+			IF ODD(base^.sysflag) THEN OPM.err(138) END;
 			OPC.Andent(base); OPM.WriteString(DynTypExt)
 		ELSIF base^.form = Pointer THEN OPM.WriteString("POINTER__typ")
 		ELSE OPM.WriteString("NIL")
