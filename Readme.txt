@@ -35,7 +35,9 @@ Ofront+ differences from Ofront/voc
 
   11. IN procedure parameters (as in Component Pascal).
 
-  12. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
+  12. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
+
+  13. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
 
 
 Get it!
