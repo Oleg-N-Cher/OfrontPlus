@@ -131,25 +131,25 @@ starsLevel: INTEGER;
 	BEGIN DEC(indentLevel); BegStat; OPM.Write(CloseBrace)
 	END EndBlk0;
 
-	PROCEDURE Str1(s: ARRAY OF SHORTCHAR; x: INTEGER);
+	PROCEDURE Str1(IN s: ARRAY OF SHORTCHAR; x: INTEGER);
 		VAR ch: SHORTCHAR; i: SHORTINT;
 	BEGIN ch := s[0]; i := 0;
 		WHILE ch # 0X DO
 			IF ch = "#" THEN OPM.WriteInt(x)
 			ELSE OPM.Write(ch);
-			END ;
+			END;
 			INC(i); ch := s[i]
 		END
 	END Str1;
 
-	PROCEDURE Length(VAR s: ARRAY OF SHORTCHAR): SHORTINT;
+	PROCEDURE Length(IN s: ARRAY OF SHORTCHAR): SHORTINT;
 		VAR i: SHORTINT;
 	BEGIN i := 0;
-		WHILE s[i] # 0X DO INC(i) END ;
+		WHILE s[i] # 0X DO INC(i) END;
 		RETURN i
 	END Length;
 
-	PROCEDURE PerfectHash (VAR s: ARRAY OF SHORTCHAR): SHORTINT;
+	PROCEDURE PerfectHash (IN s: ARRAY OF SHORTCHAR): SHORTINT;
 		VAR i, h: SHORTINT;
 	BEGIN i := 0; h := 0;
 		WHILE (s[i] # 0X) & (i < 5) DO h := SHORT(3*h + ORD(s[i])); INC(i) END;
@@ -878,9 +878,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END;
 	END ProcPredefs;
 
-	PROCEDURE Include(name: ARRAY OF SHORTCHAR);
+	PROCEDURE Include(IN name: ARRAY OF SHORTCHAR);
 	BEGIN
-		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteStringVar(name);
+		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteString(name);
 		OPM.WriteString(".h"); OPM.Write(Quotes); OPM.WriteLn
 	END Include;
 
@@ -1404,7 +1404,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	PROCEDURE InitKeywords;
 		VAR n, i: BYTE;
 
-		PROCEDURE Enter(s: ARRAY OF SHORTCHAR);
+		PROCEDURE Enter(IN s: ARRAY OF SHORTCHAR);
 			VAR h: SHORTINT;
 		BEGIN h := PerfectHash(s); hashtab[h] := n; keytab[n] := s$; INC(n)
 		END Enter;

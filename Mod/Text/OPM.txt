@@ -607,7 +607,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	BEGIN oldSFile.Close; oldSFile := NIL; oldSF.ConnectTo(NIL)
 	END CloseOldSym;
 
-	PROCEDURE OldSym*(VAR modName: ARRAY OF SHORTCHAR; VAR done: BOOLEAN);
+	PROCEDURE OldSym*(IN modName: ARRAY OF SHORTCHAR; VAR done: BOOLEAN);
 		VAR ch: SHORTCHAR; fileName: Files.Name;
 	BEGIN MakeFileName(modName, fileName, SFext);
 		oldSFile := FilesOld(fileName, SFsubdir); done := oldSFile # NIL;

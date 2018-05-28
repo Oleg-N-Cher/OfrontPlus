@@ -123,7 +123,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Console.Char(ch)
 	END LogW;
 
-	PROCEDURE LogWStr*(s: ARRAY OF CHAR);
+	PROCEDURE LogWStr*(IN s: ARRAY OF CHAR);
 	BEGIN Console.String(s)
 	END LogWStr;
 	
@@ -190,7 +190,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE ^GetProperties;
 
-	PROCEDURE OpenPar*(title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
+	PROCEDURE OpenPar*(IN title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
 		IF Args.argc = 1 THEN stop := TRUE;
@@ -230,7 +230,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END InitOptions;
 
 	(* get the source for one translation; msg is "translating" or "compiling" *)
-	PROCEDURE Init*(msg: ARRAY OF CHAR; VAR done: BOOLEAN);
+	PROCEDURE Init*(IN msg: ARRAY OF CHAR; VAR done: BOOLEAN);
 		VAR T: Texts.Text; beg, end, time: LONGINT;
 			s: ARRAY 256 OF CHAR;
 	BEGIN
@@ -261,7 +261,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF (ch < 09X) & ~inR.eot THEN ch := " " END
 	END Get;
 	
-	PROCEDURE MakeFileName(VAR name, FName: ARRAY OF CHAR; ext: ARRAY OF CHAR);
+	PROCEDURE MakeFileName(IN name: ARRAY OF CHAR; VAR FName: ARRAY OF CHAR; IN ext: ARRAY OF CHAR);
 		VAR i, j: INTEGER; ch: CHAR;
 	BEGIN i := 0;
 		LOOP ch := name[i];
@@ -417,7 +417,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE CloseOldSym*;
 	END CloseOldSym;
 
-	PROCEDURE OldSym*(VAR modName: ARRAY OF CHAR; VAR done: BOOLEAN);
+	PROCEDURE OldSym*(IN modName: ARRAY OF CHAR; VAR done: BOOLEAN);
 		VAR ch: CHAR; fileName: FileName;
 	BEGIN MakeFileName(modName, fileName, SFext);
 		oldSFile := Files.Old(fileName); done := oldSFile # NIL;

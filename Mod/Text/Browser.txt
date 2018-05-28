@@ -34,7 +34,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		option: SHORTCHAR;
 		W: TextMappers.Formatter;
 		
-	PROCEDURE Ws(s: ARRAY OF SHORTCHAR); BEGIN W.WriteSString(s) END Ws;
+	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN W.WriteSString(s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN W.WriteChar(ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN W.WriteInt(i) END Wi;
 	PROCEDURE Wln; BEGIN W.WriteLn() END Wln;
@@ -242,12 +242,12 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		END
 	END Wtype;
 
-	PROCEDURE WModule(name: OPS.Name; T: TextModels.Model; VAR done: BOOLEAN);
+	PROCEDURE WModule(IN name: OPS.Name; T: TextModels.Model; VAR done: BOOLEAN);
 		VAR i: SHORTINT;
 			beg, end: INTEGER; first: BOOLEAN;
 			lname: ARRAY 128 OF CHAR;
 
-		PROCEDURE Header(s: ARRAY OF SHORTCHAR);
+		PROCEDURE Header(IN s: ARRAY OF SHORTCHAR);
 		BEGIN
 			beg := T.Length(); Indent(1); Ws(s); Wln; end := T.Length()
 		END Header;
