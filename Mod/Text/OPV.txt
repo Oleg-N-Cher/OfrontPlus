@@ -478,7 +478,7 @@
 					IF OPM.typchk IN OPM.opt THEN
 						IF typ^.comp = Record THEN OPM.WriteString(GuardRecFunc); 
 							IF obj^.mnolev # OPM.level THEN (*intermediate level var-par record*)
-								OPM.WriteStringVar(obj^.scope^.name^); OPM.WriteString("__curr->"); OPC.Ident(obj)
+								OPM.WriteString(obj^.scope^.name^); OPM.WriteString("__curr->"); OPC.Ident(obj)
 							ELSE (*local var-par record*)
 								OPC.Ident(obj)
 							END ;
