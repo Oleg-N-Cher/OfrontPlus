@@ -8,7 +8,7 @@ TYPE
 VAR
   initOk-: BOOLEAN;
 
-PROCEDURE Load* (VAR sound: Rsrc; fileName: ARRAY OF CHAR);
+PROCEDURE Load* (VAR sound: Rsrc; IN fileName: ARRAY OF CHAR);
 BEGIN
   IF initOk THEN
     sound := mix.Mix_LoadWAV(SYSTEM.ADR(fileName));

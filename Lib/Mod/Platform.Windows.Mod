@@ -147,7 +147,7 @@ PROCEDURE OSFree*(address: ADRINT); BEGIN free(address) END OSFree;
 PROCEDURE -getenv(name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
   "(INTEGER)GetEnvironmentVariable((char*)name, (char*)buf, buf__len)";
 
-PROCEDURE getEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE getEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
   VAR
     buf: ARRAY 4096 OF CHAR;
     res: INTEGER;
@@ -158,10 +158,10 @@ BEGIN
     RETURN TRUE
   ELSE
     RETURN FALSE
-  END;
+  END
 END getEnv;
 
-PROCEDURE GetEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 BEGIN
   IF ~ getEnv(var, val) THEN val[0] := 0X END;
 END GetEnv;
@@ -189,11 +189,11 @@ BEGIN
   IF i > 0 THEN val := k END
 END GetIntArg;
 
-PROCEDURE ArgPos*(s: ARRAY OF CHAR): INTEGER;
+PROCEDURE ArgPos*(IN s: ARRAY OF CHAR): INTEGER;
   VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 BEGIN
   i := 0; GetArg(i, arg);
-  WHILE (i < ArgCount()) & (s # arg) DO INC(i); GetArg(i, arg) END ;
+  WHILE (i < ArgCount()) & (s # arg) DO INC(i); GetArg(i, arg) END;
   RETURN i
 END ArgPos;
 
@@ -248,7 +248,7 @@ PROCEDURE -getExitCodeProcess(VAR exitcode: INTEGER)  "GetExitCodeProcess(pi.hPr
 PROCEDURE -cleanupProcess                             "CloseHandle(pi.hProcess); CloseHandle(pi.hThread);";
 PROCEDURE -err(): DWORD                               "(INTEGER)GetLastError()";
 
-PROCEDURE System*(cmd : ARRAY OF CHAR): INTEGER;
+PROCEDURE System*(IN cmd : ARRAY OF CHAR): INTEGER;
 VAR
   result: INTEGER;
 BEGIN
@@ -339,7 +339,7 @@ BEGIN
   RETURN 0
 END Identify;
 
-PROCEDURE IdentifyByName*(n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
+PROCEDURE IdentifyByName*(IN n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
 VAR
   h:   FileHandle;
   e,i: ErrorCode;
@@ -506,7 +506,7 @@ PROCEDURE -getFileAttributes(name: ARRAY OF CHAR): DWORD
 "(INTEGER)GetFileAttributes((LPCTSTR)name)";
 PROCEDURE -FILEATTRIBUTEDIRECTORY(): SET "(SET)FILE_ATTRIBUTE_DIRECTORY";
 
-PROCEDURE FileExists*(name: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE FileExists*(IN name: ARRAY OF CHAR): BOOLEAN;
 VAR
   dwAttrib: DWORD;
 BEGIN
@@ -515,7 +515,7 @@ BEGIN
     & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() = {})
 END FileExists;
 
-PROCEDURE DirExists*(name: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE DirExists*(IN name: ARRAY OF CHAR): BOOLEAN;
 VAR
   dwAttrib: DWORD;
 BEGIN
@@ -529,7 +529,7 @@ PROCEDURE -moveFileEx(src, dest: ARRAY OF CHAR): BOOL
 PROCEDURE -copyFile(src, dest: ARRAY OF CHAR): BOOL
   "(INTEGER)CopyFile((LPCTSTR)src, (LPCTSTR)dest, FALSE)";
 
-PROCEDURE RenameFile*(src, dest: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile*(IN src, dest: ARRAY OF CHAR): ErrorCode;
 VAR
   src_id, dest_id: FileIdentity; error: ErrorCode;
 BEGIN

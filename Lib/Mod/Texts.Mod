@@ -542,7 +542,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   BEGIN Write(W, CR)
   END WriteLn;
 
-  PROCEDURE WriteString* (VAR W: Writer; s: ARRAY OF CHAR);
+  PROCEDURE WriteString* (VAR W: Writer; IN s: ARRAY OF CHAR);
     VAR i: INTEGER;
   BEGIN i := 0;
     WHILE s[i] >= " " DO Write(W, s[i]); INC(i) END
@@ -820,7 +820,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     Load0(r, T)
   END Load;
 
-  PROCEDURE Open* (T: Text; name: ARRAY OF CHAR);
+  PROCEDURE Open* (T: Text; IN name: ARRAY OF CHAR);
     VAR f: Files.File; r: Files.Rider; u: Run; p: Piece; tag, version, bom: CHAR; hlen: LONGINT;
   BEGIN f := Files.Old(name);
     IF f = NIL THEN f := Files.New("") END;
@@ -916,7 +916,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     IF T.notify # NIL THEN T.notify(T, unmark, 0, 0) END
   END Store;
 
-  PROCEDURE Close* (T: Text; name: ARRAY OF CHAR);
+  PROCEDURE Close* (T: Text; IN name: ARRAY OF CHAR);
     VAR f: Files.File; r: Files.Rider; i, res: LONGINT; bak: ARRAY 64 OF CHAR;
   BEGIN
     f := Files.New(name); Files.Set(r, f, 0); Files.WriteChar(r, textTag); Files.WriteChar(r, version); Store(r, T);
