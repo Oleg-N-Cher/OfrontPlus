@@ -684,14 +684,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	PROCEDURE WriteString*(IN s: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0; ch := s[0];
-	WHILE ch # 0X DO Write(ch); INC(i); ch := s[i] END ;
+	WHILE ch # 0X DO Write(ch); INC(i); ch := s[i] END
 	END WriteString;
-
-	PROCEDURE WriteStringVar*(VAR s: ARRAY OF SHORTCHAR);
-		VAR i: INTEGER; ch: SHORTCHAR;
-	BEGIN i := 0; ch := s[0];
-	WHILE ch # 0X DO Write(ch); INC(i); ch := s[i] END ;
-	END WriteStringVar;
 
 	PROCEDURE WriteHex* (i: INTEGER);
 		VAR s: ARRAY 3 OF SHORTCHAR;
