@@ -307,7 +307,7 @@ PROCEDURE -AAIncludeSDL2h0 '#include "SDL2.h0"';
 
 (* C Macros *)
 
-PROCEDURE LoadBmp(filename: ARRAY OF CHAR): SDL.Surface;
+PROCEDURE LoadBmp(IN filename: ARRAY OF CHAR): SDL.Surface;
 BEGIN
   RETURN SDL.LoadBmpRW(SDL.RWFromFile(filename, 'rb'), 1)
 END LoadBmp;
@@ -320,7 +320,7 @@ BEGIN
   s[0] := '4'; s[1] := '2'; s[2] := 0X (*!FIXME*)
 END Str;
 
-PROCEDURE Val*(s: ARRAY OF CHAR): INTEGER;
+PROCEDURE Val*(IN s: ARRAY OF CHAR): INTEGER;
 VAR n: INTEGER; (*res: IntStr.ConvResults;*)
 BEGIN
   (*IntStr.StrToInt(s, n, res);
@@ -619,7 +619,7 @@ BEGIN
   SDL.FreeSurface(bmp.surface)
 END DestroyBitmap;
 
-PROCEDURE LoadBitmap*(filename: ARRAY OF CHAR): Bitmap;
+PROCEDURE LoadBitmap*(IN filename: ARRAY OF CHAR): Bitmap;
 VAR bmp: Bitmap;
 BEGIN        (* LoadBmp(filename) for BMP-only *)
   NEW(bmp); bmp.surface := SDL.ImgLoad(filename);
@@ -671,7 +671,7 @@ END SetColorKey;
 
 (* Font *)
 
-PROCEDURE LoadFont*(filename: ARRAY OF CHAR; charW, charH: INTEGER): Font;
+PROCEDURE LoadFont*(IN filename: ARRAY OF CHAR; charW, charH: INTEGER): Font;
 VAR bmp: Bitmap; font: Font;
     x, y, sx, sy, tmp: INTEGER;
 BEGIN
@@ -716,7 +716,7 @@ BEGIN
 END DrawCharacter;
 
 PROCEDURE DrawString*(dest: Bitmap; font: Font;
-  x, y: INTEGER; s: ARRAY OF CHAR; fg: INTEGER);
+  x, y: INTEGER; IN s: ARRAY OF CHAR; fg: INTEGER);
 VAR i, cx: INTEGER;
 BEGIN
   i := 0; cx := x;
@@ -915,7 +915,7 @@ BEGIN
 END InitMouseData;
 
 (* Misc *)
-PROCEDURE SetWindowTitle*(title: ARRAY OF CHAR);
+PROCEDURE SetWindowTitle*(IN title: ARRAY OF CHAR);
 BEGIN
   SDL.SetWindowTitle(window, title)
 END SetWindowTitle;

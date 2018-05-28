@@ -22,7 +22,7 @@ MODULE Modules;  (* jt 6.1.96 *)
   PROCEDURE -modules(): Module     "(Heap_Module)Heap_modules";
   (*PROCEDURE -setmodules(m: Module) "Heap_modules = m";*)
 
-	PROCEDURE Append(b: ARRAY OF CHAR; VAR a: ARRAY OF CHAR);
+	PROCEDURE Append(IN b: ARRAY OF CHAR; VAR a: ARRAY OF CHAR);
 		VAR i, j: INTEGER;
 	BEGIN
 		i := 0; WHILE a[i] # 0X DO INC(i) END;
@@ -30,7 +30,7 @@ MODULE Modules;  (* jt 6.1.96 *)
 		a[i] := 0X
 	END Append;
 
-  PROCEDURE ThisMod* (name: ARRAY OF CHAR): Module;
+  PROCEDURE ThisMod* (IN name: ARRAY OF CHAR): Module;
     VAR m: Module; bodyname: ARRAY 64 OF CHAR; body: Command;
   BEGIN m := modules();
     WHILE (m # NIL) & (m.name # name) DO m := m.next END ;
@@ -41,7 +41,7 @@ MODULE Modules;  (* jt 6.1.96 *)
     RETURN m
   END ThisMod;
 
-  PROCEDURE ThisCommand* (mod: Module; name: ARRAY OF CHAR): Command;
+  PROCEDURE ThisCommand* (mod: Module; IN name: ARRAY OF CHAR): Command;
     VAR c: Cmd;
   BEGIN c := mod.cmds;
     WHILE (c # NIL) & (c.name # name) DO c := c.next END ;
@@ -52,7 +52,7 @@ MODULE Modules;  (* jt 6.1.96 *)
     END
   END ThisCommand;
 
-  PROCEDURE Free*(name: ARRAY OF CHAR; all: BOOLEAN);
+  PROCEDURE Free*(IN name: ARRAY OF CHAR; all: BOOLEAN);
     VAR m, p: Module; refcount: LONGINT;
   BEGIN m := modules();
     IF all THEN

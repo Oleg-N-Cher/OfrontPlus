@@ -140,7 +140,7 @@ PROCEDURE OSFree*(address: ADRINT); BEGIN free(address) END OSFree;
 
 PROCEDURE -getenv(var: ARRAY OF CHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
 
-PROCEDURE getEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE getEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
   VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
@@ -148,7 +148,7 @@ BEGIN
   RETURN p # NIL
 END getEnv;
 
-PROCEDURE GetEnv*(var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 BEGIN
   IF ~ getEnv(var, val) THEN val[0] := 0X END;
 END GetEnv;
@@ -176,7 +176,7 @@ BEGIN
   IF i > 0 THEN val := k END
 END GetIntArg;
 
-PROCEDURE ArgPos*(s: ARRAY OF CHAR): INTEGER;
+PROCEDURE ArgPos*(IN s: ARRAY OF CHAR): INTEGER;
   VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 BEGIN
   i := 0; GetArg(i, arg);
@@ -260,7 +260,7 @@ END Delay;
 PROCEDURE -system(str: ARRAY OF CHAR): INTEGER "system((char*)str)";
 PROCEDURE -err(): INTEGER "errno";
 
-PROCEDURE System*(cmd : ARRAY OF CHAR): INTEGER;
+PROCEDURE System*(IN cmd : ARRAY OF CHAR): INTEGER;
 BEGIN RETURN system(cmd) END System;
 
 PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
@@ -334,7 +334,7 @@ BEGIN
   RETURN 0
 END Identify;
 
-PROCEDURE IdentifyByName*(n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
+PROCEDURE IdentifyByName*(IN n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
 BEGIN
   structstats;
   IF stat(n) < 0 THEN RETURN err() END;
@@ -446,14 +446,14 @@ BEGIN
 END ChDir;
 
 
-PROCEDURE FileExists*(pathname: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE FileExists*(IN pathname: ARRAY OF CHAR): BOOLEAN;
 BEGIN
   structstats;
   IF stat(pathname) # 0 THEN RETURN FALSE END;
   RETURN statisreg()
 END FileExists;
 
-PROCEDURE DirExists*(path: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE DirExists*(IN path: ARRAY OF CHAR): BOOLEAN;
 BEGIN
   structstats;
   IF stat(path) # 0 THEN RETURN FALSE END;
@@ -463,7 +463,7 @@ END DirExists;
 
 PROCEDURE -rename(o,n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
 
-PROCEDURE RenameFile*(oldname, newname: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile*(IN oldname, newname: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF rename(oldname, newname) < 0 THEN RETURN err() END;
   RETURN 0

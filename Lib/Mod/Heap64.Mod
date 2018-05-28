@@ -148,7 +148,7 @@ MODULE Heap;
     RETURN m
   END REGMOD;
 
-  PROCEDURE FreeModule*(name: ARRAY OF CHAR): INTEGER;
+  PROCEDURE FreeModule*(IN name: ARRAY OF CHAR): INTEGER;
   (* Returns 0 if freed, -1 if not found, refcount if found and refcount > 0. *)
     VAR m, p: Module;
   BEGIN m := S.VAL(Module, modules);

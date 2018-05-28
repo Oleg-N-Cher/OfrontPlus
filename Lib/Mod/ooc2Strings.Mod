@@ -52,7 +52,7 @@ CONST
      than the second one.  *)
  
 
-PROCEDURE Length* (stringVal: ARRAY OF CHAR): INTEGER;
+PROCEDURE Length* (IN stringVal: ARRAY OF CHAR): INTEGER;
 (**Returns the length of @oparam{stringVal}.  This is equal to the number of 
    characters in @oparam{stringVal} up to and excluding the first @code{0X}. *)
   VAR
@@ -67,7 +67,7 @@ PROCEDURE Length* (stringVal: ARRAY OF CHAR): INTEGER;
 
  
  
-PROCEDURE Assign* (source: ARRAY OF CHAR; VAR destination: ARRAY OF CHAR);
+PROCEDURE Assign* (IN source: ARRAY OF CHAR; VAR destination: ARRAY OF CHAR);
 (**Copies @oparam{source} to @oparam{destination}.  Equivalent to the
    predefined procedure @code{COPY}.  Unlike @code{COPY}, this procedure can be
    assigned to a procedure variable.  *)
@@ -82,7 +82,7 @@ PROCEDURE Assign* (source: ARRAY OF CHAR; VAR destination: ARRAY OF CHAR);
     destination[i] := 0X
   END Assign;
   
-PROCEDURE Extract* (source: ARRAY OF CHAR; startPos, numberToExtract: INTEGER;
+PROCEDURE Extract* (IN source: ARRAY OF CHAR; startPos, numberToExtract: INTEGER;
                     VAR destination: ARRAY OF CHAR);
 (**Copies at most @oparam{numberToExtract} characters from @oparam{source} to
    @oparam{destination}, starting at position @oparam{startPos} in
@@ -142,7 +142,7 @@ PROCEDURE Delete* (VAR stringVar: ARRAY OF CHAR;
     END
   END Delete;
  
-PROCEDURE Insert* (source: ARRAY OF CHAR; startPos: INTEGER;
+PROCEDURE Insert* (IN source: ARRAY OF CHAR; startPos: INTEGER;
                    VAR destination: ARRAY OF CHAR);
 (**Inserts @oparam{source} into @oparam{destination} at position
    @oparam{startPos}.  After the call @oparam{destination} contains the string
@@ -187,7 +187,7 @@ PROCEDURE Insert* (source: ARRAY OF CHAR; startPos: INTEGER;
     END
   END Insert;
   
-PROCEDURE Replace* (source: ARRAY OF CHAR; startPos: INTEGER;
+PROCEDURE Replace* (IN source: ARRAY OF CHAR; startPos: INTEGER;
                     VAR destination: ARRAY OF CHAR);
 (**Copies @oparam{source} into @oparam{destination}, starting at position
    @oparam{startPos}. Copying stops when all of @oparam{source} has been
@@ -215,7 +215,7 @@ PROCEDURE Replace* (source: ARRAY OF CHAR; startPos: INTEGER;
     END
   END Replace;
  
-PROCEDURE Append* (source: ARRAY OF CHAR; VAR destination: ARRAY OF CHAR);
+PROCEDURE Append* (IN source: ARRAY OF CHAR; VAR destination: ARRAY OF CHAR);
 (**Appends @oparam{source} to @oparam{destination}. *)
   VAR
     destLength, i: INTEGER;
@@ -230,7 +230,7 @@ PROCEDURE Append* (source: ARRAY OF CHAR; VAR destination: ARRAY OF CHAR);
     destination[destLength] := 0X
   END Append;
   
-PROCEDURE Concat* (source1, source2: ARRAY OF CHAR; 
+PROCEDURE Concat* (IN source1, source2: ARRAY OF CHAR; 
                    VAR destination: ARRAY OF CHAR);
 (**Concatenates @oparam{source2} onto @oparam{source1} and copies the result
    into @oparam{destination}.  *)
@@ -355,7 +355,7 @@ PROCEDURE CanConcatAll* (source1Length, source2Length: INTEGER;
   
 
 
-PROCEDURE Compare* (stringVal1, stringVal2: ARRAY OF CHAR): CompareResults;
+PROCEDURE Compare* (IN stringVal1, stringVal2: ARRAY OF CHAR): CompareResults;
 (**Returns @oconst{less}, @oconst{equal}, or @oconst{greater}, according as
    @oparam{stringVal1} is lexically less than, equal to, or greater than
    @oparam{stringVal2}.  Note that Oberon-2 already contains predefined
@@ -376,7 +376,7 @@ PROCEDURE Compare* (stringVal1, stringVal2: ARRAY OF CHAR): CompareResults;
     END
   END Compare;
  
-PROCEDURE Equal* (stringVal1, stringVal2: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE Equal* (IN stringVal1, stringVal2: ARRAY OF CHAR): BOOLEAN;
 (**Returns @samp{stringVal1 = stringVal2}.  Unlike the predefined operator
    @samp{=}, this procedure can be assigned to a procedure variable.  *)
   VAR
@@ -389,7 +389,7 @@ PROCEDURE Equal* (stringVal1, stringVal2: ARRAY OF CHAR): BOOLEAN;
     RETURN (stringVal1[i] = 0X) & (stringVal2[i] = 0X)
   END Equal;
  
-PROCEDURE FindNext* (pattern, stringToSearch: ARRAY OF CHAR; startPos: INTEGER;
+PROCEDURE FindNext* (IN pattern, stringToSearch: ARRAY OF CHAR; startPos: INTEGER;
                      VAR patternFound: BOOLEAN; VAR posOfPattern: INTEGER);
 (**Looks forward for next occurrence of @oparam{pattern} in
    @oparam{stringToSearch}, starting the search at position @oparam{startPos}.
@@ -435,7 +435,7 @@ PROCEDURE FindNext* (pattern, stringToSearch: ARRAY OF CHAR; startPos: INTEGER;
     END
   END FindNext;
   
-PROCEDURE FindPrev* (pattern, stringToSearch: ARRAY OF CHAR; startPos: INTEGER;
+PROCEDURE FindPrev* (IN pattern, stringToSearch: ARRAY OF CHAR; startPos: INTEGER;
                      VAR patternFound: BOOLEAN; VAR posOfPattern: INTEGER);
 (**Looks backward for the previous occurrence of @oparam{pattern} in
    @oparam{stringToSearch} and returns the position of the first character of
@@ -486,7 +486,7 @@ PROCEDURE FindPrev* (pattern, stringToSearch: ARRAY OF CHAR; startPos: INTEGER;
     END
   END FindPrev;
  
-PROCEDURE FindDiff* (stringVal1, stringVal2: ARRAY OF CHAR;
+PROCEDURE FindDiff* (IN stringVal1, stringVal2: ARRAY OF CHAR;
                      VAR differenceFound: BOOLEAN; 
                      VAR posOfDifference: INTEGER);
 (**Compares the string values in @oparam{stringVal1} and @oparam{stringVal2}

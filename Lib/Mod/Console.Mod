@@ -21,7 +21,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
     IF ch = 0AX THEN Flush() END
   END Char;
 
-  PROCEDURE String*(s: ARRAY OF CHAR);
+  PROCEDURE String*(IN s: ARRAY OF CHAR);
     VAR i: INTEGER;
   BEGIN i := 0;
     WHILE s[i] # 0X DO Char(s[i]); INC(i) END

@@ -31,12 +31,12 @@ BEGIN
   IF ch = 0AX THEN Flush END;
 END Char;
 
-PROCEDURE Length(VAR s: ARRAY OF CHAR): LONGINT;
+PROCEDURE Length(IN s: ARRAY OF CHAR): LONGINT;
 VAR l: LONGINT;
 BEGIN l := 0; WHILE (l < LEN(s)) & (s[l] # 0X) DO INC(l) END; RETURN l
 END Length;
 
-PROCEDURE String*(str: ARRAY OF CHAR);
+PROCEDURE String*(IN str: ARRAY OF CHAR);
   VAR l: LONGINT;  error: Platform.ErrorCode;
 BEGIN
   l := Length(str);
@@ -98,7 +98,7 @@ BEGIN
   DEC(i); s[i] := CHR(n MOD 10 + 48);
 END digit;
 
-PROCEDURE prepend(t: ARRAY OF CHAR; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
+PROCEDURE prepend(IN t: ARRAY OF CHAR; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
   VAR j: INTEGER; l: LONGINT;
 BEGIN
   l := Length(t); IF l > i THEN l := i END;
