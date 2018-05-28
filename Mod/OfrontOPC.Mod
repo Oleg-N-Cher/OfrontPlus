@@ -128,25 +128,25 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN DEC(indentLevel); BegStat; OPM.Write(CloseBrace)
 	END EndBlk0;
 
-	PROCEDURE Str1(s: ARRAY OF CHAR; x: INTEGER);
+	PROCEDURE Str1(IN s: ARRAY OF CHAR; x: INTEGER);
 		VAR ch: CHAR; i: SHORTINT;
 	BEGIN ch := s[0]; i := 0;
 		WHILE ch # 0X DO
 			IF ch = "#" THEN OPM.WriteInt(x)
 			ELSE OPM.Write(ch);
-			END ;
+			END;
 			INC(i); ch := s[i]
 		END
 	END Str1;
 
-	PROCEDURE Length(VAR s: ARRAY OF CHAR): SHORTINT;
+	PROCEDURE Length(IN s: ARRAY OF CHAR): SHORTINT;
 		VAR i: SHORTINT;
 	BEGIN i := 0;
-		WHILE s[i] # 0X DO INC(i) END ;
+		WHILE s[i] # 0X DO INC(i) END;
 		RETURN i
 	END Length;
 
-	PROCEDURE PerfectHash (VAR s: ARRAY OF CHAR): SHORTINT;
+	PROCEDURE PerfectHash (IN s: ARRAY OF CHAR): SHORTINT;
 		VAR i, h: SHORTINT;
 	BEGIN i := 0; h := 0;
 		WHILE (s[i] # 0X) & (i < 5) DO h := 3*h + ORD(s[i]); INC(i) END;
@@ -538,7 +538,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END DefineType;
 
-	PROCEDURE Prefixed(x: OPT.ConstExt; y: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE Prefixed(x: OPT.ConstExt; IN y: ARRAY OF CHAR): BOOLEAN;
 		VAR i: SHORTINT;
 	BEGIN i := 0;
 		WHILE x[i] = y[i] DO INC(i) END ;
@@ -823,9 +823,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END;
 	END ProcPredefs;
 
-	PROCEDURE Include(name: ARRAY OF CHAR);
+	PROCEDURE Include(IN name: ARRAY OF CHAR);
 	BEGIN
-		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteStringVar(name);
+		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteString(name);
 		OPM.WriteString(".h"); OPM.Write(Quotes); OPM.WriteLn
 	END Include;
 
@@ -1247,7 +1247,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END WriteCharLiteral;
 
-	PROCEDURE WriteStringLiteral(str: ARRAY OF CHAR; len: INTEGER);
+	PROCEDURE WriteStringLiteral(IN str: ARRAY OF CHAR; len: INTEGER);
 		VAR ch: CHAR; i: INTEGER;
 	BEGIN
 		OPM.Write(Quotes);
@@ -1349,7 +1349,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE InitKeywords;
 		VAR n, i: BYTE;
 
-		PROCEDURE Enter(s: ARRAY OF CHAR);
+		PROCEDURE Enter(IN s: ARRAY OF CHAR);
 			VAR h: SHORTINT;
 		BEGIN h := PerfectHash(s); hashtab[h] := n; COPY(s, keytab[n]); INC(n)
 		END Enter;

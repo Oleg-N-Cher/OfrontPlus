@@ -33,7 +33,7 @@
 		W: Texts.Writer;
 		option: CHAR;
 
-	PROCEDURE Ws(s: ARRAY OF CHAR); BEGIN Texts.WriteString(W, s) END Ws;
+	PROCEDURE Ws(IN s: ARRAY OF CHAR); BEGIN Texts.WriteString(W, s) END Ws;
 	PROCEDURE Wch(ch: CHAR); BEGIN Texts.Write(W, ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLongInt(W, i, 0) END Wi;
 	PROCEDURE Wln; BEGIN Texts.WriteLn(W) END Wln;
@@ -240,11 +240,11 @@
 		END
 	END Wtype;
 
-	PROCEDURE WModule(name: OPS.Name; T: Texts.Text);
+	PROCEDURE WModule(IN name: OPS.Name; T: Texts.Text);
 		VAR i: SHORTINT;
 			beg, end: INTEGER; first, done: BOOLEAN;
 
-		PROCEDURE Header(s: ARRAY OF CHAR);
+		PROCEDURE Header(IN s: ARRAY OF CHAR);
 		BEGIN
 			beg := W.buf.len; Indent(1); Ws(s); Wln; end := W.buf.len
 		END Header;

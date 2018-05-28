@@ -166,7 +166,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN NEW(node); node^.class := class; RETURN node
 	END NewNode;
 
-	PROCEDURE NewName* ((*IN*) name: ARRAY OF CHAR): OPS.String;
+	PROCEDURE NewName* (IN name: ARRAY OF CHAR): OPS.String;
 		VAR i: INTEGER; p: OPS.String;
 	BEGIN
 		i := 0; WHILE name[i] # 0X DO INC(i) END;
@@ -254,7 +254,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := NIL
 	END FindField;
 
-	PROCEDURE Insert*(VAR(*IN*) name: OPS.Name; VAR obj: Object);
+	PROCEDURE Insert*(IN name: OPS.Name; VAR obj: Object);
 		VAR ob0, ob1: Object; left: BOOLEAN; mnolev: BYTE;
 	BEGIN ob0 := topScope; ob1 := ob0^.right; left := FALSE;
 		LOOP
@@ -797,7 +797,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		RETURN obj
 	END InObj;
 
-	PROCEDURE Import*(aliasName: OPS.Name; VAR name: OPS.Name; VAR done: BOOLEAN);
+	PROCEDURE Import*(IN aliasName, name: OPS.Name; VAR done: BOOLEAN);
 		VAR obj: Object; mno: BYTE;	(* done used in Browser *)
 	BEGIN
 		IF name = "SYSTEM" THEN SYSimported := TRUE;
@@ -1060,14 +1060,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		typ^.idfp := form; typ^.idfpdone := TRUE
 	END InitStruct;
 
-	PROCEDURE EnterBoolConst(name: OPS.Name; value: INTEGER);
+	PROCEDURE EnterBoolConst(IN name: OPS.Name; value: INTEGER);
 		VAR obj: Object;
 	BEGIN
 		Insert(name, obj); obj^.conval := NewConst();
 		obj^.mode := Con; obj^.typ := booltyp; obj^.conval^.intval := value
 	END EnterBoolConst;
 
-	PROCEDURE EnterTyp(name: OPS.Name; form: BYTE; size: SHORTINT; VAR res: Struct);
+	PROCEDURE EnterTyp(IN name: OPS.Name; form: BYTE; size: SHORTINT; VAR res: Struct);
 		VAR obj: Object; typ: Struct;
 	BEGIN
 		Insert(name, obj);
@@ -1077,7 +1077,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		typ^.idfp := form; typ^.idfpdone := TRUE; res := typ
 	END EnterTyp;
 
-	PROCEDURE EnterProc(name: OPS.Name; num: SHORTINT);
+	PROCEDURE EnterProc(IN name: OPS.Name; num: SHORTINT);
 		VAR obj: Object;
 	BEGIN Insert(name, obj);
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
