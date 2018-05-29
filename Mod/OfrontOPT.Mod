@@ -7,7 +7,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 *)
 
 	IMPORT
-		OPS := OfrontOPS, OPM := OfrontOPM;
+		OPS := OfrontOPS, OPM := OfrontOPM, SYSTEM;
 
 	TYPE
 		Const* = POINTER TO ConstDesc;
@@ -116,7 +116,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Sinpar = 25; Soutpar = 26;
 
 	TYPE
-		ImpCtxt = RECORD
+		ImpCtxt = RECORD [untagged]
 			nextTag, reffp: INTEGER;
 			nofr, minr, nofm: SHORTINT;
 			self: BOOLEAN;
@@ -124,9 +124,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			old: ARRAY maxStruct OF Object;
 			pvfp: ARRAY maxStruct OF INTEGER;	(* set only if old # NIL *)
 			glbmno: ARRAY maxImps OF BYTE	(* index is local mno *)
-		END ;
+		END;
 
-		ExpCtxt = RECORD
+		ExpCtxt = RECORD [untagged]
 			reffp: INTEGER;
 			ref: SHORTINT;
 			nofm: BYTE;
