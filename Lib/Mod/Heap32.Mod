@@ -1,3 +1,8 @@
+(*
+* The Ofront+ runtime system, Version 1.0
+* Copyright (c) Software Templ OG, 1994-2018 & VEDAsoft Oberon Club, 2013-2018
+*)
+
 MODULE Heap;
 
   IMPORT S := SYSTEM;  (* Cannot import anything else as heap initialization must complete
@@ -8,15 +13,17 @@ MODULE Heap;
   CONST
     ModNameLen    = 20;
     CmdNameLen    = 24;
-    SZA           = SIZE(ADDRESS);  (* Size of address *)
+    SZA           = SIZE(ADDRESS);    (* Size of address *)
     Unit          = 4*SZA;            (* Smallest possible heap block *)
     nofLists      = 9;                (* Number of freelist entries excluding sentinel *)
     heapSize0     = 8000*Unit;        (* Startup heap size *)
 
-  (* all blocks look the same:
-    free blocks describe themselves: size = Unit
+  (* Allocated and free blocks look the same: they start with a type tag pointing to a type descriptor.
+    A type descriptor starts with the block size followed by the pointer offset table (>=0) followed by a sentinel (< 0)
+    that describes the size of the pointer offset table. Free blocks have a pseudo type descriptor inside.
+    The size of free blocks must be <= Unit. Free blocks look like this:
     tag = &tag++
-  ->block size
+  -> blksize
     sentinel = -SZA
     next
   *)
@@ -26,9 +33,9 @@ MODULE Heap;
     endOff      = S.VAL(ADDRESS, SZA);    (* end of heap chunk *)
     blkOff      = S.VAL(ADDRESS, 3*SZA);  (* first block in a chunk, starts with tag *)
 
-  (* heap blocks *)
-    tagOff      = S.VAL(ADDRESS, 0);      (* block starts with tag *)
-    sizeOff     = S.VAL(ADDRESS, SZA);    (* block size in free block relative to block start *)
+  (* free heap blocks *)
+    tagOff      = S.VAL(ADDRESS, 0*SZA);  (* any block starts with a tag *)
+    sizeOff     = S.VAL(ADDRESS, 1*SZA);  (* block size in free block relative to block start *)
     sntlOff     = S.VAL(ADDRESS, 2*SZA);  (* pointer offset table sentinel in free block relative to block start *)
     nextOff     = S.VAL(ADDRESS, 3*SZA);  (* next pointer in free block relative to block start *)
     NoPtrSntl   = S.VAL(ADDRESS, -SZA);
@@ -120,16 +127,6 @@ MODULE Heap;
   PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <  (SYSTEM_ADR)y)";
   PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <= (SYSTEM_ADR)y)";
 
-  (*
-    PROCEDURE TAS*(VAR flag:BOOLEAN): BOOLEAN; (* added for compatibility with ulmSYSTEM module; noch *)
-    VAR oldflag : BOOLEAN;
-    BEGIN
-       oldflag := flag;
-       flag := TRUE;
-       RETURN oldflag;
-    END TAS;
-  *)
-
   PROCEDURE REGMOD*(VAR name: ModuleName; enumPtrs: EnumProc): S.PTR;
     VAR m: Module;
   BEGIN
@@ -188,8 +185,10 @@ MODULE Heap;
   END INCREF;
 
 
-  PROCEDURE -ExternPlatformOSAllocate "extern SYSTEM_ADRINT Platform_OSAllocate(SYSTEM_ADRINT size);";
-  PROCEDURE -OSAllocate(size: ADDRESS): ADDRESS "Platform_OSAllocate(size)";
+  PROCEDURE- ExternPlatformOSAllocate "extern SYSTEM_ADRINT Platform_OSAllocate (SYSTEM_ADRINT size);";
+  PROCEDURE- OSAllocate (size: ADDRESS): ADDRESS "Platform_OSAllocate(size)";
+  PROCEDURE- ExternPlatformOSFree     "extern void Platform_OSFree (SYSTEM_ADRINT address);";
+  PROCEDURE- OSFree (address: ADDRESS)           "Platform_OSFree(address)";
 
   PROCEDURE NewChunk(blksz: ADDRESS): ADDRESS;
     VAR chnk, blk, end: ADDRESS;
@@ -394,10 +393,10 @@ MODULE Heap;
   END MarkP;
 
   PROCEDURE Scan;
-    VAR chnk, adr, end, start, tag, i, size, freesize: ADDRESS;
+    VAR chnk, prevChnk, nextChnk, adr, end, start, tag, i, size, freesize: ADDRESS;
   BEGIN bigBlocks := 0; i := 1;
     WHILE i < nofLists DO freeList[i] := 0; INC(i) END;
-    freesize := 0; allocated := 0; chnk := heap;
+    freesize := 0; allocated := 0; chnk := heap; prevChnk := 0;
     WHILE chnk # 0 DO
       adr := chnk + blkOff;
       S.GET(chnk + endOff, end);
@@ -426,7 +425,33 @@ MODULE Heap;
           INC(adr, size)
         END
       END;
-      IF freesize # 0 THEN (* Collect last block *)
+      (* new variant with recycling of empty chunks *)
+      S.GET(chnk + nextChnkOff, nextChnk);
+      IF freesize # 0 THEN (*collect last block(s)*)
+        start := adr - freesize;
+        IF (start = chnk + blkOff) & (prevChnk # nextChnk) THEN (* chnk is empty and not the only node *)
+          DEC(heapsize, freesize);
+          IF prevChnk = 0 THEN heap := nextChnk; heapMin := nextChnk + blkOff + SZA
+          ELSIF nextChnk # 0 THEN S.PUT(prevChnk + nextChnkOff, nextChnk)
+          ELSE S.PUT(prevChnk + nextChnkOff, nextChnk); heapMax := end
+          END;
+          OSFree(chnk)
+        ELSE
+          S.PUT(start, start+SZA);
+          S.PUT(start+sizeOff, freesize);
+          S.PUT(start+sntlOff, NoPtrSntl);
+          i := S.LSH(freesize, -ldUnit) (*uDIV Unit*);
+          IF uLT(i, nofLists) THEN S.PUT(start + nextOff, freeList[i]); freeList[i] := start
+          ELSE S.PUT(start + nextOff, bigBlocks); bigBlocks := start
+          END;
+          prevChnk :=  chnk
+        END;
+        freesize := 0
+      ELSE prevChnk :=  chnk
+      END;
+      chnk :=  nextChnk
+      (* old variant without recycling of empty chunks
+			IF freesize # 0 THEN (*collect last block(s)*)
         start := adr - freesize;
         S.PUT(start,         start+SZA);
         S.PUT(start+sizeOff, freesize);
@@ -438,6 +463,7 @@ MODULE Heap;
         END
       END;
       S.GET(chnk, chnk)
+      *)
     END
   END Scan;
 
