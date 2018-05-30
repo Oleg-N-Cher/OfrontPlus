@@ -1,6 +1,6 @@
 (*
 * The Ofront+ runtime system, Version 1.0
-* Copyright (c) Software Templ OG, 1994-2018 & VEDAsoft Oberon Club, 2013-2018
+* Copyright (c) Software Templ OG, 1994-2018, with advice from David C. W. Brown
 *)
 
 MODULE Heap;
