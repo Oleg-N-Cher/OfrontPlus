@@ -94,18 +94,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 		exit: ExitInfo;	(* to check if EXIT is simply a break *)
 		nofExitLabels: SHORTINT;
-		naturalAlignment: BOOLEAN;
 
-
-	PROCEDURE NaturalAlignment(size, max: INTEGER): INTEGER;
-		VAR i: INTEGER;
-	BEGIN
-		IF size >= max THEN RETURN max
-		ELSE i := 1;
-			WHILE i < size DO INC(i, i) END ;
-			RETURN i
-		END
-	END NaturalAlignment;
 
 	PROCEDURE TypSize*(typ: OPT.Struct);
 		VAR f, c: SHORTINT; offset, size, base, fbase, off0: INTEGER;
@@ -115,7 +104,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		ELSIF typ^.size = -1 THEN
 			f := typ^.form; c := typ^.comp;
 			IF c = Record THEN btyp := typ^.BaseTyp;
-				IF btyp = NIL THEN offset := 0; base := 1;
+				IF btyp = NIL THEN offset := 0; base := 1; (* OPM.RecAlign *)
 				ELSE TypSize(btyp); offset := btyp^.size - btyp^.sysflag DIV 100H; base := btyp^.align
 				END;
 				fld := typ^.link;
@@ -129,15 +118,15 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				END;
 				(* base is now the largest alignment of any field *)
 				off0 := offset;
-				IF offset = 0 THEN offset := 1 END ;	(* 1 byte filler to avoid empty struct *)
+				IF offset = 0 THEN offset := 1 END;	(* 1 byte filler to avoid empty struct *)
 				OPC.Align(offset, base);
-				IF (typ^.strobj = NIL) & (typ^.align MOD 10000H = 0) THEN INC(recno); INC(base, recno * 10000H) END ;
+				IF (typ^.strobj = NIL) & (typ^.align MOD 10000H = 0) THEN INC(recno); INC(base, recno * 10000H) END;
 				typ^.size := offset; typ^.align := base;
 				(* encode the trailing gap into the symbol table to allow dense packing of extended records *)
 				typ^.sysflag := typ^.sysflag MOD 100H + SHORT((offset - off0)*100H)	
 			ELSIF c = Array THEN
 				TypSize(typ^.BaseTyp);
-				typ^.size := typ^.n * typ^.BaseTyp^.size;
+				typ^.size := typ^.n * typ^.BaseTyp^.size
 			ELSIF f = Pointer THEN
 				typ^.size := OPM.PointerSize;
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ^.n)
@@ -150,7 +139,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				IF ODD(typ^.sysflag) THEN typ^.size := 4
 				ELSIF btyp^.comp = DynArr THEN typ^.size := btyp^.size + 4	(* describes dim not size *)
 				ELSE typ^.size := 8
-				END ;
+				END
 			END
 		END
 	END TypSize;

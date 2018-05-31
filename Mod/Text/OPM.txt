@@ -87,9 +87,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 	VAR
 		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-, LIntSize-,
-		SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize-, IndexSize-,
+		SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize, IndexSize-,
 		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-, LIntAlign-,
-		SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign-,
+		SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign,
 		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: SHORTINT;
 		MinSInt-, MinInt-, MaxSInt-, MaxInt-: INTEGER; MaxIndex-, MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: REAL;
