@@ -79,7 +79,7 @@
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
 						| Char:
 								IF obj^.conval^.intval = 22H THEN Wch("'"); Wch('"'); Wch("'")
-								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
+								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN
 									Wch(22X); Wch(CHR(obj^.conval^.intval)); Wch(22X)
 								ELSE
 									i := SHORT(obj^.conval^.intval) DIV 16;
@@ -257,7 +257,7 @@
 			ELSE Wln
 			END
 		END CheckHeader;
-				
+
 	BEGIN
 		OPT.Import("@notself", name, done);
 		IF done THEN
@@ -281,7 +281,7 @@
 			Texts.WriteLn(W); Texts.Append(T, W.buf)
 		END
 	END WModule;
-	
+
 	PROCEDURE Ident(VAR name, first: ARRAY OF CHAR);
 		VAR i, j: SHORTINT; ch: CHAR;
 	BEGIN i := 0;

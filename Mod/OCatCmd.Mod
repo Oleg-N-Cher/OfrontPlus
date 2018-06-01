@@ -13,16 +13,16 @@
 	IMPORT Args, Console, Files, Texts;
 
 	CONST TAB = 09X; CR = 0DX; LF = 0AX;
-	
+
 	PROCEDURE Cat*;
-		VAR optTab: BOOLEAN; path: ARRAY 128 OF CHAR; arg: INTEGER; 
+		VAR optTab: BOOLEAN; path: ARRAY 128 OF CHAR; arg: INTEGER;
 			T: Texts.Text; R: Texts.Reader; ch: CHAR;
 	BEGIN
 		optTab := FALSE; path := ""; arg := 1; NEW(T);
 		Args.Get(1, path);
 		IF path = "-t" THEN optTab := TRUE; arg := 2; path := ""; Args.Get(2, path) END ;
 		WHILE path # "" DO
-			IF Files.Old(path) # NIL THEN 
+			IF Files.Old(path) # NIL THEN
 				Texts.Open(T, path);
 				Texts.OpenReader(R, T, 0); Texts.Read(R, ch);
 				WHILE ~R.eot DO

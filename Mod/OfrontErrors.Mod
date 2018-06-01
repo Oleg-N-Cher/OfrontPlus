@@ -241,7 +241,7 @@ Unix signals
   6
   7
   8	arithmetic exception: division by zero, overflow; IU = integer unit, FPU = floating point unit
-  9	
+  9
 10	bus error, unaligned data access
 11	segmentation violation, NIL-access
 12

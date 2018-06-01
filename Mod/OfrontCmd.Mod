@@ -55,7 +55,7 @@
 		OPT.linttyp.size := OPM.LIntSize;
 		OPT.lrltyp.size := OPM.LRealSize;
 		OPT.sinttyp.size := OPM.SIntSize;
-	END PropagateElementaryTypeSizes; 
+	END PropagateElementaryTypeSizes;
 
 	PROCEDURE Translate*;
 		VAR done: BOOLEAN;

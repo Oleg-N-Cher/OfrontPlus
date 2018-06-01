@@ -6,7 +6,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 
 	IMPORT
 		OPB := OfrontOPB, OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
-		
+
 	CONST
 		(* numtyp values *)
 		char = 1; integer = 2; real = 3; longreal = 4;
@@ -36,7 +36,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; ProcTyp = 14; Comp = 15;
 		intSet = {Byte, SInt..LInt};
-		
+
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
@@ -52,7 +52,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 
 		(* node subclasses *)
 		super = 1;
-		
+
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
@@ -67,7 +67,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			RECORD
 				low, high: INTEGER
 			END ;
-		
+
 	VAR
 		sym, level: BYTE;
 		LoopLevel: SHORTINT;
@@ -113,7 +113,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE ConstExpression(VAR x: OPT.Node);
 	BEGIN Expression(x);
 		IF x^.class # Nconst THEN
-			err(50); x := OPB.NewIntConst(1) 
+			err(50); x := OPB.NewIntConst(1)
 		END
 	END ConstExpression;
 
@@ -279,7 +279,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			END
 		END
 	END PointerType;
-	
+
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct);
 		VAR mode, vis: BYTE; sys: SHORTINT;
 				par, first, last, res: OPT.Object; typ: OPT.Struct;
@@ -377,7 +377,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			OPS.Get(sym)
 		END
 	END TypeDecl;
-	
+
 	PROCEDURE Type(VAR typ, banned: OPT.Struct);
 	BEGIN TypeDecl(typ, banned);
 		IF (typ^.form = Pointer) & (typ^.BaseTyp = OPT.undftyp) & (typ^.strobj = NIL) THEN err(0) END
@@ -483,7 +483,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		END ;
 		IF (level > 0) & ((m = newfn) OR (m = sysnewfn)) THEN OPT.topScope^.link^.leaf := FALSE END
 	END StandProcCall;
-	
+
 	PROCEDURE Element(VAR x: OPT.Node);
 		VAR y: OPT.Node;
 	BEGIN Expression(x);
@@ -509,7 +509,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		END ;
 		CheckSym(rbrace)
 	END Sets;
-	
+
 	PROCEDURE Factor(VAR x: OPT.Node);
 		VAR fpar, id: OPT.Object; apar: OPT.Node;
 	BEGIN
@@ -613,7 +613,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		CheckSym(rparen);
 		IF rec = NIL THEN rec := OPT.NewStr(Comp, Record); rec^.BaseTyp := NIL END
 	END Receiver;
-	
+
 	PROCEDURE Extends(x, b: OPT.Struct): BOOLEAN;
 	BEGIN
 		IF (b^.form = Pointer) & (x^.form = Pointer) THEN b := b^.BaseTyp; x := x^.BaseTyp END ;
@@ -646,7 +646,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			LOOP
 				IF sym = number THEN c := SHORT(OPS.intval); EnsureLen(n + 1);
 					IF OPS.numtyp # char THEN err(63); c := 1; n := 0
-					ELSIF CHR(c) < " " THEN err(3) 
+					ELSIF CHR(c) < " " THEN err(3)
 					END;
 					OPS.Get(sym); s^[n] := CHR(c); INC(n)
 				ELSIF sym = string THEN
@@ -722,7 +722,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				ELSE
 					IF fwd # NIL THEN err(1); fwd := NIL END ;
 					OPT.OpenScope(0, NIL); OPT.topScope^.right := recTyp^.link; OPT.Insert(name, proc);
-					recTyp^.link := OPT.topScope^.right; OPT.CloseScope; 
+					recTyp^.link := OPT.topScope^.right; OPT.CloseScope;
 				END ;
 				INC(level); OPT.OpenScope(level, proc);
 				OPT.Insert(objName, proc^.link); proc^.link^.mode := objMode; proc^.link^.vis := objVis; proc^.link^.typ := objTyp;
@@ -741,7 +741,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			ELSE err(ident)
 			END
 		END TProcDecl;
-	
+
 	BEGIN proc := NIL; forward := FALSE; x := NIL; mode := LProc; sys := 0;
 		IF (sym # ident) & (sym # lparen) THEN
 			CASE sym OF
@@ -821,7 +821,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 
 		PROCEDURE CasePart(VAR x: OPT.Node);
 			VAR n: SHORTINT; low, high: INTEGER; e: BOOLEAN;
-					tab: CaseTable; cases, lab, y, lastcase: OPT.Node; 
+					tab: CaseTable; cases, lab, y, lastcase: OPT.Node;
 		BEGIN
 			Expression(x); pos := OPM.errpos;
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -847,7 +847,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			cases^.conval^.intval := low; cases^.conval^.intval2 := high;
 			IF e THEN cases^.conval^.setval := {1} ELSE cases^.conval^.setval := {} END
 		END CasePart;
-		
+
 		PROCEDURE SetPos(x: OPT.Node);
 		BEGIN
 			x^.conval := OPT.NewConst(); x^.conval^.intval := pos

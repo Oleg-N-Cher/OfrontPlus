@@ -93,21 +93,21 @@
 		node^.obj := obj; node^.typ := obj^.typ;
 		RETURN node
 	END NewLeaf;
-	
+
 	PROCEDURE Construct*(class: BYTE; VAR x: OPT.Node; y: OPT.Node);
 		VAR node: OPT.Node;
 	BEGIN
 		node := OPT.NewNode(class); node^.typ := OPT.notyp;
 		node^.left := x; node^.right := y; x := node
 	END Construct;
-	
+
 	PROCEDURE Link*(VAR x, last: OPT.Node; y: OPT.Node);
 	BEGIN
 		IF x = NIL THEN x := y ELSE last^.link := y END ;
 		WHILE y^.link # NIL DO y := y^.link END ;
 		last := y
 	END Link;
-	
+
 	PROCEDURE BoolToInt(b: BOOLEAN): INTEGER;
 	BEGIN
 		IF b THEN RETURN 1 ELSE RETURN 0 END
@@ -206,7 +206,7 @@
 	PROCEDURE NewArrConst*(VAR x:OPT.Node);
 	(* подготовить узел для константного массива *)
 	VAR	n: INTEGER; typ: OPT.Struct;y: OPT.ConstArr;
-				fp: OPT.Object; 
+				fp: OPT.Object;
 				arrByte: OPT.ConstArrOfByte; arrSInt: OPT.ConstArrOfSInt;
 				arrInt: OPT.ConstArrOfInt; arrLInt: OPT.ConstArrOfLInt;
 	BEGIN
@@ -214,10 +214,10 @@
 		typ := x^.typ;
 		WHILE (typ^.form =15) & (typ^.comp = 2) DO
 			n := n * typ^.n; (* перемножение размеров по всем измерениям *)
-			typ := typ^.BaseTyp; 
+			typ := typ^.BaseTyp;
 		END;
 		IF typ^.form = Char THEN (* строка *)
-			
+
 		END;
 		(* n - общее кол-во элементов массива, typ - тип элемента *)
 		IF  typ^.form IN intSet+{Bool,Char} THEN (* массив из целых (в т.ч. BYTE)  *)
@@ -243,8 +243,8 @@
 			x^.conval^.arr := y; (* сами элементы *)
 			x^.obj := fp; (* константа с типом "массив" *)
 		ELSE err(51)
-		END;	
-	END NewArrConst; 	
+		END;
+	END NewArrConst;
 
 	PROCEDURE Min*(tf: BYTE): LONGINT;
 		VAR m: LONGINT;
@@ -272,7 +272,7 @@
 
 	PROCEDURE Short2Size*(n: LONGINT; size: INTEGER): LONGINT;
     		(* укорачивает знаковую константу  до size байтов *)
-	BEGIN 
+	BEGIN
 		CASE size OF
 			| 8 :         (* ничего кодировать не нужно *)
 			| 4 : n := SHORT(n)    (* MOD не надо, т.к. уже выполнили SHORT(uintval) *)
@@ -283,10 +283,10 @@
 	END Short2Size;
 
 	PROCEDURE NewShortConst*(uintval: LONGINT; size: INTEGER): OPT.Node;
-		(*  создание новой знаковой константы длиной size байтов, по соответствующей 
+		(*  создание новой знаковой константы длиной size байтов, по соответствующей
 		(кодируемой той же комбинацией битов)  беззнаковой константе uintval *)
 	VAR x: OPT.Node;
-	BEGIN 
+	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
 		x^.conval^.intval := Short2Size(uintval, size);
 		SetIntType(x); RETURN x
@@ -308,7 +308,7 @@
 		x^.conval^.ext := str;
 		RETURN x
 	END NewString;
-	
+
 	PROCEDURE CharToString(n: OPT.Node);
 		VAR ch: SHORTCHAR;
 	BEGIN
@@ -371,7 +371,7 @@
 		END ;
 		BindNodes(Nindex, typ, x, y); x^.readonly := x^.left^.readonly
 	END Index;
-	
+
 	PROCEDURE Field*(VAR x: OPT.Node; y: OPT.Object);
 	BEGIN (*x^.typ^.comp = Record*)
 		IF x^.class >= Nconst THEN err(77) END ;
@@ -381,7 +381,7 @@
 		ELSE err(83); x^.typ := OPT.undftyp
 		END
 	END Field;
-	
+
 	PROCEDURE TypTest*(VAR x: OPT.Node; obj: OPT.Object; guard: BOOLEAN);
 
 		PROCEDURE GTT(t0, t1: OPT.Struct);
@@ -420,7 +420,7 @@
 		END ;
 		IF guard THEN x^.typ := obj^.typ ELSE x^.typ := OPT.booltyp END
 	END TypTest;
-	
+
 	PROCEDURE In*(VAR x: OPT.Node; y: OPT.Node);
 		VAR f: SHORTINT; k: LONGINT;
 	BEGIN f := x^.typ^.form;
@@ -460,10 +460,10 @@
 		END ;
 		x^.intval := OPM.ConstNotAlloc
 	END CheckRealType;
-	
+
 	PROCEDURE MOp*(op: BYTE; VAR x: OPT.Node);
 		VAR f: SHORTINT; typ: OPT.Struct; z: OPT.Node;
-		
+
 		PROCEDURE NewOp(op: BYTE; typ: OPT.Struct; z: OPT.Node): OPT.Node;
 			VAR node: OPT.Node;
 		BEGIN
@@ -555,7 +555,7 @@
 		END ;
 		x := z
 	END MOp;
-	
+
 	PROCEDURE CheckPtr(x, y: OPT.Node);
 		VAR g: SHORTINT; p, q, t: OPT.Struct;
 	BEGIN g := y^.typ^.form;
@@ -774,7 +774,7 @@
 		| plus:
 				IF f IN intSet THEN
 					temp := (yval^.intval >= 0) & (xval^.intval <= MAX(INTEGER) - yval^.intval);
-					IF temp OR (yval^.intval < 0) & (xval^.intval >= MIN(INTEGER) - yval^.intval) THEN 
+					IF temp OR (yval^.intval < 0) & (xval^.intval >= MIN(INTEGER) - yval^.intval) THEN
 							INC(xval^.intval, yval^.intval); SetIntType(x)
 					ELSE err(206)
 					END
@@ -791,7 +791,7 @@
 		| minus:
 				IF f IN intSet THEN
 					IF (yval^.intval >= 0) & (xval^.intval >= MIN(INTEGER) + yval^.intval) OR
-						(yval^.intval < 0) & (xval^.intval <= MAX(INTEGER) + yval^.intval) THEN 
+						(yval^.intval < 0) & (xval^.intval <= MAX(INTEGER) + yval^.intval) THEN
 							DEC(xval^.intval, yval^.intval); SetIntType(x)
 					ELSE err(207)
 					END
@@ -843,9 +843,9 @@
 				IF g = Set THEN x^.conval^.setval := IntToSet(SHORT(x^.conval^.intval))
 				ELSIF g IN intSet THEN
 					IF f > g THEN SetIntType(x);
-						IF (g # Byte)&(x^.typ^.form > g) OR 
+						IF (g # Byte)&(x^.typ^.form > g) OR
 						(g=Byte)&( (x^.conval^.intval < Min(Byte)) OR (x^.conval^.intval > Max(Byte)) )
-						THEN err(203); x^.conval^.intval := 1 
+						THEN err(203); x^.conval^.intval := 1
 						END
 					END
 				ELSIF g IN realSet THEN x^.conval^.realval := x^.conval^.intval; x^.conval^.intval := OPM.ConstNotAlloc
@@ -1058,7 +1058,7 @@
 	PROCEDURE SetRange*(VAR x: OPT.Node; y: OPT.Node);
 		VAR k, l: LONGINT;
 	BEGIN
-		IF (x^.class = Ntype) OR (x^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)	
+		IF (x^.class = Ntype) OR (x^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)
 		ELSIF (x^.typ^.form IN intSet) & (y^.typ^.form IN intSet) THEN
 			IF x^.class = Nconst THEN
 				k := x^.conval^.intval;
@@ -1163,7 +1163,7 @@
 			Convert(ynode, x)
 		END
 	END CheckAssign;
-	
+
 	PROCEDURE CheckLeaf(x: OPT.Node; dynArrToo: BOOLEAN);
 	BEGIN
 (*
@@ -1174,7 +1174,7 @@ avoid unnecessary intermediate variables in OFront
 		IF (x^.class = Nvar) & (dynArrToo OR (x^.typ^.comp # DynArr)) THEN x^.obj^.leaf := FALSE END
 *)
 	END CheckLeaf;
-	
+
 	PROCEDURE StPar0*(VAR par0: OPT.Node; fctno: SHORTINT);	(* par0: first param of standard proc *)
 		VAR f: SHORTINT; typ: OPT.Struct; x: OPT.Node;
 	BEGIN x := par0; f := x^.typ^.form;
@@ -1207,7 +1207,7 @@ avoid unnecessary intermediate variables in OFront
 				MOp(abs, x)
 		| capfn: (*CAP*)
 				MOp(cap, x)
-		| ordfn: (*ORD*) 
+		| ordfn: (*ORD*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f = Char THEN IF OPM.SIntSize = 2 THEN Convert(x, OPT.sinttyp) ELSE Convert(x, OPT.inttyp) END
 				ELSIF f = Set THEN IF OPM.IntSize = 4 THEN Convert(x, OPT.inttyp) ELSE Convert(x, OPT.linttyp) END
@@ -1258,7 +1258,7 @@ avoid unnecessary intermediate variables in OFront
 					END
 				ELSE err(110)
 				END
-		| chrfn: (*CHR*) 
+		| chrfn: (*CHR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN {Undef, Byte, SInt..LInt} THEN Convert(x, OPT.chartyp)
 				ELSE err(111); x^.typ := OPT.chartyp
@@ -1280,7 +1280,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f = Char THEN Convert(x, OPT.linttyp)
 				ELSE err(111)
 				END
-		| incfn, decfn: (*INC, DEC*) 
+		| incfn, decfn: (*INC, DEC*)
 				IF NotVar(x) THEN err(112)
 				ELSIF ~(f IN intSet) THEN err(111)
 				ELSIF x^.readonly THEN err(76)
@@ -1362,7 +1362,7 @@ avoid unnecessary intermediate variables in OFront
 			node := OPT.NewNode(class); node^.subcl := subcl;
 			node^.left := left; node^.right := right; RETURN node
 		END NewOp;
-		
+
 	BEGIN p := par0; f := x^.typ^.form;
 		CASE fctno OF
 		  incfn, decfn: (*INC DEC*)
@@ -1638,7 +1638,7 @@ avoid unnecessary intermediate variables in OFront
 			IF x^.class = Nderef THEN x := x^.left (*undo DeRef*) ELSE (*x^.typ^.comp = Record*) err(71) END
 		END
 	END CheckReceiver;
-	
+
 	PROCEDURE PrepCall*(VAR x: OPT.Node; VAR fpar: OPT.Object);
 	BEGIN
 		IF (x^.obj # NIL) & (x^.obj^.mode IN {LProc, XProc, TProc, CProc}) THEN
@@ -1691,7 +1691,7 @@ avoid unnecessary intermediate variables in OFront
 			END
 		END
 	END Param;
-	
+
 	PROCEDURE StaticLink*(dlev: BYTE);
 		VAR scope: OPT.Object;
 	BEGIN
@@ -1722,7 +1722,7 @@ avoid unnecessary intermediate variables in OFront
 		x := OPT.NewNode(Nenter); x^.typ := OPT.notyp; x^.obj := proc;
 		x^.left := procdec; x^.right := stat; procdec := x
 	END Enter;
-	
+
 	PROCEDURE Return*(VAR x: OPT.Node; proc: OPT.Object);
 		VAR node: OPT.Node;
 	BEGIN
@@ -1757,7 +1757,7 @@ avoid unnecessary intermediate variables in OFront
 		END ;
 		BindNodes(Nassign, OPT.notyp, x, y); x^.subcl := assign
 	END Assign;
-	
+
 	PROCEDURE Inittd*(VAR inittd, last: OPT.Node; typ: OPT.Struct);
 		VAR node: OPT.Node;
 	BEGIN

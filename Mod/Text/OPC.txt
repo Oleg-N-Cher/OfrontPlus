@@ -7,7 +7,7 @@
 		param typ has a strobj pointer to an anonymous object, i.e. typ.strobj.name = OPT.null
 	2018-02-14 olegncher, issue #44: unlimited length of strings (as in BB)
 *)
-	
+
 
 	IMPORT OPT := OfrontOPT, OPM := OfrontOPM;
 
@@ -251,7 +251,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END DeclareObj;
 
 	PROCEDURE Andent*(typ: OPT.Struct);	(* ident of possibly anonymous record type *)
-	BEGIN 
+	BEGIN
 		IF (typ^.strobj = NIL) OR (typ^.align >= 10000H) THEN
 			OPM.WriteString(OPM.modName); Str1("__#", typ^.align DIV 10000H)
 		ELSE Ident(typ^.strobj)
@@ -259,7 +259,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	END Andent;
 
 	PROCEDURE Undefined(obj: OPT.Object): BOOLEAN;
-	BEGIN 
+	BEGIN
 		(* imported anonymous types have obj^.name = OPT.null; used e.g. for repeating inherited fields *)
 		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # 3+OPM.currFile ) & (obj^.linkadr # PredefinedType) OR (obj^.name = OPT.null)
 	END Undefined;
@@ -363,7 +363,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF obj^.mode = TProc THEN
 				BegStat;
 				OPM.WriteString("__INITBP(");
-				Ident(typ); OPM.WriteString(Comma); Ident(obj); 
+				Ident(typ); OPM.WriteString(Comma); Ident(obj);
 				Str1(", #)", obj^.adr DIV 10000H);
 				EndStat
 			END ;
@@ -436,7 +436,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			DeclareTProcs(obj^.left, empty);
 			IF obj^.mode = TProc THEN
 				IF obj^.typ # OPT.notyp THEN DefineType(obj^.typ) END ;
-				IF OPM.currFile = OPM.HeaderFile THEN 
+				IF OPM.currFile = OPM.HeaderFile THEN
 					IF obj^.vis = external THEN
 						DefineTProcTypes(obj);
 						OPM.WriteString(Extern); empty := FALSE;
@@ -527,10 +527,10 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					WHILE field # NIL DO DefineType(field^.typ); field := field^.link END
 				END
 			END ;
-			IF (obj # NIL) & Undefined(obj) THEN        
+			IF (obj # NIL) & Undefined(obj) THEN
 				OPM.WriteString("typedef"); OPM.WriteLn; OPM.Write(Tab); Indent(1);
 				obj^.linkadr := ProcessingType;
-				DeclareBase(obj); OPM.Write(Blank); 
+				DeclareBase(obj); OPM.Write(Blank);
 				obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
 				DeclareObj(obj, FALSE);
 				obj^.typ^.strobj := obj; (* SG: revert trick *)
@@ -560,7 +560,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF (obj^.mode = CProc) & (obj^.vis >= vis) & (obj^.adr = 1) THEN
 				ext := obj.conval.ext;
 				IF ext # NIL THEN
-					IF (ext^[0] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN 
+					IF (ext^[0] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN
 						OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
 						OPM.Write(Tab)
 					END;
@@ -611,7 +611,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			o: OPT.Object;
 	BEGIN
 		IF ~ODD(typ^.sysflag) THEN
-			BegStat; OPM.WriteString("__TDESC("); 
+			BegStat; OPM.WriteString("__TDESC(");
 			Andent(typ); OPM.WriteString("__desc");
 			Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
 			OPM.Write('"');
@@ -636,7 +636,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 
 	PROCEDURE Align*(VAR adr: INTEGER; base: INTEGER);
 	BEGIN
-		CASE base OF 
+		CASE base OF
 		|  2: INC(adr, adr MOD 2)
 		|  4: INC(adr, (-adr) MOD 4)
 		|  8: INC(adr, (-adr) MOD 8)
@@ -673,7 +673,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		adr := off; Align(adr, align);
 		IF (curAlign < align) & (gap - (adr - off) >= align) THEN (* preserve alignment of the enclosing struct! *)
 			DEC(gap, (adr - off) + align);
-			BegStat; 
+			BegStat;
 			IF align = OPM.IntSize THEN OPM.WriteString("INTEGER")
 			ELSIF align = OPM.LIntSize THEN OPM.WriteString("LONGINT")
 			ELSIF align = OPM.LRealSize THEN OPM.WriteString("LONGREAL")
@@ -718,41 +718,41 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END
 	END FieldList;
 
-	PROCEDURE WriteConstArr (VAR obj: OPT.Object; typ: OPT.Struct); 
+	PROCEDURE WriteConstArr (VAR obj: OPT.Object; typ: OPT.Struct);
 	(* генерация конструкция "константный массив". typ - текущий уровень массива *)
-	VAR apar: OPT.Node; i: INTEGER; 
+	VAR apar: OPT.Node; i: INTEGER;
 
 		PROCEDURE WriteElem (arr: OPT.ConstArr; i: INTEGER; form: BYTE);
 		(* выводит в листинг i-й элемент константного массива arr *)
 		BEGIN
-			WITH 
+			WITH
 			| arr: OPT.ConstArrOfByte DO
 				IF form = Char THEN OPM.WriteInt(arr.val[i] MOD 100H) ELSE OPM.WriteInt(arr.val[i]) END;
 			| arr: OPT.ConstArrOfSInt DO OPM.WriteInt(arr.val[i]);
 			| arr: OPT.ConstArrOfInt DO OPM.WriteInt(arr.val[i]);
 			| arr: OPT.ConstArrOfLInt DO OPM.WriteInt(arr.val[i])
 			END
-		END WriteElem;	
-		
+		END WriteElem;
+
 	BEGIN
 		OPM.WriteString("{"); (* скобка (  *)
 		i := 0;
 		IF  typ^.BaseTyp^.form # 15  THEN (* массив из простых элементов *)
-			FOR i := 0 TO typ^.n-2 DO  
+			FOR i := 0 TO typ^.n-2 DO
 						WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); OPM.WriteString(",");
 						IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END;
 			END;
-			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); (* последний элемент *)	
-			INC(obj^.conval^.intval, typ^.n); (* учли выведенные элементы *)					
+			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); (* последний элемент *)
+			INC(obj^.conval^.intval, typ^.n); (* учли выведенные элементы *)
 		ELSE (* массив из массивов *)
 			FOR i := 0 TO typ^.n-2 DO
-				WriteConstArr (obj, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)	
+				WriteConstArr (obj, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)
 				OPM.WriteString(","); OPM.WriteLn;
 				BegStat;
 			END;
 			WriteConstArr (obj, typ^.BaseTyp); (* последний элемент *)
-		END;	
-		OPM.WriteString("}"); 
+		END;
+		OPM.WriteString("}");
 	END WriteConstArr;
 
 	PROCEDURE IdentList (obj: OPT.Object; vis: SHORTINT);
@@ -762,7 +762,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		base := NIL; first := TRUE;
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
-				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR 
+				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR
 				((obj^.conval # NIL) & (obj^.conval^.arr # NIL)) THEN	(* каждый конст.массив отдельно*)
 				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
@@ -802,9 +802,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					OPM.WriteString(" = NIL")
 				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN (* элементы конст.массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
-					BegStat; 
+					BegStat;
 					obj^.conval^.intval := 0;
-					WriteConstArr (obj, obj^.typ); 
+					WriteConstArr (obj, obj^.typ);
 					Indent(-1);
 				END
 			END ;
@@ -821,7 +821,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		ELSE
 			LOOP
 				DeclareBase(obj);
-				IF showParamNames THEN 
+				IF showParamNames THEN
 					OPM.Write(Blank); DeclareObj(obj, FALSE)
 				ELSE
 					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := name
@@ -931,7 +931,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 
 	PROCEDURE GenHeaderMsg;
 	BEGIN
-		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg); 
+		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg);
 		IF OPM.extsf IN OPM.opt THEN OPM.Write("e") END;
 		IF OPM.newsf IN OPM.opt THEN OPM.Write("s") END;
 		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m") END;
@@ -1015,7 +1015,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 						OPM.WriteString("void EnumPtrs(void (*P)(void*))")
 					ELSE
 						OPM.WriteString("void EnumPtrs(P)"); OPM.WriteLn;
-						OPM.Write(Tab); OPM.WriteString("void (*P)();"); 
+						OPM.Write(Tab); OPM.WriteString("void (*P)();");
 					END ;
 					OPM.WriteLn;
 					BegBlk
@@ -1137,7 +1137,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		var := proc^.link;
 		WHILE var # NIL DO (* copy value array parameters *)
 			IF (var^.typ^.comp IN {Array, DynArr}) & (var^.mode = Var) & (var^.typ^.sysflag = 0) THEN
-				BegStat; 
+				BegStat;
 				IF var^.typ^.comp = Array THEN
 					OPM.WriteString(DupArrFunc);
 					Ident(var)
@@ -1337,7 +1337,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		END;
 		OPM.WriteString(Colon)
 	END Case;
- 
+
 	PROCEDURE SetInclude* (exclude: BOOLEAN);
 	BEGIN
 		IF exclude THEN OPM.WriteString(" &= ~"); ELSE OPM.WriteString(" |= "); END;
@@ -1448,7 +1448,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		Enter("volatile");
 		Enter("while");
 
-(* what about common predefined names from cpp as e.g. 
+(* what about common predefined names from cpp as e.g.
                Operating System:   ibm, gcos, os, tss and unix
                Hardware:           interdata, pdp11,  u370,  u3b,
                                    u3b2,   u3b5,  u3b15,  u3b20d,

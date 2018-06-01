@@ -49,7 +49,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			BaseTyp*: Struct;
 			link*, strobj*: Object
 		END ;
-		
+
 		NodeDesc* = RECORD
 			left*, right*, link*: Node;
 			class*, subcl*: BYTE;
@@ -58,7 +58,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			obj*: Object;
 			conval*: Const
 		END ;
-	
+
 	CONST
 		maxImps = 64;	(* must be <= MAX(SHORTINT) *)
 		maxStruct = OPM.MaxStruct;	(* must be < MAX(INTEGER) DIV 2 *)
@@ -74,7 +74,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		SelfName*: OPS.Name;	(* name of module being compiled *)
 		SYSimported*: BOOLEAN;
 		null-: OPS.String;	(* "" *)
-		
+
 	CONST
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -84,7 +84,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; ProcTyp = 14; Comp = 15;
-		
+
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
@@ -94,12 +94,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
 		shortfn = 10; longfn = 11; sizefn = 12; incfn = 13; decfn = 14;
 		inclfn = 15; exclfn = 16; lenfn = 17; copyfn = 18; ashfn = 19; assertfn = 32;
-		
+
 		(*SYSTEM function number*)
 		adrfn = 20; ccfn = 21; lshfn = 22; rotfn = 23;
 		getfn = 24; putfn = 25; getrfn = 26; putrfn = 27;
 		bitfn = 28; valfn = 29; sysnewfn = 30; movefn = 31;
-		
+
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
@@ -143,24 +143,24 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
 	END err;
-	
+
 	PROCEDURE NewConst*(): Const;
 		VAR const: Const;
 	BEGIN NEW(const); RETURN const
 	END NewConst;
-	
+
 	PROCEDURE NewObj*(): Object;
 		VAR obj: Object;
 	BEGIN NEW(obj); obj^.name := null; RETURN obj
 	END NewObj;
-	
+
 	PROCEDURE NewStr*(form, comp: BYTE): Struct;
 		VAR typ: Struct;
 	BEGIN NEW(typ); typ^.form := form; typ^.comp := comp; typ^.ref := maxStruct;	(* ref >= maxStruct: not exported yet *)
 		IF form # Undef THEN typ^.txtpos := OPM.errpos END ;	(* txtpos remains 0 for structs read from symbol file *)
 		typ^.size := -1; typ^.BaseTyp := undftyp; RETURN typ
 	END NewStr;
-	
+
 	PROCEDURE NewNode*(class: BYTE): Node;
 		VAR node: Node;
 	BEGIN NEW(node); node^.class := class; RETURN node
@@ -241,7 +241,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 	PROCEDURE FindField*(VAR(*IN*) name: ARRAY OF CHAR; typ: Struct; VAR res: Object);
 		VAR obj: Object;
-	BEGIN 
+	BEGIN
 		WHILE typ # NIL DO obj := typ^.link;
 			WHILE obj # NIL DO
 				IF name < obj^.name^ THEN obj := obj^.left
@@ -494,7 +494,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		UNTIL ch = 0X;
 		IF i > 1 THEN NEW(name, i); COPY(n, name^) ELSE name := null END
 	END InName;
-	
+
 	PROCEDURE InMod(VAR mno: BYTE);	(* mno is global *)
 		VAR head: Object; name: OPS.String; mn: INTEGER; i: BYTE;
 	BEGIN
@@ -573,7 +573,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				IF ODD(new^.sysflag DIV inBit) THEN new^.vis := inPar
 				ELSIF ODD(new^.sysflag DIV outBit) THEN new^.vis := outPar
 				END
-			END;			
+			END;
 			IF tag = Svalpar THEN new^.mode := Var
 			ELSE new^.mode := VarPar;
 				IF tag = Sinpar THEN new^.vis := inPar
@@ -749,7 +749,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				| Sxpro: obj^.mode := XProc
 				| Sipro: obj^.mode := IProc
 				| Scpro: obj^.mode := CProc; s := SHORT(OPM.SymRInt());
-					IF s > 0 THEN 
+					IF s > 0 THEN
 						NEW(ext, s); i := 0;
 						WHILE i < s DO OPM.SymRCh(ext^[i]); INC(i) END
 					ELSE ext := NIL
@@ -758,7 +758,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				END
 			ELSIF tag = Salias THEN
 				obj^.mode := Typ; InStruct(obj^.typ)
-			ELSE		
+			ELSE
 				obj^.mode := Var;
 				IF tag = Srvar THEN obj^.vis := externalR END ;
 				InStruct(obj^.typ)
@@ -831,7 +831,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.SymWCh(ch); INC(i) UNTIL ch = 0X
 	END OutName;
-	
+
 	PROCEDURE OutMod(mno: SHORTINT);
 	BEGIN
 		IF expCtxt.locmno[mno] < 0 THEN (* new mod *)
@@ -1166,7 +1166,7 @@ Objects:
     Mod   |                         scope           Module
     Head  | txtpos         owner    firstvar        Scope anchor
     TProc | index  sizes   firstpar scope    leaf   Bound procedure, index = 10000H*mthno+entry, entry adr set in back-end
-                                                    
+
 		Structures:
 
     form    comp  | n      BaseTyp   link     mno  txtpos   sysflag
@@ -1202,7 +1202,7 @@ stat     = NIL|Ninittd|Nenter|Nassign|Ncall|Nifelse|Ncase|Nwhile|Nrepeat|
            Nloop|Nexit|Nreturn|Nwith|Ntrap.
 
 
-              class     subcl     obj      left      right     link      
+              class     subcl     obj      left      right     link
               ---------------------------------------------------------
 
 design        Nvar                var                          nextexpr
@@ -1219,7 +1219,7 @@ design        Nvar                var                          nextexpr
 
 expr          design
               Nconst              const                                 (val = node^.conval)
-              Nupto                        expr      expr      nextexpr 
+              Nupto                        expr      expr      nextexpr
               Nmop      not                expr                nextexpr
                         minus              expr                nextexpr
                         is        tsttype  expr                nextexpr
@@ -1286,9 +1286,8 @@ stat          NIL
               Ncase                        expr      casestat  stat
               Nwhile                       expr      stat      stat
               Nrepeat                      stat      expr      stat
-              Nloop                        stat                stat 
-              Nexit                                            stat 
+              Nloop                        stat                stat
+              Nexit                                            stat
               Nreturn             proc     nextexpr            stat     (proc = NIL for mod)
               Nwith                        ifstat    stat      stat
               Ntrap                                  expr      stat
-

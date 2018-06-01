@@ -33,7 +33,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	VAR
 		option: SHORTCHAR;
 		W: TextMappers.Formatter;
-		
+
 	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN W.WriteSString(s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN W.WriteChar(ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN W.WriteInt(i) END Wi;
@@ -80,7 +80,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
 						| Char:
 								IF obj^.conval^.intval = 22H THEN Wch("'"); Wch('"'); Wch("'")
-								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN 
+								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN
 									Wch(22X); Wch(SHORT(CHR(obj^.conval^.intval))); Wch(22X)
 								ELSE
 									i := SHORT(obj^.conval^.intval) DIV 16;
@@ -293,7 +293,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			END
 		END
 	END GetArgs;
-	
+
 	PROCEDURE Ident(IN name: ARRAY OF CHAR; VAR first: ARRAY OF SHORTCHAR);
 		VAR i, j: SHORTINT; ch: CHAR;
 	BEGIN i := 0;
@@ -303,7 +303,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		WHILE (ch # ".") & (ch # 0X) DO first[j] := SHORT(ch); INC(i); INC(j); ch := name[i] END ;
 		first[j] := 0X
 	END Ident;
-	
+
 	PROCEDURE Append(VAR d: ARRAY OF CHAR; IN s: ARRAY OF SHORTCHAR);
 		VAR i, j: SHORTINT; ch: SHORTCHAR;
 	BEGIN
@@ -312,7 +312,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	END Append;
 
 	PROCEDURE ShowDef*;
-		VAR S: TextMappers.Scanner; T: TextModels.Model; 
+		VAR S: TextMappers.Scanner; T: TextModels.Model;
 			vname: Views.Title; name: OPS.Name; done: BOOLEAN;
 	BEGIN
 		GetArgs(S);
@@ -332,4 +332,4 @@ BEGIN
 	OPT.typSize := OPV.TypSize
 END OfrontBrowser.
 
-OfrontBrowser OfrontCmd OfrontOPP OfrontOPB OfrontOPV OfrontOPC OfrontOPT OfrontOPS OfrontOPM 
+OfrontBrowser OfrontCmd OfrontOPP OfrontOPB OfrontOPV OfrontOPC OfrontOPT OfrontOPS OfrontOPM
