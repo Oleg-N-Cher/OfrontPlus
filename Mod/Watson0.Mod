@@ -9,23 +9,23 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
 	CONST
 	(* CONST used to read symbol file *)
-		symFileId = 0BBX; 
-		
+		symFileId = 0BBX;
+
 		(*object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
 		SProc = 8; CProc = 9; IProc = 10; Mod = 11; TProc = 13; Head = 12;
-	
+
 		(* structure forms *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; ProcTyp = 14; Comp = 15;
-			
+
 		(* composite structure forms *)
 		Basic = 1; StaticArr = 2; SDynArr = 3; DynArr = 4; OpenArr = 5; Record = 6;
 
 		(* visibility of objects *)
 		internal = 0; external = 1; externalR = 2;
-	
+
 
 	(* CONST used to read object file *)
 		(* block ids *)
@@ -80,17 +80,17 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	(* ---------------------- output procedures ----------------------- *)
 
 	PROCEDURE Str (s: ARRAY OF CHAR);	(* writes string s to W *)
-	BEGIN Texts.WriteString(W, s) 
+	BEGIN Texts.WriteString(W, s)
 	END Str;
-	
+
 	PROCEDURE Ch (ch: CHAR);	(* writes char ch to W *)
-	BEGIN Texts.Write(W, ch) 
+	BEGIN Texts.Write(W, ch)
 	END Ch;
-	
+
 	PROCEDURE Num (i: LONGINT);	(* writes number i to W *)
 	BEGIN Texts.WriteLongInt(W, i, 0);
 	END Num;
-	
+
 	PROCEDURE Hexa(i: LONGINT; short: BOOLEAN);	(* writes number i to W as a hex. number *)
 	BEGIN
 		IF ~short THEN	(* fully 32 bit number *)
@@ -103,11 +103,11 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		Ch(Hex[i DIV 100H]); i:= i MOD 100H;
 		Ch(Hex[i DIV 10H]); Ch(Hex[i MOD 10H])
 	END Hexa;
-	
+
 	PROCEDURE Ln;	(* writes a line feed to W *)
-	BEGIN Texts.WriteLn(W) 
+	BEGIN Texts.WriteLn(W)
 	END Ln;
-	
+
 	PROCEDURE Indent (i: INTEGER);	(* writes i tabs to W *)
 	BEGIN WHILE i > 0 DO Ch(9X); DEC(i) END
 	END Indent;
@@ -134,7 +134,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
 	PROCEDURE Identifier(name: ARRAY OF CHAR);	(* writes a string name and a control to W *)
 		VAR i, j: INTEGER;
-	BEGIN 
+	BEGIN
 		Str(name);
 		IF showObj THEN	(* cut module qualifier *)
 			i:= 0; REPEAT INC(i) UNTIL (name[i]=".") OR (name[i]= 0X);
@@ -157,7 +157,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			| SInt, Int, LInt:  Texts.WriteLongInt(W, y, 0)
 			| Real:  Texts.WriteReal(W, SHORT(obj.conval.realval), 15)
 			| LReal:  Texts.WriteLongReal(W, obj.conval.realval, 20)
-			| Bool:  IF y = 0 THEN Str("FALSE") ELSE Str("TRUE") END 
+			| Bool:  IF y = 0 THEN Str("FALSE") ELSE Str("TRUE") END
 			| Char:
 				IF (y >= 32) & (y <= 126) THEN Ch(22X); Ch(CHR(y)); Ch(22X)
 				ELSE i := SHORT(y DIV 16);
@@ -175,7 +175,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 				END;
 				Ch("}")
 			| NilTyp:  Str("NIL")
-			| String: Ch(22X); Str(obj.conval.ext^); Ch(22X) 
+			| String: Ch(22X); Str(obj.conval.ext^); Ch(22X)
 		END
 	END WriteConstValue;
 
@@ -194,7 +194,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			Str(" )");
 		END
 	END WriteBase;
-	
+
 	PROCEDURE WriteFields (VAR obj: OPT.Object; i: INTEGER; recField: BOOLEAN);
 	(* writes field list of a proc. or record: all variables of same type *)
 		VAR typ: OPT.Struct; mode: LONGINT;
@@ -211,7 +211,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		END;
 		Str(": "); WriteType(typ, i + 1)
 	END WriteFields;
-	
+
 	PROCEDURE WriteParams (param: OPT.Object; resTyp: OPT.Struct);	(* writes parameter list of a procedure *)
 	BEGIN
 		IF (param # NIL) OR (resTyp # OPT.notyp) THEN
@@ -231,7 +231,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		END;
 		IF resTyp # OPT.notyp THEN Str(": "); WriteType(resTyp, 0) END
 	END WriteParams;
-	
+
 	PROCEDURE WriteProc (obj: OPT.Object);	(* writes a procedure *)
 	BEGIN
 		IF showAdr & (obj.mode # CProc) THEN Ch("["); Num(obj.adr); Str("] ") END;
@@ -240,7 +240,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		WriteParams(obj.link, obj.typ);
 		Ch(";")
 	END WriteProc;
-	
+
 	PROCEDURE WriteTProcs (obj: OPT.Object; i: INTEGER);	(* writes a type bound procedure *)
 		VAR firstpar: OPT.Object;
 	BEGIN
@@ -262,7 +262,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			WriteTProcs(obj.right, i);
 		END;
 	END WriteTProcs;
-	
+
 	PROCEDURE WriteFieldList (obj: OPT.Object; i: INTEGER);	(* writes all record field lists, exept type bound proc.*)
 	BEGIN
 		WHILE (obj # NIL) & (obj.mode = Fld) DO
@@ -271,7 +271,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			END;
 		END
 	END WriteFieldList;
-	
+
 	PROCEDURE WriteInstVars (typ: OPT.Struct; i: INTEGER; extlev: LONGINT);	(* writes a record definition *)
 	BEGIN
 		IF typ # NIL THEN
@@ -328,7 +328,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 (*
 					Str(OPT.modules[typ.mno].name); Ch(".")
 *)
-				END 
+				END
 			END;
 			Str(typ.strobj.name);
 			IF makeLink THEN
@@ -354,7 +354,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		ELSE (* anonymous type *) WriteForm(typ, i)
 		END
 	END WriteType;
-	
+
 	PROCEDURE WriteObject(obj: OPT.Object; mode: LONGINT);	(* writes any object as given mode *)
 		VAR h: OPT.Object; name: ARRAY 64 OF CHAR;
 	BEGIN
@@ -377,7 +377,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 			IF first THEN Indent(1); Str("TYPE"); Ln; first := FALSE END;
 			Indent(2);
 (*
-			IF showObj THEN COPY(OPT.modules[obj.typ.mno].name, name); AppendCh(name, ".") 
+			IF showObj THEN COPY(OPT.modules[obj.typ.mno].name, name); AppendCh(name, ".")
 			ELSE name:= ""
 			END;
 *)
@@ -393,7 +393,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 				IF ABS(h^.vis) > internal THEN
 					Indent(2);
 (*
-					IF showObj THEN COPY(OPT.modules[h.typ.mno].name, name); AppendCh(name, ".") 
+					IF showObj THEN COPY(OPT.modules[h.typ.mno].name, name); AppendCh(name, ".")
 					ELSE name:= ""
 					END;
 *)
@@ -405,7 +405,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		ELSIF mode IN {XProc, CProc} THEN first:= FALSE; Indent(1); WriteProc(obj); Ln
 		END
 	END WriteObject;
-		
+
 	PROCEDURE WriteImports;	(* write imported modules *)
 		VAR i: INTEGER;
 	BEGIN
@@ -425,7 +425,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 *)
 		IF ~first THEN Ch(";"); Ln; Ln END;
 	END WriteImports;
-	
+
 	PROCEDURE WriteScope(obj: OPT.Object; mode: INTEGER);	(* writes all objects of given mode *)
 		PROCEDURE Scope (obj: OPT.Object; mode: INTEGER);
 		BEGIN
@@ -434,7 +434,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 				IF obj.mode = mode THEN WriteObject(obj, mode) END;
 				Scope(obj.right, mode);
 			END;
-		END Scope;	
+		END Scope;
 	BEGIN first := TRUE;
 		Scope(obj, mode);
 		IF ~first THEN Ln END
@@ -479,7 +479,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	END Find;
 
 	PROCEDURE FindPointer(root: OPT.Object; name: ARRAY OF CHAR; VAR obj: OPT.Object);	(* find pointer to record name *)
-	
+
 		PROCEDURE FindP(name: ARRAY OF CHAR; root: OPT.Object; VAR obj: OPT.Object);
 			VAR typ: OPT.Struct;
 		BEGIN
@@ -496,7 +496,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 
 	BEGIN FindP(name, root, obj)
 	END FindPointer;
-	
+
 	PROCEDURE GroupTypes (root, obj: OPT.Object);
 	(* groups pointer and its corresponding record, so they can be writter together *)
 		VAR typ: OPT.Struct; h: OPT.Object;
@@ -557,7 +557,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 	(* *************** OBJECT FILE *************** *)
 
 	(* ---------------------- write object info ----------------------- *)
-	
+
 	PROCEDURE Commands(F: Files.File; VAR modName: ARRAY OF CHAR);	(* writes all commands of this module  *)
 	VAR R: Files.Rider; name: ARRAY 32 OF CHAR; ve, key, ref, symSize: LONGINT;
 			i, c, e, nofentry, nofcmds: INTEGER; ch: CHAR;
@@ -573,7 +573,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 *)
 
 		Files.ReadNum(R, symSize); Files.Set(R, F, Files.Pos(R) + symSize); (* skip symbol file *)
-		
+
 		Files.ReadBytes(R, ref, 4);	(* ref block pos *)
 		Files.ReadBytes(R, nofentry, 2);	(* # entries *)
 		Files.ReadBytes(R, nofcmds, 2);	(* # commands *)

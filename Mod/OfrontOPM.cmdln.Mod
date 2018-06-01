@@ -1,5 +1,5 @@
 MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
-(* constants needed for C code generation 
+(* constants needed for C code generation
 
 	31.1.2007 jt synchronized with BlackBox version, in particular PromoteIntConstToLInt added
 *)
@@ -60,7 +60,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		(* maximal number of hidden fields in an exported record: *)
 		MaxHdFld* = 512;
-		
+
 		HdPtrName* = "@ptr";
 		HdProcName* = "@proc";
 		HdTProcName* = "@tproc";
@@ -126,7 +126,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE LogWStr*(IN s: ARRAY OF CHAR);
 	BEGIN Console.String(s)
 	END LogWStr;
-	
+
 	PROCEDURE LogWNum*(i, len: INTEGER);
 	BEGIN Console.Int(i, len)
 	END LogWNum;
@@ -250,7 +250,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END Init;
 
 	(* ------------------------- read source text -------------------------*)
-	
+
 	PROCEDURE Get*(VAR ch: CHAR);	(* read next character from source text, 0X if eof *)
 	BEGIN
 		Texts.Read(inR, ch);
@@ -260,7 +260,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END;
 		IF (ch < 09X) & ~inR.eot THEN ch := " " END
 	END Get;
-	
+
 	PROCEDURE MakeFileName(IN name: ARRAY OF CHAR; VAR FName: ARRAY OF CHAR; IN ext: ARRAY OF CHAR);
 		VAR i, j: INTEGER; ch: CHAR;
 	BEGIN i := 0;
@@ -322,7 +322,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END Mark;
 
 	PROCEDURE err*(n: SHORTINT);
-	BEGIN 
+	BEGIN
 		IF errpos MOD 256 = 255 THEN (* line underflow from OPS.Get *)
 			Mark(n, errpos + 1)
 		ELSE
@@ -395,25 +395,25 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE SymRCh*(VAR ch: CHAR);
 	BEGIN Files.ReadChar(oldSF, ch)
 	END SymRCh;
-	
+
 	PROCEDURE SymRInt*(): LONGINT;
 		VAR k: LONGINT;
 	BEGIN Files.ReadNum(oldSF, k); RETURN k
 	END SymRInt;
-		
+
 	PROCEDURE SymRSet*(VAR s: SET);
 		VAR k: LONGINT;
 	BEGIN Files.ReadNum(oldSF, k); s := SYSTEM.VAL(SET, SHORT(k))
 	END SymRSet;
-	
+
 	PROCEDURE SymRReal*(VAR r: REAL);
 	BEGIN Files.ReadReal(oldSF, r)
 	END SymRReal;
-	
+
 	PROCEDURE SymRLReal*(VAR lr: LONGREAL);
 	BEGIN Files.ReadLReal(oldSF, lr)
 	END SymRLReal;
-	
+
 	PROCEDURE CloseOldSym*;
 	END CloseOldSym;
 
@@ -428,13 +428,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			END
 		END
 	END OldSym;
-	
+
 	PROCEDURE eofSF*(): BOOLEAN;
 	BEGIN RETURN oldSF.eof
 	END eofSF;
-	
+
 	(* ------------------------- Write Symbol File ------------------------- *)
-	
+
 	PROCEDURE SymWCh*(ch: CHAR);
 	BEGIN Files.WriteChar(newSF, ch)
 	END SymWCh;
@@ -450,16 +450,16 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE SymWReal*(r: REAL);
 	BEGIN Files.WriteReal(newSF, r)
 	END SymWReal;
-	
+
 	PROCEDURE SymWLReal*(lr: LONGREAL);
 	BEGIN Files.WriteLReal(newSF, lr)
 	END SymWLReal;
-	
+
 	PROCEDURE RegisterNewSym*;
 	BEGIN
 		IF (modName # "SYSTEM") OR (mainprog IN opt) THEN Files.Register(newSFile) END
 	END RegisterNewSym;
-	
+
 	PROCEDURE DeleteNewSym*;
 	END DeleteNewSym;
 
@@ -496,7 +496,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		s[2] := 0X;
 		WriteString(s)
 	END WriteHex;
-	
+
 	PROCEDURE WriteInt* (i: LONGINT);
 		VAR s: ARRAY 20 OF CHAR; i1: LONGINT; k: INTEGER;
 	BEGIN
@@ -519,7 +519,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
 	BEGIN
 (*should be improved *)
-		IF (r < MaxLInt) & (r > MinLInt) & (r = ENTIER(r)) THEN 
+		IF (r < MaxLInt) & (r > MinLInt) & (r = ENTIER(r)) THEN
 			IF suffx = "f" THEN WriteString("(REAL)") ELSE WriteString("(LONGREAL)") END ;
 			WriteInt(ENTIER(r))
 		ELSE
@@ -531,7 +531,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* s[i] := suffx; s[i+1] := 0X;
 	suffix does not work in K&R *)
 			s[i] := 0X;
-			i := 0; ch := s[0]; 
+			i := 0; ch := s[0];
 			WHILE (ch # "D") & (ch # 0X) DO INC(i); ch := s[i] END ;
 			IF ch = "D" THEN s[i] := "e" END ;
 			WriteString(s)
@@ -596,7 +596,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		HFile := NIL; BFile := NIL; HIFile := NIL; newSFile := NIL; oldSFile := NIL;
 		Files.Set(R[0], NIL, 0); Files.Set(R[1], NIL, 0); Files.Set(R[2], NIL, 0); Files.Set(newSF, NIL, 0); Files.Set(oldSF, NIL, 0)
 	END CloseFiles;
-	
+
 	PROCEDURE PromoteIntConstToLInt*();
 	BEGIN
 		(* ANSI C does not need explicit promotion.

@@ -4,7 +4,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	IMPORT
-		Files, Modules, Objects, Fonts, Display, Texts, Oberon, Gadgets, TextGadgets0, TextGadgets, 
+		Files, Modules, Objects, Fonts, Display, Texts, Oberon, Gadgets, TextGadgets0, TextGadgets,
 		Documents, TextDocs, Desktops, Watson0, Compress, Attributes;
 
 	CONST
@@ -28,7 +28,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 		(* file name extensions *)
 		defFileExt = ".Def"; tutFileExt = ".Book"; tutDelimiter = " ";
-		
+
 		(* title extension of document *)
 		titleExt = ".Def";
 		htmlExt = ".Def.html";	htmlBookExt = ".html";
@@ -52,27 +52,27 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 		(* marker colors *)
 		TextCol = 15; LinkCol = 3; DocuCol = 8; ImportCol = 1;
-	
+
 		MaxIdLen = 64; MaxMods = 32;
-		
+
 		(* some special characters *)
-		TAB = 09X; CR = 0DX; 
-	
+		TAB = 09X; CR = 0DX;
+
 		(* error codes *)
 		errMod = 0; errImp = 1; errConst = 2; errType = 3; errVar = 4; errProc = 5;
 		errModEnd = 6; errProcEnd = 7; errSym = 8; errTypeDef = 9; errIdent = 10;
 		errNum = 11; errComment = 12;
 
 		(* symbol values *)
-		times = 0; and = 1; plus = 2; minus = 3; eql = 4; arrow = 5; 
+		times = 0; and = 1; plus = 2; minus = 3; eql = 4; arrow = 5;
 		period = 6; comma = 7; colon = 8; upto = 9; rparen = 10; rbrak = 11; rbrace = 12;
-		of = 13; to = 14; lparen = 15; lbrak = 16; lbrace = 17; becomes = 18; 
-		number = 19; string = 20; ident = 21; assert = 22; semicolon = 23; end = 24; 
-		if = 25; case = 26; while = 27; for = 28; loop = 29; with = 30; 
-		array = 31; object = 32; record = 33; pointer = 34; begin = 35; code = 36; const = 37; 
-		type = 38; var = 39; proc = 40; import = 41; module = 42; eot = 43; 
+		of = 13; to = 14; lparen = 15; lbrak = 16; lbrace = 17; becomes = 18;
+		number = 19; string = 20; ident = 21; assert = 22; semicolon = 23; end = 24;
+		if = 25; case = 26; while = 27; for = 28; loop = 29; with = 30;
+		array = 31; object = 32; record = 33; pointer = 34; begin = 35; code = 36; const = 37;
+		type = 38; var = 39; proc = 40; import = 41; module = 42; eot = 43;
 		none = 99;
-		
+
 		(* visibility of objects *)
 		internal = 0; external = 1; externalR = 2;
 
@@ -185,7 +185,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	BEGIN
 		i := 0; j := 0;
 		WHILE (qualifier[i] # ".") & (qualifier[i] # 0X) DO INC(i) END;
-		qualifier[i] := 0X; INC(i); j := 0; 
+		qualifier[i] := 0X; INC(i); j := 0;
 		WHILE qualifier[i] # 0X DO identifier[j] := qualifier[i]; INC(i); INC(j) END;
 		identifier[j] := 0X
 	END QualIdent;
@@ -203,7 +203,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Str(str: ARRAY OF CHAR);	(*  writes a string to W *)
 	BEGIN Texts.WriteString(W, str)
 	END Str;
-	
+
 	PROCEDURE Int(i: LONGINT);	(*  writes an integer to W *)
 	BEGIN Texts.WriteInt(W, i, 0)
 	END Int;
@@ -371,7 +371,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		cur:= localIds.next; WHILE (cur # NIL) & (cur.name # name) DO cur:= cur.next END;
 		RETURN cur
 	END FindIdent;
-	
+
 	PROCEDURE InsertIdent(VAR name: Name; class: INTEGER; VAR obj: LocalIdent);
 	(* iserts ident name in list, if current level is the top level (= no local ident) *)
 	BEGIN
@@ -394,7 +394,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		END;
 		RETURN res
 	END NeedsLn;
-		
+
 	(* ---------------------- buffer / text operations ----------------------- *)
 
 	PROCEDURE Copy(beg, end: LONGINT);
@@ -472,7 +472,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Identifier(name: ARRAY OF CHAR);
 	(* writes an identifier & Control to W and checks if a Control-cmd is needed *)
 		VAR par: ARRAY 32 OF CHAR; i, j: INTEGER; ch: CHAR;
-	BEGIN 
+	BEGIN
 		IF label # "" THEN
 			(* if there is a tutorial label (= 'Tutorial.Label'), set par to 'Tutorial.html Label'*)
 			SetColor(DocuCol);
@@ -505,7 +505,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Cmnts(offset: LONGINT);
 		VAR fix: Fixup; curC: Cmnt;
 	BEGIN curC:= cmnts.next;
-		WHILE curC # NIL DO 
+		WHILE curC # NIL DO
 			fix:= fixups.next;
 			WHILE (fix # NIL) & (fix.insert > curC.insert) DO
 				fix.insert:= fix.insert + curC.ePos - curC.wPos - curC.cnt;
@@ -525,7 +525,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	PROCEDURE Imports;	(* writes import list to W *)
 		VAR i, j: INTEGER; first, ln: BOOLEAN;
-		
+
 		PROCEDURE OutCmnt(cmnt: Cmnt);
 		BEGIN
 			IF cmnt # NIL THEN
@@ -570,7 +570,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			IF (name[0] = "S") & (name[1] = "Y") & (name[2] = "S") & (name[6] = ".") THEN Str(name)
 			ELSE SetColor(LinkCol); Str(name); Control("", ObjCmd, name)
 			END
-		ELSE 
+		ELSE
 			(* check if ident is a keyword, if so write it and return *)
 			IF (name = "CHAR") OR (name = "BOOLEAN") OR (name = "INTEGER") THEN Str(name); RETURN
 			ELSIF (name = "LONGINT") OR (name = "SHORTINT") OR (name = "SET")THEN Str(name); RETURN
@@ -610,7 +610,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE GetCh;
 	BEGIN IF ch = CR THEN INC(lines) END; Texts.Read(R, ch)
 	END GetCh;
-	
+
 	PROCEDURE Ident;	(* reads an identifier into id *)
 		VAR i: INTEGER;
 	BEGIN i := 0;
@@ -622,7 +622,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		END;
 		id[i]:= 0X
 	END Ident;
-	
+
 	PROCEDURE String(ch0: CHAR);	(* skips a string *)
 	VAR i: LONGINT;
 	BEGIN
@@ -636,7 +636,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	PROCEDURE Number(ch0: CHAR);		(* reads a number into num *)
 		VAR digit: ARRAY 24 OF CHAR; n: INTEGER;
-		
+
 		PROCEDURE Ord(ch: CHAR; hex: BOOLEAN): INTEGER;	(* converts a char to an integer *)
 		BEGIN
 			IF ch <= "9" THEN RETURN ORD(ch)-ORD("0")
@@ -652,7 +652,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				IF num <= MAX(LONGINT) - d THEN num:= num*10+d END;
 				INC(i)
 			END
-		END ToNum; 
+		END ToNum;
 
 	BEGIN n:= 1; digit[0]:= ch0; num:= 0;
 		WHILE ("0"<=ch) & (ch<="9") OR ("A"<=ch) & (ch<="F") DO	(* read in all digits *)
@@ -718,7 +718,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Sym;
 	(* scans the next symbol; some of the will be skiped because they are not needed
 		wPos: after last symbol or start of line
-		begPos: beginnig of current symbol 
+		begPos: beginnig of current symbol
 	*)
 		VAR oLine: INTEGER; s: SHORTINT; ch0: CHAR;
 	BEGIN
@@ -757,7 +757,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 					END
 				| "B": IF id = "BEGIN" THEN s:= begin END
 				| "C":
-					IF id = "CONST" THEN s:= const 
+					IF id = "CONST" THEN s:= const
 					ELSIF id = "CODE" THEN s:= code
 					ELSIF id = "CASE" THEN s:= case
 					END
@@ -798,7 +798,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	(* ---------------------- parser procedures ----------------------- *)
 
 	PROCEDURE FindMod(VAR name: Name): BOOLEAN;
-	(* checks if module is in import list and returns module's real name *) 
+	(* checks if module is in import list and returns module's real name *)
 		VAR i: INTEGER;
 	BEGIN i:= 0;
 		REPEAT
@@ -811,7 +811,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		UNTIL i >= mods;
 		err(errIdent); RETURN FALSE
 	END FindMod;
-	
+
 	(* ---------------- check single char/symbol ----------------- *)
 
 	PROCEDURE CheckSym(s: INTEGER);
@@ -829,13 +829,13 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		ELSE vis := internal
 		END
 	END CheckMark;
-	
+
 	(* ---------------- parse (qulified) identifier ----------------- *)
 
 	PROCEDURE qualident(VAR end: LONGINT);	(* writes a (qualified) ident *)
 		VAR qualifier: Name;
 	BEGIN end:= Pos();
-		COPY(id, qualifier); Sym; 
+		COPY(id, qualifier); Sym;
 		IF sym = period THEN Sym; end:= Pos();
 			IF ~FindMod(qualifier) THEN err(curErr) END;
 			IF sym = ident THEN
@@ -865,7 +865,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		END;	(* LOOP *)
 		Copy(beg, begPos)
 	END ConstExpression;
-	
+
 	PROCEDURE ConstDef;	(* parses and writes constant declarations *)
 		VAR cmnt: Cmnt; obj: LocalIdent; vis: SHORTINT; first, newL, needsLn: BOOLEAN;
 	BEGIN first:= TRUE; needsLn:= NeedsLn(); cmnt:= cmnts.next; Sym;
@@ -959,7 +959,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				IF newLine THEN Copy(wPos, begPos) END;
 				IF sym = var THEN Str("VAR "); Sym END;
 				LOOP
-					IF sym = ident THEN Sym; Str(id) ELSE err(errProc) END; 
+					IF sym = ident THEN Sym; Str(id) ELSE err(errProc) END;
 					IF sym = comma THEN Sym ELSIF ~((sym = ident) OR (sym = var)) THEN EXIT END;
 					Str(", ")
 				END;
@@ -1006,7 +1006,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			fix.next:= fixups.next; fixups.next:= fix
 		ELSIF sym = array THEN Sym; ArrayType
 		ELSIF (sym = record) OR (sym = object) THEN INC(recLevel);
-			RecordType; 
+			RecordType;
 			IF newLine THEN Ln; Indent(1+recLevel) ELSE Char(" ") END; Str("END");
 			(* CheckSym(end); *) DEC(recLevel); wasRecord:= TRUE
 		ELSIF sym = pointer THEN Sym; PointerType
@@ -1157,7 +1157,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			INC(level);
 			IF (vis # internal) & (mode IN {XProc, CProc}) THEN
 				Ln; Indent(1+recLevel*2);
-				Str("PROCEDURE "); 
+				Str("PROCEDURE ");
 				IF sysflag # "" THEN Str("["); Str(sysflag); Str("] ") END;
 				IF init THEN Str("& ") END;
 				Identifier(procId);
@@ -1270,7 +1270,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	(* ---------------------- parse the import block ----------------------- *)
 
 	PROCEDURE ImportBlock;	(* parses the import block of a module but does not write it *)
-	BEGIN  Sym; 
+	BEGIN  Sym;
 		LOOP
 			IF sym = ident THEN
 				COPY(id, mod[mods].alias); COPY(id, mod[mods].real);
@@ -1327,7 +1327,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	(* ---------------------- interface ----------------------- *)
 
 	PROCEDURE GetText(): Texts.Text;	(* gets source text of marked document or viewer *)
-		VAR T: Texts.Text; F: Display.Frame; L: Display.LocateMsg; M: Objects.LinkMsg; 
+		VAR T: Texts.Text; F: Display.Frame; L: Display.LocateMsg; M: Objects.LinkMsg;
 	BEGIN
 		(* Returns the frame that is at X, Y on the display *)
 		L.X := Oberon.Pointer.X; L.Y := Oberon.Pointer.Y; L.F := NIL; L.loc := NIL;
@@ -1346,7 +1346,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			mT: Texts.Text; B: Texts.Buffer; name: ARRAY 128 OF CHAR; newName: Name; i: INTEGER;
 			doPlain: BOOLEAN; obj: Objects.Object;
 	BEGIN
-		Str("reading "); NEW(ModT); 
+		Str("reading "); NEW(ModT);
 		IF mod[0] = "*" THEN
 			Char("*");
 			Texts.Open(ModT, "");
@@ -1357,7 +1357,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			Texts.Open(ModT, name)
 		END;
 		ToLog;
-		
+
 		(* init *)
 		doPlain:= FALSE; doItalic:= FALSE; i:= 0;
 		WHILE (options[i] # 0X) DO
@@ -1391,7 +1391,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Convert2HTML(in, out: Texts.Text);
 		VAR label: ARRAY 64 OF CHAR; R: Texts.Reader; BR: TextGadgets0.BackRd; fnt: Fonts.Font;
 				obj: Objects.Object; i, l: INTEGER; bold, italic: BOOLEAN; ch, ch0: CHAR;
-	
+
 		PROCEDURE GetChar(VAR R: Texts.Reader; VAR ch: CHAR);
 		BEGIN Texts.Read(R, ch); INC(l)
 		END GetChar;
@@ -1404,12 +1404,12 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				| "<": Str("&lt;")
 				| "&": Str("&amp;")
 				| "\": GetChar(R, ch); Char(ch)
-				| "ƒ": Str("&auml;")
-				| "„": Str("&ouml;")
-				| "…": Str("&uuml;")
-				| "€": Str("&Auml;")
-				| "": Str("&Ouml;")
-				| "‚": Str("&Uuml;")
+				| "Ñ“": Str("&auml;")
+				| "â€ž": Str("&ouml;")
+				| "â€¦": Str("&uuml;")
+				| "Ð‚": Str("&Auml;")
+				| "Ðƒ": Str("&Ouml;")
+				| "â€š": Str("&Uuml;")
 			ELSE Char(ch)
 			END	(* CASE *)
 		END OutChar;
@@ -1424,7 +1424,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			A.res:= -1; A.name:= "Cmd"; A.s:= ""; obj.handle(obj, A);
 			IF (A.res >= 0) & (A.s # "") THEN
 				Str("<A HREF= "); Char(22X);
-				i:= 0; REPEAT cmd[i]:= A.s[i]; INC(i) UNTIL A.s[i] = " "; 
+				i:= 0; REPEAT cmd[i]:= A.s[i]; INC(i) UNTIL A.s[i] = " ";
 				cmd[i]:= A.s[i]; INC(i); cmd[i]:= 0X;
 				(* skip options, if any *)
 				IF A.s[i] = Oberon.OptionChar THEN
@@ -1511,7 +1511,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		Str("</HEAD>"); Ln;
 		Str("<BODY>"); Ln;
 		Str("<PRE>"); Ln;
-		
+
 		(* begin of parsing definition file *)
 		Texts.OpenReader(R, in, 0); GetChar(R, ch);
 		bold:= FALSE; italic:= FALSE; fnt:= NIL; l:= 0;
@@ -1566,7 +1566,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	PROCEDURE GetArgs (VAR S: Texts.Scanner; VAR name: ARRAY OF CHAR);	(* reads in the given params *)
 		VAR text: Texts.Text; beg, end, time: LONGINT; optS: SET; k: SHORTINT; A: Objects.AttrMsg;
-				
+
 		PROCEDURE SetOrder(str: ARRAY OF CHAR);
 			VAR i: INTEGER; ch: CHAR;
 		BEGIN i:= 0;
@@ -1618,7 +1618,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Which(VAR mod: ARRAY OF CHAR; VAR typ: INTEGER);
 	(* determines source file to get information from *)
 		VAR F: Files.File; i: INTEGER;
-		
+
 		PROCEDURE OpenDef(mod: ARRAY OF CHAR);	(* tries to open an existing def file *)
 			VAR res: INTEGER; A: Objects.AttrMsg;
 		BEGIN Append(mod, defFileExt);
@@ -1632,7 +1632,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				IF defFound THEN typ:= DefCTyp; F:= Files.Old(A.s) END
 			END	(* IF *)
 		END OpenDef;
-		
+
 		PROCEDURE OpenTutorial(VAR mod: ARRAY OF CHAR);
 		(* tries to open the corresponding tutorial (refers to the link text) *)
 			VAR tutName: ARRAY 64 OF CHAR; S: Texts.Scanner; i, j: INTEGER;
@@ -1650,7 +1650,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 						IF F # NIL THEN S.eot:= TRUE; COPY(tutName, mod);
 							IF S.s[j] # 0X THEN
 								i:= 0; REPEAT INC(i) UNTIL mod[i] = 0X; mod[i]:= tutDelimiter;
-								REPEAT INC(j); INC(i); mod[i]:= S.s[j] UNTIL S.s[j] = 0X; 
+								REPEAT INC(j); INC(i); mod[i]:= S.s[j] UNTIL S.s[j] = 0X;
 							END
 						ELSE Str("Tutorial '"); Str(tutName); Str("' does not exist"); Ln; ToLog
 						END
@@ -1660,7 +1660,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				END
 			UNTIL S.eot OR (F # NIL)
 		END OpenTutorial;
-		
+
 		PROCEDURE OpenMod(VAR mod: ARRAY OF CHAR);	(* tries to open the mod file *)
 			VAR fileName: ARRAY 64 OF CHAR; i, j, k: INTEGER; A: Objects.AttrMsg;
 		BEGIN
@@ -1686,11 +1686,11 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 				F:= Files.Old(fileName); IF F #NIL THEN COPY(fileName, mod) END
 			END
 		END OpenMod;
-		
+
 		PROCEDURE OpenSym(mod: ARRAY OF CHAR);	(* tries to open the sym file *)
 		BEGIN Append(mod, Modules.extension); F:= Files.Old(mod)
 		END OpenSym;
-		
+
 		PROCEDURE OpenObj(mod: ARRAY OF CHAR);	(* tries to open the obj file *)
 		BEGIN Append(mod, Modules.extension); F:= Files.Old(mod)
 		END OpenObj;
@@ -1698,7 +1698,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	BEGIN
 		(* first of all check if we have to check any file *)
 		IF mod = "" THEN typ:= UndefTyp; RETURN END;
-		
+
 		(* yes we have, so check if we have a special case *)
 		IF mod[0] = "*" THEN typ:= ModTyp; RETURN END;
 
@@ -1718,7 +1718,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			Str("no information about '"); Str(mod); Str("' available"); Ln; ToLog
 		END
 	END Which;
-		
+
 	PROCEDURE JumpTo(F: TextGadgets.Frame; pos: LONGINT);
 	(* set caret to position pos in text F.text and select objects name *)
 		VAR BR: TextGadgets0.BackRd; ch: CHAR; S: Oberon.SelectMsg; C: Oberon.CaretMsg;
@@ -1754,7 +1754,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	PROCEDURE Open(mod: ARRAY OF CHAR; T: Texts.Text; pos: LONGINT): History;
 	(* opens a TextDoc displaying the given text. Sets caret to position pos (if not 0) *)
 		VAR D, oldD: Objects.Object; F: TextGadgets.Frame; h: History; A: Objects.AttrMsg;
-		
+
 		PROCEDURE IsWatsonDoc(D: Documents.Document): BOOLEAN;
 			VAR i: INTEGER;
 		BEGIN
@@ -1774,7 +1774,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			h:= AddDocToHistory(A.i);
 			WITH D: Documents.Document DO
 				A.id:= Objects.set; A.name:= DocNrAttr; A.class:= Objects.Int; A.i:= h.nr; A.res:= -1;
-				D.handle(D, A); 
+				D.handle(D, A);
 				NEW(F); TextGadgets.Init(F(TextGadgets.Frame), T, FALSE);
 				D.W:= 600; Documents.Init(D, F); D.handle:= DocHandler;
 				COPY(mod, D.name);
@@ -1853,7 +1853,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			ELSE (* typ = Tut *) OpenTut(mod)
 			END;
 			IF T.len > 0 THEN
-				Append(mod, titleExt); 
+				Append(mod, titleExt);
 				h:= Open(mod, T, 0);
 				MakeHistoryCmd(h, ModCmd, mod, "")
 			END
@@ -1875,7 +1875,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			ELSE (* typ = Tut *) OpenTut(mod)
 			END;
 			IF T.len > 0 THEN
-				Append(mod, titleExt); 
+				Append(mod, titleExt);
 				h:= Open(mod, T, FindMarker(T, objName));
 				MakeHistoryCmd(h, ObjCmd, mod, objName)
 			END
@@ -1884,10 +1884,10 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	PROCEDURE LookupObj*;
 		VAR S: Texts.Scanner; mod: ARRAY 64 OF CHAR; D: Documents.Document;
-	BEGIN	GetArgs(S, mod); 
+	BEGIN	GetArgs(S, mod);
 		Texts.Scan(S);
-		IF S.class IN {Texts.String, Texts.Name} THEN 
-			Append(mod, ".Mod"); 
+		IF S.class IN {Texts.String, Texts.Name} THEN
+			Append(mod, ".Mod");
 			D := Documents.Open(mod);
 			IF (D # NIL) & (D.dsc # NIL) & (D.dsc IS TextGadgets0.Frame) THEN
 				Desktops.ShowDoc(D);
@@ -1930,7 +1930,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 	BEGIN
 		GetArgs(S, text); NEW(T); NEW(outT);
 		WHILE S.class = Texts.Name DO
-			COPY(S.s, text); 
+			COPY(S.s, text);
 			F:= Files.Old(text);
 			l:= 3; REPEAT INC(l) UNTIL text[l] = 0X; text[l-4]:= 0X;
 			OpenDef(T, text, F = NIL);
@@ -1949,7 +1949,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 
 	PROCEDURE GetPublicObjects;	(* set public opjects (creates new if not found) *)
 		VAR obj: Objects.Object; string: ARRAY 64 OF CHAR; A: Objects.AttrMsg;
-		
+
 		PROCEDURE GetObj(name: ARRAY OF CHAR; VAR obj: Objects.Object);
 			VAR L: Objects.LinkMsg;
 		BEGIN
@@ -1962,7 +1962,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 			ELSE Str("public object '"); Str(name); Str("' not found"); Ln; ToLog
 			END
 		END GetObj;
-				
+
 	BEGIN
 		Gadgets.GetAlias("String", string);
 		(* get default order *)
@@ -1976,7 +1976,7 @@ MODULE Watson;	(** portable *)	(** PS/tk   *)
 		IF (obj = NIL) OR ~(obj IS Texts.Text) THEN NEW(linkText); Texts.Open(linkText, "")
 		ELSE linkText:= obj(Texts.Text)
 		END;
-		(* get def-archive name *)		
+		(* get def-archive name *)
 		GetObj(archiveObj, aObj);
 		IF aObj = NIL THEN aObj:= Gadgets.CreateObject(string) END;
 		(* get mod file name format *)

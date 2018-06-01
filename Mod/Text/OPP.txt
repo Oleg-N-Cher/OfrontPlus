@@ -514,7 +514,7 @@
 		CheckSym(rbrace)
 	END Sets;
 
-	
+
 	PROCEDURE String2Chars ( a :OPT.Node; VAR x: OPT.Node);
 	(* переводит строку в массив символов *)
 	VAR i:INTEGER;
@@ -524,29 +524,29 @@
 		END;
 	END String2Chars;
 
-	PROCEDURE ConstArray (VAR x: OPT.Node; typ: OPT.Struct); 
+	PROCEDURE ConstArray (VAR x: OPT.Node; typ: OPT.Struct);
 	(* конструкция "константный массив". typ - текущий уровень массива *)
 	VAR apar:  OPT.Node; n, i: INTEGER; fp: OPT.Object;  y: OPT.ConstArr;
 	BEGIN
 		IF (sym # lparen) & (typ^.BaseTyp^.form IN {Char,Byte} )  THEN (* это должна быть строка*)
 			ConstExpression(apar); (* попытаемся взять эту строку *)
-			IF  (apar^.typ^.comp=1)&(apar^.typ^.form= String) & 
+			IF  (apar^.typ^.comp=1)&(apar^.typ^.form= String) &
 				(apar^.conval^.intval2 <= typ^.n) THEN (* взяли строку допустимой длины *)
 				String2Chars(apar, x);
 				INC(x^.conval^.intval,  typ^.n);
-			ELSIF  (apar^.typ^.comp=1)&(apar^.typ^.form  IN {Char,Byte}) THEN 
+			ELSIF  (apar^.typ^.comp=1)&(apar^.typ^.form  IN {Char,Byte}) THEN
 				(* прочитался символ *)
-					x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval))); 
+					x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
 					INC(x^.conval^.intval,  typ^.n);
 			ELSE
-				err(63);	
-			END;	
+				err(63);
+			END;
 		ELSE
-		CheckSym(lparen); 
+		CheckSym(lparen);
 		n:=typ^.n; (* количество элементов массива *)
 		i := 0;
 		IF  typ^.BaseTyp^.form IN intSet +{Bool,Char} THEN (* массив из целых (в т.ч. BYTE)  *)
-			y := x^.conval^.arr; 
+			y := x^.conval^.arr;
 			fp := OPT.NewObj(); fp^.typ :=  typ^.BaseTyp;
 			fp^.mode := Var;  (*  fp  - переменная, элемент массива *)
 			IF sym # rparen THEN
@@ -556,17 +556,17 @@
 							& (apar^.typ^.comp=1) & (apar^.typ^.form= String)  (* а прочитали строку *)
 							& (apar^.conval^.intval2 <= typ^.n)  (* допустимой длины *) THEN
 							String2Chars(apar, x);
-						ELSE	
+						ELSE
 							OPB.Param(apar, fp); (* проверим на совместимость*)
 							(* тут нужно положить элемент в кусок памяти *)
-							WITH 
+							WITH
 							| y: OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
 										y.val[x^.conval^.intval+i] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
 									ELSE err(64) END;
 							| y: OPT.ConstArrOfSInt DO (* типы с размером в 2 байта *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval)); 
+										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval));
 									ELSE err(64) END;
 							| y: OPT.ConstArrOfInt DO (* типы с размером в 4 байта *)
 									IF x^.conval^.intval+i < LEN(y.val^) THEN
@@ -585,19 +585,19 @@
 					ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
 					ELSE EXIT
 					END
-				END; 
+				END;
 			END;
 			IF i # n THEN
-				IF (i=1) & (typ^.BaseTyp^.form IN {Char,Byte} ) THEN 
+				IF (i=1) & (typ^.BaseTyp^.form IN {Char,Byte} ) THEN
 				(* один символ (мы его уже считали) может означать целую строку *)
 				ELSE
-			 		err(65) 
+			 		err(65)
 				END
-			END; 
+			END;
 			INC(x^.conval^.intval, n); (* учли прочитанные элементы, даже если они не  прочитаны *)
 		ELSIF  (typ^.BaseTyp^.form =15) & (typ^.BaseTyp^.comp = 2) THEN (* массив из массивов *)
 			IF sym # rparen THEN
-				LOOP ConstArray (x, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)		
+				LOOP ConstArray (x, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)
 					IF i < n THEN
 						(*	??? проверим на совместимость *)
 						INC(i);
@@ -607,12 +607,12 @@
 					ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
 					ELSE EXIT
 					END
-				END; 
+				END;
 			END;
-			IF i # n THEN  err(65) 
+			IF i # n THEN  err(65)
 			END;
 		ELSE  err(51)
-		END; 	
+		END;
 		CheckSym(rparen); (* скобка ) *)
 		END;
 	END ConstArray;
@@ -629,18 +629,18 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			ELSIF sym = lparen THEN
 				IF (x^.obj^.mode = Typ)  & (x^.obj^.typ^.form = Comp) & (x^.obj^.typ^.comp = Array)   THEN
 				(* константный массив верхнего уровня*)
-					OPB.NewArrConst(x); 
+					OPB.NewArrConst(x);
 					IF x^.obj^.typ^.BaseTyp^.form IN {Char,Byte} THEN (* ARRAY OF CHAR *)
-						
+
 					END;
 					ConstArray(x, x^.obj^.typ);
 					IF sym # semicolon THEN err (semicolon) END; (* на всякий случай проверим, что в конце ; *)
-				ELSE			
+				ELSE
 					OPS.Get(sym); OPB.PrepCall(x, fpar);
 					ActualParameters(apar, fpar);
 					OPB.Call(x, apar, fpar);
 					CheckSym(rparen);
-				END;	
+				END;
 				IF level > 0 THEN OPT.topScope^.link^.leaf := FALSE END
 			END
 		ELSIF sym = number THEN
@@ -763,7 +763,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			LOOP
 				IF sym = number THEN c := SHORT(OPS.intval); EnsureLen(n + 1);
 					IF OPS.numtyp # char THEN err(63); c := 1; n := 0
-					ELSIF CHR(c) < " " THEN err(3) 
+					ELSIF CHR(c) < " " THEN err(3)
 					END;
 					OPS.Get(sym); s^[n] := SHORT(CHR(c)); INC(n)
 				ELSIF sym = string THEN
@@ -1431,7 +1431,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						obj^.typ^.pvused := TRUE; (* не знаю, нужно ли это *)
 						IF last = NIL THEN OPT.topScope^.scope := obj ELSE last^.link := obj END ;
 						last := obj;
-						first := NIL;  
+						first := NIL;
 					END;
 					CheckSym(semicolon)
 				END

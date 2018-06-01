@@ -4,10 +4,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 *)
 
 	IMPORT OPM := OfrontOPM;
-	
+
 	CONST
 		MaxIdLen = 40;
-	
+
 	TYPE
 		Name* = ARRAY MaxIdLen OF SHORTCHAR;
 		String* = POINTER TO ARRAY OF SHORTCHAR;
@@ -122,7 +122,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			ELSE err(2); RETURN 0
 			END
 		END Ord;
-		
+
 	BEGIN (* ("0" <= ch) & (ch <= "9") *)
 		i := 0; m := 0; n := 0; d := 0;
 		LOOP (* read mantissa *)

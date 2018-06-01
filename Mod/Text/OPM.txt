@@ -6,7 +6,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 2002-08-21  jt: CloseFiles: inC tested for NIL
 *)
 
-	IMPORT SYSTEM, Strings, Files, Models, Out, Stores, TextControllers, TextModels, TextMappers, 
+	IMPORT SYSTEM, Strings, Files, Models, Out, Stores, TextControllers, TextModels, TextMappers,
 		TextViews, Views, Dialog, Fonts, Ports, Controllers, Properties, DevMarkers;
 
 	CONST
@@ -63,7 +63,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 		(* maximal number of hidden fields in an exported record: *)
 		MaxHdFld* = 512;
-		
+
 		HdPtrName* = "@ptr";
 		HdProcName* = "@proc";
 		HdTProcName* = "@tproc";
@@ -106,13 +106,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		opt-, glbopt-: SET;
 		GlobalLanguage, Language-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
-		
+
 		lasterrpos: INTEGER;
 		inR: TextModels.Reader;
-		inC: TextControllers.Controller; 
+		inC: TextControllers.Controller;
 		script: Stores.Operation; (* for undoing insert error marks *)
 		inS: TextMappers.Scanner;
-		inV: Views.View; 
+		inV: Views.View;
 		inLoc: Files.Locator;
 		inName: Files.Name;
 		end: INTEGER;
@@ -198,7 +198,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	BEGIN
 		Out.String(LONG(s));
 	END LogWStr;
-	
+
 	PROCEDURE LogWNum*(i, len: INTEGER);
 	BEGIN
 		Out.Int(i, len)
@@ -214,7 +214,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 	PROCEDURE ScanOptions(VAR s: ARRAY OF CHAR; VAR opt: SET);
 		VAR i: INTEGER;
-	BEGIN i := 0; 
+	BEGIN i := 0;
 		WHILE s[i] # 0X DO
 			CASE s[i] OF
 			| "e": opt := opt / {extsf}
@@ -261,7 +261,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			INC(i)
 		END
 	END ScanOptions;
-	
+
 	PROCEDURE ^GetProperties;
 
 	PROCEDURE GetAlignment(VAR a: SHORTINT); BEGIN a := 8 END GetAlignment; (* Windows x86 = 48, x64 =  88 *)
@@ -282,7 +282,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 					inS.ConnectTo(c.text); inS.SetPos(beg); inS.Scan;
 					IF (inS.type = TextMappers.char) & (inS.char = "/") THEN
 						pos := inS.start; glbopt := defopt; inS.Scan;
-						IF (inS.start = pos + 1) & (inS.type = TextMappers.string) THEN 
+						IF (inS.start = pos + 1) & (inS.type = TextMappers.string) THEN
 							ScanOptions(inS.string, glbopt); inS.Scan
 						END
 					END
@@ -315,7 +315,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		opt := glbopt;
 		IF translateList & (inS.start < end) & (inS.type = TextMappers.char) & (inS.char = "/") THEN
 			pos := inS.start; glbopt := defopt; inS.Scan;
-			IF (inS.start = pos + 1) & (inS.type = TextMappers.string) THEN 
+			IF (inS.start = pos + 1) & (inS.type = TextMappers.string) THEN
 				ScanOptions(inS.string, opt); inS.Scan
 			END
 		END;
@@ -371,8 +371,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		s[pos] := CHR(ORD("0") + x MOD 10); INC(pos); s[pos] := 0X
 	END AppInt;
 
-	
-	PROCEDURE LocatePos*;	
+
+	PROCEDURE LocatePos*;
 		VAR C: TextControllers.Controller; pos: INTEGER;
 	BEGIN
 		C := TextControllers.Focus();
@@ -385,7 +385,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		C.SetCaret(pos)
 	END LocatePos;
 
-	PROCEDURE LocateLine*;	
+	PROCEDURE LocateLine*;
 		VAR C: TextControllers.Controller; R: TextModels.Reader; ch: CHAR; line, pos: INTEGER;
 	BEGIN
 		C := TextControllers.Focus();
@@ -404,17 +404,17 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		C.SetCaret(pos)
 	END LocateLine;
 
-	
+
 	(* ------------------------- read source text -------------------------*)
-	
+
 	PROCEDURE Get*(VAR ch: SHORTCHAR);	(* read next character from source text, 0X if eof *)
-	BEGIN 
+	BEGIN
 		inR.Read();
 		IF inR.eot THEN ch := 0X
 		ELSE ch := SHORT(inR.char); INC(curpos)
 		END
 	END Get;
-	
+
 	PROCEDURE MakeFileName(IN name: ARRAY OF SHORTCHAR; VAR FName: Files.Name; IN ext: ARRAY OF CHAR);
 		VAR i, j: INTEGER; ch: CHAR;
 	BEGIN i := 0;
@@ -440,14 +440,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 					E.InitErr(n); E.InitMsg(s);
 					T := inR.Base(); W := T.NewWriter(NIL); W.SetPos(pos);
 					W.WriteView(E, 10*Ports.point, 10 * Ports.point);
-					INC(curpos); inR.SetPos(curpos); 
+					INC(curpos); inR.SetPos(curpos);
 					IF noerr THEN
 						IF translateList THEN Views.Open(inV, inLoc, inName, NIL);
 							inV(TextViews.View).ShowRange(pos, pos, FALSE)
 						ELSE inC.view.ShowRange(pos, pos, FALSE)
 						END
 					END
-				ELSE 
+				ELSE
 					s := "#ofront:"; AppInt(n, 8, s);
 					Dialog.MapParamString(s, LONG(objname), "", "", s);
 					LogWLn; LogWStr("  "); LogWStr(SHORT(s))
@@ -575,13 +575,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 	PROCEDURE SymRCh*(VAR ch: SHORTCHAR);
 	BEGIN
-		oldSF.ReadSChar(ch) 
+		oldSF.ReadSChar(ch)
 	END SymRCh;
 
 	PROCEDURE SymRInt* (): LONGINT;
 		VAR s, byte: BYTE; ch: SHORTCHAR; n: LONGINT;
 	BEGIN s := 0; n := 0; oldSF.ReadByte(byte); ch := SHORT(CHR(byte));
-		WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); 
+		WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7);
 			oldSF.ReadByte(byte); ch := SHORT(CHR(byte))
 		END;
 		INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
@@ -592,17 +592,17 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	BEGIN
 		s := SYSTEM.VAL(SET, SHORT(SymRInt()))
 	END SymRSet;
-	
+
 	PROCEDURE SymRReal*(VAR r: SHORTREAL);
 	BEGIN
-		oldSF.ReadSReal(r) 
+		oldSF.ReadSReal(r)
 	END SymRReal;
-	
+
 	PROCEDURE SymRLReal*(VAR lr: REAL);
 	BEGIN
-		oldSF.ReadReal(lr) 
+		oldSF.ReadReal(lr)
 	END SymRLReal;
-	
+
 	PROCEDURE CloseOldSym*;
 	BEGIN oldSFile.Close; oldSFile := NIL; oldSF.ConnectTo(NIL)
 	END CloseOldSym;
@@ -618,16 +618,16 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			END
 		END
 	END OldSym;
-	
+
 	PROCEDURE eofSF*(): BOOLEAN;
-	BEGIN 
+	BEGIN
 		RETURN oldSF.rider.eof
 	END eofSF;
-	
+
 	(* ------------------------- Write Symbol File ------------------------- *)
-	
+
 	PROCEDURE SymWCh*(ch: SHORTCHAR);
-	BEGIN 
+	BEGIN
 		newSF.WriteSChar(ch)
 	END SymWCh;
 
@@ -646,21 +646,21 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	BEGIN
 		newSF.WriteSReal(r)
 	END SymWReal;
-	
+
 	PROCEDURE SymWLReal*(lr: REAL);
 	BEGIN
 		newSF.WriteReal(lr)
 	END SymWLReal;
-	
+
 	PROCEDURE RegisterNewSym*;
 		VAR fileName: Files.Name; res: INTEGER;
 	BEGIN
-		IF (modName # "SYSTEM") OR (mainprog IN opt) THEN 
+		IF (modName # "SYSTEM") OR (mainprog IN opt) THEN
 			MakeFileName(modName, fileName, SFext);
 			newSFile.Register(fileName, "*", Files.dontAsk, res)
 		END
 	END RegisterNewSym;
-	
+
 	PROCEDURE DeleteNewSym*;
 	END DeleteNewSym;
 
@@ -722,14 +722,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			(* W: TextMappers.Formatter; T: TextModels.Model; R: TextModels.Reader; *)
 	BEGIN
 (*should be improved *)
-		IF (r < MaxLInt) & (r > MinLInt) & (r = SHORT(ENTIER(r))) THEN 
+		IF (r < MaxLInt) & (r > MinLInt) & (r = SHORT(ENTIER(r))) THEN
 			IF suffx = "f" THEN WriteString("(REAL)") ELSE WriteString("(LONGREAL)") END ;
 			WriteInt(SHORT(ENTIER(r)))
 		ELSE
 			IF suffx = "f" THEN Strings.RealToString(SHORT(r), s) ELSE Strings.RealToString(r, s) END;
 (* s[i] := suffx; s[i+1] := 0X;
 suffix does not work in K&R *)
-			i := 0; ch := s[0]; 
+			i := 0; ch := s[0];
 			WHILE (ch # "D") & (ch # 0X) DO INC(i); ch := s[i] END ;
 			IF ch = "D" THEN s[i] := "e" END ;
 			WriteString(SHORT(s))
@@ -791,7 +791,7 @@ suffix does not work in K&R *)
 		END ;
 		RETURN FALSE
 	END FileDiff;
-	
+
 	PROCEDURE CloseFiles*;
 		VAR FName: Files.Name; res: INTEGER;
 	BEGIN
@@ -803,8 +803,8 @@ suffix does not work in K&R *)
 				IF ~(mainprog IN opt) THEN MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res) END
 			ELSIF ~(mainprog IN opt) THEN
 				Append(R[HeaderInclude], HFile);
-				MakeFileName(modName, FName, HFext); 
-				IF FileDiff(FName, HIFile) THEN HIFile.Register(FName, "*", Files.dontAsk, res) END ; 
+				MakeFileName(modName, FName, HFext);
+				IF FileDiff(FName, HIFile) THEN HIFile.Register(FName, "*", Files.dontAsk, res) END ;
 				MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res)
 			ELSE
 				MakeFileName(modName, FName, HFext); FilesDelete(FName);
@@ -836,7 +836,7 @@ suffix does not work in K&R *)
 		options.ptrinit := ptrinit IN defopt;
 		Dialog.MapString( "#ofront:directories", options.dirs)
 	END GetDefaultOptions;
-	
+
 	PROCEDURE PromoteIntConstToLInt*();
 	BEGIN
 		(* ANSI C does not need explicit promotion.
@@ -869,6 +869,5 @@ BEGIN
 END OfrontOPM.
 
 
-OfrontCmd OfrontOPP OfrontOPB OfrontOPC OfrontOPV OfrontOPT OfrontOPS OfrontOPM 
+OfrontCmd OfrontOPP OfrontOPB OfrontOPC OfrontOPV OfrontOPT OfrontOPS OfrontOPM
 OfrontBrowser
-
