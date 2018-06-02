@@ -875,21 +875,24 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END GenHdr;
 
 	PROCEDURE GenHeaderMsg;
+		VAR opt: BOOLEAN;
 	BEGIN
-		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg); 
-		IF OPM.extsf IN OPM.opt THEN OPM.Write("e") END;
-		IF OPM.newsf IN OPM.opt THEN OPM.Write("s") END;
-		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m") END;
-		IF ~(OPM.inxchk IN OPM.opt) THEN OPM.Write("x") END;
-		IF OPM.vcpp IN OPM.opt THEN OPM.Write("v") END;
-		IF OPM.ranchk IN OPM.opt THEN OPM.Write("r") END;
-		IF ~(OPM.typchk IN OPM.opt) THEN OPM.Write("t") END;
-		IF ~(OPM.assert IN OPM.opt) THEN OPM.Write("a") END;
-		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
-		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
-		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
+		opt := FALSE;
+		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg);
+		IF OPM.extsf IN OPM.opt THEN OPM.Write("e"); opt := TRUE END;
+		IF OPM.newsf IN OPM.opt THEN OPM.Write("s"); opt := TRUE END;
+		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m"); opt := TRUE END;
+		IF OPM.inxchk IN OPM.opt THEN OPM.Write("x"); opt := TRUE END;
+		IF OPM.vcpp IN OPM.opt THEN OPM.Write("v"); opt := TRUE END;
+		IF OPM.ranchk IN OPM.opt THEN OPM.Write("r"); opt := TRUE END;
+		IF OPM.typchk IN OPM.opt THEN OPM.Write("t"); opt := TRUE END;
+		IF OPM.assert IN OPM.opt THEN OPM.Write("a"); opt := TRUE END;
+		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k"); opt := TRUE END;
+		IF OPM.ptrinit IN OPM.opt THEN OPM.Write("p"); opt := TRUE END;
+		IF OPM.include0 IN OPM.opt THEN OPM.Write("i"); opt := TRUE END;
 		IF OPM.Language # 0X THEN OPM.Write(OPM.Language) END;
-		OPM.WriteString(" -"); OPM.WriteInt(OPM.AddressSize); OPM.WriteInt(OPM.Alignment);
+		IF opt THEN OPM.WriteString(" -") END;
+		OPM.WriteInt(OPM.AddressSize); OPM.WriteInt(OPM.Alignment);
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;
 
