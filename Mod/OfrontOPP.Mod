@@ -281,15 +281,14 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	END PointerType;
 
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct);
-		VAR mode, vis: BYTE; sys: SHORTINT;
-				par, first, last, res: OPT.Object; typ: OPT.Struct;
+		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last, res: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
 		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Language = "C")) THEN
 			LOOP
 				sys := 0; vis := 0;
 				IF sym = var THEN OPS.Get(sym); mode := VarPar
-				ELSIF sym = in THEN OPS.Get(sym); mode := VarPar; vis := inPar
-				ELSIF sym = out THEN OPS.Get(sym); mode := VarPar; vis := outPar
+				ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+				ELSIF (sym = out) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
 				ELSE mode := Var
 				END;
 				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
