@@ -892,7 +892,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i"); opt := TRUE END;
 		IF OPM.Language # 0X THEN OPM.Write(OPM.Language) END;
 		IF opt THEN OPM.WriteString(" -") END;
-		OPM.WriteInt(OPM.AddressSize); OPM.WriteInt(OPM.Alignment);
+		OPM.WriteInt(OPM.AddressSize);
+		IF OPM.AddressSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;
 
