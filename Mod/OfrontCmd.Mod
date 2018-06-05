@@ -1,4 +1,4 @@
-(*$MAIN*) MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
+MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 
 	IMPORT
 		Heap, Kernel,
