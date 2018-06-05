@@ -425,6 +425,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(127)
 					END ;
 					IF OPM.PointerSize = OPM.IntSize THEN z^.typ := OPT.inttyp
+					ELSIF OPM.PointerSize = OPM.SIntSize THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
 					END;
 			| cc: (*SYSTEM.CC*)
@@ -1190,6 +1191,10 @@ avoid unnecessary intermediate variables in OFront
 					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
 					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
 					END
+				ELSIF OPM.PointerSize = OPM.SIntSize THEN
+					IF (x^.class = Nconst) & (f = Byte) THEN Convert(x, OPT.sinttyp)
+					ELSIF ~(f IN {SInt, Pointer}) THEN err(111); x^.typ := OPT.sinttyp
+					END
 				ELSE
 					IF (x^.class = Nconst) & (f IN {Byte, SInt, Int}) THEN Convert(x, OPT.linttyp)
 					ELSIF ~(f IN {LInt, Pointer}) THEN err(111); x^.typ := OPT.linttyp
@@ -1375,6 +1380,10 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF OPM.PointerSize = OPM.IntSize THEN
 					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
 					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
+					END
+				ELSIF OPM.PointerSize = OPM.SIntSize THEN
+					IF (x^.class = Nconst) & (f = Byte) THEN Convert(x, OPT.sinttyp)
+					ELSIF ~(f IN {SInt, Pointer}) THEN err(111); x^.typ := OPT.sinttyp
 					END
 				ELSE
 					IF (x^.class = Nconst) & (f IN {Byte, SInt, Int}) THEN Convert(x, OPT.linttyp)
