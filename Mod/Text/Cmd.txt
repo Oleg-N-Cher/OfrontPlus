@@ -4,9 +4,21 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		OPP := OfrontOPP, OPB := OfrontOPB, OPT := OfrontOPT,
 		OPV := OfrontOPV, OPC := OfrontOPC, OPM := OfrontOPM;
 
+	PROCEDURE PropagateElementaryTypeSizes;
+	BEGIN
+		OPT.sysptrtyp.size := OPM.PointerSize;
+		OPT.settyp.size := OPM.SetSize;
+		OPT.realtyp.size := OPM.RealSize;
+		OPT.inttyp.size := OPM.IntSize;
+		OPT.linttyp.size := OPM.LIntSize;
+		OPT.lrltyp.size := OPM.LRealSize;
+		OPT.sinttyp.size := OPM.SIntSize;
+	END PropagateElementaryTypeSizes;
+
 	PROCEDURE Module*(VAR done: BOOLEAN);
 		VAR ext, new: BOOLEAN; p: OPT.Node;
 	BEGIN
+		PropagateElementaryTypeSizes;
 		OPP.Module(p, OPM.opt);
 		IF OPM.noerr THEN
 			OPV.Init;
@@ -30,30 +42,16 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		END ;
 		OPM.CloseFiles;
 		IF OPT.topScope # NIL THEN OPT.Close END; (* sonst Trap nach Fehler *)
-		OPM.LogWLn; done := OPM.noerr
+		OPM.LogWLn; done := OPM.noerr;
+		IF OPM.warning156 THEN OPM.Mark(-156, -1) END
 	END Module;
-
-	PROCEDURE PropagateElementaryTypeSizes;
-	BEGIN
-		OPT.bytetyp.size := OPM.ByteSize;
-		OPT.sysptrtyp.size := OPM.PointerSize;
-		OPT.chartyp.size := OPM.CharSize;
-		OPT.settyp.size := OPM.SetSize;
-		OPT.realtyp.size := OPM.RealSize;
-		OPT.inttyp.size := OPM.IntSize;
-		OPT.linttyp.size := OPM.LIntSize;
-		OPT.lrltyp.size := OPM.LRealSize;
-		OPT.sinttyp.size := OPM.SIntSize;
-		OPT.booltyp.size := OPM.BoolSize;
-	END PropagateElementaryTypeSizes;
 
 	PROCEDURE Translate*;
 		VAR done: BOOLEAN;
 	BEGIN
 		OPM.OpenPar(FALSE);
 		OPM.Init(done);
-		OPM.InitOptions();
-		PropagateElementaryTypeSizes;
+		OPM.InitOptions;
 		IF done THEN Module(done) END (* Compile source to .c and .h files *)
 	END Translate;
 
@@ -62,8 +60,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 	BEGIN
 		OPM.OpenPar(FALSE);
 		OPM.Init(done);
-		OPM.InitOptions();
-		PropagateElementaryTypeSizes;
+		OPM.InitOptions;
 		IF done THEN Module(done) END; (* Compile source to .c and .h files *)
 	RETURN done
 	END TranslateDone;
@@ -76,7 +73,6 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 			OPM.Init(done);
 			IF ~done THEN EXIT END ;
 			OPM.InitOptions;
-			PropagateElementaryTypeSizes;
 			Module(done); (* Compile source to .c and .h files *)
 			IF ~done THEN EXIT END
 		END

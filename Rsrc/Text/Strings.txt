@@ -1,5 +1,4 @@
 STRINGS
-options	sxtakp
 directories	%WorkDir%;%Subsys%/Lib
 ok	ok
 error	error(s) detected

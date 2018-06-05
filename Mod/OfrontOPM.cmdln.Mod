@@ -100,7 +100,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		modName-: ARRAY 32 OF CHAR;
 		objname*: ARRAY 64 OF CHAR;
 
-		opt-, glbopt-: SET;
+		opt-, glbopt: SET;
 		GlobalLanguage, Language-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 
@@ -136,6 +136,47 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END LogWLn;
 
 
+	(* ------------------------- initialization ------------------------- *)
+
+	PROCEDURE- GetAlignment(VAR a: SHORTINT) (* Windows x86/Linux ARM = 48, Linux x86 = 44, x64 = 88 *)
+		"struct {char c; long long l;} _s; *a = (char*)&_s.l - (char*)&_s";
+
+	PROCEDURE GetProperties;
+		VAR base: INTEGER;
+	BEGIN
+		warning156 := AddressSize = -1;
+		IF warning156 THEN
+ 			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
+			GetAlignment(Alignment)          (* this compilers alignment *)
+		END;
+		(* default characteristics *)
+		IF (Language = "1") OR (Language = "2") OR (AddressSize = 2) THEN (* Oberon, Oberon-2 or 8 bit CPUs *)
+			SIntSize := 1; IntSize := 2; LIntSize := 4;
+			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
+			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
+		ELSE (* Component Pascal and Oberon-3 *)
+			SIntSize := 2; IntSize := 4; LIntSize := 8;
+			MinSInt := -8000H; MaxSInt := 7FFFH;
+			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
+			base := 63;
+			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), base);	(*-9223372036854775808*)
+			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
+		END;
+		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
+			SetSize := 1; MaxSet := SetSize * 8 - 1;
+			IndexSize := 2; MaxIndex := 7FFFH (*32767*)
+		ELSE
+			SetSize := 4; MaxSet := 31;
+			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
+			MaxIndex := 7FFFFFFFH (*2147483647*)
+		END;
+		RealSize := 4; MaxReal := 3.402823466D38; MinReal := -MaxReal; LRealSize := 8;
+		MaxLReal := 1.7976931348623158D307 * 9.999999 (*should be 1.7976931348623158D308 *);
+		MinLReal := -MaxLReal;
+		ProcSize := AddressSize; PointerSize := AddressSize;
+		MaxHDig := 2*LIntSize
+	END GetProperties;
+
 	(* ------------------------- parameter handling -------------------------*)
 
 	PROCEDURE ScanOptions(VAR s: ARRAY OF CHAR; VAR opt: SET);
@@ -163,7 +204,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
 			*)
 			| "2":
-				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 4; INC(i)
+				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
 				ELSE Language := "2"
 				END
 			| "4":
@@ -187,8 +228,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			INC(i)
 		END
 	END ScanOptions;
-
-	PROCEDURE ^GetProperties;
 
 	PROCEDURE OpenPar*(IN title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
 		VAR s: ARRAY 256 OF CHAR;
@@ -349,46 +388,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		SYSTEM.GET(SYSTEM.ADR(lr), l); SYSTEM.GET(SYSTEM.ADR(lr)+4, h);
 		FPrint(fp, l); FPrint(fp, h)
 	END FPrintLReal;
-
-	(* ------------------------- initialization ------------------------- *)
-
-	PROCEDURE -GetAlignment(VAR a: SHORTINT) "struct {char c; long long l;} _s; *a = (char*)&_s.l - (char*)&_s";
-
-	PROCEDURE GetProperties;
-		VAR base: INTEGER;
-	BEGIN
-		warning156 := AddressSize = -1;
-		IF warning156 THEN
- 			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
-			GetAlignment(Alignment)          (* this compilers alignment *)
-		END;
-		(* default characteristics *)
-		IF (Language = "1") OR (Language = "2") THEN (* Oberon and Oberon-2 *)
-			SIntSize := 1; IntSize := 2; LIntSize := 4;
-			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
-			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		ELSE (* Component Pascal and Oberon-07 *)
-			SIntSize := 2; IntSize := 4; LIntSize := 8;
-			MinSInt := -8000H; MaxSInt := 7FFFH;
-			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
-			base := 63;
-			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), base);	(*-9223372036854775808*)
-			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
-		END;
-		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
-			SetSize := 1; MaxSet := SetSize * 8 - 1;
-			IndexSize := 2; MaxIndex := 7FFFH (*32767*)
-		ELSE
-			SetSize := 4; MaxSet := 31;
-			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFFFFFH (*2147483647*)
-		END;
-		RealSize := 4; MaxReal := 3.402823466D38; MinReal := -MaxReal; LRealSize := 8;
-		MaxLReal := 1.7976931348623158D307 * 9.999999 (*should be 1.7976931348623158D308 *);
-		MinLReal := -MaxLReal;
-		ProcSize := AddressSize; PointerSize := AddressSize;
-		MaxHDig := 2*LIntSize
-	END GetProperties;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
 
