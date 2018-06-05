@@ -1055,7 +1055,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 	PROCEDURE InitStruct(VAR typ: Struct; form: BYTE);
 	BEGIN
-		typ := NewStr(form, Basic); typ^.ref := form; typ^.size := 1; typ^.allocated := TRUE;
+		typ := NewStr(form, Basic); typ^.ref := form; typ^.size := 1 (*OPM.ByteSize*); typ^.allocated := TRUE;
 		typ^.strobj := NewObj(); typ^.pbfp := form; typ^.pvfp := form; typ^.fpdone := TRUE;
 		typ^.idfp := form; typ^.idfpdone := TRUE
 	END InitStruct;

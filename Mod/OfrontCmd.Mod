@@ -17,9 +17,22 @@
 		END
 	END Trap;
 
+	PROCEDURE PropagateElementaryTypeSizes;
+		VAR adrinttyp: OPT.Struct;
+	BEGIN
+		OPT.sysptrtyp.size := OPM.PointerSize;
+		OPT.settyp.size := OPM.SetSize;
+		OPT.realtyp.size := OPM.RealSize;
+		OPT.inttyp.size := OPM.IntSize;
+		OPT.linttyp.size := OPM.LIntSize;
+		OPT.lrltyp.size := OPM.LRealSize;
+		OPT.sinttyp.size := OPM.SIntSize;
+	END PropagateElementaryTypeSizes;
+
 	PROCEDURE Module*(VAR done: BOOLEAN);
 		VAR ext, new: BOOLEAN; p: OPT.Node;
 	BEGIN
+		PropagateElementaryTypeSizes;
 		OPP.Module(p, OPM.opt);
 		IF OPM.noerr THEN
 			OPV.Init;
@@ -42,20 +55,9 @@
 			END
 		END ;
 		OPM.CloseFiles; OPT.Close;
-		OPM.LogWLn; done := OPM.noerr
+		OPM.LogWLn; done := OPM.noerr;
+		IF OPM.warning156 THEN OPM.Mark(-156, -1) END
 	END Module;
-
-	PROCEDURE PropagateElementaryTypeSizes;
-		VAR adrinttyp: OPT.Struct;
-	BEGIN
-		OPT.sysptrtyp.size := OPM.PointerSize;
-		OPT.settyp.size := OPM.SetSize;
-		OPT.realtyp.size := OPM.RealSize;
-		OPT.inttyp.size := OPM.IntSize;
-		OPT.linttyp.size := OPM.LIntSize;
-		OPT.lrltyp.size := OPM.LRealSize;
-		OPT.sinttyp.size := OPM.SIntSize;
-	END PropagateElementaryTypeSizes;
 
 	PROCEDURE Translate*;
 		VAR done: BOOLEAN;
@@ -70,10 +72,8 @@
 				EXIT (* end of argument vector *)
 			END ;
 			OPM.InitOptions;
-			PropagateElementaryTypeSizes;
 			Heap.GC(FALSE);
 			Module(done); (* Compile source to .c and .h files *)
-			IF OPM.warning156 THEN OPM.Mark(-156, -1) END;
 			IF ~done THEN Heap.FINALL; Kernel.Exit(1) END
 		END
 	END Translate;

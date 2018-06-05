@@ -7,10 +7,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 *)
 
 	IMPORT SYSTEM, Strings, Files, Models, Out, Stores, TextControllers, TextModels, TextMappers,
-		TextViews, Views, Dialog, Fonts, Ports, Controllers, Properties, DevMarkers;
+		TextViews, Views, Dialog, Fonts, Ports, Controllers, Properties, DevMarkers, Windows;
 
 	CONST
-		OptionChar* = "/";
+		OptionChar* = "-";
 
 		(* compiler options; don't change the encoding *)
 		inxchk* = 0;	(* index check on *)
@@ -86,15 +86,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		HeaderInclude* = 2;
 
 	VAR
-		ByteSize-, CharSize-, BoolSize-, SIntSize-, IntSize-, LIntSize-,
-		SetSize-, RealSize-, LRealSize-, PointerSize-, ProcSize-, RecSize, IndexSize-,
-		CharAlign-, BoolAlign-, SIntAlign-, IntAlign-, LIntAlign-,
-		SetAlign-, RealAlign-, LRealAlign-, PointerAlign-, ProcAlign-, RecAlign,
-		ByteOrder-, BitOrder-, MaxSet-, MaxHDig-: SHORTINT;
+		SIntSize-, IntSize-, LIntSize-, SetSize-, RealSize-, LRealSize-,
+		PointerSize-, ProcSize-, IndexSize-, MaxSet-, MaxHDig-: SHORTINT;
 		MinSInt-, MinInt-, MaxSInt-, MaxInt-: INTEGER; MaxIndex-, MinLInt-, MaxLInt-: LONGINT;
 		MinReal-, MaxReal-, MinLReal-, MaxLReal-: REAL;
 
-		noerr-: BOOLEAN;
+		noerr-, warning156-: BOOLEAN;
 		curpos-, errpos*: INTEGER;	(* character and error position in source file *)
 		breakpc-: INTEGER;	(* set by OPV.Init *)
 		currFile*: INTEGER;	(* current output file *)
@@ -103,7 +100,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		modName-: ARRAY 32 OF SHORTCHAR;
 		objname*: ARRAY 64 OF SHORTCHAR;
 
-		opt-, glbopt-: SET;
+		opt-, glbopt: SET;
 		GlobalLanguage, Language-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 
@@ -125,10 +122,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		stop: BOOLEAN;
 
 		options*: RECORD
-			mainprog*, newsf*, extsf*, ansii*, include0*, vcpp*, inxchk*, assert*, ranchk*, typchk*, ptrinit*,
-				oberon1*, oberon2*, compascal*, oberon07*: BOOLEAN;
 			dirs*: ARRAY 256 OF CHAR;
-		END ;
+			mainprog*: BOOLEAN;
+			par: POINTER TO ARRAY OF CHAR
+		END;
 
 		locate*: RECORD
 			num*: INTEGER
@@ -165,12 +162,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		RETURN F
 	END FilesOld;
 
-	PROCEDURE FilesDelete(IN name: Files.Name);
+	PROCEDURE FilesDelete(IN name: Files.Name; IN subdir: ARRAY OF CHAR);
 		VAR dirs, dir: ARRAY 256 OF CHAR; pos: INTEGER;
 	BEGIN
 		Dialog.MapString(options.dirs, dirs);
 		pos := 0; Scan(dirs, dir, pos);
-		Files.dir.Delete(Files.dir.This(dir), name)
+		Files.dir.Delete(Files.dir.This(dir + subdir), name)
 	END FilesDelete;
 
 	PROCEDURE ViewsOld(IN name: ARRAY OF CHAR): Views.View;
@@ -210,6 +207,46 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	END LogWLn;
 
 
+	(* ------------------------- initialization ------------------------- *)
+
+	PROCEDURE GetAlignment(VAR a: SHORTINT);
+	BEGIN a := 8 (* Windows x86/Linux ARM = 48, Linux x86 = 44, x64 = 88 *)
+	END GetAlignment;
+
+	PROCEDURE GetProperties;
+	BEGIN
+		warning156 := AddressSize = -1;
+		IF warning156 THEN
+ 			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
+			GetAlignment(Alignment)          (* this compilers alignment *)
+		END;
+		(* default characteristics *)
+		IF (Language = "1") OR (Language = "2") OR (AddressSize = 2) THEN (* Oberon, Oberon-2 or 8 bit CPUs *)
+			SIntSize := 1; IntSize := 2; LIntSize := 4;
+			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
+			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
+		ELSE (* Component Pascal and Oberon-3 *)
+			SIntSize := 2; IntSize := 4; LIntSize := 8;
+			MinSInt := -8000H; MaxSInt := 7FFFH;
+			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
+			MinLInt := 8000000000000000L;	(*-9223372036854775808*)
+			MaxLInt := 7FFFFFFFFFFFFFFFL	(*9223372036854775807*)
+		END;
+		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
+			SetSize := 1; MaxSet := SHORT(SetSize * 8 - 1);
+			IndexSize := 2; MaxIndex := 7FFFH (*32767*)
+		ELSE
+			SetSize := 4; MaxSet := 31;
+			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
+			MaxIndex := 7FFFFFFFH (*2147483647*)
+		END;
+		RealSize := 4; MaxReal := 3.402823466E38; MinReal := -MaxReal; LRealSize := 8;
+		MaxLReal := 1.7976931348623158E308;
+		MinLReal := -MaxLReal;
+		ProcSize := AddressSize; PointerSize := AddressSize;
+		MaxHDig := SHORT(2*LIntSize)
+	END GetProperties;
+
 	(* ------------------------- parameter handling -------------------------*)
 
 	PROCEDURE ScanOptions(VAR s: ARRAY OF CHAR; VAR opt: SET);
@@ -237,7 +274,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
 			*)
 			| "2":
-				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 4; INC(i)
+				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
 				ELSE Language := "2"
 				END
 			| "4":
@@ -262,18 +299,56 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END
 	END ScanOptions;
 
-	PROCEDURE ^GetProperties;
+	PROCEDURE GetOptionsAt(pos: INTEGER; VAR opt: SET);
+		VAR respos: INTEGER; ch: CHAR; module, done: BOOLEAN; optstr: ARRAY 256 OF CHAR;
+	BEGIN
+		respos := 0; module := TRUE; done := FALSE;
+		WHILE ~done & (pos < LEN(options.par^)) DO
+			ch := options.par^[pos];
+			IF ch = 0X THEN done := TRUE
+			ELSIF ch <= " " THEN module := TRUE
+			ELSIF module & (ch = OptionChar) THEN module := FALSE
+			ELSIF ~module THEN optstr[respos] := ch; INC(respos)
+			ELSE done := TRUE
+			END;
+			INC(pos)
+		END;
+		optstr[respos] := 0X; ScanOptions(optstr, opt)
+	END GetOptionsAt;
 
-	PROCEDURE GetAlignment(VAR a: SHORTINT); BEGIN a := 8 END GetAlignment; (* Windows x86 = 48, x64 =  88 *)
+	PROCEDURE GetModuleOptions(VAR opt: SET);
+		VAR pos, endpos: INTEGER; source: TextModels.Model; w: Windows.Window;
+	BEGIN
+		IF options.par # NIL THEN
+			source := TextViews.FocusText();
+			IF source # NIL THEN
+				w := Windows.dir.Focus(Controllers.targetPath);
+				IF (w # NIL) & (w.loc # NIL) & (w.name # "") THEN
+					pos := 0;
+					REPEAT
+						Strings.Find(options.par^, w.name, pos, pos);
+						IF pos # -1 THEN
+							endpos := pos + LEN(w.name$);
+							IF (pos > 0) & (options.par^[pos - 1] > " ") THEN INC(pos)
+							ELSIF (endpos < LEN(options.par^$)) & (options.par^[endpos] > " ") THEN INC(pos)
+							ELSE (* found *)
+								GetOptionsAt(endpos, opt); pos := -1
+							END
+						END
+					UNTIL pos = -1
+				END
+			END
+		END
+	END GetModuleOptions;
 
 	PROCEDURE OpenPar*(list: BOOLEAN);	(* prepare for a sequence of translations *)
-		VAR ch: CHAR; pos, beg: INTEGER; c: TextControllers.Controller;
+		VAR ch: SHORTCHAR; pos, beg: INTEGER; c: TextControllers.Controller;
+			F: Files.File; R: Files.Reader; optstr: ARRAY 256 OF CHAR;
 	BEGIN
 		(* set options to initial defaults *)
-		AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
-		GetAlignment(Alignment); (* this compilers alignment *)
 		Language := "C"; (* default input language: Component Pascal *)
-		GetProperties;
+		AddressSize := -1; (* undefined *)
+		glbopt := defopt;
 		translateList := list; stop := FALSE;
 		c := TextControllers.Focus();  (* get the focus controller, if any *)
 		IF c # NIL THEN
@@ -281,7 +356,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				IF c.HasSelection() THEN c.GetSelection(beg, end);
 					inS.ConnectTo(c.text); inS.SetPos(beg); inS.Scan;
 					IF (inS.type = TextMappers.char) & (inS.char = "/") THEN
-						pos := inS.start; glbopt := defopt; inS.Scan;
+						pos := inS.start; inS.Scan;
 						IF (inS.start = pos + 1) & (inS.type = TextMappers.string) THEN
 							ScanOptions(inS.string, glbopt); inS.Scan
 						END
@@ -289,22 +364,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 				ELSE stop := TRUE
 				END
 			ELSE
-				glbopt := {};
-				IF options.mainprog THEN INCL(glbopt, mainprog) END ;
-				IF options.extsf THEN INCL(glbopt, extsf) END ;
-				IF options.newsf THEN INCL(glbopt, newsf) END ;
-				IF options.vcpp THEN glbopt := glbopt + {vcpp, ansi} END ;
-				IF options.include0 THEN INCL(glbopt, include0) END ;
-				IF options.ansii THEN INCL(glbopt, ansi) END ;
-				IF options.inxchk THEN INCL(glbopt, inxchk) END ;
-				IF options.assert THEN INCL(glbopt, assert) END ;
-				IF options.ptrinit THEN INCL(glbopt, ptrinit) END ;
-				IF options.ranchk THEN INCL(glbopt, ranchk) END ;
-				IF options.typchk THEN INCL(glbopt, typchk) END ;
+				F := FilesOld("Ofront+.par", CFsubdir);
+				IF F # NIL THEN
+					R := F.NewReader(NIL); R.SetPos(0); NEW(options.par, F.Length() + 1);
+					pos := 0;
+					WHILE (~R.eof) & (R.Pos() < F.Length()) DO
+						R.ReadByte(SYSTEM.VAL(BYTE, ch)); options.par^[pos] := ch; INC(pos)
+					END;
+					options.par^[pos] := 0X; GetOptionsAt(0, glbopt)
+				ELSE
+					options.par := NIL
+				END
 			END
 		ELSE stop := TRUE
-		END ;
-
+		END;
 		(* Record global option settings for this command line *)
 		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment; GlobalLanguage := Language
 	END OpenPar;
@@ -312,19 +385,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
 		VAR pos: INTEGER;
 	BEGIN
+		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Language := GlobalLanguage;
 		opt := glbopt;
 		IF translateList & (inS.start < end) & (inS.type = TextMappers.char) & (inS.char = "/") THEN
 			pos := inS.start; glbopt := defopt; inS.Scan;
 			IF (inS.start = pos + 1) & (inS.type = TextMappers.string) THEN
 				ScanOptions(inS.string, opt); inS.Scan
 			END
+		ELSIF ~translateList THEN GetModuleOptions(opt)
 		END;
+		GetProperties; IF options.mainprog THEN INCL(opt, mainprog) END
 	END InitOptions;
 
 	PROCEDURE Init*(VAR done: BOOLEAN);	(* get the source for one translation *)
-		VAR v: Views.View; m: Models.Model;
-			source: TextModels.Model; FName: Files.Name;
-			E: Views.View; pos: INTEGER;
+		VAR v: Views.View; m: Models.Model; source: TextModels.Model; E: Views.View; pos: INTEGER;
 	BEGIN
 		done := FALSE; curpos := 0;
 		IF stop THEN RETURN END;
@@ -486,90 +560,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		SYSTEM.GET(SYSTEM.ADR(lr), l); SYSTEM.GET(SYSTEM.ADR(lr)+4, h);
 		FPrint(fp, l); FPrint(fp, h)
 	END FPrintLReal;
-
-	(* ------------------------- initialization ------------------------- *)
-
-	PROCEDURE GetProperty(R: Files.Reader; IN name: ARRAY OF CHAR; VAR size, align: SHORTINT);
-		VAR ch: SHORTCHAR; i: INTEGER; s: ARRAY 32 OF CHAR;
-	BEGIN
-		ch := " "; i := 0;
-		WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-		WHILE (~R.eof) & (ch >" ") DO s[i] := ch; INC(i); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-		s[i] := 0X;
-		IF s = name THEN i := 0;
-			WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-			IF (~R.eof) & (ch >= "0") & (ch <= "9") THEN
-				WHILE (~R.eof) & (ch >= "0") & (ch <= "9") DO i := i * 10 + ORD(ch) - ORD("0"); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-				size := SHORT(i); i := 0;
-				WHILE (~R.eof) & (ch <= " ") DO R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-				IF (~R.eof) & (ch >= "0") & (ch <= "9") THEN
-					WHILE (~R.eof) & (ch >= "0") & (ch <= "9") DO i := i * 10 + ORD(ch) - ORD("0"); R.ReadByte(SYSTEM.VAL(BYTE, ch)) END ;
-					align := SHORT(i);
-				ELSE Mark(-157, -1)
-				END
-			ELSE Mark(-157, -1)
-			END
-		ELSE Mark(-157, -1)
-		END
-	END GetProperty;
-
-	PROCEDURE GetProperties();
-		VAR F: Files.File; R: Files.Reader;
-	BEGIN
-		(* default characteristics *)
-		ByteSize := 1; CharSize := 1; BoolSize := 1; SIntSize := 1; IntSize := 2; LIntSize := 4;
-		SetSize := 4; RealSize := 4; LRealSize := 8; ProcSize := 4; PointerSize := 4; RecSize := 1;
-		CharAlign := 1; BoolAlign := 1; SIntAlign := 1; IntAlign := 2; LIntAlign := 4;
-		SetAlign := 4; RealAlign := 4; LRealAlign := 8; ProcAlign := 4; PointerAlign := 4; RecAlign := 1;
-		MinSInt := -80H; MinInt := -8000H; MinLInt :=  80000000H;	(*-2147483648*)
-		MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		MaxSet := 31;
-		(* read Ofront.par *)
-		F := FilesOld("Ofront.par", CFsubdir);
-		IF F # NIL THEN
-			R := F.NewReader(NIL);
-			R.SetPos(0);
-			GetProperty(R, "CHAR", CharSize, CharAlign);
-			GetProperty(R, "BOOLEAN", BoolSize, BoolAlign);
-			GetProperty(R, "SHORTINT", SIntSize, SIntAlign);
-			GetProperty(R, "INTEGER", IntSize, IntAlign);
-			GetProperty(R, "LONGINT", LIntSize, LIntAlign);
-			GetProperty(R, "SET", SetSize, SetAlign);
-			GetProperty(R, "REAL", RealSize, RealAlign);
-			GetProperty(R, "LONGREAL", LRealSize, LRealAlign);
-			GetProperty(R, "PTR", PointerSize, PointerAlign);
-			GetProperty(R, "PROC", ProcSize, ProcAlign);
-			GetProperty(R, "RECORD", RecSize, RecAlign);
-			(* Size = 0: natural size aligned to next power of 2 up to RecAlign; e.g. i960
-				Size = 1; size and alignment follows from field types but at least RecAlign; e.g, SPARC, MIPS, PowerPC
-			*)
-			GetProperty(R, "ENDIAN", ByteOrder, BitOrder);	(*currently not used*)
-		ELSE Mark(-156, -1)
-		END ;
-		IF RealSize = 4 THEN MaxReal := 3.402823466E38
-		ELSIF RealSize = 8 THEN MaxReal := 1.7976931348623158E308
-		END ;
-		IF LRealSize = 4 THEN MaxLReal := 3.402823466E38
-		ELSIF LRealSize = 8 THEN MaxLReal := 1.7976931348623158E308
-		END ;
-		MinReal := -MaxReal;
-		MinLReal := -MaxLReal;
-		IF SIntSize = 2 THEN MinSInt := -8000H; MaxSInt := 7FFFH END ;
-		IF IntSize = 4 THEN MinInt := 80000000H (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*) END ;
-		IF LIntSize = 8 THEN
-			MinLInt :=  8000000000000000L;	(*-9223372036854775808*)
-			MaxLInt := 7FFFFFFFFFFFFFFFL	(*9223372036854775807*)
-		END ;
-		MaxSet := SHORT(SetSize * 8 - 1);
-		MaxHDig := SHORT(2*LIntSize);
-		IF PointerSize = 2 THEN
-			IndexSize := 2; MaxIndex := 7FFFH (*32767*)
-		ELSE
-			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFFFFFH (*2147483647*)
-		END;
-		;AddressSize := PointerSize; Alignment := LIntAlign
-	END GetProperties;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
 
@@ -807,8 +797,8 @@ suffix does not work in K&R *)
 				IF FileDiff(FName, HIFile) THEN HIFile.Register(FName, "*", Files.dontAsk, res) END ;
 				MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res)
 			ELSE
-				MakeFileName(modName, FName, HFext); FilesDelete(FName);
-				MakeFileName(modName, FName, SFext); FilesDelete(FName);
+				MakeFileName(modName, FName, HFext); FilesDelete(FName, CFsubdir);
+				MakeFileName(modName, FName, SFext); FilesDelete(FName, SFsubdir);
 				MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res)
 			END
 		END ;
@@ -817,25 +807,10 @@ suffix does not work in K&R *)
 		IF inC # NIL THEN Models.EndScript(inC.text, script); inC := NIL END
 	END CloseFiles;
 
-	PROCEDURE GetDefaultOptions;
-		VAR optstr: ARRAY 32 OF CHAR; defopt: SET;
+	PROCEDURE GetDefaultDirectories;
 	BEGIN
-		Dialog.MapString("#ofront:options", optstr);
-		IF optstr = "options" THEN optstr := "xatp" END ;
-		defopt := {}; ScanOptions(optstr, defopt);
-		options.mainprog := mainprog IN defopt;
-		options.newsf := newsf IN defopt;
-		options.extsf := extsf IN defopt;
-		options.ansii := (ansi IN defopt) OR (vcpp IN defopt);
-		options.include0 := include0 IN defopt;
-		options.ranchk := ranchk IN defopt;
-		options.vcpp := vcpp IN defopt;
-		options.inxchk := inxchk IN defopt;
-		options.assert := assert IN defopt;
-		options.typchk := typchk IN defopt;
-		options.ptrinit := ptrinit IN defopt;
 		Dialog.MapString( "#ofront:directories", options.dirs)
-	END GetDefaultOptions;
+	END GetDefaultDirectories;
 
 	PROCEDURE PromoteIntConstToLInt*();
 	BEGIN
@@ -865,7 +840,7 @@ suffix does not work in K&R *)
 
 BEGIN
 	subsys := ""; workDir := ""; SFsubdir := ""; CFsubdir := "";
-	locate.num := 0; GetDefaultOptions
+	locate.num := 0; GetDefaultDirectories
 END OfrontOPM.
 
 
