@@ -1,4 +1,4 @@
-(*$MAIN*) MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
+MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 
 	(* looks at the OBERON search path and writes one or more Oberon or ascii texts to standard out.
 	Horizontal tabulator characters are converted to a pair of spaces by default.

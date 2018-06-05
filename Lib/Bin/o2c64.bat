@@ -10,12 +10,12 @@ IF errorlevel 1 PAUSE
 
 :: OOC2
 
-ofront+ -eC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
+ofront+ -sC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
 IF errorlevel 1 PAUSE
 
 :: POW
 
-ofront+ -eC -88 powStrings.Mod
+ofront+ -sC -88 powStrings.Mod
 IF errorlevel 1 PAUSE
 
 :: Free Oberon

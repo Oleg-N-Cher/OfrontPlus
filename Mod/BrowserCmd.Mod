@@ -1,4 +1,4 @@
-(*$MAIN*) MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line version jt 4.4.95 *)
+MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line version jt 4.4.95 *)
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
