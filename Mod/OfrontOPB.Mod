@@ -46,6 +46,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
 		shortfn = 10; longfn = 11; sizefn = 12; incfn = 13; decfn = 14;
 		inclfn = 15; exclfn = 16; lenfn = 17; copyfn = 18; ashfn = 19; assertfn = 32;
+		bitsfn = 37;
 
 		(*SYSTEM function number*)
 		adrfn = 20; ccfn = 21; lshfn = 22; rotfn = 23;
@@ -115,6 +116,29 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	BEGIN
 		RETURN i # 0
 	END IntToBool;
+
+	PROCEDURE SetToInt (s: SET): INTEGER;
+		VAR x, i: INTEGER;
+	BEGIN
+		i := 31; x := 0;
+		IF 31 IN s THEN x := -1 END;
+		WHILE i > 0 DO
+			x := x * 2; DEC(i);
+			IF i IN s THEN INC(x) END
+		END;
+		RETURN x
+	END SetToInt;
+
+	PROCEDURE IntToSet (x: INTEGER): SET;
+		VAR i: INTEGER; s: SET;
+	BEGIN
+		i := 0; s := {};
+		WHILE i < 32 DO
+			IF ODD(x) THEN INCL(s, i) END;
+			x := x DIV 2; INC(i)
+		END;
+		RETURN s
+	END IntToSet;
 
 	PROCEDURE NewBoolConst*(boolval: BOOLEAN): OPT.Node;
 		VAR x: OPT.Node;
@@ -720,8 +744,11 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		VAR node: OPT.Node; f, g: SHORTINT; k: LONGINT; r: LONGREAL;
 	BEGIN f := x^.typ^.form; g := typ^.form;
 		IF x^.class = Nconst THEN
-			IF f IN intSet THEN
-				IF g IN intSet THEN
+			IF f = Set THEN
+				x^.conval^.intval := SetToInt(x^.conval^.setval); x^.conval^.realval := 0; x^.conval^.setval := {}
+			ELSIF f IN intSet THEN
+				IF g = Set THEN x^.conval^.setval := IntToSet(SHORT(x^.conval^.intval))
+				ELSIF g IN intSet THEN
 					IF f > g THEN SetIntType(x);
 						IF x^.typ^.form > g THEN err(203); x^.conval^.intval := 1 END
 					END
@@ -969,8 +996,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ELSE err(202)
 			END ;
 			x^.obj := NIL
-		ELSE Convert(x, OPT.settyp)
-		END ;
+		ELSE BindNodes(Nmop, OPT.settyp, x, NIL); x^.subcl := bit
+		END;
 		x^.typ := OPT.settyp
 	END SetElem;
 
@@ -1083,6 +1110,11 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f = Char THEN IF OPM.SIntSize = 2 THEN Convert(x, OPT.sinttyp) ELSE Convert(x, OPT.inttyp) END
 				ELSIF f = Set THEN IF OPM.IntSize = 4 THEN Convert(x, OPT.inttyp) ELSE Convert(x, OPT.linttyp) END
+				ELSE err(111)
+				END
+		| bitsfn: (*BITS*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN intSet THEN Convert(x, OPT.settyp)
 				ELSE err(111)
 				END
 		| entierfn: (*ENTIER*)
@@ -1473,6 +1505,8 @@ avoid unnecessary intermediate variables in OFront
 				END
 			ELSIF parno < 1 THEN err(65)
 			END
+		ELSIF fctno = bitsfn THEN
+			IF parno < 1 THEN err(65) END
 		ELSE (*SYSTEM*)
 			IF (parno < 1) OR
 				(fctno > ccfn) & (parno < 2) OR

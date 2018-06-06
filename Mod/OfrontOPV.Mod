@@ -258,7 +258,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					CASE subclass OF
 						not, minus, adr, val, conv:
 								RETURN 9
-					|	is, abs, cap, odd, cc:
+					|	is, abs, cap, odd, cc, bit:
 								RETURN 10
 					END
 		|	Ndop:
@@ -363,7 +363,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(CHAR)"); Entier(n, 9)
 			END
-		| Set: OPM.WriteString(SetOfFunc); Entier(n, MinPrec); OPM.Write(CloseParen)
+		| Set: OPM.WriteString("(SET)"); Entier(n, 9)
 (*
 		| Real: OPM.WriteString("(REAL)"); expr(n, prec)
 		| LReal: OPM.WriteString("(LONGREAL)"); expr(n, prec)
@@ -646,6 +646,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 									OPM.WriteString("__VAL("); OPC.Ident(n^.typ^.strobj); OPM.WriteString(Comma);
 									expr(l, MinPrec); OPM.Write(CloseParen)
 								END
+					|	bit:
+								OPM.WriteString(SetOfFunc); expr(l, MinPrec); OPM.Write(CloseParen)
 					ELSE OPM.err(200)
 					END
 		|	Ndop:

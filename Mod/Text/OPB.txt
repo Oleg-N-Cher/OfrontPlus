@@ -839,7 +839,7 @@
 	BEGIN f := x^.typ^.form; g := typ^.form;
 		IF x^.class = Nconst THEN
 			IF f = Set THEN
-				x^.conval^.intval := SetToInt(x^.conval^.setval); x^.conval^.realval := 0; x^.conval^.setval := {};
+				x^.conval^.intval := SetToInt(x^.conval^.setval); x^.conval^.realval := 0; x^.conval^.setval := {}
 			ELSIF f IN intSet THEN
 				IF g = Set THEN x^.conval^.setval := IntToSet(SHORT(x^.conval^.intval))
 				ELSIF g IN intSet THEN
@@ -1094,7 +1094,7 @@
 			END ;
 			x^.obj := NIL
 		ELSE BindNodes(Nmop, OPT.settyp, x, NIL); x^.subcl := bit
-		END ;
+		END;
 		x^.typ := OPT.settyp
 	END SetElem;
 
