@@ -27,6 +27,12 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		OPT.linttyp.size := OPM.LIntSize;
 		OPT.lrltyp.size := OPM.LRealSize;
 		OPT.sinttyp.size := OPM.SIntSize;
+		(* Enable or disable Component Pascal BITS() *)
+		IF (OPM.Language = "C") OR (OPM.Language = "3") THEN
+			OPT.bits^.name[4] := 0X (* enable *)
+		ELSE
+			OPT.bits^.name[4] := "@" (* disable *)
+		END
 	END PropagateElementaryTypeSizes;
 
 	PROCEDURE Module*(VAR done: BOOLEAN);

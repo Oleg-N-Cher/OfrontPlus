@@ -31,9 +31,9 @@ Ofront+ differences from Ofront/voc
 
   9. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) & 0DX+0AX (Windows).
 
-  10. Constant arrays, BITS() (only in Ofront+ for BlackBox).
+  10. "Right FOR" (concept by Oleg Komlev), constant arrays (only in Ofront+ for BlackBox).
 
-  11. IN procedure parameters (as in Component Pascal).
+  11. BITS() function, IN procedure parameters (as in Component Pascal).
 
   12. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
 

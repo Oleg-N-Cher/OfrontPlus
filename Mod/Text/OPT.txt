@@ -85,7 +85,7 @@
 
 	VAR
 		typSize*: PROCEDURE(typ: Struct);
-		topScope*: Object;
+		topScope*, bits*: Object;
 		undftyp*, bytetyp*, booltyp*, chartyp*, sinttyp*, inttyp*, linttyp*,
 		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*: Struct;
 		nofGmod*: BYTE;	(*nof imports*)
@@ -1103,6 +1103,13 @@
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
+	PROCEDURE EnterSwitchableProc(IN name: OPS.Name; num: SHORTINT): Object;
+		VAR obj: Object;
+	BEGIN Insert(name, obj);
+		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num;
+		RETURN obj
+	END EnterSwitchableProc;
+
 BEGIN
 	NEW(null, 1); null^ := "";
 	topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
@@ -1159,7 +1166,7 @@ BEGIN
 	EnterProc("COPY", copyfn);
 	EnterProc("ASH", ashfn);
 	EnterProc("ASSERT", assertfn);
-	EnterProc("BITS", bitsfn);
+	bits := EnterSwitchableProc("BITS@", bitsfn);	(* switches in PropagateElementaryTypeSize *)
 	impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
 	impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
 	impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;

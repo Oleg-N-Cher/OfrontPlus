@@ -66,7 +66,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 	VAR
 		typSize*: PROCEDURE(typ: Struct);
-		topScope*: Object;
+		topScope*, bits*: Object;
 		undftyp*, bytetyp*, booltyp*, chartyp*, sinttyp*, inttyp*, linttyp*,
 		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*: Struct;
 		nofGmod*: BYTE;	(*nof imports*)
@@ -94,6 +94,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
 		shortfn = 10; longfn = 11; sizefn = 12; incfn = 13; decfn = 14;
 		inclfn = 15; exclfn = 16; lenfn = 17; copyfn = 18; ashfn = 19; assertfn = 32;
+		bitsfn = 37;
 
 		(*SYSTEM function number*)
 		adrfn = 20; ccfn = 21; lshfn = 22; rotfn = 23;
@@ -1083,6 +1084,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
+	PROCEDURE EnterSwitchableProc(IN name: OPS.Name; num: SHORTINT): Object;
+		VAR obj: Object;
+	BEGIN Insert(name, obj);
+		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num;
+		RETURN obj
+	END EnterSwitchableProc;
+
 BEGIN
 	NEW(null, 1); null^[0] := 0X;
 	topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
@@ -1139,6 +1147,7 @@ BEGIN
 	EnterProc("COPY", copyfn);
 	EnterProc("ASH", ashfn);
 	EnterProc("ASSERT", assertfn);
+	bits := EnterSwitchableProc("BITS@", bitsfn);	(* switches in PropagateElementaryTypeSize *)
 	impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
 	impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
 	impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;
