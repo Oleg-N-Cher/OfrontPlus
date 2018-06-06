@@ -142,7 +142,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		"struct {char c; long long l;} _s; *a = (char*)&_s.l - (char*)&_s";
 
 	PROCEDURE GetProperties;
-		VAR base: INTEGER;
 	BEGIN
 		warning156 := AddressSize = -1;
 		IF warning156 THEN
@@ -158,9 +157,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			SIntSize := 2; IntSize := 4; LIntSize := 8;
 			MinSInt := -8000H; MaxSInt := 7FFFH;
 			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
-			base := 63;
-			MinLInt := SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), base);	(*-9223372036854775808*)
-			MaxLInt := -(MinLInt+1)	(*9223372036854775807*)
+			MinLInt := 8000000000000000H;	(*-9223372036854775808*)
+			MaxLInt := 7FFFFFFFFFFFFFFFH	(*9223372036854775807*)
 		END;
 		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
 			SetSize := 1; MaxSet := SetSize * 8 - 1;
