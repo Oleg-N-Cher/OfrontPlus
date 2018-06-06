@@ -877,9 +877,10 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE GenHeaderMsg;
 	BEGIN
 		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg);
-		IF OPM.extsf IN OPM.opt THEN OPM.Write("e") END;
-		IF OPM.newsf IN OPM.opt THEN OPM.Write("s") END;
-		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m") END;
+		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m")
+		ELSIF OPM.newsf IN OPM.opt THEN OPM.Write("s")
+		ELSIF OPM.extsf IN OPM.opt THEN OPM.Write("e")
+		END;
 		IF ~(OPM.inxchk IN OPM.opt) THEN OPM.Write("x") END;
 		IF OPM.vcpp IN OPM.opt THEN OPM.Write("v") END;
 		IF OPM.ranchk IN OPM.opt THEN OPM.Write("r") END;
