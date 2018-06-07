@@ -1,7 +1,7 @@
 ﻿MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 
 	IMPORT
-		OPB := OfrontOPB, OPT := OfrontOPT, OPS := OfrontOPS, MC := MultiCardinals, OPM := OfrontOPM;
+		OPB := OfrontOPB, OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
 
 	CONST
 		(* numtyp values *)
@@ -626,7 +626,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			qualident(id); x := OPB.NewLeaf(id); selector(x);
 			IF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN StandProcCall(x)	(* x may be NIL *)
 			ELSIF sym = lparen THEN
-				IF (x^.obj^.mode = Typ)  & (x^.obj^.typ^.form = Comp) & (x^.obj^.typ^.comp = Array)   THEN
+				IF (OPM.Language = "3") & (x^.obj^.mode = Typ) & (x^.obj^.typ^.form = Comp) & (x^.obj^.typ^.comp = Array) THEN
 				(* константный массив верхнего уровня*)
 					OPB.NewArrConst(x);
 					IF x^.obj^.typ^.BaseTyp^.form IN {Char,Byte} THEN (* ARRAY OF CHAR *)
@@ -1030,7 +1030,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF B^.class = Nconst THEN Nmax := B^.conval^.intval
 											ELSE Nmax := OPB.Max(id^.typ^.form)
 				END;
-				L := MC.Div(Nmax - Nmin, Step) + 1;
+				L := OPM.LongCardDiv(Nmax - Nmin, Step) + 1;
 			ELSE
 				IF A^.class = Nconst THEN Nmax := A^.conval^.intval
 											ELSE Nmax := OPB.Max(id^.typ^.form)
@@ -1038,7 +1038,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF B^.class = Nconst THEN Nmin:= B^.conval^.intval
 											ELSE Nmin:= OPB.Min(id^.typ^.form)
 				END;
-				L := MC.Div(Nmax - Nmin, -Step) + 1
+				L := OPM.LongCardDiv(Nmax - Nmin, -Step) + 1
 			END;
 			e := (A^.class = Nconst) & (B^.class = Nconst);
 			(* если обе константы, то можно вычислить точно *)
@@ -1349,7 +1349,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END ;
 				OPB.Construct(Nrepeat, x, y)
 			ELSIF sym = for THEN
-				IF OPM.Language # 0X THEN ForOriginal ELSE ForImproved END
+				IF OPM.Language # "3" THEN ForOriginal ELSE ForImproved END
 			ELSIF sym = loop THEN
 				OPS.Get(sym); INC(LoopLevel); StatSeq(x); DEC(LoopLevel);
 				OPB.Construct(Nloop, x, NIL); CheckSym(end); pos := OPM.errpos
