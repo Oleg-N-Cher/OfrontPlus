@@ -1156,7 +1156,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		indent := eoBlock;
 		IF implicitRet & (proc^.typ # OPT.notyp) THEN
-			OPM.Write(Tab); OPM.WriteString("__RETCHK;"); OPM.WriteLn
+			OPM.Write(Tab); OPM.WriteString("__RETCHK("); OPM.WriteModPos; OPM.WriteString(");"); OPM.WriteLn
 		ELSIF ~eoBlock OR implicitRet THEN
 			IF ~proc^.scope^.leaf THEN
 				(* link scope pointer of nested proc back to previous scope *)

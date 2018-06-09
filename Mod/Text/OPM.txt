@@ -741,9 +741,9 @@ suffix does not work in K&R *)
 		R[currFile].WriteByte(0DH); R[currFile].WriteByte(0AH);
 	END WriteLn;
 
-	PROCEDURE WriteModPos* ;
+	PROCEDURE WriteModPos*;
 	BEGIN
-		WriteString(', "'); WriteString(modName); WriteString('", '); WriteInt(-errpos)
+		Write('"'); WriteString(modName); WriteString('", '); WriteInt(-errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Writer; F: Files.File);

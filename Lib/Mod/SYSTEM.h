@@ -95,8 +95,8 @@ typedef unsigned int       U_SET;
 // Run time system routines in SYSTEM.c
 
 extern int     SYSTEM_STRCMP (CHAR *x, CHAR *y);
-extern LONGINT SYSTEM_XCHK   (LONGINT i, LONGINT ub);
-extern LONGINT SYSTEM_RCHK   (LONGINT i, LONGINT ub);
+extern LONGINT SYSTEM_XCHK   (LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos);
+extern LONGINT SYSTEM_RCHK   (LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos);
 extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
 extern LONGINT SYSTEM_ASHL   (LONGINT x, INTEGER n);
 extern LONGINT SYSTEM_ABS    (LONGINT i);
@@ -152,10 +152,10 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 #define __BIT(x, n)     (*(U_LONGINT*)(x)>>(n)&1)
 #define __MOVE(s, d, n) memcpy((char*)(d),(char*)(s),n)
-#define __SHORT(x, y)   ((int)((U_LONGINT)(x)+(y)<(y)+(y)?(x):(__HALT(-8),0)))
-#define __SHORTF(x, y)  ((int)(__RF((x)+(y),(y)+(y))-(y)))
-#define __CHR(x)        ((CHAR)__R(x, 256))
-#define __CHRF(x)       ((CHAR)__RF(x, 256))
+#define __SHORT(x, y, mod, pos)   ((int)((U_LONGINT)(x)+(y)<(y)+(y)?(x):(__HALT_NEW(-8,mod,pos),0)))
+#define __SHORTF(x, y, mod, pos)  ((int)(__RF((x)+(y),(y)+(y),mod,pos) - (y)))
+#define __CHR(x, mod, pos)        ((CHAR)__R(x, 256, mod, pos))
+#define __CHRF(x, mod, pos)       ((CHAR)__RF(x, 256, mod, pos))
 #define __DIV(x, y)     ((x)>=0?(x)/(y):-(((y)-1-(x))/(y)))
 #define __DIVF(x, y)    SYSTEM_DIV(x, y)
 #define __MOD(x, y)     ((x)>=0?(x)%(y):__MODF(x,y))
@@ -178,12 +178,12 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 // Runtime checks
 
 #define __X(i, ub, mod, pos)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT_NEW(-2,mod,pos), 0))
-#define __XF(i, ub, mod, pos)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub))
-#define __R(i, ub)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT(-8),0))
-#define __RF(i, ub)  SYSTEM_RCHK((LONGINT)(i),(LONGINT)(ub))
-#define __RETCHK     __retchk: __HALT(-3); return 0;
-#define __CASECHK    __HALT(-4)
-#define __WITHCHK    __HALT(-7)
+#define __XF(i, ub, mod, pos)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub), mod, pos)
+#define __R(i, ub, mod, pos)   (((U_LONGINT)(i)<(U_LONGINT)(ub))?i:(__HALT_NEW(-8,mod,pos),0))
+#define __RF(i, ub, mod, pos)  SYSTEM_RCHK((LONGINT)(i), (LONGINT)(ub), mod, pos)
+#define __RETCHK(mod, pos)     __retchk: __HALT_NEW(-3, mod, pos); return 0;
+#define __CASECHK(mod, pos)    __HALT_NEW(-4, mod, pos)
+#define __WITHCHK(mod, pos)    __HALT_NEW(-7, mod, pos)
 
 #define __GUARDP(p, typ, level)    ((typ*)(__ISP(p,typ,level)?p:(__HALT(-5),p)))
 #define __GUARDR(r, typ, level)    (*((typ*)(__IS(r##__typ,typ,level)?r:(__HALT(-5),r))))

@@ -29,8 +29,8 @@ void   *SYSTEM_MainStackFrame; /* adr of main proc stack frame, used for stack c
 // Procedure verions of SYSTEM.H versions used when a multiply accessed
 // parameter has side effects.
 
-LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub) {return __X(i, ub, "", -1);}
-LONGINT SYSTEM_RCHK(LONGINT i, LONGINT ub) {return __R(i, ub);}
+LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos) {return __X(i, ub, mod, pos);}
+LONGINT SYSTEM_RCHK(LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos) {return __R(i, ub, mod, pos);}
 INTEGER SYSTEM_ASH (INTEGER x, INTEGER n)  {return __ASH(x, n, INTEGER);}
 LONGINT SYSTEM_ASHL(LONGINT x, INTEGER n)  {return __ASH(x, n, LONGINT);}
 LONGINT SYSTEM_ABS (LONGINT i)             {return __ABS(i);}

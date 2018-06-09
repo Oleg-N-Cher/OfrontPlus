@@ -539,9 +539,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN WriteString(Platform.newLine)
 	END WriteLn;
 
-	PROCEDURE WriteModPos* ;
+	PROCEDURE WriteModPos*;
 	BEGIN
-		WriteString(', "'); WriteString(modName); WriteString('", '); WriteInt(errpos)
+		Write('"'); WriteString(modName); WriteString('", '); WriteInt(errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);

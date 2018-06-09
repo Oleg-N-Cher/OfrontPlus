@@ -73,7 +73,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		GetFunc = "__GET(";
 		PutFunc = "__PUT(";
 		DynTypExt = "__typ";
-		WithChk = "__WITHCHK";
+		WithChk = "__WITHCHK(";
 		Break = "break";
 		ElseStat = "else ";
 
@@ -334,15 +334,15 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		| Byte:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 				IF SideEffects(n) THEN OPM.Write("F") END ;
-				OPM.Write(OpenParen); Entier(n, MinPrec);
-				OPM.WriteString(Comma); OPM.WriteInt(127 + 1); OPM.Write(CloseParen)
+				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
+				OPM.WriteInt(127 + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(BYTE)"); Entier(n, 9)
 			END
 		| SInt:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 				IF SideEffects(n) THEN OPM.Write("F") END ;
-				OPM.Write(OpenParen); Entier(n, MinPrec);
-				OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxSInt + 1); OPM.Write(CloseParen)
+				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
+				OPM.WriteInt(OPM.MaxSInt + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(SHORTINT)"); Entier(n, 9)
 			END
 		| Int:
@@ -350,8 +350,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			ELSE
 				IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 					IF SideEffects(n) THEN OPM.Write("F") END ;
-					OPM.Write(OpenParen); Entier(n, MinPrec);
-					OPM.WriteString(Comma); OPM.WriteInt(OPM.MaxInt + 1); OPM.Write(CloseParen)
+					OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
+					OPM.WriteInt(OPM.MaxInt + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 				ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
 				END
 			END
@@ -359,8 +359,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			IF from < LInt THEN OPM.WriteString("(LONGINT)") END; LEntier(n, 9)
 		| Char:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
-				IF SideEffects(n) THEN OPM.Write("F") END ;
-				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.Write(CloseParen)
+				IF SideEffects(n) THEN OPM.Write("F") END;
+				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(CHAR)"); Entier(n, 9)
 			END
 		| Set: OPM.WriteString("(SET)"); Entier(n, 9)
@@ -399,8 +399,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		OR (n^.left^.typ^.comp = DynArr) & ODD(n^.left^.typ^.sysflag) THEN
 			expr(n^.right, prec)
 		ELSE
-			IF SideEffects(n^.right) THEN OPM.WriteString("__XF(") ELSE OPM.WriteString("__X(") END ;
-			expr(n^.right, MinPrec); OPM.WriteString(Comma); Len(d, dim); OPM.WriteModPos; OPM.Write(CloseParen)
+			IF SideEffects(n^.right) THEN OPM.WriteString("__XF(") ELSE OPM.WriteString("__X(") END;
+			expr(n^.right, MinPrec); OPM.WriteString(Comma); Len(d, dim); OPM.WriteString(Comma);
+			OPM.WriteModPos; OPM.Write(CloseParen)
 		END
 	END Index;
 
@@ -801,8 +802,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			IF (if # NIL) OR (n^.right # NIL) OR withtrap THEN OPC.EndBlk0(); OPM.WriteString(" else ");
 			ELSE OPC.EndBlk()
 			END
-		END ;
-		IF withtrap THEN OPM.WriteString(WithChk); OPC.EndStat()
+		END;
+		IF withtrap THEN OPM.WriteString(WithChk); OPM.WriteModPos; OPM.Write(")"); OPC.EndStat
 		ELSIF n^.right # NIL THEN OPC.BegBlk; stat(n^.right, outerProc); OPC.EndBlk
 		END
 	END IfStat;
@@ -841,8 +842,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			OPC.Indent(1); OPM.WriteLn; stat(n^.right^.right, outerProc);
 			OPC.BegStat; OPM.WriteString(Break); OPC.Indent(-1)
 		ELSE
-			OPM.WriteString("__CASECHK")
-		END ;
+			OPM.WriteString("__CASECHK("); OPM.WriteModPos; OPM.Write(")")
+		END;
 		OPC.EndStat; OPC.EndBlk
 	END CaseStat;
 
@@ -992,7 +993,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			|	Nifelse:
 						IF n^.subcl # assertfn THEN IfStat(n, FALSE, outerProc)
 						ELSIF assert THEN OPM.WriteString("__ASSERT("); expr(n^.left^.left^.left, MinPrec); OPM.WriteString(Comma);
-							OPM.WriteInt(n^.left^.right^.right^.conval^.intval); OPM.WriteModPos; OPM.Write(CloseParen); OPC.EndStat
+							OPM.WriteInt(n^.left^.right^.right^.conval^.intval); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen); OPC.EndStat
 						END
 			|	Ncase:
 						INC(exit.level); CaseStat(n, outerProc); DEC(exit.level)
