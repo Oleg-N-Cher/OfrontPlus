@@ -27,14 +27,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
-(*
-		MinRealPat = 0FF7FFFFFH;	(* most  negative, 32-bit pattern, -3.40282346E38 *)
-		MinLRealPatL = 0FFFFFFFFH;	(* most  negative, lower 32-bit pattern *)
-		MinLRealPatH = 0FFEFFFFFH;	(* most  negative, higher 32-bit pattern *)
-		MaxRealPat = 7F7FFFFFH; (*3.40282346E38*)
-		MaxLRealPatL = -1;
-		MaxLRealPatH = 7FEFFFFFH;
-*)
 
 		MaxRExp* = 38;	MaxLExp* = 308;
 
@@ -719,12 +711,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 
 	PROCEDURE WriteReal* (r: REAL; suffx: CHAR);
 		VAR s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
-			(* W: TextMappers.Formatter; T: TextModels.Model; R: TextModels.Reader; *)
 	BEGIN
+		IF ABS(r) > 1.0E+308 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
 (*should be improved *)
-		IF (r < MaxLInt) & (r > MinLInt) & (r = SHORT(ENTIER(r))) THEN
-			IF suffx = "f" THEN WriteString("(REAL)") ELSE WriteString("(LONGREAL)") END ;
-			WriteInt(SHORT(ENTIER(r)))
+		IF (r < MAX(LONGINT)) & (r > MIN(LONGINT)) & (r = ENTIER(r)) THEN
+			IF suffx = "f" THEN WriteString("(REAL)") ELSE WriteString("(LONGREAL)") END;
+			WriteInt(ENTIER(r))
 		ELSE
 			IF suffx = "f" THEN Strings.RealToString(SHORT(r), s) ELSE Strings.RealToString(r, s) END;
 (* s[i] := suffx; s[i+1] := 0X;
