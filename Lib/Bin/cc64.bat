@@ -4,11 +4,14 @@ ECHO Please set system variable XDev=X:\Path\To\XDev
 PAUSE
 EXIT
 
+::SET Aliasing=-fno-strict-aliasing
+SET Aliasing=-Wstrict-aliasing
+
 :XDev
 
 CD ..\Obj64
 SET PATH=%XDev%\WinDev\Bin\MinGW64\bin
-SET CC=gcc.exe -I. -I..\Mod -m64 -s -Os -g0 -fvisibility=hidden -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c
+SET CC=gcc.exe -I. -I..\Mod -m64 -s -Os -g0 -fvisibility=hidden -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections %Aliasing% -c
 SET AR=ar.exe -rc ..\Ofront64.a
 IF EXIST ..\Ofront64.a DEL ..\Ofront64.a
 
@@ -32,9 +35,9 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-%CC% SDL2.c SDL2mixer.c Out.c Graph.c Math.c Sound.c Turtle.c -w
+%CC% SDL2.c SDL2mixer.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
 IF errorlevel 1 PAUSE
-%AR% SDL2.o SDL2mixer.o Out.o Graph.o Math.o Sound.o Turtle.o
+%AR% SDL2.o SDL2mixer.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
 
 :: libCurl
 
