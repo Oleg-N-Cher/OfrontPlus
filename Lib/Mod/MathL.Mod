@@ -118,7 +118,7 @@ VAR
   ExponentMask: SYSTEM.SET64;         (* Exponent part, {53..62} *)
   ZeroExponent: SYSTEM.SET64;         (* Zero valued exponent {54..61} *)
   t:            LONGREAL;             (* internal variables *)
-  i:            INTEGER;              (* For initialisation loops in module body. *)
+  i:            SHORTINT;              (* For initialisation loops in module body. *)
 
 
 
@@ -140,7 +140,7 @@ BEGIN
   END
 END fraction;
 
-PROCEDURE exponent*(x: LONGREAL): INTEGER;
+PROCEDURE exponent*(x: LONGREAL): SHORTINT;
 (*
    The value of the call exponent(x) shall be the exponent value of `x'
    that lies between `expoMin' and `expoMax'.  An exception shall occur
@@ -151,7 +151,7 @@ BEGIN
   IF x = ZERO THEN RETURN 0 (* NOTE: x=0.0 should raise exception *)
   ELSE
     i := SYSTEM.LSH(SYSTEM.VAL(SYSTEM.INT64, x), -52) MOD 2048;
-    RETURN SYSTEM.VAL(INTEGER, i) - 1023
+    RETURN SYSTEM.VAL(SHORTINT, i) - 1023
   END
 END exponent;
 
@@ -165,12 +165,12 @@ BEGIN
   IF x < ZERO THEN RETURN -ONE ELSE RETURN ONE END
 END sign;
 
-PROCEDURE scale*(x: LONGREAL; n: INTEGER): LONGREAL;
+PROCEDURE scale*(x: LONGREAL; n: SHORTINT): LONGREAL;
 (*
   The value of the call scale(x,n) shall be the value x*radix^n if such
   a value exists; otherwise an execption shall occur and may be raised.
 *)
-  VAR exp: HUGEINT; lexp: SYSTEM.SET64;
+  VAR exp: LONGINT; lexp: SYSTEM.SET64;
 BEGIN
   IF x = ZERO THEN RETURN ZERO END;
   exp := exponent(x) + n;                           (* new exponent *)
@@ -227,7 +227,7 @@ PROCEDURE SinCos (x, y, sign: LONGREAL): LONGREAL;
     r7 = -0.76429178068910467734D-12;
     r8 =  0.27204790957888846175D-14;
   VAR
-    n: LONGINT; xn, f, x1, g: LONGREAL;
+    n: INTEGER; xn, f, x1, g: LONGREAL;
 BEGIN
   IF y >= ymax THEN Math.ErrorHandler(Math.LossOfAccuracy); RETURN ZERO END;
 
@@ -250,7 +250,7 @@ BEGIN
   RETURN sign*g
 END SinCos;
 
-PROCEDURE div (x, y : LONGINT) : LONGINT;
+PROCEDURE div (x, y : INTEGER) : INTEGER;
 (* corrected MOD function *)
 BEGIN
   IF x < 0 THEN RETURN -ABS(x) DIV y ELSE RETURN x DIV y END
@@ -266,7 +266,7 @@ PROCEDURE sqrt*(x: LONGREAL): LONGREAL;
   CONST
     P0=0.41731; P1=0.59016;
   VAR
-    xMant, yEst, z: LONGREAL; xExp: INTEGER;
+    xMant, yEst, z: LONGREAL; xExp: SHORTINT;
 BEGIN
   (* optimize zeros and check for illegal negative roots *)
   IF x=ZERO THEN RETURN ZERO END;
@@ -299,7 +299,7 @@ PROCEDURE exp*(x: LONGREAL): LONGREAL;
     P2 =  0.165203300268279130D-4;
     Q1 =  0.555538666969001188D-1;
     Q2 =  0.495862884905441294D-3;
-  VAR xn, g, p, q, z: LONGREAL; n: INTEGER;
+  VAR xn, g, p, q, z: LONGREAL; n: SHORTINT;
 BEGIN
   (* Ensure we detect overflows and return 0 for underflows *)
   IF x > LnInfinity THEN Math.ErrorHandler(Math.Overflow); RETURN large
@@ -324,7 +324,7 @@ PROCEDURE ln*(x: LONGREAL): LONGREAL;
     c1=355.0D0/512.0D0; c2=-2.121944400546905827679D-4;
     P0=-0.64124943423745581147D+2; P1=0.16383943563021534222D+2; P2=-0.78956112887491257267D+0;
     Q0=-0.76949932108494879777D+3; Q1=0.31203222091924532844D+3; Q2=-0.35667977739034646171D+2;
-  VAR f, zn, zd, r, z, w, p, q, xn: LONGREAL; n: INTEGER;
+  VAR f, zn, zd, r, z, w, p, q, xn: LONGREAL; n: SHORTINT;
 BEGIN
   (* ensure illegal inputs are trapped and handled *)
   IF x <= ZERO THEN Math.ErrorHandler(Math.IllegalLog); RETURN -large END;
@@ -404,7 +404,7 @@ PROCEDURE power*(base, exp: LONGREAL): LONGREAL;
     OneOver16 = 0.0625D0;
     XMAX = 16*expoMax - 1; (*XMIN=16*l.expoMin + 1;*)
     XMIN = -16351; (* noch *)
-  VAR z, g, R, v, u2, u1, w1, w2, y1, y2, w: LONGREAL; m, p, i: INTEGER; mp, pp, iw1: LONGINT;
+  VAR z, g, R, v, u2, u1, w1, w2, y1, y2, w: LONGREAL; m, p, i: SHORTINT; mp, pp, iw1: INTEGER;
 BEGIN
   (* handle all possible error conditions *)
   IF ABS(exp) < miny THEN RETURN ONE (* base**0 = 1 *)
@@ -446,7 +446,7 @@ BEGIN
   RETURN scale(z, SHORT(mp))
 END power;
 
-PROCEDURE round*(x: LONGREAL): LONGINT;
+PROCEDURE round*(x: LONGREAL): INTEGER;
   (* Returns the value of x rounded to the nearest integer *)
 BEGIN
   IF x < ZERO THEN RETURN -ENTIER(HALF-x)
@@ -479,9 +479,9 @@ BEGIN
   END
 END log;
 
-PROCEDURE ipower* (x: LONGREAL; base: INTEGER): LONGREAL;
+PROCEDURE ipower* (x: LONGREAL; base: SHORTINT): LONGREAL;
 (* ipower(x, base) returns the x to the integer power base where base*Log2(x) < Log2(Max) *)
-  VAR y: LONGREAL; neg: BOOLEAN; Exp: LONGINT;
+  VAR y: LONGREAL; neg: BOOLEAN; Exp: INTEGER;
 
   PROCEDURE Adjust(xadj: LONGREAL): LONGREAL;
   BEGIN
@@ -528,7 +528,7 @@ PROCEDURE arctan2* (xn, xd: LONGREAL): LONGREAL;
     Q0=0.2160623078972426128957D+3; Q1=0.3946828393122829592162D+3;
     Q2=0.221050883028417680623D+3;  Q3=0.3850148650835119501D+2;
     PiOver2=pi/2; Sqrt3=1.7320508075688772935D0;
-  VAR atan, z, z2, p, q: LONGREAL; xnExp, xdExp: INTEGER; Quadrant: SHORTINT;
+  VAR atan, z, z2, p, q: LONGREAL; xnExp, xdExp: SHORTINT; Quadrant: BYTE;
 BEGIN
   IF ABS(xd) < miny THEN
     IF ABS(xn) < miny THEN Math.ErrorHandler(Math.IllegalInvTrig); atan := ZERO
@@ -665,7 +665,7 @@ BEGIN t := ABS(x);
   RETURN arcsinh(x/sqrt(ONE-x*x))
 END arctanh;
 
-PROCEDURE ToLONGREAL(h: HUGEINT): LONGREAL;
+PROCEDURE ToLONGREAL(h: LONGINT): LONGREAL;
 BEGIN RETURN SYSTEM.VAL(LONGREAL, h)
 END ToLONGREAL;
 
