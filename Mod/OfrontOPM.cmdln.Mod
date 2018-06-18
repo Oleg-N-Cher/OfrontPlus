@@ -160,9 +160,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
 			MaxIndex := 7FFFFFFFH (*2147483647*)
 		END;
-		RealSize := 4; MaxReal := 3.402823466D38; MinReal := -MaxReal; LRealSize := 8;
-		MaxLReal := 1.7976931348623158D307 * 9.999999 (*should be 1.7976931348623158D308 *);
-		MinLReal := -MaxLReal;
+		RealSize := 4; MaxReal := MAX(REAL); (* ~3.402823466E38 *) MinReal := -MaxReal;
+		LRealSize := 8; MaxLReal := MAX(LONGREAL); (* ~1.7976931348623158D308 *) MinLReal := -MaxLReal;
 		ProcSize := AddressSize; PointerSize := AddressSize;
 		MaxHDig := 2*LIntSize
 	END GetProperties;
@@ -507,7 +506,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE WriteReal* (r: LONGREAL; suffx: CHAR);
 		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
 	BEGIN
-		IF ABS(r) > 1.0D307 * 9.999999 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
+		IF ABS(r) > MAX(LONGREAL)/2 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
 (*should be improved *)
 		IF (r < MAX(LONGINT)) & (r > MIN(LONGINT)) & (r = ENTIER(r)) THEN
 			IF suffx = "f" THEN WriteString("(REAL)") ELSE WriteString("(LONGREAL)") END;

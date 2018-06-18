@@ -242,9 +242,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
 			MaxIndex := 7FFFFFFFH (*2147483647*)
 		END;
-		RealSize := 4; MaxReal := 3.402823466E38; MinReal := -MaxReal; LRealSize := 8;
-		MaxLReal := 1.7976931348623158E308;
-		MinLReal := -MaxLReal;
+		RealSize := 4; MaxReal := MAX(SHORTREAL); (* 3.402823466E38 *) MinReal := -MaxReal;
+		LRealSize := 8; MaxLReal := MAX(REAL); (* 1.7976931348623158E308 *) MinLReal := -MaxLReal;
 		ProcSize := AddressSize; PointerSize := AddressSize;
 		MaxHDig := SHORT(2*LIntSize)
 	END GetProperties;
