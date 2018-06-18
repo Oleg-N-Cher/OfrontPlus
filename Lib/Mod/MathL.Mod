@@ -114,72 +114,91 @@ VAR
   LnSmall:      LONGREAL;             (* natural log of very small number *)
   SqrtInfinity: LONGREAL;             (* square root of infinity *)
   TanhMax:      LONGREAL;             (* maximum Tanh value *)
-  NumberMask:   SYSTEM.SET64;         (* Sign and significand, {0..51, 63} *)
-  ExponentMask: SYSTEM.SET64;         (* Exponent part, {53..62} *)
-  ZeroExponent: SYSTEM.SET64;         (* Zero valued exponent {54..61} *)
   t:            LONGREAL;             (* internal variables *)
-  i:            SHORTINT;              (* For initialisation loops in module body. *)
-
+  INF-:         LONGREAL;             (* infinity *)
 
 
 
 (* TYPE LONGREAL: 1/sign, 11/exponent, 52/significand *)
 
-PROCEDURE fraction*(x: LONGREAL): LONGREAL;
+PROCEDURE isNaN (x: LONGREAL): BOOLEAN;  (* by Robert D. Campbell *)
+  CONST nanS = {19..30};  (* Detects non-signalling NaNs *)
+BEGIN
+  RETURN nanS - BITS(SHORT(ASH(SYSTEM.VAL(LONGINT, x), -32))) = {}
+END isNaN;
+
+PROCEDURE fraction*(x: LONGREAL): LONGREAL;  (* by Robert D. Campbell *)
 (*
    The value of the call fraction(x) shall be the significand (or
    significant) part of `x'.  Hence the following relationship shall
    hold: x = scale(fraction(x), exponent(x)).
 *)
-  VAR s: SYSTEM.SET64;
+  CONST mask = {0..19, 31}; zeroExp = {20..29};
+  VAR k, msh: LONGINT; a: LONGREAL; exp: INTEGER;
 BEGIN
-  IF x = ZERO THEN RETURN ZERO
+  IF isNaN(x) THEN RETURN 1.5D0
+  ELSIF x = ZERO THEN RETURN ZERO
+  ELSIF x = INF THEN RETURN ONE
+  ELSIF x = -INF THEN RETURN -ONE
   ELSE
-    s := SYSTEM.VAL(SYSTEM.SET64, x) * NumberMask + ZeroExponent;
-    RETURN SYSTEM.VAL(LONGREAL, s) * 2.0;
+    a := ABS(x);
+    exp := SHORT(ASH(SYSTEM.VAL(LONGINT, a), -52));
+    WHILE exp = 0 DO
+      x := x + x; a := ABS(x);
+      exp := SHORT(ASH(SYSTEM.VAL(LONGINT, a), -52))
+    END;
+    k := SYSTEM.VAL(LONGINT, x);
+    msh := ORD(BITS(SHORT(ASH(k, -32))) * mask + zeroExp);
+    k := ASH(msh, 32) + k MOD 100000000H;
+    RETURN SYSTEM.VAL(LONGREAL, k)
   END
 END fraction;
 
-PROCEDURE exponent*(x: LONGREAL): SHORTINT;
+PROCEDURE exponent*(x: LONGREAL): INTEGER;  (* by Robert D. Campbell *)
 (*
    The value of the call exponent(x) shall be the exponent value of `x'
    that lies between `expoMin' and `expoMax'.  An exception shall occur
    and may be raised if `x' is equal to 0.0.
 *)
-  VAR i: SYSTEM.INT64;
+  VAR exp, offset: INTEGER;
 BEGIN
-  IF x = ZERO THEN RETURN 0 (* NOTE: x=0.0 should raise exception *)
+  IF isNaN(x) THEN RETURN MAX(INTEGER)
+  ELSIF x = ZERO THEN RETURN 0 (* NOTE: x=0.0 should raise exception *)
   ELSE
-    i := SYSTEM.LSH(SYSTEM.VAL(SYSTEM.INT64, x), -52) MOD 2048;
-    RETURN SYSTEM.VAL(SHORTINT, i) - 1023
+    x := ABS(x);
+    IF x = INF THEN RETURN MAX(INTEGER)
+    ELSE exp := SHORT(ASH(SYSTEM.VAL(LONGINT, x), -52))
+    END;
+    offset := expoMax;
+    WHILE exp = 0 DO
+      x := x + x; exp := SHORT(ASH(SYSTEM.VAL(LONGINT, x), -52)); INC(offset)
+    END;
+    RETURN exp - offset
   END
 END exponent;
 
 PROCEDURE sign*(x: LONGREAL): LONGREAL;
-(*
-   The value of the call sign(x) shall be 1.0 if `x' is greater than 0.0,
-   or shall be -1.0 if `x' is less than 0.0, or shall be either 1.0 or
-   -1.0 if `x' is equal to 0.0.
-*)
 BEGIN
   IF x < ZERO THEN RETURN -ONE ELSE RETURN ONE END
 END sign;
 
-PROCEDURE scale*(x: LONGREAL; n: SHORTINT): LONGREAL;
+PROCEDURE scale*(x: LONGREAL; n: INTEGER): LONGREAL;
 (*
   The value of the call scale(x,n) shall be the value x*radix^n if such
   a value exists; otherwise an execption shall occur and may be raised.
 *)
-  VAR exp: LONGINT; lexp: SYSTEM.SET64;
+  CONST lowExpoMask = {20..30};  (* exponent, {52..62} *)
+  VAR exp: INTEGER; s: LONGINT;
 BEGIN
   IF x = ZERO THEN RETURN ZERO END;
   exp := exponent(x) + n;                           (* new exponent *)
   IF    exp > expoMax THEN RETURN large * sign(x)   (* exception raised here *)
   ELSIF exp < expoMin THEN RETURN small * sign(x)   (* exception here as well *)
   END;
-  lexp := SYSTEM.VAL(SYSTEM.SET64, x) * NumberMask  (* sign and significand *)
-        + SYSTEM.VAL(SYSTEM.SET64, SYSTEM.LSH(exp + expOffset, 52));  (* shifted exponent bits *)
-  RETURN SYSTEM.VAL(LONGREAL, lexp)
+  s := SYSTEM.VAL(LONGINT, x);
+  DEC(s, ASH(LONG(ORD(BITS(SHORT(ASH(s, -32))) * lowExpoMask)), 32));
+  INC(s, ASH(LONG(exp + expOffset), 52));   (* shifted exponent bits *)
+  RETURN SYSTEM.VAL(LONGREAL, s)
 END scale;
 
 PROCEDURE ulp*(x: LONGREAL): LONGREAL;
@@ -227,7 +246,7 @@ PROCEDURE SinCos (x, y, sign: LONGREAL): LONGREAL;
     r7 = -0.76429178068910467734D-12;
     r8 =  0.27204790957888846175D-14;
   VAR
-    n: INTEGER; xn, f, x1, g: LONGREAL;
+    n: LONGINT; xn, f, x1, g: LONGREAL;
 BEGIN
   IF y >= ymax THEN Math.ErrorHandler(Math.LossOfAccuracy); RETURN ZERO END;
 
@@ -266,7 +285,7 @@ PROCEDURE sqrt*(x: LONGREAL): LONGREAL;
   CONST
     P0=0.41731; P1=0.59016;
   VAR
-    xMant, yEst, z: LONGREAL; xExp: SHORTINT;
+    xMant, yEst, z: LONGREAL; xExp: INTEGER;
 BEGIN
   (* optimize zeros and check for illegal negative roots *)
   IF x=ZERO THEN RETURN ZERO END;
@@ -299,7 +318,7 @@ PROCEDURE exp*(x: LONGREAL): LONGREAL;
     P2 =  0.165203300268279130D-4;
     Q1 =  0.555538666969001188D-1;
     Q2 =  0.495862884905441294D-3;
-  VAR xn, g, p, q, z: LONGREAL; n: SHORTINT;
+  VAR xn, g, p, q, z: LONGREAL; n: INTEGER;
 BEGIN
   (* Ensure we detect overflows and return 0 for underflows *)
   IF x > LnInfinity THEN Math.ErrorHandler(Math.Overflow); RETURN large
@@ -324,7 +343,7 @@ PROCEDURE ln*(x: LONGREAL): LONGREAL;
     c1=355.0D0/512.0D0; c2=-2.121944400546905827679D-4;
     P0=-0.64124943423745581147D+2; P1=0.16383943563021534222D+2; P2=-0.78956112887491257267D+0;
     Q0=-0.76949932108494879777D+3; Q1=0.31203222091924532844D+3; Q2=-0.35667977739034646171D+2;
-  VAR f, zn, zd, r, z, w, p, q, xn: LONGREAL; n: SHORTINT;
+  VAR f, zn, zd, r, z, w, p, q, xn: LONGREAL; n: INTEGER;
 BEGIN
   (* ensure illegal inputs are trapped and handled *)
   IF x <= ZERO THEN Math.ErrorHandler(Math.IllegalLog); RETURN -large END;
@@ -404,7 +423,7 @@ PROCEDURE power*(base, exp: LONGREAL): LONGREAL;
     OneOver16 = 0.0625D0;
     XMAX = 16*expoMax - 1; (*XMIN=16*l.expoMin + 1;*)
     XMIN = -16351; (* noch *)
-  VAR z, g, R, v, u2, u1, w1, w2, y1, y2, w: LONGREAL; m, p, i: SHORTINT; mp, pp, iw1: INTEGER;
+  VAR z, g, R, v, u2, u1, w1, w2, y1, y2, w: LONGREAL; m, p, i: INTEGER; mp, pp, iw1: INTEGER;
 BEGIN
   (* handle all possible error conditions *)
   IF ABS(exp) < miny THEN RETURN ONE (* base**0 = 1 *)
@@ -432,7 +451,7 @@ BEGIN
   y1 := ENTIER(16*exp)*OneOver16; y2 := exp-y1; w := u2*exp + u1*y2;
   w1 := ENTIER(16*w)*OneOver16; w2 := w-w1; w := w1 + u1*y1;
   w1 := ENTIER(16*w)*OneOver16; w2 := w2 + (w-w1); w := ENTIER(16*w2)*OneOver16;
-  iw1 := ENTIER(16*(w + w1)); w2 := w2-w;
+  iw1 := SHORT(ENTIER(16*(w + w1))); w2 := w2-w;
 
   (* check for overflow/underflow *)
   IF iw1 > XMAX THEN Math.ErrorHandler(Math.Overflow); RETURN large
@@ -449,8 +468,8 @@ END power;
 PROCEDURE round*(x: LONGREAL): INTEGER;
   (* Returns the value of x rounded to the nearest integer *)
 BEGIN
-  IF x < ZERO THEN RETURN -ENTIER(HALF-x)
-  ELSE RETURN ENTIER(x + HALF)
+  IF x < ZERO THEN RETURN -SHORT(ENTIER(HALF-x))
+  ELSE RETURN SHORT(ENTIER(x + HALF))
   END
 END round;
 
@@ -528,7 +547,7 @@ PROCEDURE arctan2* (xn, xd: LONGREAL): LONGREAL;
     Q0=0.2160623078972426128957D+3; Q1=0.3946828393122829592162D+3;
     Q2=0.221050883028417680623D+3;  Q3=0.3850148650835119501D+2;
     PiOver2=pi/2; Sqrt3=1.7320508075688772935D0;
-  VAR atan, z, z2, p, q: LONGREAL; xnExp, xdExp: SHORTINT; Quadrant: BYTE;
+  VAR atan, z, z2, p, q: LONGREAL; xnExp, xdExp: INTEGER; Quadrant: BYTE;
 BEGIN
   IF ABS(xd) < miny THEN
     IF ABS(xn) < miny THEN Math.ErrorHandler(Math.IllegalInvTrig); atan := ZERO
@@ -670,12 +689,7 @@ BEGIN RETURN SYSTEM.VAL(LONGREAL, h)
 END ToLONGREAL;
 
 BEGIN
-  (* Initialise masks.  *)
-  NumberMask := {}; INCL(NumberMask, 63);
-  FOR i := 0 TO 51 DO INCL(NumberMask, i) END;
-  ExponentMask := -NumberMask;
-  ZeroExponent := {};
-  FOR i := 53 TO 61 DO INCL(ZeroExponent, i) END;
+  INF := SYSTEM.VAL(LONGREAL, 7FF0000000000000H);
 
   (* determine some fundamental constants used by hyperbolic trig functions *)
   em           := ulp(ONE);
