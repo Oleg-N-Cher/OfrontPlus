@@ -21,8 +21,8 @@
 
 INTEGER SYSTEM_ArgCount;
 void   *SYSTEM_ArgVector;
-void  (*SYSTEM_AssertFailHandler)(INTEGER code, CHAR *mod, INTEGER pos);
-void  (*SYSTEM_HaltHandler)(INTEGER code, CHAR *mod, INTEGER pos);
+void  (*SYSTEM_AssertFailHandler)(INTEGER n, CHAR *mod, INTEGER pos);
+void  (*SYSTEM_HaltHandler)(INTEGER n, CHAR *mod, INTEGER pos);
 void   *SYSTEM_MainStackFrame; /* adr of main proc stack frame, used for stack collection */
 
 
@@ -207,14 +207,14 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32
 
-    void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER pos) {
-      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code, mod, pos);
-      exit(code);
+    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(n, mod, pos);
+      exit(n);
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER pos) {
-      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code, mod, pos);
-      exit(code);
+    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(n, mod, pos);
+      exit(n);
     }
 
 
@@ -250,14 +250,14 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #   include "_windows.h"
 
-    void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER pos) {
-      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(code, mod, pos);
-      ExitProcess((UINT)(code));
+    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(n, mod, pos);
+      ExitProcess((UINT)(n));
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER pos) {
-      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(code, mod, pos);
-      ExitProcess((UINT)(code));
+    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(n, mod, pos);
+      ExitProcess((UINT)(n));
     }
 
 

@@ -21,6 +21,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		include0* = 8;	(* include M.h0 in header file and M.c0 in body file if such files exist *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
+		dynlib* = 11;	(* translate module to be a dynamic library *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -184,6 +185,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "k": opt := opt / {ansi}
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
+			| "d": opt := opt / {dynlib}
 			| "1", "3", "C", "7"(*undocumented*): Language := s[i]
 
 			(* target machine address size and alignment
@@ -228,7 +230,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String("SYNOPSIS"); Console.Ln;
 			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
-			Console.String('  option  = "m" | "s" | "e" | "i" | "k" | "r" | "x" | "a" | "p" | "t"'); Console.Ln;
+			Console.String('  option  = "m" | "s" | "e" | "i" | "k" | "r" | "x" | "a" | "p" | "t" | "d"'); Console.Ln;
 			Console.String('            "1" Oberon | "2" Oberon-2 | "C" Component Pascal | "3" Oberon-3'); Console.Ln;
 			Console.String('    "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
 			Console.String('    "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;

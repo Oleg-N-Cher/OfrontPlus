@@ -208,14 +208,18 @@ extern void       Heap_INCREF();
 
 #if defined _WIN32 || defined __CYGWIN__
 #  ifdef __GNUC__
+#    define __EXPORT __attribute__((dllexport))
 #    define __EXTERN __attribute__((dllimport))
 #  else
+#    define __EXPORT extern "C" __declspec(dllexport)
 #    define __EXTERN __declspec(dllimport)
 #  endif
 #else
 #  if __GNUC__ >= 4 && !defined(__OS2__)
+#    define __EXPORT __attribute__((visibility("default")))
 #    define __EXTERN __attribute__((visibility("default")))
 #  else
+#    define __EXPORT extern "C"
 #    define __EXTERN
 #  endif
 #endif
@@ -233,12 +237,12 @@ extern void Heap_FINALL();
 
 // Assertions and Halts
 
-extern void SYSTEM_HALT(INTEGER code, CHAR *mod, INTEGER pos);
-extern void SYSTEM_ASSERT_FAIL(INTEGER code, CHAR *mod, INTEGER pos);
+extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
+extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
 
-#define __HALT(code)                                SYSTEM_HALT(code, "", -1)
-#define __HALT_NEW(code, mod, pos)                  SYSTEM_HALT(code, mod, pos)
-#define __ASSERT(cond, code, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(code, mod, pos)
+#define __HALT(n)                                SYSTEM_HALT(n, "", -1)
+#define __HALT_NEW(n, mod, pos)                  SYSTEM_HALT(n, mod, pos)
+#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, mod, pos)
 
 
 // Memory allocation

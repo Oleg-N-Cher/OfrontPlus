@@ -48,6 +48,7 @@
 		Static = "static ";
 		Export = "export ";	(* particularily introduced for VC++ declspec() *)
 		Extern = "import ";	(* particularily introduced for VC++ declspec() *)
+		EXPORT = "__EXPORT ";	(* export into a dynamic library *)
 		EXTERN = "__EXTERN ";	(* import from a dynamic library *)
 		STDCALL = "__STDCALL ";	(* stdcall calling convention *)
 		Struct = "struct ";
@@ -445,8 +446,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				ELSE empty := FALSE;
 					DefineTProcTypes(obj);
 					IF obj^.vis = internal THEN OPM.WriteString(Static)
+					ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 					ELSE OPM.WriteString(Export)
-					END ;
+					END;
 					ProcHeader(obj, FALSE)
 				END
 			END ;
@@ -774,6 +776,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 						IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
 								OPM.WriteString("__CONSTARR ");
 						ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
+						ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
 					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN  (* конст.массив *)
@@ -870,8 +873,9 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				(* previous XProc may be deleted or become LProc after interface change*)
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
+				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
-				END ;
+				END;
 				ProcHeader(obj, FALSE);
 			END ;
 			ProcPredefs(obj^.right, vis);
@@ -904,6 +908,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				BegStat;
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
+				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END ;
 				OPM.WriteString("SYSTEM_ADRINT *"); Andent(typ); OPM.WriteString(DynTypExt);
@@ -944,6 +949,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
+		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
 		OPM.Write(OPM.Language); OPM.WriteString(" -"); OPM.WriteInt(OPM.AddressSize);
 		IF OPM.AddressSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn
