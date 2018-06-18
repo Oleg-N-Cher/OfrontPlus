@@ -24,6 +24,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		include0* = 8;	(* include M.h0 in header file and M.c0 in body file if such files exist *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
+		dynlib* = 11;	(* translate module to be a dynamic library *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -266,6 +267,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "k": opt := opt / {ansi}
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
+			| "d": opt := opt / {dynlib}
 			| "1", "3", "C", "7"(*undocumented*): Language := SHORT(s[i])
 
 			(* target machine address size and alignment

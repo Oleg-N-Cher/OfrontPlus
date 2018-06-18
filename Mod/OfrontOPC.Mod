@@ -47,6 +47,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		Static = "static ";
 		Export = "export ";	(* particularily introduced for VC++ declspec() *)
 		Extern = "import ";	(* particularily introduced for VC++ declspec() *)
+		EXPORT = "__EXPORT ";	(* export into a dynamic library *)
 		EXTERN = "__EXTERN ";	(* import from a dynamic library *)
 		STDCALL = "__STDCALL ";	(* stdcall calling convention *)
 		Struct = "struct ";
@@ -439,8 +440,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSE empty := FALSE;
 					DefineTProcTypes(obj);
 					IF obj^.vis = internal THEN OPM.WriteString(Static)
+					ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 					ELSE OPM.WriteString(Export)
-					END ;
+					END;
 					ProcHeader(obj, FALSE)
 				END
 			END ;
@@ -727,6 +729,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
 						IF obj^.vis = internal THEN OPM.WriteString(Static)
+						ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
 					END ;
@@ -815,8 +818,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				(* previous XProc may be deleted or become LProc after interface change*)
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
+				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
-				END ;
+				END;
 				ProcHeader(obj, FALSE);
 			END ;
 			ProcPredefs(obj^.right, vis);
@@ -849,6 +853,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				BegStat;
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
+				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END ;
 				OPM.WriteString("SYSTEM_ADRINT *"); Andent(typ); OPM.WriteString(DynTypExt);
@@ -889,6 +894,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
+		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
 		OPM.Write(OPM.Language); OPM.WriteString(" -"); OPM.WriteInt(OPM.AddressSize);
 		IF OPM.AddressSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn
