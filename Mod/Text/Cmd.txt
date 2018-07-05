@@ -25,9 +25,8 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		VAR ext, new: BOOLEAN; p: OPT.Node;
 	BEGIN
 		PropagateElementaryTypeSizes;
-		OPP.Module(p, OPM.opt);
+		OPV.Init; OPP.Module(p, OPM.opt);
 		IF OPM.noerr THEN
-			OPV.Init;
 			OPV.AdrAndSize(OPT.topScope);
 			OPT.Export(ext, new);
 			IF OPM.noerr THEN
