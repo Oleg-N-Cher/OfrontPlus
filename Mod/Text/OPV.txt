@@ -643,7 +643,8 @@
 									expr(l, exprPrec)
 								END
 					|	val: (*SYSTEM*)
-								IF (n^.typ^.form IN {Int, LInt, Pointer, Set, ProcTyp}) & (l^.typ^.form IN {Int, LInt, Pointer, Set, ProcTyp})
+								IF ~((l^.typ^.form = Pointer) & (l^.class IN {Nvar, Nfield}))
+								& (n^.typ^.form IN {Int, LInt, Pointer, Set, ProcTyp}) & (l^.typ^.form IN {Int, LInt, Pointer, Set, ProcTyp})
 								& (n^.typ^.size = l^.typ^.size) OR ~(l^.class IN {Nvar, Nvarpar, Nfield, Nindex}) THEN
 									OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.Write(CloseParen);
 									expr(l, exprPrec)
