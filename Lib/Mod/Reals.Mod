@@ -8,10 +8,13 @@ MODULE Reals;
 
 
   PROCEDURE -Offset(adr: ADRINT; offset: LONGINT): ADRINT
-      "((SYSTEM_ADRINT)adr + offset)"; 
+      "((SYSTEM_ADRINT)adr + offset)";
   PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
   PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADRINT
       "((SYSTEM_ADRINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
+  PROCEDURE -AAincludeStdio "#include <stdio.h>"; (* sprintf() *)
+  PROCEDURE -sprintf (buf, format: ADRINT; arg: LONGREAL): INTEGER
+      "sprintf ((char*)buf, (char*)format, arg)";
 
   PROCEDURE Ten*(e: INTEGER): REAL;
     VAR r, power: LONGREAL;
@@ -102,5 +105,12 @@ MODULE Reals;
   PROCEDURE ConvertHL* (x: LONGREAL; VAR d: ARRAY OF CHAR);
   BEGIN Unpack(x, d)
   END ConvertHL;
+
+  PROCEDURE LRealToString* (x: LONGREAL; VAR d: ARRAY OF CHAR);
+    VAR buf: ARRAY 32 OF CHAR;
+  BEGIN
+    ASSERT(sprintf(S.ADR(buf), S.ADR("%.24g"), x) < LEN(buf));
+    COPY(buf, d)
+  END LRealToString;
 
 END Reals.
