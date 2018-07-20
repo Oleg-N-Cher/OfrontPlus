@@ -1,0 +1,31 @@
+#!/bin/bash
+cd ../Obj
+export PATH="$PATH:../../Bin"
+export OBERON=.:../Sym:../../../Lib/Mod
+
+## Ofront+
+
+ofront+ -sC -48 Heap32.Mod -apx Types32.Mod Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
+if [ $? != 0 ]; then exit 1; fi
+
+## OOC2
+
+ofront+ -eC -48 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
+if [ $? != 0 ]; then exit 1; fi
+
+## POW
+
+ofront+ -eC -48 powStrings.Mod
+if [ $? != 0 ]; then exit 1; fi
+
+## Free Oberon
+
+ofront+ -sC -48 SDL2.Mod SDL2mixer.Mod Out.Mod Graph.Mod Math.Mod Sound.Mod Turtle.Mod
+if [ $? != 0 ]; then exit 1; fi
+
+## libCurl
+
+ofront+ -sC -48 libCurl.Mod NetHttp.Mod
+if [ $? != 0 ]; then exit 1; fi
+
+find . -type f -name "*.sym" -exec mv -f {} ../Sym \;

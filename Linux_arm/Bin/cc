@@ -1,0 +1,22 @@
+#!/bin/bash
+cd ../Obj
+export CC="gcc -I . -I ../../../Lib/Mod -s -Os -fno-exceptions -fno-asynchronous-unwind-tables"
+
+$CC -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c
+if [ $? != 0 ]; then exit 1; fi
+
+## Ofront+
+
+$CC OfrontCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o "../ofront+"
+if [ $? != 0 ]; then exit 1; fi
+
+## Browser
+
+$CC BrowserCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -o "../showdef"
+if [ $? != 0 ]; then exit 1; fi
+
+## OCat
+
+$CC OCatCmd -o "../ocat"
+if [ $? != 0 ]; then exit 1; fi
+$AR powStrings.o
