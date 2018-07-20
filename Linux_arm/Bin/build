@@ -1,0 +1,5 @@
+#!/bin/bash
+if [ ! -f "../Lib/libOfront.a" ]; then cd "../Lib"; ./build; cd ../Bin"; fi
+./o2c
+./cc
+rm ../Obj/*.o
