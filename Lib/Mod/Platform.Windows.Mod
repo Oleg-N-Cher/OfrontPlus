@@ -8,6 +8,8 @@ IMPORT SYSTEM, Types;
 
 
 CONST
+  MAX_PATH = 260;
+
   pathDelimiter* = "\";
   pathSeparator* = ";";
 
@@ -500,6 +502,18 @@ BEGIN
   getCurrentDirectory(CWD);
   RETURN 0
 END ChDir;
+
+PROCEDURE -getModuleFileName(hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
+"(INTEGER)GetModuleFileNameA((HMODULE)hModule, (LPTSTR)lpFilename, nSize)";
+
+PROCEDURE GetStartDir* (VAR dir: ARRAY MAX_PATH OF CHAR); (* get the start directory with ending "\" *)
+  VAR i: INTEGER;
+BEGIN
+  dir[MAX_PATH - 1] := 0X;
+  i := getModuleFileName(0, dir, MAX_PATH - 1);
+  WHILE (i # 0) & (dir[i] # "\") DO DEC(i) END;
+  IF i # 0 THEN dir[i+1] := 0X END
+END GetStartDir;
 
 
 PROCEDURE -getFileAttributes(name: ARRAY OF CHAR): DWORD
