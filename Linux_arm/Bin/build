@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 if [ ! -f "../Lib/libOfront.a" ]; then cd "../Lib"; ./build; cd "../Bin"; fi
 ./o2c
 ./cc
