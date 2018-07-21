@@ -11,6 +11,9 @@ Lib/Test/*.c
 Lib/Test/*.exe
 Lib/Test64/*.c
 Lib/Test64/*.exe
+Linux_arm/ocat
+Linux_arm/showdef
+Linux_arm/Lib/*.a
 Linux/Bin/ocat
 Linux/Bin/showdef
 Linux/Bin64/
