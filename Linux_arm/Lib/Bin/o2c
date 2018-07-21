@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ../Obj
-export PATH="$PATH:../../Bin"
+export PATH="$PATH:../.."
 export OBERON=.:../Sym:../../../Lib/Mod
 
 ## Ofront+
