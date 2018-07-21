@@ -881,16 +881,14 @@
 		OPM.WriteString(", "); OPM.WriteInt(nofdim);	(* total number of dimensions = number of additional parameters *)
 		OPM.WriteString(", "); OPM.WriteInt(nofdyn);	(* number of dynamic dimensions *)
 		WHILE typ # base DO
-			OPM.WriteString(", ");
+			OPM.WriteString(", (SYSTEM_ARRLEN)");
 			IF typ^.comp = DynArr THEN
-				IF x^.class = Nconst THEN expr(x, MinPrec); OPM.PromoteIntConstToLInt()
-				ELSE IF OPM.IndexSize > OPM.IntSize THEN OPM.WriteString("(LONGINT)") END; expr(x, 10)
-				END ;
+				IF x^.class = Nconst THEN expr(x, MinPrec) ELSE expr(x, 10) END;
 				x := x^.link
-			ELSE OPM.WriteInt(typ^.n); OPM.PromoteIntConstToLInt()
-			END ;
+			ELSE OPM.WriteInt(typ^.n);
+			END;
 			typ := typ^.BaseTyp
-		END ;
+		END;
 		OPM.Write(")")
 	END NewArr;
 
