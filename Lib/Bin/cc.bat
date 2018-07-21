@@ -11,7 +11,7 @@ SET Aliasing=-Wstrict-aliasing
 
 CD ..\Obj
 SET PATH=%XDev%\WinDev\Bin\MinGW\bin
-SET CC=gcc.exe -I. -I..\Mod -m32 -s -Os -g0 -fvisibility=hidden -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections %Aliasing% -c
+SET CC=gcc.exe -I. -I..\Mod -m32 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections %Aliasing% -c
 SET AR=ar.exe -rc ..\Ofront.a
 IF EXIST ..\Ofront.a DEL ..\Ofront.a
 
