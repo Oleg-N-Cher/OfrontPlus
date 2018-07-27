@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ./o2c
 ./cc
 rm ../Obj/*.o
