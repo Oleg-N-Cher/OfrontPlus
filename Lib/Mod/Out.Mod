@@ -1,9 +1,10 @@
 MODULE Out; (* DCW Brown. 2016-09-27 *)
 
-IMPORT SYSTEM, Platform, Heap;
+IMPORT SYSTEM, T := Types, Platform, Heap;
 
 TYPE
-  INTEGER = Platform.INT16; LONGINT = Platform.INT32; HUGEINT = Platform.INT64;
+  INTEGER = T.INT16; LONGINT = T.INT32; HUGEINT = T.INT64;
+  REAL = T.REAL32; LONGREAL = T.REAL64;
 
 VAR
   IsConsole-: BOOLEAN;

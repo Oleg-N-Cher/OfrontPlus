@@ -12,7 +12,7 @@ TYPE
   Color = INTEGER;
 
 VAR
-  screen: G.Bitmap; x-, y-, angle: REAL; color: Color;
+  screen: G.Bitmap; x-, y-, angle: SHORTREAL; color: Color;
   penstatus: BOOLEAN; (* TRUE is on, FALSE is off *)
   Black-, Blue-, Green-, Cyan-, Red-, Magenta-, Brown-, LightGray-,
   DarkGray-, LightBlue-, LightGreen-, LightCyan-,
@@ -23,14 +23,14 @@ BEGIN
   x := ScreenWidth DIV 2; y := ScreenHeight DIV 2; angle := 0;
 END Home;
 
-PROCEDURE Round (x: REAL): INTEGER;
+PROCEDURE Round (x: SHORTREAL): INTEGER;
 BEGIN
   RETURN SHORT(ENTIER(x + 0.5))
 END Round;
 
-PROCEDURE Forward* (distance: REAL);
+PROCEDURE Forward* (distance: SHORTREAL);
 VAR
-  newx, newy: REAL;
+  newx, newy: SHORTREAL;
 BEGIN
   newx := x + distance*Math.cos(angle * Math.pi / 180);
   newy := y + distance*Math.sin(angle * Math.pi / 180);
@@ -40,17 +40,17 @@ BEGIN
   x := newx; y := newy;
 END Forward;
 
-PROCEDURE Back* (distance: REAL);
+PROCEDURE Back* (distance: SHORTREAL);
 BEGIN
   Forward(-distance);
 END Back;
 
-PROCEDURE Left* (a: REAL);
+PROCEDURE Left* (a: SHORTREAL);
 BEGIN
   angle := angle - a;
 END Left;
 
-PROCEDURE Right* (a: REAL);
+PROCEDURE Right* (a: SHORTREAL);
 BEGIN
   Left(-a);
 END Right;
@@ -70,7 +70,7 @@ BEGIN
   color := col
 END SetColor;
 
-PROCEDURE Triangle (s: REAL);
+PROCEDURE Triangle (s: SHORTREAL);
 CONST
   Bd = 110;
 BEGIN
