@@ -1,10 +1,11 @@
 MODULE Reals;
   (* JT, 5.2.90 / RC 9.12.91 conversion between reals and strings for HP-700, MB 9.12.91, JT for Ofront, 16.3. 95*)
 
-  IMPORT S := SYSTEM, P := Platform;
+  IMPORT S := SYSTEM, T := Types;
 
   TYPE
-    SHORTINT = P.INT8; INTEGER = P.INT16; LONGINT = P.INT32; ADRINT = P.ADRINT;
+    SHORTINT = T.INT8; INTEGER = T.INT16; LONGINT = T.INT32; ADRINT = T.ADRINT;
+    REAL = T.REAL32; LONGREAL = T.REAL64;
 
 
   PROCEDURE -Offset(adr: ADRINT; offset: LONGINT): ADRINT

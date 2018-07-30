@@ -1393,7 +1393,7 @@ BEGIN
 END Random;
 
 (* Calculates a number x with 0.0 <= x < 1.0. *)
-PROCEDURE Uniform*(): REAL;
+PROCEDURE Uniform*(): SHORTREAL;
 BEGIN
   NextRND;
   RETURN (randomSeed - 1) * (1 / (randomModulo - 1))

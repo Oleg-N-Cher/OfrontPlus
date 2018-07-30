@@ -1,9 +1,9 @@
 MODULE MathL;
 
-(*  MathL - Oakwood LONGREAL Mathematics.
+(*  MathL - Oakwood REAL Mathematics.
     Adapted from OOC LowLReal.Mod and LRealMath.Mod
 
-    Target independent mathematical functions for LONGREAL
+    Target independent mathematical functions for REAL
     (IEEE double-precision) numbers.
 
     Numerical approximations are taken from "Software Manual for the
@@ -51,9 +51,9 @@ MODULE MathL;
            NOTES
            6 -- If `IEC559' is TRUE, the value of `radix' is 2.
            7 -- If LowReal.IEC559 is TRUE, the 32-bit format of IEC 559:1989
-                is used for the type REAL.
+                is used for the type SHORTREAL.
            7 -- If LowLong.IEC559 is TRUE, the 64-bit format of IEC 559:1989
-                is used for the type REAL.
+                is used for the type SHORTREAL.
 
    LIA1--A Boolean value that is TRUE if and only if the implementation of
          the corresponding real number type conforms to ISO/IEC 10967-1:199x
@@ -85,7 +85,7 @@ CONST
   e*  = 2.7182818284590452353602874713526624977572D0;
 
   places*   = 53;
-  large*    = MAX(LONGREAL); (*1.7976931348623157D+308;*)  (* MAX(LONGREAL) *)
+  large*    = MAX(REAL); (*1.7976931348623157D+308;*)  (* MAX(REAL) *)
 (*small*    = 2.2250738585072014D-308; *)
   small*    = 2.2250738585072014/9.9999999999999981D307(*/10^308)*);
   expoMax*  = 1023;
@@ -107,34 +107,34 @@ CONST
   ln2Inv    = 1.44269504088896340735992468100189213D0;
 
 VAR
-  a1:           ARRAY 18 OF LONGREAL; (* lookup table for power function *)
-  a2:           ARRAY 9 OF LONGREAL;  (* lookup table for power function *)
-  em:           LONGREAL;             (* largest number such that 1 + epsilon > 1.0 *)
-  LnInfinity:   LONGREAL;             (* natural log of infinity *)
-  LnSmall:      LONGREAL;             (* natural log of very small number *)
-  SqrtInfinity: LONGREAL;             (* square root of infinity *)
-  TanhMax:      LONGREAL;             (* maximum Tanh value *)
-  t:            LONGREAL;             (* internal variables *)
-  INF-:         LONGREAL;             (* infinity *)
+  a1:           ARRAY 18 OF REAL; (* lookup table for power function *)
+  a2:           ARRAY 9 OF REAL;  (* lookup table for power function *)
+  em:           REAL;             (* largest number such that 1 + epsilon > 1.0 *)
+  LnInfinity:   REAL;             (* natural log of infinity *)
+  LnSmall:      REAL;             (* natural log of very small number *)
+  SqrtInfinity: REAL;             (* square root of infinity *)
+  TanhMax:      REAL;             (* maximum Tanh value *)
+  t:            REAL;             (* internal variables *)
+  INF-:         REAL;             (* infinity *)
 
 
 
-(* TYPE LONGREAL: 1/sign, 11/exponent, 52/significand *)
+(* TYPE REAL: 1/sign, 11/exponent, 52/significand *)
 
-PROCEDURE isNaN (x: LONGREAL): BOOLEAN;  (* by Robert D. Campbell *)
+PROCEDURE isNaN (x: REAL): BOOLEAN;  (* by Robert D. Campbell *)
   CONST nanS = {19..30};  (* Detects non-signalling NaNs *)
 BEGIN
   RETURN nanS - BITS(SHORT(ASH(SYSTEM.VAL(LONGINT, x), -32))) = {}
 END isNaN;
 
-PROCEDURE fraction*(x: LONGREAL): LONGREAL;  (* by Robert D. Campbell *)
+PROCEDURE fraction*(x: REAL): REAL;  (* by Robert D. Campbell *)
 (*
    The value of the call fraction(x) shall be the significand (or
    significant) part of `x'.  Hence the following relationship shall
    hold: x = scale(fraction(x), exponent(x)).
 *)
   CONST mask = {0..19, 31}; zeroExp = {20..29};
-  VAR k, msh: LONGINT; a: LONGREAL; exp: INTEGER;
+  VAR k, msh: LONGINT; a: REAL; exp: INTEGER;
 BEGIN
   IF isNaN(x) THEN RETURN 1.5D0
   ELSIF x = ZERO THEN RETURN ZERO
@@ -150,11 +150,11 @@ BEGIN
     k := SYSTEM.VAL(LONGINT, x);
     msh := ORD(BITS(SHORT(ASH(k, -32))) * mask + zeroExp);
     k := ASH(msh, 32) + k MOD 100000000H;
-    RETURN SYSTEM.VAL(LONGREAL, k)
+    RETURN SYSTEM.VAL(REAL, k)
   END
 END fraction;
 
-PROCEDURE exponent*(x: LONGREAL): INTEGER;  (* by Robert D. Campbell *)
+PROCEDURE exponent*(x: REAL): INTEGER;  (* by Robert D. Campbell *)
 (*
    The value of the call exponent(x) shall be the exponent value of `x'
    that lies between `expoMin' and `expoMax'.  An exception shall occur
@@ -177,12 +177,12 @@ BEGIN
   END
 END exponent;
 
-PROCEDURE sign*(x: LONGREAL): LONGREAL;
+PROCEDURE sign*(x: REAL): REAL;
 BEGIN
   IF x < ZERO THEN RETURN -ONE ELSE RETURN ONE END
 END sign;
 
-PROCEDURE scale*(x: LONGREAL; n: INTEGER): LONGREAL;
+PROCEDURE scale*(x: REAL; n: INTEGER): REAL;
 (*
   The value of the call scale(x,n) shall be the value x*radix^n if such
   a value exists; otherwise an execption shall occur and may be raised.
@@ -198,10 +198,10 @@ BEGIN
   s := SYSTEM.VAL(LONGINT, x);
   DEC(s, ASH(LONG(ORD(BITS(SHORT(ASH(s, -32))) * lowExpoMask)), 32));
   INC(s, ASH(LONG(exp + expOffset), 52));   (* shifted exponent bits *)
-  RETURN SYSTEM.VAL(LONGREAL, s)
+  RETURN SYSTEM.VAL(REAL, s)
 END scale;
 
-PROCEDURE ulp*(x: LONGREAL): LONGREAL;
+PROCEDURE ulp*(x: REAL): REAL;
 (*
    The value of the call ulp(x) shall be the value of the corresponding
    real number type equal to a unit in the last place of `x', if such a
@@ -211,7 +211,7 @@ BEGIN
   RETURN scale(ONE, exponent(x)-places+1)
 END ulp;
 
-PROCEDURE succ*(x: LONGREAL): LONGREAL;
+PROCEDURE succ*(x: REAL): REAL;
 (*
    The value of the call succ(x) shall be the next value of the
    corresponding real number type greater than `x', if such a type
@@ -221,7 +221,7 @@ BEGIN
   RETURN x+ulp(x)*sign(x)
 END succ;
 
-PROCEDURE pred*(x: LONGREAL): LONGREAL;
+PROCEDURE pred*(x: REAL): REAL;
 (*
    The value of the call pred(x) shall be the next value of the
    corresponding real number type less than `x', if such a type exists;
@@ -232,7 +232,7 @@ BEGIN
 END pred;
 
 
-PROCEDURE SinCos (x, y, sign: LONGREAL): LONGREAL;
+PROCEDURE SinCos (x, y, sign: REAL): REAL;
   CONST
     ymax = 210828714;    (* ENTIER(pi*2**(MantBits/2)) *)
     c1 = 3.1416015625D0;
@@ -246,7 +246,7 @@ PROCEDURE SinCos (x, y, sign: LONGREAL): LONGREAL;
     r7 = -0.76429178068910467734D-12;
     r8 =  0.27204790957888846175D-14;
   VAR
-    n: LONGINT; xn, f, x1, g: LONGREAL;
+    n: LONGINT; xn, f, x1, g: REAL;
 BEGIN
   IF y >= ymax THEN Math.ErrorHandler(Math.LossOfAccuracy); RETURN ZERO END;
 
@@ -277,15 +277,15 @@ END div;
 
 
 (* forward declarations *)
-PROCEDURE^ arctan2* (xn, xd: LONGREAL): LONGREAL;
-PROCEDURE^ sincos* (x: LONGREAL; VAR Sin, Cos: LONGREAL);
+PROCEDURE^ arctan2* (xn, xd: REAL): REAL;
+PROCEDURE^ sincos* (x: REAL; VAR Sin, Cos: REAL);
 
-PROCEDURE sqrt*(x: LONGREAL): LONGREAL;
+PROCEDURE sqrt*(x: REAL): REAL;
   (* Returns the positive square root of x where x >= 0 *)
   CONST
     P0=0.41731; P1=0.59016;
   VAR
-    xMant, yEst, z: LONGREAL; xExp: INTEGER;
+    xMant, yEst, z: REAL; xExp: INTEGER;
 BEGIN
   (* optimize zeros and check for illegal negative roots *)
   IF x=ZERO THEN RETURN ZERO END;
@@ -308,7 +308,7 @@ BEGIN
   RETURN scale(yEst, xExp DIV 2)
 END sqrt;
 
-PROCEDURE exp*(x: LONGREAL): LONGREAL;
+PROCEDURE exp*(x: REAL): REAL;
   (* Returns the exponential of x for x < Ln(MAX(REAL) *)
   CONST
     c1 =  0.693359375D0;
@@ -318,7 +318,7 @@ PROCEDURE exp*(x: LONGREAL): LONGREAL;
     P2 =  0.165203300268279130D-4;
     Q1 =  0.555538666969001188D-1;
     Q2 =  0.495862884905441294D-3;
-  VAR xn, g, p, q, z: LONGREAL; n: INTEGER;
+  VAR xn, g, p, q, z: REAL; n: INTEGER;
 BEGIN
   (* Ensure we detect overflows and return 0 for underflows *)
   IF x > LnInfinity THEN Math.ErrorHandler(Math.Overflow); RETURN large
@@ -337,13 +337,13 @@ BEGIN
   RETURN scale(HALF + p/(q-p), n + 1)
 END exp;
 
-PROCEDURE ln*(x: LONGREAL): LONGREAL;
+PROCEDURE ln*(x: REAL): REAL;
   (* Returns the natural logarithm of x for x > 0 *)
   CONST
     c1=355.0D0/512.0D0; c2=-2.121944400546905827679D-4;
     P0=-0.64124943423745581147D+2; P1=0.16383943563021534222D+2; P2=-0.78956112887491257267D+0;
     Q0=-0.76949932108494879777D+3; Q1=0.31203222091924532844D+3; Q2=-0.35667977739034646171D+2;
-  VAR f, zn, zd, r, z, w, p, q, xn: LONGREAL; n: INTEGER;
+  VAR f, zn, zd, r, z, w, p, q, xn: REAL; n: INTEGER;
 BEGIN
   (* ensure illegal inputs are trapped and handled *)
   IF x <= ZERO THEN Math.ErrorHandler(Math.IllegalLog); RETURN -large END;
@@ -365,21 +365,21 @@ END ln;
 
 (* The angle in all trigonometric functions is measured in radians *)
 
-PROCEDURE sin* (x: LONGREAL): LONGREAL;
+PROCEDURE sin* (x: REAL): REAL;
 BEGIN
   IF x < ZERO THEN RETURN SinCos(x, -x, -ONE)
   ELSE RETURN SinCos(x, x, ONE)
   END
 END sin;
 
-PROCEDURE cos* (x: LONGREAL): LONGREAL;
+PROCEDURE cos* (x: REAL): REAL;
 BEGIN
   RETURN SinCos(x, ABS(x) + piByTwo, ONE)
 END cos;
 
-PROCEDURE tan*(x: LONGREAL): LONGREAL;
+PROCEDURE tan*(x: REAL): REAL;
   (* Returns the tangent of x where x cannot be an odd multiple of pi/2 *)
-  VAR Sin, Cos: LONGREAL;
+  VAR Sin, Cos: REAL;
 BEGIN
   sincos(x, Sin, Cos);
   IF ABS(Cos) < miny THEN Math.ErrorHandler(Math.IllegalTrig); RETURN large
@@ -387,7 +387,7 @@ BEGIN
   END
 END tan;
 
-PROCEDURE arcsin*(x: LONGREAL): LONGREAL;
+PROCEDURE arcsin*(x: REAL): REAL;
   (* Returns the arcsine of x, in the range [-pi/2, pi/2] where -1 <= x <= 1 *)
 BEGIN
   IF ABS(x) > ONE THEN Math.ErrorHandler(Math.IllegalInvTrig); RETURN large
@@ -395,7 +395,7 @@ BEGIN
   END
 END arcsin;
 
-PROCEDURE arccos*(x: LONGREAL): LONGREAL;
+PROCEDURE arccos*(x: REAL): REAL;
   (* Returns the arccosine of x, in the range [0, pi] where -1 <= x <= 1 *)
 BEGIN
   IF ABS(x) > ONE THEN Math.ErrorHandler(Math.IllegalInvTrig); RETURN large
@@ -403,13 +403,13 @@ BEGIN
   END
 END arccos;
 
-PROCEDURE arctan*(x: LONGREAL): LONGREAL;
+PROCEDURE arctan*(x: REAL): REAL;
   (* Returns the arctangent of x, in the range [-pi/2, pi/2] for all x *)
 BEGIN
   RETURN arctan2(x, ONE)
 END arctan;
 
-PROCEDURE power*(base, exp: LONGREAL): LONGREAL;
+PROCEDURE power*(base, exp: REAL): REAL;
   (* Returns the value of the number base raised to the power exponent
      for base > 0 *)
   CONST
@@ -423,7 +423,7 @@ PROCEDURE power*(base, exp: LONGREAL): LONGREAL;
     OneOver16 = 0.0625D0;
     XMAX = 16*expoMax - 1; (*XMIN=16*l.expoMin + 1;*)
     XMIN = -16351; (* noch *)
-  VAR z, g, R, v, u2, u1, w1, w2, y1, y2, w: LONGREAL; m, p, i: INTEGER; mp, pp, iw1: INTEGER;
+  VAR z, g, R, v, u2, u1, w1, w2, y1, y2, w: REAL; m, p, i: INTEGER; mp, pp, iw1: INTEGER;
 BEGIN
   (* handle all possible error conditions *)
   IF ABS(exp) < miny THEN RETURN ONE (* base**0 = 1 *)
@@ -465,7 +465,7 @@ BEGIN
   RETURN scale(z, SHORT(mp))
 END power;
 
-PROCEDURE round*(x: LONGREAL): INTEGER;
+PROCEDURE round*(x: REAL): INTEGER;
   (* Returns the value of x rounded to the nearest integer *)
 BEGIN
   IF x < ZERO THEN RETURN -SHORT(ENTIER(HALF-x))
@@ -488,7 +488,7 @@ END IsRMathException;
    useful functions which are not part of the ISO standard.
 *)
 
-PROCEDURE log* (x, base: LONGREAL): LONGREAL;
+PROCEDURE log* (x, base: REAL): REAL;
 (* log(x,base) is the logarithm of x base b.  All positive arguments are
    allowed but base > 0 and base # 1. *)
 BEGIN
@@ -498,11 +498,11 @@ BEGIN
   END
 END log;
 
-PROCEDURE ipower* (x: LONGREAL; base: SHORTINT): LONGREAL;
+PROCEDURE ipower* (x: REAL; base: SHORTINT): REAL;
 (* ipower(x, base) returns the x to the integer power base where base*Log2(x) < Log2(Max) *)
-  VAR y: LONGREAL; neg: BOOLEAN; Exp: INTEGER;
+  VAR y: REAL; neg: BOOLEAN; Exp: INTEGER;
 
-  PROCEDURE Adjust(xadj: LONGREAL): LONGREAL;
+  PROCEDURE Adjust(xadj: REAL): REAL;
   BEGIN
     IF (x < ZERO)&ODD(base) THEN RETURN -xadj ELSE RETURN xadj END
   END Adjust;
@@ -531,13 +531,13 @@ BEGIN
   IF neg THEN RETURN ONE/y ELSE RETURN y END
 END ipower;
 
-PROCEDURE sincos* (x: LONGREAL; VAR Sin, Cos: LONGREAL);
+PROCEDURE sincos* (x: REAL; VAR Sin, Cos: REAL);
 (* More efficient sin/cos implementation if both values are needed. *)
 BEGIN
   Sin := sin(x); Cos := sqrt(ONE-Sin*Sin)
 END sincos;
 
-PROCEDURE arctan2* (xn, xd: LONGREAL): LONGREAL;
+PROCEDURE arctan2* (xn, xd: REAL): REAL;
 (* arctan2(xn,xd) is the quadrant-correct arc tangent atan(xn/xd).  If the
    denominator xd is zero, then the numerator xn must not be zero.  All
    arguments are legal except xn = xd = 0. *)
@@ -547,7 +547,7 @@ PROCEDURE arctan2* (xn, xd: LONGREAL): LONGREAL;
     Q0=0.2160623078972426128957D+3; Q1=0.3946828393122829592162D+3;
     Q2=0.221050883028417680623D+3;  Q3=0.3850148650835119501D+2;
     PiOver2=pi/2; Sqrt3=1.7320508075688772935D0;
-  VAR atan, z, z2, p, q: LONGREAL; xnExp, xdExp: INTEGER; Quadrant: BYTE;
+  VAR atan, z, z2, p, q: REAL; xnExp, xdExp: INTEGER; Quadrant: BYTE;
 BEGIN
   IF ABS(xd) < miny THEN
     IF ABS(xn) < miny THEN Math.ErrorHandler(Math.IllegalInvTrig); atan := ZERO
@@ -589,7 +589,7 @@ BEGIN
   RETURN atan
 END arctan2;
 
-PROCEDURE sinh* (x: LONGREAL): LONGREAL;
+PROCEDURE sinh* (x: REAL): REAL;
 (* sinh(x) is the hyperbolic sine of x.  The argument x must not be so large
    that exp(|x|) overflows. *)
   CONST
@@ -597,7 +597,7 @@ PROCEDURE sinh* (x: LONGREAL): LONGREAL;
     P2=-0.16375798202630751372D+3; P3=-0.78966127417357099479D+0;
     Q0=-0.21108770058106271242D+7; Q1= 0.36162723109421836460D+5;
     Q2=-0.27773523119650701667D+3;
-  VAR y, f, p, q: LONGREAL;
+  VAR y, f, p, q: REAL;
 BEGIN y := ABS(x);
   IF y <= ONE THEN (* handle small arguments *)
     IF y < Limit THEN RETURN x END;
@@ -617,10 +617,10 @@ BEGIN y := ABS(x);
   IF x > ZERO THEN RETURN f ELSE RETURN -f END
 END sinh;
 
-PROCEDURE cosh* (x: LONGREAL): LONGREAL;
+PROCEDURE cosh* (x: REAL): REAL;
 (* cosh(x) is the hyperbolic cosine of x.  The argument x must not be so large
    that exp(|x|) overflows. *)
-  VAR y, f: LONGREAL;
+  VAR y, f: REAL;
 BEGIN y := ABS(x);
   IF y > LnInfinity THEN (* handle exp overflows *)
     y := y-lnv;
@@ -632,14 +632,14 @@ BEGIN y := ABS(x);
   END
 END cosh;
 
-PROCEDURE tanh* (x: LONGREAL): LONGREAL;
+PROCEDURE tanh* (x: REAL): REAL;
 (* tanh(x) is the hyperbolic tangent of x.  All arguments are legal. *)
   CONST
     P0=-0.16134119023996228053D+4; P1=-0.99225929672236083313D+2; P2=-0.96437492777225469787D+0;
     Q0= 0.48402357071988688686D+4; Q1= 0.22337720718962312926D+4; Q2= 0.11274474380534949335D+3;
     ln3over2=0.54930614433405484570D0;
     BIG=19.06154747D0; (* (ln(2) + (t + 1)*ln(B))/2 where t=mantissa bits, B=base *)
-  VAR f, t: LONGREAL;
+  VAR f, t: REAL;
 BEGIN f := ABS(x);
   IF f > BIG THEN t := ONE
   ELSIF f > ln3over2 THEN t := ONE-TWO/(exp(TWO*f) + ONE)
@@ -650,7 +650,7 @@ BEGIN f := ABS(x);
   IF x < ZERO THEN RETURN -t ELSE RETURN t END
 END tanh;
 
-PROCEDURE arcsinh* (x: LONGREAL): LONGREAL;
+PROCEDURE arcsinh* (x: REAL): REAL;
 (* arcsinh(x) is the arc hyperbolic sine of x.  All arguments are legal. *)
 BEGIN
   IF ABS(x) > SqrtInfinity*HALF THEN Math.ErrorHandler(Math.HypInvTrigClipped);
@@ -660,7 +660,7 @@ BEGIN
   END
 END arcsinh;
 
-PROCEDURE arccosh* (x: LONGREAL): LONGREAL;
+PROCEDURE arccosh* (x: REAL): REAL;
 (* arccosh(x) is the arc hyperbolic cosine of x.  All arguments greater than
    or equal to 1 are legal. *)
 BEGIN
@@ -670,12 +670,12 @@ BEGIN
   END
 END arccosh;
 
-PROCEDURE arctanh* (x: LONGREAL): LONGREAL;
+PROCEDURE arctanh* (x: REAL): REAL;
 (* arctanh(x) is the arc hyperbolic tangent of x.  |x| < 1 - sqrt(em), where
    em is machine epsilon.  Note that |x| must not be so close to 1 that the
    result is less accurate than half precision. *)
   CONST TanhLimit=0.999984991D0;  (* Tanh(5.9) *)
-  VAR t: LONGREAL;
+  VAR t: REAL;
 BEGIN t := ABS(x);
   IF (t >= ONE) OR (t > (ONE-TWO*em)) THEN Math.ErrorHandler(Math.IllegalHypInvTrig);
     IF x < ZERO THEN RETURN -TanhMax ELSE RETURN TanhMax END
@@ -684,12 +684,12 @@ BEGIN t := ABS(x);
   RETURN arcsinh(x/sqrt(ONE-x*x))
 END arctanh;
 
-PROCEDURE ToLONGREAL(h: LONGINT): LONGREAL;
-BEGIN RETURN SYSTEM.VAL(LONGREAL, h)
-END ToLONGREAL;
+PROCEDURE ToREAL(h: LONGINT): REAL;
+BEGIN RETURN SYSTEM.VAL(REAL, h)
+END ToREAL;
 
 BEGIN
-  INF := SYSTEM.VAL(LONGREAL, 7FF0000000000000H);
+  INF := SYSTEM.VAL(REAL, 7FF0000000000000H);
 
   (* determine some fundamental constants used by hyperbolic trig functions *)
   em           := ulp(ONE);
@@ -703,32 +703,32 @@ BEGIN
   (* disable compiler warnings about 32-bit negative integers *)
   (* < * PUSH; Warnings := FALSE * > *)
   a1[ 1] := ONE;
-  a1[ 2] := ToLONGREAL(3FEEA4AFA2A490DAH);
-  a1[ 3] := ToLONGREAL(3FED5818DCFBA487H);
-  a1[ 4] := ToLONGREAL(3FEC199BDD85529CH);
-  a1[ 5] := ToLONGREAL(3FEAE89F995AD3ADH);
-  a1[ 6] := ToLONGREAL(3FE9C49182A3F090H);
-  a1[ 7] := ToLONGREAL(3FE8ACE5422AA0DBH);
-  a1[ 8] := ToLONGREAL(3FE7A11473EB0186H);
-  a1[ 9] := ToLONGREAL(3FE6A09E667F3BCCH);
-  a1[10] := ToLONGREAL(3FE5AB07DD485429H);
-  a1[11] := ToLONGREAL(3FE4BFDAD5362A27H);
-  a1[12] := ToLONGREAL(3FE3DEA64C123422H);
-  a1[13] := ToLONGREAL(3FE306FE0A31B715H);
-  a1[14] := ToLONGREAL(3FE2387A6E756238H);
-  a1[15] := ToLONGREAL(3FE172B83C7D517AH);
-  a1[16] := ToLONGREAL(3FE0B5586CF9890FH);
+  a1[ 2] := ToREAL(3FEEA4AFA2A490DAH);
+  a1[ 3] := ToREAL(3FED5818DCFBA487H);
+  a1[ 4] := ToREAL(3FEC199BDD85529CH);
+  a1[ 5] := ToREAL(3FEAE89F995AD3ADH);
+  a1[ 6] := ToREAL(3FE9C49182A3F090H);
+  a1[ 7] := ToREAL(3FE8ACE5422AA0DBH);
+  a1[ 8] := ToREAL(3FE7A11473EB0186H);
+  a1[ 9] := ToREAL(3FE6A09E667F3BCCH);
+  a1[10] := ToREAL(3FE5AB07DD485429H);
+  a1[11] := ToREAL(3FE4BFDAD5362A27H);
+  a1[12] := ToREAL(3FE3DEA64C123422H);
+  a1[13] := ToREAL(3FE306FE0A31B715H);
+  a1[14] := ToREAL(3FE2387A6E756238H);
+  a1[15] := ToREAL(3FE172B83C7D517AH);
+  a1[16] := ToREAL(3FE0B5586CF9890FH);
   a1[17] := HALF;
 
   (* a2[i]=2**[(1-2i)/16] - a1[2i]; delta resolution *)
-  a2[1] := ToLONGREAL(3C90B1EE74320000H);
-  a2[2] := ToLONGREAL(3C71106589500000H);
-  a2[3] := ToLONGREAL(3C6C7C46B0700000H);
-  a2[4] := ToLONGREAL(3C9AFAA2047F0000H);
-  a2[5] := ToLONGREAL(3C86324C05460000H);
-  a2[6] := ToLONGREAL(3C7ADA0911F00000H);
-  a2[7] := ToLONGREAL(3C89B07EB6C80000H);
-  a2[8] := ToLONGREAL(3C88A62E4ADC0000H);
+  a2[1] := ToREAL(3C90B1EE74320000H);
+  a2[2] := ToREAL(3C71106589500000H);
+  a2[3] := ToREAL(3C6C7C46B0700000H);
+  a2[4] := ToREAL(3C9AFAA2047F0000H);
+  a2[5] := ToREAL(3C86324C05460000H);
+  a2[6] := ToREAL(3C7ADA0911F00000H);
+  a2[7] := ToREAL(3C89B07EB6C80000H);
+  a2[8] := ToREAL(3C88A62E4ADC0000H);
 
   (* reenable compiler warnings *)
   (* < * POP * > *)

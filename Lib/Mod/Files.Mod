@@ -643,12 +643,12 @@ Especially Length would become fairly complex.
     x := SYSTEM.VAL(SET, ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H)
   END ReadSet;
 
-  PROCEDURE ReadReal* (VAR R: Rider; VAR x: REAL);
+  PROCEDURE ReadReal* (VAR R: Rider; VAR x: SHORTREAL);
     VAR b: ARRAY 4 OF CHAR;
   BEGIN ReadBytes(R, b, 4); FlipBytes(b, x)
   END ReadReal;
 
-  PROCEDURE ReadLReal* (VAR R: Rider; VAR x: LONGREAL);
+  PROCEDURE ReadLReal* (VAR R: Rider; VAR x: REAL);
     VAR b: ARRAY 8 OF CHAR;
   BEGIN ReadBytes(R, b, 8); FlipBytes(b, x)
   END ReadLReal;
@@ -732,12 +732,12 @@ Especially Length would become fairly complex.
     WriteBytes(R, b, 4)
   END WriteSet;
 
-  PROCEDURE WriteReal* (VAR R: Rider; x: REAL);
+  PROCEDURE WriteReal* (VAR R: Rider; x: SHORTREAL);
     VAR b: ARRAY 4 OF CHAR;
   BEGIN FlipBytes(x, b); WriteBytes(R, b, 4)
   END WriteReal;
 
-  PROCEDURE WriteLReal* (VAR R: Rider; x: LONGREAL);
+  PROCEDURE WriteLReal* (VAR R: Rider; x: REAL);
     VAR b: ARRAY 8 OF CHAR;
   BEGIN FlipBytes(x, b); WriteBytes(R, b, 8)
   END WriteLReal;

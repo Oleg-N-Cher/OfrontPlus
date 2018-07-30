@@ -67,8 +67,8 @@ typedef unsigned char CHAR;
 typedef short int     SHORTINT;
 typedef int           INTEGER;   // INTEGER is 32 bit.
 typedef unsigned int  SET;       // SET is 32 bit.
-typedef float         REAL;
-typedef double        LONGREAL;
+typedef float         SHORTREAL;
+typedef double        REAL;
 typedef void*         SYSTEM_PTR;
 
 // Unsigned variants are for use by shift and rotate macros.
@@ -103,8 +103,8 @@ extern LONGINT SYSTEM_ABS    (LONGINT i);
 extern double  SYSTEM_ABSD   (double i);
 extern LONGINT SYSTEM_DIV    (LONGINT x, LONGINT y);
 extern LONGINT SYSTEM_MOD    (LONGINT x, LONGINT y);
-extern INTEGER SYSTEM_ENTIER (LONGREAL x);
-extern LONGINT SYSTEM_ENTIERL(LONGREAL x);
+extern INTEGER SYSTEM_ENTIER (REAL x);
+extern LONGINT SYSTEM_ENTIERL(REAL x);
 
 
 // Signal handling in SYSTEM.c

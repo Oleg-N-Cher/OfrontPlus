@@ -57,7 +57,7 @@ PROCEDURE RND* (range : INTEGER) : INTEGER;
     RETURN z MOD range
   END RND;
 
-PROCEDURE Random*() : REAL;
+PROCEDURE Random*() : SHORTREAL;
 (**Calculates a number @samp{x} with @samp{0.0 <= x < 1.0}.  *)
   BEGIN
     NextRND;
