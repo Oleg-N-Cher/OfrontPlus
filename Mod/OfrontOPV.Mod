@@ -332,11 +332,14 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	BEGIN from := n^.typ^.form;
 		CASE form OF
 		| Byte:
-			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
-				IF SideEffects(n) THEN OPM.Write("F") END ;
-				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
-				OPM.WriteInt(MAX(BYTE) + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
-			ELSE OPM.WriteString("(BYTE)"); Entier(n, 9)
+			IF from = Bool THEN OPM.WriteString("(BYTE)"); expr(n, 9)
+			ELSE
+				IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
+					IF SideEffects(n) THEN OPM.Write("F") END ;
+					OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
+					OPM.WriteInt(MAX(BYTE) + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
+				ELSE OPM.WriteString("(BYTE)"); Entier(n, 9)
+				END
 			END
 		| SInt:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
