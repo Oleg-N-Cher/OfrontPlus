@@ -16,8 +16,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		str-: String;
 		numtyp-: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
 		intval-: LONGINT;	(* integer value or string length (incl. 0X) *)
-		realval-: REAL;
-		lrlval-: LONGREAL;
+		realval-: SHORTREAL;
+		lrlval-: REAL;
 
 	(*symbols:
 	    |  0          1          2          3          4
@@ -99,10 +99,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END Identifier;
 
 	PROCEDURE Number;
-		VAR i, m, n, d, e: SHORTINT; dig: ARRAY 24 OF CHAR; f: LONGREAL; expCh: CHAR; neg: BOOLEAN;
+		VAR i, m, n, d, e: SHORTINT; dig: ARRAY 24 OF CHAR; f: REAL; expCh: CHAR; neg: BOOLEAN;
 
-		PROCEDURE Ten(e: SHORTINT): LONGREAL;
-			VAR x, p: LONGREAL;
+		PROCEDURE Ten(e: SHORTINT): REAL;
+			VAR x, p: REAL;
 		BEGIN x := 1; p := 10;
 			WHILE e > 0 DO
 				IF ODD(e) THEN x := x*p END;

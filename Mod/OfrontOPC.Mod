@@ -175,8 +175,16 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.Write(Underscore)
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
-			END ;
-			OPM.WriteString(obj^.name^)
+			END;
+			IF obj = OPT.bytetyp^.strobj THEN OPM.WriteString("BYTE")
+			ELSIF obj = OPT.sinttyp^.strobj THEN OPM.WriteString("SHORTINT")
+			ELSIF obj = OPT.inttyp^.strobj THEN OPM.WriteString("INTEGER")
+			ELSIF obj = OPT.linttyp^.strobj THEN OPM.WriteString("LONGINT")
+			ELSIF obj = OPT.realtyp^.strobj THEN OPM.WriteString("SHORTREAL")
+			ELSIF obj = OPT.lrltyp^.strobj THEN OPM.WriteString("REAL")
+			ELSE
+				OPM.WriteString(obj^.name^)
+			END
 		END
 	END Ident;
 
@@ -290,7 +298,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			WHILE typ^.comp = DynArr DO INC(nofdims); typ := typ^.BaseTyp END ;
 			OPM.WriteString(Struct); BegBlk;
 			BegStat;
-			IF OPM.IndexSize = OPM.IntSize THEN Str1("INTEGER len[#]", nofdims)
+			CASE OPM.IndexSize OF
+			| 2: Str1("SHORTINT len[#]", nofdims)
+			| 4: Str1("INTEGER len[#]", nofdims)
 			ELSE Str1("LONGINT len[#]", nofdims)
 			END;
 			EndStat;
@@ -381,7 +391,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		dim := 1; typ := par^.typ^.BaseTyp;
 		WHILE (typ^.comp = DynArr) & ~ODD(typ^.sysflag) DO
 			IF ansiDefine THEN
-				IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+				CASE OPM.IndexSize OF
+				| 2: OPM.WriteString(", SHORTINT ")
+				| 4: OPM.WriteString(", INTEGER ")
 				ELSE OPM.WriteString(", LONGINT ")
 				END
 			ELSE OPM.WriteString(Comma)
@@ -613,7 +625,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			OPM.Write('"');
 			IF typ^.strobj # NIL THEN OPM.WriteString(typ^.strobj^.name^) END ;
 			Str1('", #), {', typ^.size);
-			nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.PointerSize);
+			nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.AddressSize);
 			EndStat
 		END
 	END TDescDecl;
@@ -670,13 +682,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF (curAlign < align) & (gap - (adr - off) >= align) THEN (* preserve alignment of the enclosing struct! *)
 			DEC(gap, (adr - off) + align);
 			BegStat;
-			IF align = OPM.IntSize THEN OPM.WriteString("INTEGER")
-			ELSIF align = OPM.LIntSize THEN OPM.WriteString("LONGINT")
-			ELSIF align = OPM.LRealSize THEN OPM.WriteString("LONGREAL")
-			END ;
+			IF align = 4 THEN OPM.WriteString("INTEGER")
+			ELSIF align = 8 THEN OPM.WriteString("LONGINT")
+			END;
 			Str1(" _prvt#", n); INC(n); EndStat;
 			curAlign := align
-		END ;
+		END;
 		IF gap > 0 THEN BegStat; Str1("char _prvt#", n); INC(n); Str1("[#]", gap); EndStat END
 	END FillGap;
 
@@ -744,7 +755,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN (* declare len parameter(s) *)
 					EndStat; BegStat;
 					base := OPT.linttyp;
-					IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString("INTEGER ")
+					CASE OPM.IndexSize OF
+					| 2: OPM.WriteString("SHORTINT ")
+					| 4: OPM.WriteString("INTEGER ")
 					ELSE OPM.WriteString("LONGINT ")
 					END;
 					LenList(obj, FALSE, TRUE)
@@ -776,7 +789,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				END ;
 				IF showOberonParams THEN
 					IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN
-						IF OPM.IndexSize = OPM.IntSize THEN OPM.WriteString(", INTEGER ")
+						CASE OPM.IndexSize OF
+						| 2: OPM.WriteString(", SHORTINT ")
+						| 4: OPM.WriteString(", INTEGER ")
 						ELSE OPM.WriteString(", LONGINT ")
 						END;
 						LenList(obj, TRUE, showParamNames)

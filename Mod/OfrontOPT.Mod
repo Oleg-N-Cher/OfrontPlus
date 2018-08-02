@@ -21,7 +21,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			intval*: LONGINT;	(* constant value or adr, proc par size, text position or least case label *)
 			intval2*: INTEGER;	(* string length, proc var size or larger case label *)
 			setval*: SET;	(* constant value, procedure body present or "ELSE" present in case *)
-			realval*: LONGREAL	(* real or longreal constant value *)
+			realval*: REAL	(* real or longreal constant value *)
 		END ;
 
 		ObjDesc* = RECORD
@@ -66,7 +66,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 	VAR
 		typSize*: PROCEDURE(typ: Struct);
-		topScope*, bits*: Object;
+		topScope*: Object;
 		undftyp*, bytetyp*, booltyp*, chartyp*, sinttyp*, inttyp*, linttyp*,
 		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*: Struct;
 		nofGmod*: BYTE;	(*nof imports*)
@@ -399,7 +399,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END FPrintStr;
 
 	PROCEDURE FPrintObj*(obj: Object);
-		VAR fprint, f, m: INTEGER; rval: REAL; ext: ConstExt;
+		VAR fprint, f, m: INTEGER; rval: SHORTREAL; ext: ConstExt;
 	BEGIN
 		IF ~obj^.fpdone THEN
 			fprint := 0; obj^.fpdone := TRUE;
@@ -524,7 +524,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InMod;
 
 	PROCEDURE InConstant(f: INTEGER; conval: Const);
-		VAR ch: CHAR; i: INTEGER; ext, t: ConstExt; rval: REAL; str: OPS.Name;
+		VAR ch: CHAR; i: INTEGER; ext, t: ConstExt; rval: SHORTREAL; str: OPS.Name;
 	BEGIN
 		CASE f OF
 		| Char, Bool:
@@ -660,7 +660,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			END;
 			CASE tag OF
 			| Sptr:
-				typ^.form := Pointer; typ^.size := OPM.PointerSize; typ^.n := 0; InStruct(typ^.BaseTyp)
+				typ^.form := Pointer; typ^.size := OPM.AddressSize; typ^.n := 0; InStruct(typ^.BaseTyp)
 			| Sarr:
 				typ^.form := Comp; typ^.comp := Array; InStruct(typ^.BaseTyp); typ^.n := SHORT(OPM.SymRInt());
 				typSize(typ) (* no bounds address !! *)
@@ -690,7 +690,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					impCtxt.nextTag := SHORT(OPM.SymRInt())
 				END
 			| Spro:
-				typ^.form := ProcTyp; typ^.size := OPM.ProcSize; InSign(mno, typ^.BaseTyp, typ^.link)
+				typ^.form := ProcTyp; typ^.size := OPM.AddressSize; InSign(mno, typ^.BaseTyp, typ^.link)
 			END ;
 			IF ref = impCtxt.minr THEN
 				WHILE ref < impCtxt.nofr DO
@@ -962,7 +962,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END OutStr;
 
 	PROCEDURE OutConstant(obj: Object);
-		VAR f: SHORTINT; rval: REAL;
+		VAR f: SHORTINT; rval: SHORTREAL;
 	BEGIN
 		f := obj^.typ^.form; OPM.SymWInt(f);
 		CASE f OF
@@ -1084,77 +1084,88 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
-	PROCEDURE EnterSwitchableProc(IN name: OPS.Name; num: SHORTINT): Object;
-		VAR obj: Object;
-	BEGIN Insert(name, obj);
-		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num;
-		RETURN obj
-	END EnterSwitchableProc;
+	PROCEDURE InitScope*;
+	BEGIN
+		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
+		InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
+		InitStruct(stringtyp, String); InitStruct(niltyp, NilTyp);
+		undftyp^.BaseTyp := undftyp;
+
+		(*initialization of module SYSTEM*)
+		EnterTyp("PTR", Pointer, OPM.AddressSize, sysptrtyp);
+		EnterProc("ADR", adrfn);
+		EnterProc("CC", ccfn);
+		EnterProc("LSH", lshfn);
+		EnterProc("ROT", rotfn);
+		EnterProc("GET", getfn);
+		EnterProc("PUT", putfn);
+		EnterProc("GETREG", getrfn);
+		EnterProc("PUTREG", putrfn);
+		EnterProc("BIT", bitfn);
+		EnterProc("VAL", valfn);
+		EnterProc("NEW", sysnewfn);
+		EnterProc("MOVE", movefn);
+		syslink := topScope^.right;
+		universe := topScope; topScope^.right := NIL;
+
+		EnterTyp("CHAR", Char, 1, chartyp);
+		EnterTyp("BOOLEAN", Bool, 1, booltyp);
+		EnterTyp("SET", Set, OPM.SetSize, settyp);
+		IF (OPM.Language = "C") OR (OPM.Language = "3") THEN
+			EnterTyp("BYTE", Byte, 1, bytetyp);
+			EnterTyp("SHORTINT", SInt, 2, sinttyp);
+			EnterTyp("INTEGER", Int, 4, inttyp);
+			EnterTyp("LONGINT",  LInt, 8, linttyp);
+			EnterTyp("SHORTREAL", Real, 4, realtyp);
+			EnterTyp("REAL", LReal, 8, lrltyp);
+		ELSIF (OPM.Language = "1") OR (OPM.Language = "2") THEN
+			EnterTyp("SHORTINT", Byte, 1, bytetyp);
+			EnterTyp("INTEGER", SInt, 2, sinttyp);
+			EnterTyp("LONGINT",  Int, 4, inttyp);
+			EnterTyp("HUGEINT",  LInt, 8, linttyp);
+			EnterTyp("REAL", Real, 4, realtyp);
+			EnterTyp("LONGREAL", LReal, 8, lrltyp)
+		ELSE (* "7" *)
+			EnterTyp("INTEGER", Int, 4, inttyp);
+			EnterTyp("REAL", LReal, 8, lrltyp)
+		END;
+		EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
+		EnterBoolConst("TRUE",  1);
+		EnterProc("HALT", haltfn);
+		EnterProc("NEW", newfn);
+		EnterProc("ABS", absfn);
+		EnterProc("CAP", capfn);
+		EnterProc("ORD", ordfn);
+		EnterProc("ENTIER", entierfn);
+		EnterProc("ODD", oddfn);
+		EnterProc("MIN", minfn);
+		EnterProc("MAX", maxfn);
+		EnterProc("CHR", chrfn);
+		EnterProc("SHORT", shortfn);
+		EnterProc("LONG", longfn);
+		EnterProc("SIZE", sizefn);
+		EnterProc("INC", incfn);
+		EnterProc("DEC", decfn);
+		EnterProc("INCL", inclfn);
+		EnterProc("EXCL", exclfn);
+		EnterProc("LEN", lenfn);
+		EnterProc("COPY", copyfn);
+		EnterProc("ASH", ashfn);
+		EnterProc("ASSERT", assertfn);
+		IF (OPM.Language = "C") OR (OPM.Language = "3") THEN
+			EnterProc("BITS", bitsfn)	(* Component Pascal BITS() *)
+		END;
+		impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
+		impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
+		impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;
+		impCtxt.ref[LInt] := linttyp;  impCtxt.ref[Real] := realtyp;
+		impCtxt.ref[LReal] := lrltyp;  impCtxt.ref[Set] := settyp;
+		impCtxt.ref[String] := stringtyp; impCtxt.ref[NilTyp] := niltyp;
+		impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp
+	END InitScope;
 
 BEGIN
-	NEW(null, 1); null^[0] := 0X;
-	topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
-	InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
-	InitStruct(stringtyp, String); InitStruct(niltyp, NilTyp);
-	undftyp^.BaseTyp := undftyp;
-
-	(*initialization of module SYSTEM*)
-	EnterTyp("PTR", Pointer, OPM.PointerSize, sysptrtyp);
-	EnterProc("ADR", adrfn);
-	EnterProc("CC", ccfn);
-	EnterProc("LSH", lshfn);
-	EnterProc("ROT", rotfn);
-	EnterProc("GET", getfn);
-	EnterProc("PUT", putfn);
-	EnterProc("GETREG", getrfn);
-	EnterProc("PUTREG", putrfn);
-	EnterProc("BIT", bitfn);
-	EnterProc("VAL", valfn);
-	EnterProc("NEW", sysnewfn);
-	EnterProc("MOVE", movefn);
-	syslink := topScope^.right;
-	universe := topScope; topScope^.right := NIL;
-
-	EnterTyp("BYTE", Byte, 1, bytetyp);
-	EnterTyp("CHAR", Char, 1, chartyp);
-	EnterTyp("SET", Set, OPM.SetSize, settyp);
-	EnterTyp("REAL", Real, OPM.RealSize, realtyp);
-	EnterTyp("INTEGER", Int, OPM.IntSize, inttyp);
-	EnterTyp("LONGINT",  LInt, OPM.LIntSize, linttyp);
-	EnterTyp("LONGREAL", LReal, OPM.LRealSize, lrltyp);
-	EnterTyp("SHORTINT", SInt, OPM.SIntSize, sinttyp);
-	EnterTyp("BOOLEAN", Bool, 1, booltyp);
-	EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
-	EnterBoolConst("TRUE",  1);
-	EnterProc("HALT", haltfn);
-	EnterProc("NEW", newfn);
-	EnterProc("ABS", absfn);
-	EnterProc("CAP", capfn);
-	EnterProc("ORD", ordfn);
-	EnterProc("ENTIER", entierfn);
-	EnterProc("ODD", oddfn);
-	EnterProc("MIN", minfn);
-	EnterProc("MAX", maxfn);
-	EnterProc("CHR", chrfn);
-	EnterProc("SHORT", shortfn);
-	EnterProc("LONG", longfn);
-	EnterProc("SIZE", sizefn);
-	EnterProc("INC", incfn);
-	EnterProc("DEC", decfn);
-	EnterProc("INCL", inclfn);
-	EnterProc("EXCL", exclfn);
-	EnterProc("LEN", lenfn);
-	EnterProc("COPY", copyfn);
-	EnterProc("ASH", ashfn);
-	EnterProc("ASSERT", assertfn);
-	bits := EnterSwitchableProc("BITS@", bitsfn);	(* switches in PropagateElementaryTypeSize *)
-	impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
-	impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
-	impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;
-	impCtxt.ref[LInt] := linttyp;  impCtxt.ref[Real] := realtyp;
-	impCtxt.ref[LReal] := lrltyp;  impCtxt.ref[Set] := settyp;
-	impCtxt.ref[String] := stringtyp; impCtxt.ref[NilTyp] := niltyp;
-	impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp
+	NEW(null, 1); null^[0] := 0X
 END OfrontOPT.
 
 Objects:
