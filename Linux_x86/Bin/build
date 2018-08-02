@@ -1,18 +1,5 @@
-#!/bin/bash
-cd ../Obj
-
-rm ../Sym/*.sym
-
-../Bin/compile OfrontErrors
-../Bin/compile OfrontOPM.cmdln
-../Bin/compile OfrontOPS
-../Bin/compile OfrontOPT
-../Bin/compile OfrontOPB
-../Bin/compile OfrontOPP
-../Bin/compile OfrontOPC
-../Bin/compile OfrontOPV
-../Bin/compile OCatCmd -o ../ocat
-../Bin/compile OfrontCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -o../ofront+
-../Bin/compile BrowserCmd OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -o../showdef
-
-#../Bin/clear
+#!/bin/sh
+if [ ! -f "../Lib/libOfront.a" ]; then cd "../Lib/Bin"; ./build; cd "../Bin"; fi
+./o2c
+./cc
+rm ../Obj/*.o
