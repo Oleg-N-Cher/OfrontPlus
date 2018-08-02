@@ -346,7 +346,7 @@
 			ELSE OPM.WriteString("(SHORTINT)"); Entier(n, 9)
 			END
 		| Int:
-			IF from < Int THEN OPM.WriteString("(INTEGER)"); expr(n, 9)
+			IF (from < Int) OR (from = Set) THEN OPM.WriteString("(INTEGER)"); expr(n, 9)
 			ELSE
 				IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 					IF SideEffects(n) THEN OPM.Write("F") END ;
