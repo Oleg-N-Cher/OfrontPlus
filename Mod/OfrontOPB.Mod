@@ -186,10 +186,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	PROCEDURE SetIntType(node: OPT.Node);
 		VAR v: LONGINT;
 	BEGIN v := node^.conval^.intval;
-		IF (-128 <= v) & (v <= 127) THEN node^.typ := OPT.bytetyp
-		ELSIF (OPM.MinSInt <= v) & (v <= OPM.MaxSInt) THEN node^.typ := OPT.sinttyp
-		ELSIF (OPM.MinInt <= v) & (v <= OPM.MaxInt) THEN node^.typ := OPT.inttyp
-		ELSIF (OPM.MinLInt <= v) & (v <= OPM.MaxLInt) (*bootstrap or cross*) THEN
+		IF (MIN(BYTE) <= v) & (v <= MAX(BYTE)) THEN node^.typ := OPT.bytetyp
+		ELSIF (MIN(SHORTINT) <= v) & (v <= MAX(SHORTINT)) THEN node^.typ := OPT.sinttyp
+		ELSIF (MIN(INTEGER) <= v) & (v <= MAX(INTEGER)) THEN node^.typ := OPT.inttyp
+		ELSIF (MIN(LONGINT) <= v) & (v <= MAX(LONGINT)) (*bootstrap or cross*) THEN
 			node^.typ := OPT.linttyp
 		ELSE err(203); node^.typ := OPT.sinttyp; node^.conval^.intval := 1
 		END
@@ -202,7 +202,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.conval^.intval := intval; SetIntType(x); RETURN x
 	END NewIntConst;
 
-	PROCEDURE NewRealConst*(realval: LONGREAL; typ: OPT.Struct): OPT.Node;
+	PROCEDURE NewRealConst*(realval: REAL; typ: OPT.Struct): OPT.Node;
 		VAR x: OPT.Node;
 	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
@@ -358,10 +358,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END log;
 
 	PROCEDURE CheckRealType(f, nr: SHORTINT; x: OPT.Const);
-		VAR min, max, r: LONGREAL;
+		VAR min, max, r: REAL;
 	BEGIN
-		IF f = Real THEN min := OPM.MinReal; max := OPM.MaxReal
-		ELSE min := OPM.MinLReal; max := OPM.MaxLReal
+		IF f = Real THEN min := MIN(SHORTREAL); max := MAX(SHORTREAL)
+		ELSE min := MIN(REAL); max := MAX(REAL)
 		END ;
 		r := ABS(x^.realval);
 		IF (r > max) OR (r < min) THEN
@@ -448,8 +448,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (z^.class < Nconst) OR (f = String) THEN z := NewOp(op, typ, z)
 					ELSE err(127)
 					END ;
-					IF OPM.PointerSize = OPM.IntSize THEN z^.typ := OPT.inttyp
-					ELSIF OPM.PointerSize = OPM.SIntSize THEN z^.typ := OPT.sinttyp
+					IF OPM.AddressSize = 4 THEN z^.typ := OPT.inttyp
+					ELSIF OPM.AddressSize = 2 THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
 					END;
 			| cc: (*SYSTEM.CC*)
@@ -632,7 +632,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) <= 1.0;
-					IF temp OR (ABS(xval^.realval) <= OPM.MaxLReal / ABS(yval^.realval)) THEN
+					IF temp OR (ABS(xval^.realval) <= MAX(REAL) / ABS(yval^.realval)) THEN
 						xval^.realval := xval^.realval * yval^.realval; CheckRealType(f, 204, xval)
 					ELSE err(204)
 					END
@@ -649,7 +649,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					x^.typ := OPT.realtyp
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) >= 1.0;
-					IF temp OR (ABS(xval^.realval) <= OPM.MaxLReal * ABS(yval^.realval)) THEN
+					IF temp OR (ABS(xval^.realval) <= MAX(REAL) * ABS(yval^.realval)) THEN
 						xval^.realval := xval^.realval / yval^.realval; CheckRealType(f, 205, xval)
 					ELSE err(205)
 					END
@@ -686,8 +686,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(206)
 					END
 				ELSIF f IN realSet THEN
-					temp := (yval^.realval >= 0.0) & (xval^.realval <= OPM.MaxLReal - yval^.realval);
-					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= -OPM.MaxLReal - yval^.realval) THEN
+					temp := (yval^.realval >= 0.0) & (xval^.realval <= MAX(REAL) - yval^.realval);
+					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= MIN(REAL) - yval^.realval) THEN
 							xval^.realval := xval^.realval + yval^.realval; CheckRealType(f, 206, xval)
 					ELSE err(206)
 					END
@@ -703,8 +703,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(207)
 					END
 				ELSIF f IN realSet THEN
-					temp := (yval^.realval >= 0.0) & (xval^.realval >= -OPM.MaxLReal + yval^.realval);
-					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= OPM.MaxLReal + yval^.realval) THEN
+					temp := (yval^.realval >= 0.0) & (xval^.realval >= MIN(REAL) + yval^.realval);
+					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= MAX(REAL) + yval^.realval) THEN
 							xval^.realval := xval^.realval - yval^.realval; CheckRealType(f, 207, xval)
 					ELSE err(207)
 					END
@@ -741,7 +741,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END ConstOp;
 
 	PROCEDURE Convert(VAR x: OPT.Node; typ: OPT.Struct);
-		VAR node: OPT.Node; f, g: SHORTINT; k: LONGINT; r: LONGREAL;
+		VAR node: OPT.Node; f, g: SHORTINT; k: LONGINT; r: REAL;
 	BEGIN f := x^.typ^.form; g := typ^.form;
 		IF x^.class = Nconst THEN
 			IF f = Set THEN
@@ -1108,8 +1108,8 @@ avoid unnecessary intermediate variables in OFront
 				MOp(cap, x)
 		| ordfn: (*ORD*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f = Char THEN IF OPM.SIntSize = 2 THEN Convert(x, OPT.sinttyp) ELSE Convert(x, OPT.inttyp) END
-				ELSIF f = Set THEN IF OPM.IntSize = 4 THEN Convert(x, OPT.inttyp) ELSE Convert(x, OPT.linttyp) END
+				ELSIF f = Char THEN Convert(x, OPT.sinttyp)
+				ELSIF f = Set THEN Convert(x, OPT.inttyp)
 				ELSE err(111)
 				END
 		| bitsfn: (*BITS*)
@@ -1130,13 +1130,13 @@ avoid unnecessary intermediate variables in OFront
 					CASE f OF
 					  Bool:  x := NewBoolConst(FALSE)
 					| Char:  x := NewIntConst(0); x^.typ := OPT.chartyp
-					| Byte:  x := NewIntConst(-128)
-					| SInt:  x := NewIntConst(OPM.MinSInt)
-					| Int:   x := NewIntConst(OPM.MinInt)
-					| LInt:  x := NewIntConst(OPM.MinLInt)
+					| Byte:  x := NewIntConst(MIN(BYTE))
+					| SInt:  x := NewIntConst(MIN(SHORTINT))
+					| Int:   x := NewIntConst(MIN(INTEGER))
+					| LInt:  x := NewIntConst(MIN(LONGINT))
 					| Set:   x := NewIntConst(0); x^.typ := OPT.inttyp
-					| Real:  x := NewRealConst(OPM.MinReal, OPT.realtyp)
-					| LReal: x := NewRealConst(OPM.MinLReal, OPT.lrltyp)
+					| Real:  x := NewRealConst(MIN(SHORTREAL), OPT.realtyp)
+					| LReal: x := NewRealConst(MIN(REAL), OPT.lrltyp)
 					ELSE err(111)
 					END
 				ELSE err(110)
@@ -1146,13 +1146,13 @@ avoid unnecessary intermediate variables in OFront
 					CASE f OF
 					  Bool:  x := NewBoolConst(TRUE)
 					| Char:  x := NewIntConst(0FFH); x^.typ := OPT.chartyp
-					| Byte:  x := NewIntConst(127)
-					| SInt:  x := NewIntConst(OPM.MaxSInt)
-					| Int:   x := NewIntConst(OPM.MaxInt)
-					| LInt:  x := NewIntConst(OPM.MaxLInt)
+					| Byte:  x := NewIntConst(MAX(BYTE))
+					| SInt:  x := NewIntConst(MAX(SHORTINT))
+					| Int:   x := NewIntConst(MAX(INTEGER))
+					| LInt:  x := NewIntConst(MAX(LONGINT))
 					| Set:   x := NewIntConst(OPM.MaxSet); x^.typ := OPT.inttyp
-					| Real:  x := NewRealConst(OPM.MaxReal, OPT.realtyp)
-					| LReal: x := NewRealConst(OPM.MaxLReal, OPT.lrltyp)
+					| Real:  x := NewRealConst(MAX(SHORTREAL), OPT.realtyp)
+					| LReal: x := NewRealConst(MAX(REAL), OPT.lrltyp)
 					ELSE err(111)
 					END
 				ELSE err(110)
@@ -1219,11 +1219,11 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| getfn, putfn, bitfn, movefn: (*SYSTEM.GET, SYSTEM.PUT, SYSTEM.BIT, SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF OPM.PointerSize = OPM.IntSize THEN
+				ELSIF OPM.AddressSize = 4 THEN
 					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
 					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
 					END
-				ELSIF OPM.PointerSize = OPM.SIntSize THEN
+				ELSIF OPM.AddressSize = 2 THEN
 					IF (x^.class = Nconst) & (f = Byte) THEN Convert(x, OPT.sinttyp)
 					ELSIF ~(f IN {SInt, Pointer}) THEN err(111); x^.typ := OPT.sinttyp
 					END
@@ -1298,7 +1298,9 @@ avoid unnecessary intermediate variables in OFront
 						IF typ^.comp = DynArr THEN
 							WHILE p^.class = Nindex DO p := p^.left; INC(x^.conval^.intval) END ;	(* possible side effect ignored *)
 							p := NewOp(Ndop, len, p, x);
-							IF OPM.IndexSize = OPM.IntSize THEN p^.typ := OPT.inttyp
+							CASE OPM.IndexSize OF
+							| 2: p^.typ := OPT.sinttyp
+							| 4: p^.typ := OPT.inttyp
 							ELSE p^.typ := OPT.linttyp
 							END
 						ELSE p := x; p^.conval^.intval := typ^.n; SetIntType(p)
@@ -1317,7 +1319,7 @@ avoid unnecessary intermediate variables in OFront
 		| ashfn: (*ASH*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF p^.typ = OPT.linttyp THEN maxInt := OPM.MaxLInt ELSE maxInt := OPM.MaxInt END;
+					IF p^.typ = OPT.linttyp THEN maxInt := MAX(LONGINT) ELSE maxInt := MAX(INTEGER) END;
 					maxExp := SHORT(log(maxInt DIV 2 + 1)); maxExp := exp;
 					IF (x^.class = Nconst) & ((-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
@@ -1409,11 +1411,11 @@ avoid unnecessary intermediate variables in OFront
 				p^.typ := OPT.notyp
 		| movefn: (*SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF OPM.PointerSize = OPM.IntSize THEN
+				ELSIF OPM.AddressSize = 4 THEN
 					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
 					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
 					END
-				ELSIF OPM.PointerSize = OPM.SIntSize THEN
+				ELSIF OPM.AddressSize = 2 THEN
 					IF (x^.class = Nconst) & (f = Byte) THEN Convert(x, OPT.sinttyp)
 					ELSIF ~(f IN {SInt, Pointer}) THEN err(111); x^.typ := OPT.sinttyp
 					END
@@ -1483,7 +1485,9 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF (fctno = lenfn) & (parno = 1) THEN (*LEN*)
 					IF p^.typ^.comp = DynArr THEN dim := 0;
 						WHILE p^.class = Nindex DO p := p^.left; INC(dim) END ;	(* possible side effect ignored *)
-						IF OPM.IndexSize = OPM.IntSize THEN BindNodes(Ndop, OPT.inttyp, p, NewIntConst(dim))
+						CASE OPM.IndexSize OF
+						| 2: BindNodes(Ndop, OPT.sinttyp, p, NewIntConst(dim))
+						| 4: BindNodes(Ndop, OPT.inttyp, p, NewIntConst(dim))
 						ELSE BindNodes(Ndop, OPT.linttyp, p, NewIntConst(dim))
 						END;
 						p^.subcl := len

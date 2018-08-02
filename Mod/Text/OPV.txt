@@ -128,12 +128,12 @@
 				TypSize(typ^.BaseTyp);
 				typ^.size := typ^.n * typ^.BaseTyp^.size
 			ELSIF f = Pointer THEN
-				typ^.size := OPM.PointerSize;
+				typ^.size := OPM.AddressSize;
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ^.n)
 				ELSE TypSize(typ^.BaseTyp)
 				END
 			ELSIF f = ProcTyp THEN
-				typ^.size := OPM.ProcSize;
+				typ^.size := OPM.AddressSize;
 			ELSIF c = DynArr THEN
 				btyp := typ^.BaseTyp; TypSize(btyp);
 				IF ODD(typ^.sysflag) THEN typ^.size := 4
@@ -335,14 +335,14 @@
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 				IF SideEffects(n) THEN OPM.Write("F") END ;
 				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
-				OPM.WriteInt(127 + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
+				OPM.WriteInt(MAX(BYTE) + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(BYTE)"); Entier(n, 9)
 			END
 		| SInt:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 				IF SideEffects(n) THEN OPM.Write("F") END ;
 				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
-				OPM.WriteInt(OPM.MaxSInt + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
+				OPM.WriteInt(MAX(SHORTINT) + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(SHORTINT)"); Entier(n, 9)
 			END
 		| Int:
@@ -351,7 +351,7 @@
 				IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__SHORT");
 					IF SideEffects(n) THEN OPM.Write("F") END ;
 					OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
-					OPM.WriteInt(OPM.MaxInt + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
+					OPM.WriteInt(MAX(INTEGER) + 1); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
 				ELSE OPM.WriteString("(INTEGER)"); Entier(n, 9)
 				END
 			END
@@ -365,8 +365,8 @@
 			END
 		| Set: OPM.WriteString("(SET)"); Entier(n, 9)
 (*
-		| Real: OPM.WriteString("(REAL)"); expr(n, prec)
-		| LReal: OPM.WriteString("(LONGREAL)"); expr(n, prec)
+		| Real: OPM.WriteString("(SHORTREAL)"); expr(n, prec)
+		| LReal: OPM.WriteString("(REAL)"); expr(n, prec)
 *)
 		ELSE expr(n, prec)
 		END
@@ -544,14 +544,14 @@
 			ELSE expr(n, prec)
 			END ;
 			IF (form = LInt) & (n^.class = Nconst)
-			& (n^.conval^.intval <= OPM.MaxInt) & (n^.conval^.intval >= OPM.MinInt) THEN
+			& (n^.conval^.intval <= MAX(INTEGER)) & (n^.conval^.intval >= MIN(INTEGER)) THEN
 				OPM.PromoteIntConstToLInt()
 			ELSIF (comp = Record) & (mode = VarPar) THEN
 				IF ~ODD(typ^.sysflag) THEN OPM.WriteString(", "); TypeOf(n) END
 			ELSIF (comp = DynArr) & ~ODD(typ^.sysflag) THEN
 				IF n^.class = Nconst THEN (* ap is string constant *)
 					OPM.WriteString(Comma);
-					IF OPM.IndexSize > OPM.IntSize THEN OPM.WriteString("(LONGINT)") END;
+					IF OPM.IndexSize > 4 THEN OPM.WriteString("(LONGINT)") END;
 					OPM.WriteInt(n^.conval^.intval2)
 				ELSE
 					aptyp := n^.typ; dim := 0;

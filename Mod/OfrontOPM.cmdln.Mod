@@ -79,10 +79,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
-		SIntSize-, IntSize-, LIntSize-, SetSize-, RealSize-, LRealSize-,
-		PointerSize-, ProcSize-, IndexSize-, MaxSet-, MaxHDig-: SHORTINT;
-		MinSInt-, MinInt-, MaxSInt-, MaxInt-: INTEGER; MaxIndex-, MinLInt-, MaxLInt-: LONGINT;
-		MinReal-, MaxReal-, MinLReal-, MaxLReal-: LONGREAL;
+		SetSize-, IndexSize-, MaxSet-, MaxHDig-: SHORTINT; MaxIndex-: LONGINT;
 
 		noerr-, warning156-: BOOLEAN;
 		curpos-, errpos*: INTEGER;	(* character and error position in source file *)
@@ -137,34 +134,18 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE GetProperties;
 	BEGIN
 		warning156 := AddressSize = -1;
-		IF warning156 THEN
- 			AddressSize := SIZE(SYSTEM.PTR); (* this compilers address size *)
-			GetAlignment(Alignment)          (* this compilers alignment *)
+		IF warning156 THEN	(* this compiler's address size and alignment *)
+			AddressSize := SIZE(SYSTEM.PTR); GetAlignment(Alignment)
 		END;
 		(* default characteristics *)
-		IF (Language = "1") OR (Language = "2") OR (AddressSize = 2) THEN (* Oberon, Oberon-2 or 8 bit CPUs *)
-			SIntSize := 1; IntSize := 2; LIntSize := 4;
-			MinSInt := -80H; MinInt := -8000H; MinLInt := -2147483647-1;	(*-2147483648*)
-			MaxSInt := 7FH; MaxInt := 7FFFH; MaxLInt := 7FFFFFFFH;	(*2147483647*)
-		ELSE (* Component Pascal and Oberon-3 *)
-			SIntSize := 2; IntSize := 4; LIntSize := 8;
-			MinSInt := -8000H; MaxSInt := 7FFFH;
-			MinInt := -2147483647-1 (*-2147483648*); MaxInt := 7FFFFFFFH (*2147483647*);
-			MinLInt := 8000000000000000H;	(*-9223372036854775808*)
-			MaxLInt := 7FFFFFFFFFFFFFFFH	(*9223372036854775807*)
-		END;
-		IF AddressSize = 2 THEN (* Z80 and other 8 bit CPUs *)
-			SetSize := 1; MaxSet := SetSize * 8 - 1;
-			IndexSize := 2; MaxIndex := 7FFFH (*32767*)
+		IF AddressSize = 2 THEN	(* Z80 and other 8 bit CPUs *)
+			SetSize := 1; MaxSet := 7; IndexSize := 2; MaxIndex := MAX(SHORTINT)
 		ELSE
 			SetSize := 4; MaxSet := 31;
-			IndexSize := 4; (* size of the type of array index, see also SYSTEM_ARRLEN *)
-			MaxIndex := 7FFFFFFFH (*2147483647*)
+			IndexSize := 4;	(* size of the type of array index, see also SYSTEM_ARRLEN *)
+			MaxIndex := MAX(INTEGER)
 		END;
-		RealSize := 4; MaxReal := MAX(REAL); (* ~3.402823466E38 *) MinReal := -MaxReal;
-		LRealSize := 8; MaxLReal := MAX(LONGREAL); (* ~1.7976931348623158D308 *) MinLReal := -MaxLReal;
-		ProcSize := AddressSize; PointerSize := AddressSize;
-		MaxHDig := 2*LIntSize
+		MaxHDig := 2*SIZE(LONGINT)
 	END GetProperties;
 
 	(* ------------------------- parameter handling -------------------------*)
@@ -249,8 +230,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('    "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln
 		ELSE
 			(* set options to initial defaults *)
-			Language := "C"; (* default input language: Component Pascal *)
-			AddressSize := -1; (* undefined *)
+			Language := "C";	(* default input language: Component Pascal *)
+			AddressSize := -1;	(* undefined *)
 			glbopt := defopt; S := 1; s := "";
 			Args.Get(1, s); stop := FALSE;
 			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END;
@@ -380,11 +361,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, set))
 	END FPrintSet;
 
-	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: REAL);
+	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: SHORTREAL);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, real))
 	END FPrintReal;
 
-	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: LONGREAL);
+	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: REAL);
 		VAR li: LONGINT;
 	BEGIN li := SYSTEM.VAL(LONGINT, lr);
 		FPrint(fp, SHORT(li)); FPrint(fp, SHORT(ASH(li, -32)))
@@ -406,11 +387,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.ReadNum(oldSF, k); s := SYSTEM.VAL(SET, SHORT(k))
 	END SymRSet;
 
-	PROCEDURE SymRReal*(VAR r: REAL);
+	PROCEDURE SymRReal*(VAR r: SHORTREAL);
 	BEGIN Files.ReadReal(oldSF, r)
 	END SymRReal;
 
-	PROCEDURE SymRLReal*(VAR lr: LONGREAL);
+	PROCEDURE SymRLReal*(VAR lr: REAL);
 	BEGIN Files.ReadLReal(oldSF, lr)
 	END SymRLReal;
 
@@ -447,11 +428,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.WriteNum(newSF, SYSTEM.VAL(INTEGER, s))
 	END SymWSet;
 
-	PROCEDURE SymWReal*(r: REAL);
+	PROCEDURE SymWReal*(r: SHORTREAL);
 	BEGIN Files.WriteReal(newSF, r)
 	END SymWReal;
 
-	PROCEDURE SymWLReal*(lr: LONGREAL);
+	PROCEDURE SymWLReal*(lr: REAL);
 	BEGIN Files.WriteLReal(newSF, lr)
 	END SymWLReal;
 
@@ -515,13 +496,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END ;
 	END WriteInt;
 
-	PROCEDURE WriteReal* (r: LONGREAL; suffx: CHAR);
+	PROCEDURE WriteReal* (r: REAL; suffx: CHAR);
 		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
 	BEGIN
-		IF ABS(r) > MAX(LONGREAL)/2 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
+		IF ABS(r) > MAX(REAL)/2 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
 (*should be improved *)
 		IF (r < MAX(LONGINT)) & (r > MIN(LONGINT)) & (r = ENTIER(r)) THEN
-			IF suffx = "f" THEN WriteString("(REAL)") ELSE WriteString("(LONGREAL)") END;
+			IF suffx = "f" THEN WriteString("(SHORTREAL)") ELSE WriteString("(REAL)") END;
 			WriteInt(ENTIER(r))
 		ELSE
 			Texts.OpenWriter(W);

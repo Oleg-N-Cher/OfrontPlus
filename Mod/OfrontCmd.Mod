@@ -17,29 +17,10 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		END
 	END Trap;
 
-	PROCEDURE PropagateElementaryTypeSizes;
-		VAR adrinttyp: OPT.Struct;
-	BEGIN
-		OPT.sysptrtyp.size := OPM.PointerSize;
-		OPT.settyp.size := OPM.SetSize;
-		OPT.realtyp.size := OPM.RealSize;
-		OPT.inttyp.size := OPM.IntSize;
-		OPT.linttyp.size := OPM.LIntSize;
-		OPT.lrltyp.size := OPM.LRealSize;
-		OPT.sinttyp.size := OPM.SIntSize;
-		(* Enable or disable Component Pascal BITS() *)
-		IF (OPM.Language = "C") OR (OPM.Language = "3") THEN
-			OPT.bits^.name[4] := 0X (* enable *)
-		ELSE
-			OPT.bits^.name[4] := "@" (* disable *)
-		END
-	END PropagateElementaryTypeSizes;
-
 	PROCEDURE Module*(VAR done: BOOLEAN);
 		VAR ext, new: BOOLEAN; p: OPT.Node;
 	BEGIN
-		PropagateElementaryTypeSizes;
-		OPV.Init; OPP.Module(p, OPM.opt);
+		OPT.InitScope; OPV.Init; OPP.Module(p, OPM.opt);
 		IF OPM.noerr THEN
 			OPV.AdrAndSize(OPT.topScope);
 			OPT.Export(ext, new);
