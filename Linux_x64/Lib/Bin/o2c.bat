@@ -1,7 +1,7 @@
 @ECHO OFF
 SET PATH=%CD%\..\..\..\Bin
-CD ..\Obj64
-SET OBERON=%CD%;%CD%\..\Sym64;%CD%\..\..\..\Lib\Mod
+CD ..\Obj
+SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\Lib\Mod
 
 :: Ofront+
 
@@ -28,4 +28,4 @@ IF errorlevel 1 PAUSE
 ofront+ -sC -88 libCurl.Mod NetHttp.Mod
 IF errorlevel 1 PAUSE
 
-FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym64 >NUL
+FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL

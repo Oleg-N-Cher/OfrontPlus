@@ -1,8 +1,8 @@
-#!/bin/bash
-cd ../Obj64
-export CC="gcc -I. -I../../../Lib/Mod -m64 -Os -g0 -fvisibility=hidden -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
-export AR="ar -rc ../libOfront64.a"
-if [ -f "../libOfront64.a" ]; then rm "../libOfront64.a"; fi
+#!/bin/sh
+cd ../Obj
+export CC="gcc -m64 -I. -I../../../Lib/Mod -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+export AR="ar -rc ../libOfront.a"
+if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
 
 ## Ofront+
 

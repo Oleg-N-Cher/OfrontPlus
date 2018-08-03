@@ -1,7 +1,7 @@
-#!/bin/bash
-cd ../Obj64
-export PATH="$PATH:../../Bin64"
-export OBERON=.:../Sym64:../../../Lib/Mod
+#!/bin/sh
+cd ../Obj
+export PATH="$PATH:../.."
+export OBERON=.:../Sym:../../../Lib/Mod
 
 ## Ofront+
 
@@ -28,4 +28,4 @@ if [ $? != 0 ]; then exit 1; fi
 ofront+ -sC -88 libCurl.Mod NetHttp.Mod
 if [ $? != 0 ]; then exit 1; fi
 
-find . -type f -name "*.sym" -exec mv -f {} ../Sym64 \;
+find . -type f -name "*.sym" -exec mv -f {} ../Sym \;
