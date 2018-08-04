@@ -274,10 +274,10 @@
     		(* укорачивает знаковую константу  до size байтов *)
 	BEGIN
 		CASE size OF
-			| 8 :         (* ничего кодировать не нужно *)
-			| 4 : n := SHORT(n)    (* MOD не надо, т.к. уже выполнили SHORT(uintval) *)
-			| 2 : n := SHORT(SHORT(n MOD 10000H))
-			| 1 : n := SHORT(SHORT(SHORT(n MOD 100H)))
+			| 8:
+			| 4: n := n MOD 100000000L
+			| 2: n := n MOD 10000H
+			| 1: n := n MOD 100H
 		END;
 		RETURN n
 	END Short2Size;
