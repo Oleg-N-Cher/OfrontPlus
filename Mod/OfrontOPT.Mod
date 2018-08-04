@@ -1084,7 +1084,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
-	PROCEDURE InitScope*;
+	PROCEDURE InitScope*(lang: CHAR);
 	BEGIN
 		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 		InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
@@ -1111,14 +1111,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterTyp("CHAR", Char, 1, chartyp);
 		EnterTyp("BOOLEAN", Bool, 1, booltyp);
 		EnterTyp("SET", Set, OPM.SetSize, settyp);
-		IF (OPM.Language = "C") OR (OPM.Language = "3") THEN
+		IF (lang = "C") OR (lang = "3") THEN
 			EnterTyp("BYTE", Byte, 1, bytetyp);
 			EnterTyp("SHORTINT", SInt, 2, sinttyp);
 			EnterTyp("INTEGER", Int, 4, inttyp);
 			EnterTyp("LONGINT",  LInt, 8, linttyp);
 			EnterTyp("SHORTREAL", Real, 4, realtyp);
 			EnterTyp("REAL", LReal, 8, lrltyp);
-		ELSIF (OPM.Language = "1") OR (OPM.Language = "2") THEN
+		ELSIF (lang = "1") OR (lang = "2") THEN
 			EnterTyp("SHORTINT", Byte, 1, bytetyp);
 			EnterTyp("INTEGER", SInt, 2, sinttyp);
 			EnterTyp("LONGINT",  Int, 4, inttyp);
@@ -1152,7 +1152,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("COPY", copyfn);
 		EnterProc("ASH", ashfn);
 		EnterProc("ASSERT", assertfn);
-		IF (OPM.Language = "C") OR (OPM.Language = "3") THEN
+		IF (lang = "C") OR (lang = "3") THEN
 			EnterProc("BITS", bitsfn)	(* Component Pascal BITS() *)
 		END;
 		impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
@@ -1165,7 +1165,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InitScope;
 
 BEGIN
-	NEW(null, 1); null^[0] := 0X
+	NEW(null, 1); null^[0] := 0X; InitScope("C")	(* default input language: Component Pascal *)
 END OfrontOPT.
 
 Objects:
