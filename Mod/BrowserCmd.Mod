@@ -301,7 +301,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			IF S[0] = OptionChar THEN option := S[1]; Args.Get(2, S)
 			ELSE Args.Get(2, vname); option := vname[1]
 			END
-		END ;
+		END;
+		CASE option OF "1", "2", "3", "C", "7": OPT.InitScope(option) ELSE END;
 		IF Args.argc >= 2 THEN
 			Ident(S, name);
 			NEW(T); Texts.Open(T, "");
