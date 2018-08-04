@@ -55,7 +55,10 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			IF ~first THEN Ws("; ") ELSE first := FALSE END;
 			IF option = "x" THEN Wi(par^.adr); Wch(" ") END;
 			IF par^.mode = VarPar THEN
-				IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END;
+				IF option = "C" THEN
+					IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
+				ELSIF par^.vis # inPar THEN Ws("VAR ")
+				END;
 				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 			END;
 			Ws(par^.name^); Ws(": "); Wtype(par^.typ);
@@ -155,8 +158,9 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				Indent(3); Ws("PROCEDURE (");
 				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN
-						IF obj^.link^.vis = inPar THEN Ws("IN ")
-						ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ")
+						IF option = "C" THEN
+							IF obj^.link^.vis = inPar THEN Ws("IN ") ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
+						ELSIF obj^.link^.vis # inPar THEN Ws("VAR ")
 						END;
 						IF ODD(obj^.link^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 					END;
@@ -302,6 +306,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			ELSE Args.Get(2, vname); option := vname[1]
 			END
 		END;
+		IF option = 0X THEN option := "C" END;
 		CASE option OF "1", "2", "3", "C", "7": OPT.InitScope(option) ELSE END;
 		IF Args.argc >= 2 THEN
 			Ident(S, name);

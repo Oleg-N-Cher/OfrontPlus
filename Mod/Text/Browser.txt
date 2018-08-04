@@ -56,7 +56,10 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			IF ~first THEN Ws("; ") ELSE first := FALSE END;
 			IF option = "x" THEN Wi(par^.adr); Wch(" ") END;
 			IF par^.mode = VarPar THEN
-				IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END;
+				IF option = "C" THEN
+					IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
+				ELSIF par^.vis # inPar THEN Ws("VAR ")
+				END;
 				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 			END;
 			Ws(par^.name^); Ws(": "); Wtype(par^.typ);
@@ -157,8 +160,9 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				Indent(3); Wch("(");
 				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN
-						IF obj^.link^.vis = inPar THEN Ws("IN ")
-						ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ")
+						IF option = "C" THEN
+							IF obj^.link^.vis = inPar THEN Ws("IN ") ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
+						ELSIF obj^.link^.vis # inPar THEN Ws("VAR ")
 						END;
 						IF ODD(obj^.link^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 					END;
@@ -321,7 +325,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			Append(vname, ".Def");
 			T := TextModels.dir.New();
 			W.ConnectTo(T); W.SetPos(0);
-			option := 0X; OPT.Init(name, {}); OPT.SelfName := "AvoidErr154";
+			option := "C"; OPT.InitScope(option); OPT.Init(name, {}); OPT.SelfName := "AvoidErr154";
 			WModule(name, T, done);
 			OPT.Close;
 			IF done THEN Views.OpenAux(TextViews.dir.New(T), vname) END
