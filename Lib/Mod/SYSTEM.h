@@ -61,23 +61,23 @@ void *alloca(SYSTEM_ADR size);
 
 // Oberon types
 
-typedef char          BOOLEAN;
-typedef signed char   BYTE;
-typedef unsigned char CHAR;
-typedef short int     SHORTINT;
-typedef int           INTEGER;   // INTEGER is 32 bit.
-typedef unsigned int  SET;       // SET is 32 bit.
-typedef float         SHORTREAL;
-typedef double        REAL;
-typedef void*         SYSTEM_PTR;
+typedef unsigned char  BOOLEAN;
+typedef signed char    BYTE;
+typedef unsigned char  CHAR;
+typedef short          SHORTINT;
+typedef int            INTEGER;   // INTEGER is 32 bit
+typedef unsigned int   SET;       // SET is 32 bit
+typedef float          SHORTREAL;
+typedef double         REAL;
+typedef void*          SYSTEM_PTR;
 
-// Unsigned variants are for use by shift and rotate macros.
+// Unsigned variants are for use by shift and rotate macros
 
-typedef unsigned char      __U_BYTE;
-typedef unsigned char      __U_CHAR;
-typedef unsigned short int __U_SHORTINT;
-typedef unsigned int       __U_INTEGER;
-typedef unsigned int       __U_SET;
+typedef unsigned char  __U_BYTE;
+typedef unsigned char  __U_CHAR;
+typedef unsigned short __U_SHORTINT;
+typedef unsigned int   __U_INTEGER;
+typedef unsigned int   __U_SET;
 
 // LONGINT is 64 bit.
 
