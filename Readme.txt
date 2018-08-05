@@ -13,17 +13,17 @@ Ofront+ is based on Ofront by Josef Templ, but some of Component Pascal features
 Ofront+ differences from Ofront/voc
 ===================================
 
-  1. Advanced features for describing bindings to foreign libraries, system flag [stdcall].
+  1. New experimental dialect Oberon-3 (based on Oberon-07, Component Pascal & other).
 
   2. Outputs a module name and position for any runtime error, HALT and ASSERT.
 
-  3. Allows arithmetic operations with the type BYTE.
+  3. Allows arithmetic operations with the type BYTE (Oberon-3 & Component Pascal).
 
-  4. Allows unlimited length of constant strings (in Ofront/voc the maximum is 255 characters).
+  4. Allows the unlimited length of constant strings (in Ofront/voc the maximum is 255 characters).
 
-  5. Allows SYSTEM.VAL(INTEGER, {80000000H..0FFFFFFFFH}) as a constant of INTEGER type (otherwise LONGINT).
+  5. Allows SYSTEM.VAL(INTEGER, {80000000H..0FFFFFFFFH}) as a constant of 32-bit type (otherwise 64-bit).
 
-  6. ASH and SYSTEM.LSH return the INTEGER type result for INTEGER type argument, and LONGINT type result for LONGINT argument. It allows to use shift without using 64-bit type.
+  6. ASH and SYSTEM.LSH return the INTEGER type result for INTEGER type argument, and LONGINT type result for LONGINT argument. It allows to use shifts without using 64-bit type.
 
   7. Support "_" in identifiers.
 
@@ -31,13 +31,19 @@ Ofront+ differences from Ofront/voc
 
   9. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) & 0DX+0AX (Windows).
 
-  10. "Right FOR" (concept by Oleg Komlev), constant arrays (only in Ofront+ for BlackBox).
+  10. "Right FOR" (concept by Oleg Komlev), constant arrays available in Oberon-3 (yet only in Ofront+ for BlackBox).
 
-  11. BITS() function, IN procedure parameters (as in Component Pascal).
+  11. BITS(), ORD(set), IN procedure parameters in Component Pascal.
 
-  12. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
+  12. ORD(bool), ORD(set) supported in Oberon-3.
 
-  13. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
+  13. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
+
+  14. Advanced features for describing bindings to foreign libraries, system flag [stdcall].
+
+  15. It's possible to use modules written in Oberon, Oberon-2, Component Pascal & Oberon-3 together in one project.
+
+  16. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
 
 
 Get it!
