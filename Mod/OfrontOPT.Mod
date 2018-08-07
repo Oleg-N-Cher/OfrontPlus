@@ -171,7 +171,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR i: INTEGER; p: OPS.String;
 	BEGIN
 		i := 0; WHILE name[i] # 0X DO INC(i) END;
-		IF i > 0 THEN NEW(p, i + 1); COPY(name, p^); RETURN p
+		IF i > 0 THEN NEW(p, i + 1); p^ := name$; RETURN p
 		ELSE RETURN null
 		END
 	END NewName;
@@ -192,7 +192,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		CONST nsf = 4; fpc = 8; esf = 9;
 	BEGIN
 		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
-		COPY(name, SelfName); topScope^.name := NewName(name);
+		SelfName := name$; topScope^.name := NewName(name);
 		GlbMod[0] := topScope; nofGmod := 1;
 		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE
 	END Init;
@@ -443,12 +443,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR i, j: SHORTINT; ch: CHAR;
 	BEGIN
 		IF obj^.mnolev # 0 THEN
-			COPY(GlbMod[-obj^.mnolev]^.name^, OPM.objname); i := 0;
+			OPM.objname := GlbMod[-obj^.mnolev]^.name^$; i := 0;
 			WHILE OPM.objname[i] # 0X DO INC(i) END ;
 			OPM.objname[i] := "."; j := 0; INC(i);
 			REPEAT ch := obj^.name[j]; OPM.objname[i] := ch; INC(j); INC(i) UNTIL ch = 0X;
 		ELSE
-			COPY(obj^.name^, OPM.objname)
+			OPM.objname := obj^.name^$
 		END ;
 		IF errno = 249 THEN
 			IF OPM.noerr THEN err(errno) END
@@ -493,7 +493,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		REPEAT
 			OPM.SymRCh(ch); n[i] := ch; INC(i)
 		UNTIL ch = 0X;
-		IF i > 1 THEN NEW(name, i); COPY(n, name^) ELSE name := null END
+		IF i > 1 THEN NEW(name, i); name^ := n$ ELSE name := null END
 	END InName;
 
 	PROCEDURE InMod(VAR mno: BYTE);	(* mno is global *)
@@ -544,13 +544,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			REPEAT
 				OPM.SymRCh(ch);
 				IF i < LEN(str) - 1 THEN str[i] := ch
-				ELSIF i = LEN(str) - 1 THEN str[i] := 0X; NEW(ext, 2 * LEN(str)); COPY(str, ext^); ext[i] := ch
+				ELSIF i = LEN(str) - 1 THEN str[i] := 0X; NEW(ext, 2 * LEN(str)); ext^ := str$; ext[i] := ch
 				ELSIF i < LEN(ext^) - 1 THEN ext[i] := ch
-				ELSE t := ext; t[i] := 0X; NEW(ext, 2 * LEN(t^)); COPY(t^, ext^); ext[i] := ch
+				ELSE t := ext; t[i] := 0X; NEW(ext, 2 * LEN(t^)); ext^ := t^$; ext[i] := ch
 				END;
 				INC(i)
 			UNTIL ch = 0X;
-			IF i < LEN(str) THEN NEW(ext, i); COPY(str, ext^) END;
+			IF i < LEN(str) THEN NEW(ext, i); ext^ := str$ END;
 			conval.ext := ext;
 			conval^.intval2 := i;
 			conval^.intval := OPM.ConstNotAlloc
@@ -1149,7 +1149,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("INCL", inclfn);
 		EnterProc("EXCL", exclfn);
 		EnterProc("LEN", lenfn);
-		EnterProc("COPY", copyfn);
+		IF (lang = "1") OR (lang = "2") THEN
+			EnterProc("COPY", copyfn)
+		END;
 		EnterProc("ASH", ashfn);
 		EnterProc("ASSERT", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN

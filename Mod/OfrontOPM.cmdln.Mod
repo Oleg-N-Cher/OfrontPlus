@@ -544,7 +544,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE OpenFiles*(VAR moduleName: ARRAY OF CHAR);
 		VAR FName: ARRAY 32 OF CHAR;
 	BEGIN
-		COPY(moduleName, modName);
+		modName := moduleName$;
 		HFile := Files.New("");
 		IF HFile # NIL THEN Files.Set(R[HeaderFile], HFile, 0) ELSE err(153) END ;
 		MakeFileName(moduleName, FName, BFext);

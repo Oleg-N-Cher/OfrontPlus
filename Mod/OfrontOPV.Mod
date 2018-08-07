@@ -33,7 +33,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		Nconst = 7; Ntype = 8; Nproc = 9; Nupto = 10; Nmop = 11; Ndop = 12; Ncall = 13;
 		Ninittd = 14; Nenter = 18; Nassign = 19;
 		Nifelse =20; Ncase = 21; Nwhile = 22; Nrepeat = 23; Nloop = 24; Nexit = 25;
-		Nreturn = 26; Nwith = 27; Ntrap = 28;
+		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30;
 
 		(*function number*)
 		assign = 0; newfn = 1; incfn = 13; decfn = 14;
@@ -187,7 +187,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		REPEAT n[k] := CHR((j MOD 10) + ORD("0")); j := j DIV 10; INC(k) UNTIL j = 0;
 		REPEAT DEC(k); res[i] := n[k]; INC(i) UNTIL k = 0;
 		res[i] := 0X;
-		IF LEN(s^) <= i THEN NEW(s, i+1) END; COPY(res, s^)
+		IF LEN(s^) <= i THEN NEW(s, i+1) END; s^ := res$
 	END Stamp;
 
 	PROCEDURE Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
@@ -288,21 +288,44 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					RETURN 10
 		|	Ntype, Neguard: (* ignored anyway *)
 					RETURN MaxPrec
+		|	Ncomp:
+					RETURN 10
 		END;
 	END Precedence;
 
 	PROCEDURE^ expr (n: OPT.Node; prec: SHORTINT);
 	PROCEDURE^ design(n: OPT.Node; prec: SHORTINT);
 
-	PROCEDURE Len(n: OPT.Node; dim: INTEGER);
+	PROCEDURE Len(n: OPT.Node; dim: INTEGER; incl0x: BOOLEAN);
 	BEGIN
-		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END ;
-		IF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN
+		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
+		IF n^.typ^.form = String THEN
+			OPM.WriteString("__STRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
+			IF incl0x THEN OPM.WriteString(" + 1") END
+		ELSIF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN
 			design(n^.left, 10); OPM.WriteString("->len["); OPM.WriteInt(dim); OPM.Write("]")
 		ELSE
 			OPC.Len(n^.obj, n^.typ, dim)
 		END
 	END Len;
+
+	PROCEDURE SameExp (n1, n2: OPT.Node): BOOLEAN;
+	BEGIN
+		WHILE (n1^.class = n2^.class) & (n1^.typ = n2^.typ) DO
+			CASE n1^.class OF
+			| Nvar, Nvarpar, Nproc: RETURN n1^.obj = n2^.obj
+			| Nconst: RETURN (n1^.typ^.form IN {Byte, SInt..LInt}) & (n1^.conval^.intval = n2^.conval^.intval)
+			| Nfield: IF n1^.obj # n2^.obj THEN RETURN FALSE END
+			| Nderef, Nguard:
+			| Nindex: IF ~SameExp(n1^.right, n2^.right) THEN RETURN FALSE END
+			| Nmop: IF (n1^.subcl # n2^.subcl) OR (n1^.subcl = is) THEN RETURN FALSE END
+			| Ndop: IF (n1^.subcl # n2^.subcl) OR ~SameExp(n1^.right, n2^.right) THEN RETURN FALSE END
+			ELSE RETURN FALSE
+			END;
+			n1 := n1^.left; n2 := n2^.left
+		END;
+		RETURN FALSE
+	END SameExp;
 
 	PROCEDURE SideEffects(n: OPT.Node): BOOLEAN;
 	BEGIN
@@ -403,7 +426,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			expr(n^.right, prec)
 		ELSE
 			IF SideEffects(n^.right) THEN OPM.WriteString("__XF(") ELSE OPM.WriteString("__X(") END;
-			expr(n^.right, MinPrec); OPM.WriteString(Comma); Len(d, dim); OPM.WriteString(Comma);
+			expr(n^.right, MinPrec); OPM.WriteString(Comma); Len(d, dim, FALSE); OPM.WriteString(Comma);
 			OPM.WriteModPos; OPM.Write(CloseParen)
 		END
 	END Index;
@@ -432,8 +455,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					END ;
 					OPC.Ident(n^.obj)
 		|	Nderef:
-					IF n^.typ^.comp = DynArr THEN design(n^.left, 10); OPM.WriteString("->data")
-					ELSE OPM.Write(Deref); design(n^.left, designPrec)
+					IF n.subcl # 0 THEN
+						expr(n^.left, designPrec)
+					ELSE
+						IF n^.typ^.comp = DynArr THEN design(n^.left, 10); OPM.WriteString("->data")
+						ELSE OPM.Write(Deref); design(n^.left, designPrec)
+						END
 					END
 		|	Nindex:
 					d := n^.left;
@@ -445,7 +472,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						IF n^.typ^.comp = DynArr THEN OPM.Write("(") END ;
 						i := dims; x := n;
 						WHILE x # d DO	(* apply Horner schema *)
-							IF x^.left # d THEN Index(x, d, 7, i); OPM.WriteString(" + "); Len(d, i);  OPM.WriteString(" * ("); DEC(i)
+							IF x^.left # d THEN Index(x, d, 7, i); OPM.WriteString(" + "); Len(d, i, FALSE);  OPM.WriteString(" * ("); DEC(i)
 							ELSE Index(x, d, MinPrec, i)
 							END ;
 							x := x^.left
@@ -455,7 +482,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 							(*  element type is DynArr; finish Horner schema with virtual indices = 0*)
 							OPM.Write(")");
 							WHILE i < (d^.typ^.size - 4) DIV 4 DO
-								OPM.WriteString(" * "); Len(d, i);
+								OPM.WriteString(" * "); Len(d, i, FALSE);
 								INC(i)
 							END
 						END ;
@@ -555,13 +582,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				ELSE
 					aptyp := n^.typ; dim := 0;
 					WHILE (typ^.comp = DynArr) & (typ^.BaseTyp^.form # Byte) DO
-						OPM.WriteString(Comma); Len(n, dim);
+						OPM.WriteString(Comma); Len(n, dim, TRUE);
 						typ := typ^.BaseTyp; aptyp := aptyp^.BaseTyp; INC(dim)
 					END ;
 					IF (typ^.comp = DynArr) & (typ^.BaseTyp^.form = Byte) THEN
 						OPM.WriteString(Comma);
 						WHILE aptyp^.comp = DynArr DO
-							Len(n, dim); OPM.WriteString(" * "); INC(dim); aptyp := aptyp^.BaseTyp
+							Len(n, dim, FALSE); OPM.WriteString(" * "); INC(dim); aptyp := aptyp^.BaseTyp
 						END ;
 						OPM.WriteInt(aptyp^.size); OPM.PromoteIntConstToLInt()
 					END
@@ -580,6 +607,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		OPT.FindField(n^.left^.obj^.name^, typ^.BaseTyp, obj);
 		RETURN obj
 	END SuperProc;
+
+	PROCEDURE^ compStat (n: OPT.Node; exp: BOOLEAN);
 
 	PROCEDURE expr (n: OPT.Node; prec: SHORTINT);
 		VAR
@@ -619,7 +648,11 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								OPC.Andent(typ); OPM.WriteString(Comma);
 								OPM.WriteInt(typ^.extlev); OPM.Write(")")
 					|	conv:
-								Convert(l, form, exprPrec)
+								IF form = String THEN
+									expr(l, exprPrec)
+								ELSE
+									Convert(l, form, exprPrec)
+								END
 					|	abs:
 								IF SideEffects(l) THEN
 									IF l^.typ^.form < Real THEN
@@ -658,7 +691,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		|	Ndop:
 					CASE subclass OF
 					  len:
-					  		Len(l, SHORT(r^.conval^.intval))
+					  		Len(l, SHORT(r^.conval^.intval), FALSE)
 					| in, ash, msk, bit, lsh, rot, div, mod:
 							CASE subclass OF
 							|	in:
@@ -768,6 +801,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					ELSE design(l, ProcTypeVar)
 					END ;
 					ActualPar(r, n^.obj)
+		|	Ncomp:
+					OPM.Write("("); compStat(l, TRUE); expr(r, MinPrec); OPM.Write(")")
 		ELSE
 					design(n, prec); (* not exprPrec! *)
 		END ;
@@ -896,12 +931,71 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		WHILE (n # NIL) & (n^.class = Ninittd) DO OPC.InitTDesc(n^.typ); n := n^.link END
 	END InitTDescs;
 
+	PROCEDURE AddCopy (left, right: OPT.Node; first: BOOLEAN);
+	BEGIN
+		IF first THEN OPM.WriteString("__STRCOPY") ELSE OPM.WriteString("__STRAPND") END;
+		OPM.Write("(");
+		expr(right, MinPrec); OPM.WriteString(Comma); expr(left, MinPrec); OPM.WriteString(Comma);
+		IF left^.typ^.sysflag # 0 THEN OPM.WriteString("-1") ELSE Len(left, 0, FALSE) END;
+		OPM.Write(")")
+	END AddCopy;
+
+	PROCEDURE StringCopy (left, right: OPT.Node; exp: BOOLEAN);
+	BEGIN
+		ASSERT(right^.class # Nconst);
+		IF right^.class = Ndop THEN
+			ASSERT(right^.subcl = plus);
+			IF ~SameExp(left, right^.left) THEN
+				AddCopy(left, right^.left, TRUE);
+				IF exp THEN OPM.WriteString(", ") ELSE OPC.EndStat; OPC.BegStat END
+			END;
+			right := right^.right;
+			WHILE right^.class = Ndop DO
+				ASSERT(right^.subcl = plus);
+				AddCopy(left, right^.left, FALSE);
+				IF exp THEN OPM.WriteString(", ") ELSE OPC.EndStat; OPC.BegStat END;
+				right := right^.right
+			END;
+			AddCopy(left, right, FALSE)
+		ELSE
+			AddCopy(left, right, TRUE)
+		END
+	END StringCopy;
+
+	PROCEDURE compStat (n: OPT.Node; exp: BOOLEAN);
+		VAR l, r: OPT.Node;
+	BEGIN
+		WHILE (n # NIL) & OPM.noerr DO
+			IF ~exp THEN OPC.BegStat END;
+			ASSERT(n^.class = Nassign);
+			l := n^.left; r := n^.right;
+			IF n^.subcl = assign THEN
+				IF r^.typ^.form = String THEN
+					IF r^.class # Nconst THEN
+						StringCopy(l, r, exp)
+					ELSE
+						OPM.WriteString(MoveFunc);
+						expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
+						OPM.WriteInt(r^.conval^.intval2 * r^.typ^.BaseTyp.size); OPM.Write(CloseParen)
+					END
+				ELSE ASSERT(l^.typ^.form IN {Pointer, Char});
+					design(l, MinPrec); OPM.WriteString(" = "); expr(r, MinPrec)
+				END
+			ELSE ASSERT(n^.subcl = newfn);
+				ASSERT(l^.typ^.BaseTyp^.comp = DynArr);
+				NewArr(l, r)
+			END;
+			IF exp THEN OPM.WriteString(", "); OPM.WriteLn; OPC.BegStat; OPM.Write(9X) ELSE OPC.EndStat END;
+			n := n^.link
+		END
+	END compStat;
+
 	PROCEDURE stat(n: OPT.Node; outerProc: OPT.Object);
 		VAR proc: OPT.Object; saved: ExitInfo; l, r: OPT.Node;
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
 			OPM.errpos := SHORT(n^.conval^.intval);
-			IF n^.class # Ninittd THEN OPC.BegStat; END;
+			IF ~(n^.class IN {Ninittd, Ncomp}) THEN OPC.BegStat END;
 			CASE n^.class OF
 				Nenter:
 						IF n^.obj = NIL THEN (* enter module *)
@@ -923,13 +1017,17 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					CASE n^.subcl OF
 						assign:
 								l := n^.left; r := n^.right;
-								IF l^.typ^.comp = Array THEN (* includes string assignment but not COPY *)
-									OPM.WriteString(MoveFunc);
-									expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
-									IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
-									ELSE OPM.WriteInt(r^.typ^.size)
-									END ;
-									OPM.Write(CloseParen)
+								IF l^.typ^.comp IN {Array, DynArr} THEN
+									IF (r^.typ^.form = String) & (r^.class # Nconst) THEN
+										StringCopy(l, r, FALSE)
+									ELSE
+										OPM.WriteString(MoveFunc);
+										expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
+										IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
+										ELSE OPM.WriteInt(r^.typ^.size)
+										END;
+										OPM.Write(CloseParen)
+									END
 								ELSE
 									IF (l^.typ^.form = Pointer) & (l^.obj # NIL) & (l^.obj^.adr = 1) & (l^.obj^.mode = Var) THEN
 										l^.obj^.adr := 0; design(l, MinPrec); l^.obj^.adr := 1;			(* avoid cast of WITH-variable *)
@@ -962,7 +1060,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					|	copyfn:
 								OPM.WriteString(CopyFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(Comma); expr(n^.left, MinPrec); OPM.WriteString(Comma);
-								Len(n^.left, 0); OPM.Write(CloseParen)
+								Len(n^.left, 0, FALSE); OPM.Write(CloseParen)
 					|	(*SYSTEM*)movefn:
 								OPM.WriteString(MoveFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(Comma); expr(n^.left, MinPrec); OPM.WriteString(Comma);
@@ -1048,8 +1146,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						IfStat(n, n^.subcl = 0, outerProc)
 			|	Ntrap:
 						OPC.Halt(SHORT(n^.right^.conval^.intval))
-			END ;
-			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop}) THEN OPC.EndStat END ;
+			|	Ncomp:
+						compStat(n^.left, FALSE); stat(n^.right, outerProc)
+			END;
+			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp}) THEN OPC.EndStat END;
 			n := n^.link
 		END
 	END stat;
