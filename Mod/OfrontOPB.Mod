@@ -220,7 +220,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END NewString;
 
 	PROCEDURE CharToString(n: OPT.Node);
-		VAR ch: CHAR;
+		VAR ch: SHORTCHAR;
 	BEGIN
 		n^.typ := OPT.stringtyp; ch := CHR(n^.conval^.intval); NEW(n^.conval^.ext, 2);
 		IF ch = 0X THEN n^.conval^.intval2 := 1 ELSE n^.conval^.intval2 := 2; n^.conval^.ext[1] := 0X END ;

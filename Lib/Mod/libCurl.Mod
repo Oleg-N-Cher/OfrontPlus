@@ -13,7 +13,7 @@ CONST
   CURLOPT_WRITEDATA      * = CURLOPT_FILE;
 
 TYPE
-  PCURL* = POINTER [1] TO ARRAY [1] 1 OF CHAR; (* A notag pointer *)
+  PCURL* = POINTER [1] TO ARRAY [1] 1 OF SHORTCHAR; (* A notag pointer *)
   CURLcode   * = INTEGER;
   CURLoption * = INTEGER;
 

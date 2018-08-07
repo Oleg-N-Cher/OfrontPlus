@@ -76,6 +76,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		HeaderInclude* = 2;
 
 	TYPE
+		CHAR = SHORTCHAR;
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR

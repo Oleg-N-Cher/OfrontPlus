@@ -2,10 +2,10 @@ MODULE Oberon;
 
 (* this version should not have dependency on graphics -- noch *)
 
-  IMPORT Platform, Texts, Args, Console;
+  IMPORT Platform, Types, Texts, Args, Console;
 
   TYPE
-    INTEGER = Platform.INT16; LONGINT = Platform.INT32;
+    INTEGER = Types.INT16; LONGINT = Types.INT32; CHAR = Types.CHAR8;
 
     ParList* = POINTER TO ParRec;
 

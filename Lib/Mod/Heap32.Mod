@@ -42,8 +42,8 @@ MODULE Heap;
     AddressZero = S.VAL(ADDRESS, 0);
 
   TYPE
-    ModuleName- = ARRAY ModNameLen OF CHAR;
-    CmdName-    = ARRAY CmdNameLen OF CHAR;
+    ModuleName- = ARRAY ModNameLen OF SHORTCHAR;
+    CmdName-    = ARRAY CmdNameLen OF SHORTCHAR;
 
     Module- = POINTER TO ModuleDesc;
     Cmd-    = POINTER TO CmdDesc;
@@ -140,12 +140,12 @@ MODULE Heap;
       NEW(m)
     END;
     m.types := 0; m.cmds := NIL;
-    COPY(name, m.name); m.refcnt := 0; m.enumPtrs := enumPtrs; m.next := S.VAL(Module, modules);
+    m.name := name$; m.refcnt := 0; m.enumPtrs := enumPtrs; m.next := S.VAL(Module, modules);
     modules := m;
     RETURN m
   END REGMOD;
 
-  PROCEDURE FreeModule*(IN name: ARRAY OF CHAR): INTEGER;
+  PROCEDURE FreeModule*(IN name: ARRAY OF SHORTCHAR): INTEGER;
   (* Returns 0 if freed, -1 if not found, refcount if found and refcount > 0. *)
     VAR m, p: Module;
   BEGIN m := S.VAL(Module, modules);
@@ -173,7 +173,7 @@ MODULE Heap;
     ELSE
       NEW(c)
     END;
-    COPY(name, c.name); c.cmd := cmd; c.next := m.cmds; m.cmds := c
+    c.name := name$; c.cmd := cmd; c.next := m.cmds; m.cmds := c
   END REGCMD;
 
   PROCEDURE REGTYP*(m: Module; typ: ADDRESS);
@@ -554,7 +554,7 @@ MODULE Heap;
       frame: S.PTR;
       nofcand: INTEGER;
       inc, sp, p, stack0: ADDRESS;
-      align: RECORD ch: CHAR; p: S.PTR END;
+      align: RECORD ch: SHORTCHAR; p: S.PTR END;
   BEGIN
     IF n > 0 THEN MarkStack(n-1, cand);  (* flush register windows by means of recursive calls *)
       IF n > 100 THEN RETURN END   (* prevent tail recursion optimization *)

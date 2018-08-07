@@ -218,7 +218,7 @@ $ENDIF*)
 
 TYPE
   Byte = BYTE;
-  Char = CHAR;
+  Char = SHORTCHAR;
   Double = REAL;
   Integer = INTEGER;
   PChar = Types.ADRINT;

@@ -4,7 +4,7 @@ IMPORT Console;
 TYPE
 	StrngP = POINTER TO ARRAY OF SHORTCHAR;
 VAR
-	g, i:INTEGER; s: SET; strng: StrngP; st :ARRAY 15 OF SHORTCHAR;
+	g, i:INTEGER; s: SET; strng: StrngP; st: ARRAY 15 OF SHORTCHAR;
 
 BEGIN
 	NEW (strng, 15);

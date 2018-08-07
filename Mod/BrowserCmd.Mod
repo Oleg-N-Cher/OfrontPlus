@@ -31,10 +31,10 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	VAR
 		W: Texts.Writer;
-		option: CHAR;
+		option: SHORTCHAR;
 
-	PROCEDURE Ws(IN s: ARRAY OF CHAR); BEGIN Texts.WriteString(W, s) END Ws;
-	PROCEDURE Wch(ch: CHAR); BEGIN Texts.Write(W, ch) END Wch;
+	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN Texts.WriteString(W, s) END Ws;
+	PROCEDURE Wch(ch: SHORTCHAR); BEGIN Texts.Write(W, ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLongInt(W, i, 0) END Wi;
 	PROCEDURE Wln; BEGIN Texts.WriteLn(W) END Wln;
 
@@ -248,7 +248,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		VAR i: SHORTINT;
 			beg, end: INTEGER; first, done: BOOLEAN;
 
-		PROCEDURE Header(IN s: ARRAY OF CHAR);
+		PROCEDURE Header(IN s: ARRAY OF SHORTCHAR);
 		BEGIN
 			beg := W.buf.len; Indent(1); Ws(s); Wln; end := W.buf.len
 		END Header;
@@ -286,8 +286,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		END
 	END WModule;
 
-	PROCEDURE Ident(VAR name, first: ARRAY OF CHAR);
-		VAR i, j: SHORTINT; ch: CHAR;
+	PROCEDURE Ident(VAR name, first: ARRAY OF SHORTCHAR);
+		VAR i, j: SHORTINT; ch: SHORTCHAR;
 	BEGIN i := 0;
 		WHILE name[i] # 0X DO INC(i) END ;
 		WHILE (i >= 0) & (name[i] # "/") DO DEC(i) END ;
@@ -297,8 +297,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	END Ident;
 
 	PROCEDURE ShowDef*;
-		VAR T, dummyT: Texts.Text; S, vname, name: OPS.Name; R: Texts.Reader; ch: CHAR;
-			s: ARRAY 1024 OF CHAR; i: SHORTINT;
+		VAR T, dummyT: Texts.Text; S, vname, name: OPS.Name; R: Texts.Reader; ch: SHORTCHAR;
+			s: ARRAY 1024 OF SHORTCHAR; i: SHORTINT;
 	BEGIN
 		option := 0X; Args.Get(1, S);
 		IF Args.argc > 2 THEN

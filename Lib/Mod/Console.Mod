@@ -4,7 +4,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
 
   IMPORT SYSTEM, Platform;
 
-  VAR line: ARRAY 128 OF CHAR;
+  VAR line: ARRAY 128 OF SHORTCHAR;
     pos: INTEGER;
 
   PROCEDURE Flush*;
@@ -14,21 +14,21 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
     pos := 0;
   END Flush;
 
-  PROCEDURE Char*(ch: CHAR);
+  PROCEDURE Char*(ch: SHORTCHAR);
   BEGIN
     IF pos = LEN(line) THEN Flush() END ;
     line[pos] := ch;  INC(pos);
     IF ch = 0AX THEN Flush() END
   END Char;
 
-  PROCEDURE String*(IN s: ARRAY OF CHAR);
+  PROCEDURE String*(IN s: ARRAY OF SHORTCHAR);
     VAR i: INTEGER;
   BEGIN i := 0;
     WHILE s[i] # 0X DO Char(s[i]); INC(i) END
   END String;
 
   PROCEDURE Int*(i, n: INTEGER);
-    VAR s: ARRAY 16 OF CHAR; i1, k: INTEGER;
+    VAR s: ARRAY 16 OF SHORTCHAR; i1, k: INTEGER;
   BEGIN
     IF i = SYSTEM.LSH(SYSTEM.VAL(INTEGER, 1), SIZE(INTEGER)*8 - 1) THEN
       IF SIZE(INTEGER) = 4 THEN s := "8463847412"; k := 10
@@ -45,7 +45,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   END Int;
 
   PROCEDURE LongInt*(i: LONGINT; n: INTEGER);
-    VAR s: ARRAY 24 OF CHAR; i1: LONGINT; k: INTEGER;
+    VAR s: ARRAY 24 OF SHORTCHAR; i1: LONGINT; k: INTEGER;
   BEGIN
     IF i = SYSTEM.LSH(SYSTEM.VAL(LONGINT, 1), SIZE(LONGINT)*8 - 1) THEN
       IF SIZE(LONGINT) = 8 THEN s := "8085774586302733229"; k := 19
@@ -91,15 +91,15 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
     END
   END LongHex;
 
-  PROCEDURE Read*(VAR ch: CHAR);
+  PROCEDURE Read*(VAR ch: SHORTCHAR);
     VAR n: INTEGER; error: Platform.ErrorCode;
   BEGIN Flush();
     error := Platform.ReadBuf(Platform.StdIn, SYSTEM.VAL(BYTE, ch), n);
     IF n # 1 THEN ch := 0X END
   END Read;
 
-  PROCEDURE ReadLine*(VAR line: ARRAY OF CHAR);
-    VAR i: INTEGER; ch: CHAR;
+  PROCEDURE ReadLine*(VAR line: ARRAY OF SHORTCHAR);
+    VAR i: INTEGER; ch: SHORTCHAR;
   BEGIN Flush();
     i := 0; Read(ch);
     WHILE (i < LEN(line) - 1) & (ch # 0AX) & (ch # 0X) DO line[i] := ch; INC(i); Read(ch) END ;

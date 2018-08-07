@@ -69,7 +69,7 @@ END DisplayHaltCode;
 
 PROCEDURE OutModName(s: CString; pos: INTEGER);
 VAR
-  i: INTEGER; ch: CHAR;
+  i: INTEGER; ch: SHORTCHAR;
 BEGIN
   Out.Ln;
   i := 0; SYSTEM.GET(s, ch);

@@ -4,7 +4,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
 
   TYPE
     SHORTINT = T.INT8; INTEGER = T.INT16; LONGINT = T.INT32; HUGEINT = T.INT64;
-    REAL = T.REAL32; LONGREAL = T.REAL64;
+    CHAR = T.CHAR8; REAL = T.REAL32; LONGREAL = T.REAL64;
 
   (*--- insert field e: Elem into Texts.Scanner and change Texts.Scan to set it in case of class=6 *)
 
@@ -128,7 +128,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   PROCEDURE FontsThis(VAR name: ARRAY OF CHAR): FontsFont;
     VAR F: FontsFont;
   BEGIN
-    NEW(F); COPY(name, F.name); RETURN F
+    NEW(F); F.name := name$; RETURN F
   END FontsThis;
 
   (* run primitives *)
@@ -226,7 +226,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
         END
       ELSIF msg IS IdentifyMsg THEN
         WITH msg: IdentifyMsg DO
-          COPY(E.mod, msg.mod); COPY(E.proc, msg.proc); msg.mod[31] := 1X (*alien*)
+          msg.mod := E.mod$; msg.proc := E.proc$; msg.mod[31] := 1X (*alien*)
         END
       ELSIF msg IS FileMsg THEN
         WITH msg: FileMsg DO
@@ -789,7 +789,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       IF e = NIL THEN Files.Set(r, f, org + span);
         NEW(a); a.W := ew; a.H := eh; a.handle := HandleAlien; a.base := T;
         a.file := f; a.org := org; a.span := span;
-        COPY(mods[eno], a.mod); COPY(procs[eno], a.proc);
+        a.mod := mods[eno]$; a.proc := procs[eno]$;
         e := a
       END
     END LoadElem;
@@ -859,7 +859,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
 
     PROCEDURE StoreElem (VAR r: Files.Rider; pos: LONGINT; e: Elem);
       VAR r1: Files.Rider; org, span: LONGINT; eno: SHORTINT;
-    BEGIN COPY(iden.mod, mods[ecnt]); COPY(iden.proc, procs[ecnt]); eno := 1;
+    BEGIN mods[ecnt] := iden.mod$; procs[ecnt] := iden.proc$; eno := 1;
       WHILE (mods[eno] # iden.mod) OR (procs[eno] # iden.proc) DO INC(eno) END;
       Files.Set(r1, Files.Base(r), Files.Pos(r));
       Files.WriteInt(r, 0); Files.WriteInt(r, 0); Files.WriteInt(r, 0); (*fixup slot*)
@@ -922,7 +922,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   BEGIN
     f := Files.New(name); Files.Set(r, f, 0); Files.WriteChar(r, textTag); Files.WriteChar(r, version); Store(r, T);
     i := 0; WHILE name[i] # 0X DO INC(i) END;
-    COPY(name, bak); bak[i] := "."; bak[i+1] := "B"; bak[i+2] := "a"; bak[i+3] := "k"; bak[i+4] := 0X;
+    bak := name$; bak[i] := "."; bak[i+1] := "B"; bak[i+2] := "a"; bak[i+3] := "k"; bak[i+4] := 0X;
     Files.Rename(name, bak, res); Files.Register(f)
   END Close;
 

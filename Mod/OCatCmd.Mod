@@ -15,8 +15,8 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 	CONST TAB = 09X; CR = 0DX; LF = 0AX;
 
 	PROCEDURE Cat*;
-		VAR optTab: BOOLEAN; path: ARRAY 128 OF CHAR; arg: INTEGER;
-			T: Texts.Text; R: Texts.Reader; ch: CHAR;
+		VAR optTab: BOOLEAN; path: ARRAY 128 OF SHORTCHAR; arg: INTEGER;
+			T: Texts.Text; R: Texts.Reader; ch: SHORTCHAR;
 	BEGIN
 		optTab := FALSE; path := ""; arg := 1; NEW(T);
 		Args.Get(1, path);

@@ -178,7 +178,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END TraverseRecord;
 
 	PROCEDURE Stamp(VAR s: OPS.String);
-		VAR i, j, k: SHORTINT; n: ARRAY 10 OF CHAR; res: OPS.Name;
+		VAR i, j, k: SHORTINT; n: ARRAY 10 OF SHORTCHAR; res: OPS.Name;
 	BEGIN INC(stamp);
 		i := 0; j := stamp;
 		WHILE s[i] # 0X DO res[i] := s[i]; INC(i) END ;

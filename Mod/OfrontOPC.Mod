@@ -90,9 +90,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		indentLevel: SHORTINT;
 		ptrinit, mainprog, ansi: BOOLEAN;
 		hashtab: ARRAY 105 OF BYTE;
-		keytab: ARRAY 36, 9 OF CHAR;
+		keytab: ARRAY 36, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
-		BodyNameExt: ARRAY 13 OF CHAR;
+		BodyNameExt: ARRAY 13 OF SHORTCHAR;
 
 	PROCEDURE Init*;
 	BEGIN
@@ -129,8 +129,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN DEC(indentLevel); BegStat; OPM.Write(CloseBrace)
 	END EndBlk0;
 
-	PROCEDURE Str1(IN s: ARRAY OF CHAR; x: INTEGER);
-		VAR ch: CHAR; i: SHORTINT;
+	PROCEDURE Str1(IN s: ARRAY OF SHORTCHAR; x: INTEGER);
+		VAR ch: SHORTCHAR; i: SHORTINT;
 	BEGIN ch := s[0]; i := 0;
 		WHILE ch # 0X DO
 			IF ch = "#" THEN OPM.WriteInt(x)
@@ -140,14 +140,14 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END Str1;
 
-	PROCEDURE Length(IN s: ARRAY OF CHAR): SHORTINT;
+	PROCEDURE Length(IN s: ARRAY OF SHORTCHAR): SHORTINT;
 		VAR i: SHORTINT;
 	BEGIN i := 0;
 		WHILE s[i] # 0X DO INC(i) END;
 		RETURN i
 	END Length;
 
-	PROCEDURE PerfectHash (IN s: ARRAY OF CHAR): SHORTINT;
+	PROCEDURE PerfectHash (IN s: ARRAY OF SHORTCHAR): SHORTINT;
 		VAR i, h: SHORTINT;
 	BEGIN i := 0; h := 0;
 		WHILE (s[i] # 0X) & (i < 5) DO h := 3*h + ORD(s[i]); INC(i) END;
@@ -176,7 +176,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END;
-			IF obj = OPT.bytetyp^.strobj THEN OPM.WriteString("BYTE")
+			IF obj = OPT.chartyp^.strobj THEN OPM.WriteString("CHAR")
+			ELSIF obj = OPT.bytetyp^.strobj THEN OPM.WriteString("BYTE")
 			ELSIF obj = OPT.sinttyp^.strobj THEN OPM.WriteString("SHORTINT")
 			ELSIF obj = OPT.inttyp^.strobj THEN OPM.WriteString("INTEGER")
 			ELSIF obj = OPT.linttyp^.strobj THEN OPM.WriteString("LONGINT")
@@ -552,7 +553,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END DefineType;
 
-	PROCEDURE Prefixed(x: OPT.ConstExt; IN y: ARRAY OF CHAR): BOOLEAN;
+	PROCEDURE Prefixed(x: OPT.ConstExt; IN y: ARRAY OF SHORTCHAR): BOOLEAN;
 		VAR i: SHORTINT;
 	BEGIN i := 0;
 		WHILE x[i] = y[i] DO INC(i) END ;
@@ -842,7 +843,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END;
 	END ProcPredefs;
 
-	PROCEDURE Include(IN name: ARRAY OF CHAR);
+	PROCEDURE Include(IN name: ARRAY OF SHORTCHAR);
 	BEGIN
 		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteString(name);
 		OPM.WriteString(".h"); OPM.Write(Quotes); OPM.WriteLn
@@ -1258,7 +1259,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END;
 	END Cmp;
 
-	PROCEDURE WriteCharLiteral(ch: CHAR); (* with escape for special printable characters *)
+	PROCEDURE WriteCharLiteral(ch: SHORTCHAR); (* with escape for special printable characters *)
 	BEGIN
 		IF (ch >= " ") & (ch <= "~") THEN
 			OPM.Write(SingleQuote);
@@ -1269,8 +1270,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END WriteCharLiteral;
 
-	PROCEDURE WriteStringLiteral(IN str: ARRAY OF CHAR; len: INTEGER);
-		VAR ch: CHAR; i: INTEGER;
+	PROCEDURE WriteStringLiteral(IN str: ARRAY OF SHORTCHAR; len: INTEGER);
+		VAR ch: SHORTCHAR; i: INTEGER;
 	BEGIN
 		OPM.Write(Quotes);
 		i := 0;
@@ -1371,7 +1372,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE InitKeywords;
 		VAR n, i: BYTE;
 
-		PROCEDURE Enter(IN s: ARRAY OF CHAR);
+		PROCEDURE Enter(IN s: ARRAY OF SHORTCHAR);
 			VAR h: SHORTINT;
 		BEGIN h := PerfectHash(s); hashtab[h] := n; keytab[n] := s$; INC(n)
 		END Enter;

@@ -30,6 +30,8 @@ Strings.Cap(s)
 
 MODULE Strings;	(*HM 94-06-22 /  *)
 
+TYPE CHAR = SHORTCHAR;
+
 
 PROCEDURE Length* (IN s: ARRAY OF CHAR): INTEGER;
 	VAR i: INTEGER;
