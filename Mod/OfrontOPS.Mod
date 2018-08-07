@@ -54,7 +54,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		loop = 50; with = 51; exit = 52; return = 53; array = 54;
 		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
 		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
-		out = 71;
+		out = 71; dollar = 78;
 
 	VAR
 		ch: CHAR;     (*current character*)
@@ -71,9 +71,9 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			IF ch = och THEN EXIT END;
 			IF ch < " " THEN err(3); EXIT END;
 			IF i < LEN(s) - 1 THEN s[i] := ch
-			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(t, 2 * LEN(s)); COPY(s, t^); t^[i] := ch
+			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(t, 2 * LEN(s)); t^ := s$; t^[i] := ch
 			ELSIF i < LEN(t^) - 1 THEN t^[i] := ch
-			ELSE str := t; str^[i] := 0X; NEW(t, 2 * LEN(str^)); COPY(str^, t^); t^[i] := ch
+			ELSE str := t; str^[i] := 0X; NEW(t, 2 * LEN(str^)); t^ := str^$; t^[i] := ch
 			END;
 			INC(i)
 		END;
@@ -81,8 +81,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			IF s[0] < " " THEN err(3) END
 		ELSE
 			sym := string; numtyp := 0; intval := i + 1; NEW(str, intval);
-			IF i < LEN(s) THEN s[i] := 0X; COPY(s, str^)
-			ELSE t^[i] := 0X; COPY(t^, str^)
+			IF i < LEN(s) THEN s[i] := 0X; str^ := s$
+			ELSE t^[i] := 0X; str^ := t^$
 			END
 		END;
 		OPM.Get(ch)
@@ -307,6 +307,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "["  : s := lbrak; OPM.Get(ch)
 			| "]"  : s := rbrak; OPM.Get(ch)
 			| "^"  : s := arrow; OPM.Get(ch)
+			| "$"  : s := dollar; OPM.Get(ch)
 			| "a".."z": Identifier(s)
 			| "{"  : s := lbrace; OPM.Get(ch)
 			| "|"  : s := bar; OPM.Get(ch)

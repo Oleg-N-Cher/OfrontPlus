@@ -1434,14 +1434,13 @@ avoid unnecessary intermediate variables in OFront
 				p^.typ := OPT.notyp
 		| lenfn: (*LEN*)
 				IF ~(f IN intSet) OR (x^.class # Nconst) THEN err(69)
-				ELSE
-					IF f = LInt THEN Convert(x, OPT.inttyp) END;
+				ELSIF f = SInt THEN
 					L := SHORT(SHORT(x^.conval^.intval)); typ := p^.typ;
 					WHILE (L > 0) & (typ^.comp IN {DynArr, Array}) DO typ := typ^.BaseTyp; DEC(L) END;
 					IF (L # 0) OR ~(typ^.comp IN {DynArr, Array}) THEN err(132)
 					ELSE x^.obj := NIL;
 						IF typ^.comp = DynArr THEN
-							WHILE p^.class = Nindex DO p := p^.left; INC(x^.conval^.intval) END ;	(* possible side effect ignored *)
+							WHILE p^.class = Nindex DO p := p^.left; INC(x^.conval^.intval) END;	(* possible side effect ignored *)
 							p := NewOp(Ndop, len, p, x);
 							CASE OPM.IndexSize OF
 							| 2: p^.typ := OPT.sinttyp
@@ -1451,10 +1450,11 @@ avoid unnecessary intermediate variables in OFront
 						ELSE p := x; p^.conval^.intval := typ^.n; SetIntType(p)
 						END
 					END
+				ELSE err(132)
 				END
 		| copyfn: (*COPY*)
 				IF NotVar(x) THEN err(112)
-				ELSIF x.readonly THEN err(76)
+				ELSIF x^.readonly THEN err(76)
 				ELSE
 					CheckString(p, x^.typ, 111); t := x; x := p; p := t;
 					IF (x^.class = Nconst) & (x^.typ^.form = String) THEN AssignString(p, x)
@@ -1630,9 +1630,9 @@ avoid unnecessary intermediate variables in OFront
 					BindNodes(Nassign, OPT.notyp, p, NewIntConst(1)); p^.subcl := fctno; p^.right^.typ := p^.left^.typ
 				ELSIF (fctno = lenfn) & (parno = 1) THEN (*LEN*)
 					IF p^.typ^.form = String THEN
-						IF p^.class = Nconst THEN p := NewIntConst(p.conval.intval2 - 1)
+						IF p^.class = Nconst THEN p := NewIntConst(p^.conval^.intval2 - 1)
 						ELSIF (p^.class = Ndop) & (p^.subcl = plus) THEN	(* propagate to leaf nodes *)
-							StFct(p.left, lenfn, 1); StFct(p.right, lenfn, 1);
+							StFct(p^.left, lenfn, 1); StFct(p^.right, lenfn, 1);
 							CASE OPM.IndexSize OF
 							| 2: p^.typ := OPT.sinttyp
 							| 4: p^.typ := OPT.inttyp

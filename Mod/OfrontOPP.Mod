@@ -25,7 +25,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		loop = 50; with = 51; exit = 52; return = 53; array = 54;
 		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
 		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
-		out = 71;
+		out = 71; dollar = 78;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -424,6 +424,9 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				ELSE err(ident)
 				END
 			ELSIF sym = arrow THEN OPS.Get(sym); OPB.DeRef(x)
+			ELSIF (sym = dollar) & ((OPM.Language = "C") OR (OPM.Language = "3")) THEN
+				IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END;
+				OPS.Get(sym); OPB.StrDeref(x)
 			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
 					((x^.obj = NIL) OR (x^.obj^.mode # TProc)) THEN
 				OPS.Get(sym);
@@ -1103,9 +1106,9 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
 					IF sym = ident THEN
-						COPY(OPS.name, aliasName); COPY(aliasName, impName); OPS.Get(sym);
+						aliasName := OPS.name$; impName := aliasName$; OPS.Get(sym);
 						IF sym = becomes THEN OPS.Get(sym);
-							IF sym = ident THEN COPY(OPS.name, impName); OPS.Get(sym) ELSE err(ident) END
+							IF sym = ident THEN impName := OPS.name$; OPS.Get(sym) ELSE err(ident) END
 						END ;
 						OPT.Import(aliasName, impName, done)
 					ELSE err(ident)

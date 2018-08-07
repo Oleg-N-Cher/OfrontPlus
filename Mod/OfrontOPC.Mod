@@ -1373,7 +1373,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 		PROCEDURE Enter(IN s: ARRAY OF CHAR);
 			VAR h: SHORTINT;
-		BEGIN h := PerfectHash(s); hashtab[h] := n; COPY(s, keytab[n]); INC(n)
+		BEGIN h := PerfectHash(s); hashtab[h] := n; keytab[n] := s$; INC(n)
 		END Enter;
 
 	BEGIN n := 0;

@@ -267,6 +267,17 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		END
 	END DeRef;
 
+	PROCEDURE StrDeref*(VAR x: OPT.Node);
+		VAR typ: OPT.Struct;
+	BEGIN
+		typ := x^.typ;
+		IF (x^.class = Nconst) OR (x^.class = Ntype) OR (x^.class = Nproc) THEN err(78)
+		ELSIF (typ^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.form = Char) THEN
+			BindNodes(Nderef, OPT.stringtyp, x, NIL); x^.subcl := 1
+		ELSE err(90)
+		END
+	END StrDeref;
+
 	PROCEDURE Index*(VAR x: OPT.Node; y: OPT.Node);
 		VAR f: SHORTINT; typ: OPT.Struct;
 	BEGIN
@@ -1040,19 +1051,24 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				err(113)
 		| Comp:
 				x^.pvused := TRUE;	(* idfp of y guarantees assignment compatibility with x *)
-				IF x^.comp = Array THEN
-					IF (ynode^.class = Nconst) & (g = Char) THEN CharToString(ynode); y := ynode^.typ; g := String END ;
-					IF x = y THEN (* ok *)
-					ELSIF (g = String) & (x^.BaseTyp = OPT.chartyp) THEN (*check length of string*)
-						IF ynode^.conval^.intval2 > x^.n THEN err(114) END ;
-					ELSE err(113)
-					END
-				ELSIF x^.comp = Record THEN
+				IF x^.comp = Record THEN
 					IF x = y THEN (* ok *)
 					ELSIF y^.comp = Record THEN
 						q := y^.BaseTyp;
 						WHILE (q # NIL) & (q # x) & (q # OPT.undftyp) DO q := q^.BaseTyp END ;
 						IF q = NIL THEN err(113) END
+					ELSE err(113)
+					END
+				ELSIF g IN {Char, String} THEN
+					CheckString(ynode, x, 113);
+					IF (x^.comp = Array) & (ynode^.class = Nconst) & (ynode^.conval^.intval2 > x^.n) THEN
+						err(114)
+					END
+				ELSIF x^.comp = Array THEN
+					IF (ynode^.class = Nconst) & (g = Char) THEN CharToString(ynode); y := ynode^.typ; g := String END ;
+					IF x = y THEN (* ok *)
+					ELSIF (g = String) & (x^.BaseTyp = OPT.chartyp) THEN (*check length of string*)
+						IF ynode^.conval^.intval2 > x^.n THEN err(114) END
 					ELSE err(113)
 					END
 				ELSE (*DynArr*) err(113)
@@ -1062,6 +1078,16 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			Convert(ynode, x)
 		END
 	END CheckAssign;
+
+	PROCEDURE AssignString (VAR x: OPT.Node; str: OPT.Node);	(* x := str or x[0] := 0X *)
+	BEGIN
+		ASSERT((str^.class = Nconst) & (str^.typ^.form = String));
+		IF (x^.typ^.comp IN {Array, DynArr}) & (str^.conval^.intval2 = 1) THEN	(* x := "" -> x[0] := 0X *)
+			Index(x, NewIntConst(0));
+			str^.typ := x^.typ; str^.conval^.intval := 0; str^.obj := NIL
+		END;
+		BindNodes(Nassign, OPT.notyp, x, str); x^.subcl := assign
+	END AssignString;
 
 	PROCEDURE CheckLeaf(x: OPT.Node; dynArrToo: BOOLEAN);
 	BEGIN
@@ -1201,7 +1227,12 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF x^.readonly THEN err(76)
 				END
 		| lenfn: (*LEN*)
-				IF ~(x^.typ^.comp IN {DynArr, Array}) THEN err(131) END
+				IF (* (x^.class = Ntype) OR *) (x^.class = Nproc) THEN err(126)	(* !!! *)
+				ELSE
+					IF x^.typ^.form = Pointer THEN DeRef(x) END;
+					IF (x^.class = Nconst) & (x^.typ^.form = Char) THEN CharToString(x) END;
+					IF ~(x^.typ^.comp IN {DynArr, Array}) & ~(x^.typ^.form = String) THEN err(131) END
+				END
 		| copyfn: (*COPY*)
 				IF (x^.class = Nconst) & (f = Char) THEN CharToString(x); f := String END ;
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1321,11 +1352,13 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| copyfn: (*COPY*)
 				IF NotVar(x) THEN err(112)
-				ELSIF (x^.typ^.comp IN {Array, DynArr}) & (x^.typ^.BaseTyp^.form = Char) THEN
-					IF x^.readonly THEN err(76) END ;
-					t := x; x := p; p := t; p := NewOp(Nassign, copyfn, p, x)
-				ELSE err(111)
-				END ;
+				ELSIF x^.readonly THEN err(76)
+				ELSE
+					CheckString(p, x^.typ, 111); t := x; x := p; p := t;
+					IF (x^.class = Nconst) & (x^.typ^.form = String) THEN AssignString(p, x)
+					ELSE p := NewOp(Nassign, copyfn, p, x)
+					END
+				END;
 				p^.typ := OPT.notyp
 		| ashfn: (*ASH*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1494,7 +1527,26 @@ avoid unnecessary intermediate variables in OFront
 				IF ((fctno = incfn) OR (fctno = decfn)) & (parno = 1) THEN (*INC, DEC*)
 					BindNodes(Nassign, OPT.notyp, p, NewIntConst(1)); p^.subcl := fctno; p^.right^.typ := p^.left^.typ
 				ELSIF (fctno = lenfn) & (parno = 1) THEN (*LEN*)
-					IF p^.typ^.comp = DynArr THEN dim := 0;
+					IF p^.typ^.form = String THEN
+						IF p^.class = Nconst THEN p := NewIntConst(p^.conval^.intval2 - 1)
+						ELSIF (p^.class = Ndop) & (p^.subcl = plus) THEN	(* propagate to leaf nodes *)
+							StFct(p^.left, lenfn, 1); StFct(p^.right, lenfn, 1);
+							CASE OPM.IndexSize OF
+							| 2: p^.typ := OPT.sinttyp
+							| 4: p^.typ := OPT.inttyp
+							ELSE p^.typ := OPT.linttyp
+							END
+						ELSE
+							WHILE (p^.class = Nmop) & (p^.subcl = conv) DO p := p^.left END;
+							IF OPM.noerr THEN ASSERT(p^.class = Nderef) END;
+							CASE OPM.IndexSize OF
+							| 2: BindNodes(Ndop, OPT.sinttyp, p, NewIntConst(0));
+							| 4: BindNodes(Ndop, OPT.inttyp, p, NewIntConst(0));
+							ELSE BindNodes(Ndop, OPT.linttyp, p, NewIntConst(0));
+							END;
+							p^.subcl := len
+						END
+					ELSIF p^.typ^.comp = DynArr THEN dim := 0;
 						WHILE p^.class = Nindex DO p := p^.left; INC(dim) END ;	(* possible side effect ignored *)
 						CASE OPM.IndexSize OF
 						| 2: BindNodes(Ndop, OPT.sinttyp, p, NewIntConst(dim))
@@ -1661,23 +1713,22 @@ avoid unnecessary intermediate variables in OFront
 	PROCEDURE Assign*(VAR x: OPT.Node; y: OPT.Node);
 		VAR z: OPT.Node;
 	BEGIN
-		IF x^.class >= Nconst THEN err(56) END ;
+		IF (x^.class >= Nconst) OR (x^.typ^.form = String) THEN err(56) END;
 		CheckAssign(x^.typ, y);
-		IF x^.readonly THEN err(76) END ;
-		IF x^.typ^.comp = Record THEN
-			IF x^.class = Nguard THEN z := x^.left ELSE z := x END ;
-			IF (z^.class = Nderef) & (z^.left^.class = Nguard) THEN
-				z^.left := z^.left^.left	(* skip guard before dereferencing *)
-			END ;
-			IF (x^.typ^.strobj # NIL) & ((z^.class = Nderef) OR (z^.class = Nvarpar)) THEN
-				BindNodes(Neguard, x^.typ, z, NIL); x := z
-			END
-		ELSIF (x^.typ^.comp = Array) & (x^.typ^.BaseTyp = OPT.chartyp) &
-				(y^.typ^.form = String) & (y^.conval^.intval2 = 1) THEN	(* replace array := "" with array[0] := 0X *)
-			y^.typ := OPT.chartyp; y^.conval^.intval := 0;
-			Index(x, NewIntConst(0))
-		END ;
-		BindNodes(Nassign, OPT.notyp, x, y); x^.subcl := assign
+		IF x^.readonly THEN err(76) END;
+		IF (y^.class = Nconst) & (y^.typ^.form = String) & (x^.typ^.form # Pointer) THEN AssignString(x, y)
+		ELSE
+			IF x^.typ^.comp = Record THEN
+				IF x^.class = Nguard THEN z := x^.left ELSE z := x END ;
+				IF (z^.class = Nderef) & (z^.left^.class = Nguard) THEN
+					z^.left := z^.left^.left	(* skip guard before dereferencing *)
+				END;
+				IF (x^.typ^.strobj # NIL) & ((z^.class = Nderef) OR (z^.class = Nvarpar)) THEN
+					BindNodes(Neguard, x^.typ, z, NIL); x := z
+				END
+			END;
+			BindNodes(Nassign, OPT.notyp, x, y); x^.subcl := assign
+		END
 	END Assign;
 
 	PROCEDURE Inittd*(VAR inittd, last: OPT.Node; typ: OPT.Struct);

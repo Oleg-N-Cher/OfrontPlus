@@ -298,7 +298,7 @@
 
 	PROCEDURE Len(n: OPT.Node; dim: INTEGER; incl0x: BOOLEAN);
 	BEGIN
-		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END ;
+		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
 		IF n^.typ^.form = String THEN
 			OPM.WriteString("__STRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
 			IF incl0x THEN OPM.WriteString(" + 1") END
@@ -1029,7 +1029,7 @@
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
 			OPM.errpos := SHORT(n^.conval^.intval);
-			IF ~(n^.class IN {Ninittd, Ncomp}) THEN OPC.BegStat; END;
+			IF ~(n^.class IN {Ninittd, Ncomp}) THEN OPC.BegStat END;
 			CASE n^.class OF
 				Nenter:
 						IF n^.obj = NIL THEN (* enter module *)
@@ -1059,7 +1059,7 @@
 										expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
 										IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
 										ELSE OPM.WriteInt(r^.typ^.size)
-										END ;
+										END;
 										OPM.Write(CloseParen)
 									END
 								ELSE
@@ -1188,8 +1188,8 @@
 						OPC.Halt(SHORT(n^.right^.conval^.intval))
 			|	Ncomp:
 						compStat(n^.left, FALSE); stat(n^.right, outerProc)
-			END ;
-			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp}) THEN OPC.EndStat END ;
+			END;
+			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp}) THEN OPC.EndStat END;
 			n := n^.link
 		END
 	END stat;
