@@ -1127,17 +1127,18 @@
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
 
-		EnterTyp("CHAR", Char, 1, chartyp);
 		EnterTyp("BOOLEAN", Bool, 1, booltyp);
 		EnterTyp("SET", Set, OPM.SetSize, settyp);
 		IF (lang = "C") OR (lang = "3") THEN
 			EnterTyp("BYTE", Byte, 1, bytetyp);
+			EnterTyp("SHORTCHAR", Char, 1, chartyp);
 			EnterTyp("SHORTINT", SInt, 2, sinttyp);
 			EnterTyp("INTEGER", Int, 4, inttyp);
 			EnterTyp("LONGINT",  LInt, 8, linttyp);
 			EnterTyp("SHORTREAL", Real, 4, realtyp);
 			EnterTyp("REAL", LReal, 8, lrltyp);
 		ELSIF (lang = "1") OR (lang = "2") THEN
+			EnterTyp("CHAR", Char, 1, chartyp);
 			EnterTyp("SHORTINT", Byte, 1, bytetyp);
 			EnterTyp("INTEGER", SInt, 2, sinttyp);
 			EnterTyp("LONGINT",  Int, 4, inttyp);
@@ -1145,6 +1146,7 @@
 			EnterTyp("REAL", Real, 4, realtyp);
 			EnterTyp("LONGREAL", LReal, 8, lrltyp)
 		ELSE (* "7" *)
+			EnterTyp("CHAR", Char, 1, chartyp);
 			EnterTyp("INTEGER", Int, 4, inttyp);
 			EnterTyp("REAL", LReal, 8, lrltyp)
 		END;

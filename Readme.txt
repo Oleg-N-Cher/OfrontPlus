@@ -33,7 +33,7 @@ Ofront+ differences from Ofront/voc
 
   10. "Right FOR" (concept by Oleg Komlev), constant arrays available in Oberon-3 (yet only in Ofront+ for BlackBox).
 
-  11. BITS(), ORD(set), IN procedure parameters in Component Pascal.
+  11. BITS(), ORD(set), LEN(string$), str1 := str2$, IN procedure parameters (in Component Pascal).
 
   12. ORD(bool), ORD(set) supported in Oberon-3.
 
