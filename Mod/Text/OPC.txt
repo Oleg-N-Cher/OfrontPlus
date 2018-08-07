@@ -179,7 +179,8 @@ starsLevel: INTEGER;
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END;
-			IF obj = OPT.bytetyp^.strobj THEN OPM.WriteString("BYTE")
+			IF obj = OPT.chartyp^.strobj THEN OPM.WriteString("CHAR")
+			ELSIF obj = OPT.bytetyp^.strobj THEN OPM.WriteString("BYTE")
 			ELSIF obj = OPT.sinttyp^.strobj THEN OPM.WriteString("SHORTINT")
 			ELSIF obj = OPT.inttyp^.strobj THEN OPM.WriteString("INTEGER")
 			ELSIF obj = OPT.linttyp^.strobj THEN OPM.WriteString("LONGINT")
