@@ -21,7 +21,7 @@
 		loop = 50; with = 51; exit = 52; return = 53; array = 54;
 		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
 		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
-		out = 71;
+		out = 71; dollar = 78;
 		unsgn = 40; (* псевдооперация unsigned для div *)
 
 		(* object modes *)
@@ -428,6 +428,9 @@
 				ELSE err(ident)
 				END
 			ELSIF sym = arrow THEN OPS.Get(sym); OPB.DeRef(x)
+			ELSIF (sym = dollar) & ((OPM.Language = "C") OR (OPM.Language = "3")) THEN
+				IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END;
+				OPS.Get(sym); OPB.StrDeref(x)
 			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
 					((x^.obj = NIL) OR (x^.obj^.mode # TProc)) THEN
 				OPS.Get(sym);

@@ -114,12 +114,32 @@ extern void SystemSetQuitHandler          (SYSTEM_ADRINT h);
 extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 
-// String comparison
+// Assertions and Halts
+
+extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
+extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
+
+#define __HALT(n)                                SYSTEM_HALT(n, "", -1)
+#define __HALT_NEW(n, mod, pos)                  SYSTEM_HALT(n, mod, pos)
+#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, mod, pos)
+
+
+// String copy, comparison and calculate length
 
 #define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
+static inline void __STRAPND (CHAR x[], CHAR y[], INTEGER n) { /* sy := sy + sx */
+  int i = 0, j = 0; while (y[j] != 0) j++;
+  do { if (n-- == 0) __HALT(-8); y[j++] = x[i]; } while (x[i++] != 0);
+}
+static inline void __STRCOPY (CHAR x[], CHAR y[], INTEGER n) { /* sy := sx */
+  int i = 0; do { if (n-- == 0) __HALT(-8); y[i] = x[i]; } while (x[i++] != 0);
+}
+static inline INTEGER __STRLEN (CHAR s[]) { // LEN(sx$)
+  int i = 0; while (s[i] != 0) i++; return i;
+}
 
 
-// Inline string, record and array copy
+// Inline record and array copy
 
 #define __COPY(s, d, n) {char*_a=(void*)s,*_b=(void*)d; INTEGER _i=0,_t=n-1; \
                          while(_i<_t&&((_b[_i]=_a[_i])!=0)){_i++;};_b[_i]=0;}
@@ -233,16 +253,6 @@ extern void Heap_FINALL();
 #define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, &argv);
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
-
-
-// Assertions and Halts
-
-extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
-extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
-
-#define __HALT(n)                                SYSTEM_HALT(n, "", -1)
-#define __HALT_NEW(n, mod, pos)                  SYSTEM_HALT(n, mod, pos)
-#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, mod, pos)
 
 
 // Memory allocation

@@ -1168,7 +1168,9 @@
 		EnterProc("INCL", inclfn);
 		EnterProc("EXCL", exclfn);
 		EnterProc("LEN", lenfn);
-		EnterProc("COPY", copyfn);
+		IF (lang = "1") OR (lang = "2") THEN
+			EnterProc("COPY", copyfn)
+		END;
 		EnterProc("ASH", ashfn);
 		EnterProc("ASSERT", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN

@@ -75,6 +75,7 @@ insertMarkers	Insert Markers
 87	guarded or tested variable is neither a pointer nor a VAR- or IN-parameter record
 88	open array not allowed as variable, record field or array element
 89	base type not yet defined
+90	dereferenced variable is not a character array
 92	operand of IN not an integer, or not a set
 93	set element type is not an integer
 94	operand of & is not of type BOOLEAN
