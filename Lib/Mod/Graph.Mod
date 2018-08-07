@@ -192,6 +192,7 @@ CONST
 
 TYPE
   ADDRESS = Types.ADRINT;
+  CHAR = SHORTCHAR;
   SET32 = SET;
 
   Bitmap* = POINTER TO BitmapDesc;
@@ -342,7 +343,7 @@ TYPE P = POINTER [1] TO ARRAY 10240 OF CHAR;
 VAR p: P;
 BEGIN
   p := SYSTEM.VAL(P, SDL.GetError());
-  COPY(p^, s)
+  s := p^$
 END GetError;
 
 PROCEDURE Settings*(w, h: INTEGER; flags: SET);
@@ -783,7 +784,7 @@ BEGIN
     QueueEvent;
     events.buf[events.last].type := textInput;
     events.buf[events.last].key.sym := sym; (*!FIXME sym needed?*)
-    COPY(e.text, events.buf[events.last].s)
+    events.buf[events.last].s := e.text$
   END
 END PumpTextEvent;
 

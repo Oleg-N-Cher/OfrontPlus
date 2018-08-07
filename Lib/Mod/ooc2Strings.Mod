@@ -37,6 +37,7 @@ default it is installed @emph{without} index checks.
 
 
 TYPE
+  CHAR = SHORTCHAR;
   CompareResults* = SHORTINT;
   (**Result type of @oproc{Compare}.  *)
   

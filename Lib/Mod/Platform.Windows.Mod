@@ -19,6 +19,7 @@ CONST
 
 TYPE
   INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
+  CHAR = Types.CHAR8;
   ADRINT* = Types.ADRINT; (* 32 or 64 bits *)
 
   BOOL = INT32; DWORD = INT32;
@@ -156,7 +157,7 @@ PROCEDURE getEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
 BEGIN
   res := getenv(var, buf);
   IF (res > 0) & (res < LEN(buf)) THEN
-    COPY(buf, val);
+    val := buf$;
     RETURN TRUE
   ELSE
     RETURN FALSE
@@ -177,7 +178,7 @@ PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
 VAR
   av: ArgVec;
 BEGIN
-  IF n < ArgCount() THEN av := ArgVector(); COPY(av[n]^, val) END
+  IF n < ArgCount() THEN av := ArgVector(); val := av[n]^$ END
 END GetArg;
 
 PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);

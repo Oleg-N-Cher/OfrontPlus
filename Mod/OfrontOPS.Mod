@@ -6,8 +6,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		MaxIdLen = 40;
 
 	TYPE
-		Name* = ARRAY MaxIdLen OF CHAR;
-		String* = POINTER TO ARRAY OF CHAR;
+		Name* = ARRAY MaxIdLen OF SHORTCHAR;
+		String* = POINTER TO ARRAY OF SHORTCHAR;
 
 	(* name, str, numtyp, intval, realval, lrlval are implicit results of Get *)
 
@@ -57,15 +57,15 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		out = 71; dollar = 78;
 
 	VAR
-		ch: CHAR;     (*current character*)
+		ch: SHORTCHAR;     (*current character*)
 
 	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
 	END err;
 
 	PROCEDURE Str(VAR sym: BYTE);
-		VAR i: INTEGER; och: CHAR;
-			s: ARRAY 256 OF CHAR; t: String;
+		VAR i: INTEGER; och: SHORTCHAR;
+			s: ARRAY 256 OF SHORTCHAR; t: String;
 	BEGIN i := 0; och := ch;
 		LOOP OPM.Get(ch);
 			IF ch = och THEN EXIT END;
@@ -99,7 +99,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END Identifier;
 
 	PROCEDURE Number;
-		VAR i, m, n, d, e: SHORTINT; dig: ARRAY 24 OF CHAR; f: REAL; expCh: CHAR; neg: BOOLEAN;
+		VAR i, m, n, d, e: SHORTINT; dig: ARRAY 24 OF SHORTCHAR; f: REAL; expCh: SHORTCHAR; neg: BOOLEAN;
 
 		PROCEDURE Ten(e: SHORTINT): REAL;
 			VAR x, p: REAL;
@@ -112,7 +112,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			RETURN x
 		END Ten;
 
-		PROCEDURE Ord(ch: CHAR; hex: BOOLEAN): SHORTINT;
+		PROCEDURE Ord(ch: SHORTCHAR; hex: BOOLEAN): SHORTINT;
 		BEGIN (* ("0" <= ch) & (ch <= "9") OR ("A" <= ch) & (ch <= "F") *)
 			IF ch <= "9" THEN RETURN ORD(ch) - ORD("0")
 			ELSIF hex THEN RETURN ORD(ch) - ORD("A") + 10

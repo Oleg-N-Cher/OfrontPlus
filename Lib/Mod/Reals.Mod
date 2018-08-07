@@ -5,7 +5,7 @@ MODULE Reals;
 
   TYPE
     SHORTINT = T.INT8; INTEGER = T.INT16; LONGINT = T.INT32; ADRINT = T.ADRINT;
-    REAL = T.REAL32; LONGREAL = T.REAL64;
+    CHAR = T.CHAR8; REAL = T.REAL32; LONGREAL = T.REAL64;
 
 
   PROCEDURE -Offset(adr: ADRINT; offset: LONGINT): ADRINT
@@ -111,7 +111,7 @@ MODULE Reals;
     VAR buf: ARRAY 32 OF CHAR;
   BEGIN
     ASSERT(sprintf(S.ADR(buf), S.ADR("%.24g"), x) < LEN(buf));
-    COPY(buf, d)
+    d := buf$
   END LRealToString;
 
 END Reals.

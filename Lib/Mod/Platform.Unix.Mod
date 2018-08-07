@@ -16,6 +16,7 @@ CONST
 
 TYPE
   INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
+  CHAR = Types.CHAR8;
   ADRINT* = Types.ADRINT;  (* 32 or 64 bits *)
   
   TIME_T = ADRINT;  (* time_t type is used
@@ -144,7 +145,7 @@ PROCEDURE getEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
   VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
-  IF p # NIL THEN COPY(p^, val) END;
+  IF p # NIL THEN val := p^$ END;
   RETURN p # NIL
 END getEnv;
 
@@ -162,7 +163,7 @@ PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
 VAR
   av: ArgVec;
 BEGIN
-  IF n < ArgCount() THEN av := ArgVector(); COPY(av[n]^, val) END
+  IF n < ArgCount() THEN av := ArgVector(); val := av[n]^$ END
 END GetArg;
 
 PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);

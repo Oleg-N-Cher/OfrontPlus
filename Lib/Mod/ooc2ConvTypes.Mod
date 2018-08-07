@@ -36,7 +36,7 @@ TYPE
   ScanState*=POINTER TO ScanDesc; 
   ScanDesc*=RECORD
     (**The type of lexical scanning control procedures.  *)
-    p*: PROCEDURE (ch: CHAR; VAR cl: ScanClass; VAR st: ScanState);
+    p*: PROCEDURE (ch: SHORTCHAR; VAR cl: ScanClass; VAR st: ScanState);
     (**A procedure that produces the next state corresponding to the
        character @var{ch}.  The class of the character is returned
        in @var{cl}, the next state in @var{st}.  *)

@@ -6,12 +6,12 @@ CONST
   done* = 101;
 
 TYPE
-  Sqlite3* = POINTER [1] TO ARRAY [1] 1 OF CHAR;
-  Stmt* = POINTER [1] TO ARRAY [1] 1 OF CHAR;
-  Ptr* = POINTER [1] TO ARRAY [1] 1 OF CHAR;
+  Sqlite3* = POINTER [1] TO ARRAY [1] 1 OF SHORTCHAR;
+  Stmt* = POINTER [1] TO ARRAY [1] 1 OF SHORTCHAR;
+  Ptr* = POINTER [1] TO ARRAY [1] 1 OF SHORTCHAR;
 
 PROCEDURE -Open*
-  (filename: ARRAY OF CHAR; VAR ppDb: Sqlite3): INTEGER
+  (filename: ARRAY OF SHORTCHAR; VAR ppDb: Sqlite3): INTEGER
   "(int)sqlite3_open(filename, ppDb)";
 
 PROCEDURE -Close*
@@ -23,11 +23,11 @@ PROCEDURE -Free*
   "sqlite3_free(x)";
 
 PROCEDURE -Exec*
-  (pDb: Sqlite3; sql: ARRAY OF CHAR; VAR err: Ptr): INTEGER
+  (pDb: Sqlite3; sql: ARRAY OF SHORTCHAR; VAR err: Ptr): INTEGER
   "(int)sqlite3_exec(pDb, sql, (void *)0, (void *)0, err)";
 
 PROCEDURE -PrepareV2*
-  (pDb: Sqlite3; sql: ARRAY OF CHAR; VAR stmt: Stmt): INTEGER
+  (pDb: Sqlite3; sql: ARRAY OF SHORTCHAR; VAR stmt: Stmt): INTEGER
   "(int)sqlite3_prepare_v2(pDb, sql, -1, stmt, (void *)0)";
 
 PROCEDURE -Finalize*

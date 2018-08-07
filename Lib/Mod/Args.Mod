@@ -12,7 +12,7 @@ MODULE Args;	(* jt, 8.12.94 *)
 	PROCEDURE -ArgCount(): INTEGER "SYSTEM_ArgCount";
 	PROCEDURE -ArgVector(): Platform.ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
 
-	PROCEDURE Get*(n: INTEGER; VAR val: ARRAY OF CHAR);
+	PROCEDURE Get*(n: INTEGER; OUT val: ARRAY OF SHORTCHAR);
 	BEGIN
 		Platform.GetArg(n, val)
 	END Get;
@@ -22,12 +22,12 @@ MODULE Args;	(* jt, 8.12.94 *)
 		Platform.GetIntArg(n, val)
 	END GetInt;
 
-	PROCEDURE Pos*(IN s: ARRAY OF CHAR): INTEGER;
+	PROCEDURE Pos*(IN s: ARRAY OF SHORTCHAR): INTEGER;
 	BEGIN
 		RETURN Platform.ArgPos(s)
 	END Pos;
 
-	PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+	PROCEDURE GetEnv*(IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
 	BEGIN
 		Platform.GetEnv(var, val)
 	END GetEnv;

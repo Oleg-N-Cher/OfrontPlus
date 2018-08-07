@@ -167,7 +167,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN NEW(node); node^.class := class; RETURN node
 	END NewNode;
 
-	PROCEDURE NewName* (IN name: ARRAY OF CHAR): OPS.String;
+	PROCEDURE NewName* (IN name: ARRAY OF SHORTCHAR): OPS.String;
 		VAR i: INTEGER; p: OPS.String;
 	BEGIN
 		i := 0; WHILE name[i] # 0X DO INC(i) END;
@@ -188,7 +188,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN IF topScope # NIL THEN topScope := topScope^.left END
 	END CloseScope;
 
-	PROCEDURE Init*(VAR(*IN*) name: ARRAY OF CHAR; opt: SET);
+	PROCEDURE Init*(VAR(*IN*) name: ARRAY OF SHORTCHAR; opt: SET);
 		CONST nsf = 4; fpc = 8; esf = 9;
 	BEGIN
 		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
@@ -240,7 +240,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := obj
 	END Find;
 
-	PROCEDURE FindField*(VAR(*IN*) name: ARRAY OF CHAR; typ: Struct; VAR res: Object);
+	PROCEDURE FindField*(VAR(*IN*) name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
 		VAR obj: Object;
 	BEGIN
 		WHILE typ # NIL DO obj := typ^.link;
@@ -276,8 +276,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*-------------------------- Fingerprinting --------------------------*)
 
-	PROCEDURE FPrintName(VAR fp: INTEGER; VAR name: ARRAY OF CHAR);
-		VAR i: INTEGER; ch: CHAR;
+	PROCEDURE FPrintName(VAR fp: INTEGER; VAR name: ARRAY OF SHORTCHAR);
+		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.FPrint(fp, ORD(ch)); INC(i) UNTIL ch = 0X
 	END FPrintName;
@@ -440,7 +440,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END FPrintObj;
 
 	PROCEDURE FPrintErr*(obj: Object; errno: SHORTINT);
-		VAR i, j: SHORTINT; ch: CHAR;
+		VAR i, j: SHORTINT; ch: SHORTCHAR;
 	BEGIN
 		IF obj^.mnolev # 0 THEN
 			OPM.objname := GlbMod[-obj^.mnolev]^.name^$; i := 0;
@@ -488,7 +488,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InsertImport;
 
 	PROCEDURE InName(VAR(*OUT*) name: OPS.String);
-		VAR i: SHORTINT; ch: CHAR; n: OPS.Name;
+		VAR i: SHORTINT; ch: SHORTCHAR; n: OPS.Name;
 	BEGIN i := 0;
 		REPEAT
 			OPM.SymRCh(ch); n[i] := ch; INC(i)
@@ -524,7 +524,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InMod;
 
 	PROCEDURE InConstant(f: INTEGER; conval: Const);
-		VAR ch: CHAR; i: INTEGER; ext, t: ConstExt; rval: SHORTREAL; str: OPS.Name;
+		VAR ch: SHORTCHAR; i: INTEGER; ext, t: ConstExt; rval: SHORTREAL; str: OPS.Name;
 	BEGIN
 		CASE f OF
 		| Char, Bool:
@@ -728,7 +728,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InStruct;
 
 	PROCEDURE InObj(mno: BYTE): Object;	(* first number in impCtxt.nextTag *)
-		VAR ch: CHAR; obj, old: Object; typ: Struct;
+		VAR ch: SHORTCHAR; obj, old: Object; typ: Struct;
 			i, s, tag: INTEGER; ext: ConstExt;
 	BEGIN
 		tag := impCtxt.nextTag;
@@ -827,8 +827,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*-------------------------- Export --------------------------*)
 
-	PROCEDURE OutName(VAR(*IN*) name: ARRAY OF CHAR);
-		VAR i: INTEGER; ch: CHAR;
+	PROCEDURE OutName(VAR(*IN*) name: ARRAY OF SHORTCHAR);
+		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.SymWCh(ch); INC(i) UNTIL ch = 0X
 	END OutName;
@@ -1084,7 +1084,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
-	PROCEDURE InitScope*(lang: CHAR);
+	PROCEDURE InitScope*(lang: SHORTCHAR);
 	BEGIN
 		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 		InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
@@ -1108,17 +1108,18 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
 
-		EnterTyp("CHAR", Char, 1, chartyp);
 		EnterTyp("BOOLEAN", Bool, 1, booltyp);
 		EnterTyp("SET", Set, OPM.SetSize, settyp);
 		IF (lang = "C") OR (lang = "3") THEN
 			EnterTyp("BYTE", Byte, 1, bytetyp);
+			EnterTyp("SHORTCHAR", Char, 1, chartyp);
 			EnterTyp("SHORTINT", SInt, 2, sinttyp);
 			EnterTyp("INTEGER", Int, 4, inttyp);
 			EnterTyp("LONGINT",  LInt, 8, linttyp);
 			EnterTyp("SHORTREAL", Real, 4, realtyp);
 			EnterTyp("REAL", LReal, 8, lrltyp);
 		ELSIF (lang = "1") OR (lang = "2") THEN
+			EnterTyp("CHAR", Char, 1, chartyp);
 			EnterTyp("SHORTINT", Byte, 1, bytetyp);
 			EnterTyp("INTEGER", SInt, 2, sinttyp);
 			EnterTyp("LONGINT",  Int, 4, inttyp);
@@ -1126,6 +1127,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTyp("REAL", Real, 4, realtyp);
 			EnterTyp("LONGREAL", LReal, 8, lrltyp)
 		ELSE (* "7" *)
+			EnterTyp("CHAR", Char, 1, chartyp);
 			EnterTyp("INTEGER", Int, 4, inttyp);
 			EnterTyp("REAL", LReal, 8, lrltyp)
 		END;

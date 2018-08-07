@@ -27,6 +27,7 @@ MODULE powStrings;
 IMPORT Types;
 
 TYPE
+  CHAR = Types.CHAR8;
   SHORTINT = Types.INT8; INTEGER = Types.INT16; LONGINT = Types.INT32;
 
 CONST
@@ -491,7 +492,7 @@ BEGIN
     neg:=x<0;
     IF neg THEN 
       IF x=MIN(LONGINT) THEN
-        COPY("-2147483648",t);
+        t := "-2147483648";
         IF Length(t)#11 THEN
           FOR i:=0 TO maxlen-1 DO t[i]:="$" END;
           t[maxlen]:=0X;
@@ -548,7 +549,7 @@ BEGIN
     neg:=x<0;
     IF neg THEN 
       IF x=MIN(LONGINT) THEN
-        COPY("-80000000h",t);
+        t := "-80000000h";
         IF Length(t)#10 THEN
           FOR i:=0 TO maxlen-1 DO t[i]:="$" END;
           t[maxlen]:=0X;

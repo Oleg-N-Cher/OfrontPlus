@@ -12,7 +12,7 @@ MODULE Modules;  (* jt 6.1.96 *)
     Command*    = Heap.Command;
   VAR
     res*:       INTEGER;
-    resMsg*:    ARRAY 256 OF CHAR;
+    resMsg*:    ARRAY 256 OF SHORTCHAR;
     imported*:  ModuleName;
     importing*: ModuleName;
 
@@ -22,7 +22,7 @@ MODULE Modules;  (* jt 6.1.96 *)
   PROCEDURE -modules(): Module     "(Heap_Module)Heap_modules";
   (*PROCEDURE -setmodules(m: Module) "Heap_modules = m";*)
 
-	PROCEDURE Append(IN b: ARRAY OF CHAR; VAR a: ARRAY OF CHAR);
+	PROCEDURE Append(IN b: ARRAY OF SHORTCHAR; VAR a: ARRAY OF SHORTCHAR);
 		VAR i, j: INTEGER;
 	BEGIN
 		i := 0; WHILE a[i] # 0X DO INC(i) END;
@@ -30,29 +30,29 @@ MODULE Modules;  (* jt 6.1.96 *)
 		a[i] := 0X
 	END Append;
 
-  PROCEDURE ThisMod* (IN name: ARRAY OF CHAR): Module;
-    VAR m: Module; bodyname: ARRAY 64 OF CHAR; body: Command;
+  PROCEDURE ThisMod* (IN name: ARRAY OF SHORTCHAR): Module;
+    VAR m: Module; bodyname: ARRAY 64 OF SHORTCHAR; body: Command;
   BEGIN m := modules();
     WHILE (m # NIL) & (m.name # name) DO m := m.next END ;
     IF m # NIL THEN res := 0; resMsg := ""
-    ELSE res := 1; COPY(name, importing);
+    ELSE res := 1; importing := name$;
       resMsg := ' module "'; Append(name, resMsg); Append('" not found', resMsg);
     END ;
     RETURN m
   END ThisMod;
 
-  PROCEDURE ThisCommand* (mod: Module; IN name: ARRAY OF CHAR): Command;
+  PROCEDURE ThisCommand* (mod: Module; IN name: ARRAY OF SHORTCHAR): Command;
     VAR c: Cmd;
   BEGIN c := mod.cmds;
     WHILE (c # NIL) & (c.name # name) DO c := c.next END ;
     IF c # NIL THEN res := 0; resMsg := ""; RETURN c.cmd
-    ELSE res := 2; resMsg := ' command "'; COPY(name, importing);
+    ELSE res := 2; resMsg := ' command "'; importing := name$;
       Append(mod.name, resMsg); Append(".", resMsg); Append(name, resMsg); Append('" not found', resMsg);
       RETURN NIL
     END
   END ThisCommand;
 
-  PROCEDURE Free*(IN name: ARRAY OF CHAR; all: BOOLEAN);
+  PROCEDURE Free*(IN name: ARRAY OF SHORTCHAR; all: BOOLEAN);
     VAR m, p: Module; refcount: LONGINT;
   BEGIN m := modules();
     IF all THEN

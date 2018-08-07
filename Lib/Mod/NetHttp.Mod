@@ -10,14 +10,14 @@ CONST
   DEFAULT_BUFFER_SIZE = 32768;
 
 TYPE
-  Buffer = POINTER TO ARRAY OF CHAR;
+  Buffer = POINTER TO ARRAY OF SHORTCHAR;
   CString = Types.ADRINT;
 
 TYPE
   Socket* = RECORD
     hCurl: c.PCURL;
     ok-: BOOLEAN;
-    err-: ARRAY 128 OF CHAR;
+    err-: ARRAY 128 OF SHORTCHAR;
     data*: Buffer;
     datasize-: INTEGER;
   END;
@@ -26,7 +26,7 @@ PROCEDURE -AAIncludeCurlh0 '#include "libCurl.h0"';
 
 PROCEDURE Length (s: CString): INTEGER;
 VAR
-  len: INTEGER; ch: CHAR;
+  len: INTEGER; ch: SHORTCHAR;
 BEGIN
   len := 0;
   SYSTEM.GET(s, ch);
@@ -59,9 +59,9 @@ BEGIN
   RETURN cur_size
 END write_callback;
 
-PROCEDURE (VAR self: Socket) Get* (url: ARRAY [1] OF CHAR);
+PROCEDURE (VAR self: Socket) Get* (url: ARRAY [1] OF SHORTCHAR);
 VAR
-  msglen: INTEGER; ch: CHAR; res: c.CURLcode; syserr: Types.ADRINT;
+  msglen: INTEGER; ch: SHORTCHAR; res: c.CURLcode; syserr: Types.ADRINT;
 BEGIN
   self.hCurl := c.curl_easy_init();
   self.ok := (self.hCurl # NIL);
