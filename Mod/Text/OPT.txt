@@ -88,6 +88,7 @@
 		topScope*: Object;
 		undftyp*, bytetyp*, booltyp*, chartyp*, sinttyp*, inttyp*, linttyp*,
 		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*: Struct;
+		int8, int16, int32, int64, adrint, byte: Object;
 		nofGmod*: BYTE;	(*nof imports*)
 		GlbMod*: ARRAY maxImps OF Object;	(* ^.right = first object, ^.name = module import name (not alias) *)
 		SelfName*: OPS.Name;	(* name of module being compiled *)
@@ -1097,6 +1098,13 @@
 		typ^.idfp := form; typ^.idfpdone := TRUE; res := typ
 	END EnterTyp;
 
+	PROCEDURE EnterTypeAlias(IN name: OPS.Name; VAR res: Object; typ: Struct);
+		VAR obj: Object;
+	BEGIN
+		Insert(name, obj); obj^.mode := Typ; obj^.typ := typ; obj^.vis := external;
+		res := obj
+	END EnterTypeAlias;
+
 	PROCEDURE EnterProc(IN name: OPS.Name; num: SHORTINT);
 		VAR obj: Object;
 	BEGIN Insert(name, obj);
@@ -1112,6 +1120,18 @@
 
 		(*initialization of module SYSTEM*)
 		EnterTyp("PTR", Pointer, OPM.AddressSize, sysptrtyp);
+		EnterTyp("INT8", Byte, 1, bytetyp);
+		EnterTyp("INT16", SInt, 2, sinttyp);
+		EnterTyp("INT32", Int, 4, inttyp);
+		EnterTyp("INT64", LInt, 8, linttyp);
+		CASE OPM.AddressSize OF
+		| 2: EnterTypeAlias("ADRINT", adrint, sinttyp);
+		| 4: EnterTypeAlias("ADRINT", adrint, inttyp);
+		ELSE EnterTypeAlias("ADRINT", adrint, linttyp)
+		END;
+		IF (lang = "1") OR (lang = "2") THEN
+			EnterTypeAlias("BYTE", byte, bytetyp)
+		END;
 		EnterProc("ADR", adrfn);
 		EnterProc("CC", ccfn);
 		EnterProc("LSH", lshfn);
@@ -1130,24 +1150,24 @@
 		EnterTyp("BOOLEAN", Bool, 1, booltyp);
 		EnterTyp("SET", Set, OPM.SetSize, settyp);
 		IF (lang = "C") OR (lang = "3") THEN
-			EnterTyp("BYTE", Byte, 1, bytetyp);
 			EnterTyp("SHORTCHAR", Char, 1, chartyp);
-			EnterTyp("SHORTINT", SInt, 2, sinttyp);
-			EnterTyp("INTEGER", Int, 4, inttyp);
-			EnterTyp("LONGINT",  LInt, 8, linttyp);
+			EnterTypeAlias("BYTE", int8, bytetyp);
+			EnterTypeAlias("SHORTINT", int16, sinttyp);
+			EnterTypeAlias("INTEGER", int32, inttyp);
+			EnterTypeAlias("LONGINT", int64, linttyp);
 			EnterTyp("SHORTREAL", Real, 4, realtyp);
 			EnterTyp("REAL", LReal, 8, lrltyp);
 		ELSIF (lang = "1") OR (lang = "2") THEN
 			EnterTyp("CHAR", Char, 1, chartyp);
-			EnterTyp("SHORTINT", Byte, 1, bytetyp);
-			EnterTyp("INTEGER", SInt, 2, sinttyp);
-			EnterTyp("LONGINT",  Int, 4, inttyp);
-			EnterTyp("HUGEINT",  LInt, 8, linttyp);
+			EnterTypeAlias("SHORTINT", int8, bytetyp);
+			EnterTypeAlias("INTEGER", int16, sinttyp);
+			EnterTypeAlias("LONGINT", int32, inttyp);
+			EnterTypeAlias("HUGEINT", int64, linttyp);
 			EnterTyp("REAL", Real, 4, realtyp);
 			EnterTyp("LONGREAL", LReal, 8, lrltyp)
 		ELSE (* "7" *)
 			EnterTyp("CHAR", Char, 1, chartyp);
-			EnterTyp("INTEGER", Int, 4, inttyp);
+			EnterTypeAlias("INTEGER", int32, inttyp);
 			EnterTyp("REAL", LReal, 8, lrltyp)
 		END;
 		EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
@@ -1162,8 +1182,10 @@
 		EnterProc("MIN", minfn);
 		EnterProc("MAX", maxfn);
 		EnterProc("CHR", chrfn);
-		EnterProc("SHORT", shortfn);
-		EnterProc("LONG", longfn);
+		IF (lang # "7") THEN
+			EnterProc("SHORT", shortfn);
+			EnterProc("LONG", longfn)
+		END;
 		EnterProc("SIZE", sizefn);
 		EnterProc("INC", incfn);
 		EnterProc("DEC", decfn);

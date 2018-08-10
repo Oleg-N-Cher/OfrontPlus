@@ -8,7 +8,7 @@ MODULE Heap;
   IMPORT S := SYSTEM;  (* Cannot import anything else as heap initialization must complete
                           before any other modules are initialized. *)
   TYPE
-    ADDRESS = INTEGER; (* SYSTEM.ADRINT in future *)
+    ADDRESS = S.ADRINT;
     
   CONST
     ModNameLen    = 20;
