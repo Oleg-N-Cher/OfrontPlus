@@ -5,7 +5,7 @@ SET OBERON=.;.\..\Sym;.\..\Mod
 
 :: Ofront+
 
-ofront+ -sC -48 Heap32.Mod -apx Types32.Mod Platform.Windows.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
+ofront+ -sC -48 Heap.Mod -apx Types.Mod Platform.Windows.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
 IF errorlevel 1 PAUSE
 
 :: OOC2
