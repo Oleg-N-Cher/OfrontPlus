@@ -31,7 +31,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	VAR
 		W: Texts.Writer;
-		option: SHORTCHAR;
+		lang, option: SHORTCHAR;
 
 	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN Texts.WriteString(W, s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN Texts.Write(W, ch) END Wch;
@@ -55,7 +55,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			IF ~first THEN Ws("; ") ELSE first := FALSE END;
 			IF option = "x" THEN Wi(par^.adr); Wch(" ") END;
 			IF par^.mode = VarPar THEN
-				IF option = "C" THEN
+				IF lang = "C" THEN
 					IF par^.vis = inPar THEN Ws("IN ") ELSIF par^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
 				ELSIF par^.vis # inPar THEN Ws("VAR ")
 				END;
@@ -158,7 +158,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				Indent(3); Ws("PROCEDURE (");
 				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN
-						IF option = "C" THEN
+						IF lang = "C" THEN
 							IF obj^.link^.vis = inPar THEN Ws("IN ") ELSIF obj^.link^.vis = outPar THEN Ws("OUT ") ELSE Ws("VAR ") END
 						ELSIF obj^.link^.vis # inPar THEN Ws("VAR ")
 						END;
@@ -236,10 +236,43 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			IF typ^.mno # 0 THEN Ws(OPT.GlbMod[typ^.mno].name^); Wch(".")
 			ELSIF typ = OPT.sysptrtyp THEN Ws("SYSTEM.")
 			ELSIF obj^.vis = internal THEN Wch("#")
-			END ;
-			Ws(obj^.name^)
+			END;
+			IF (lang = "C") OR (lang = "3") THEN
+				IF obj = OPT.chartyp^.strobj THEN Ws("SHORTCHAR")
+				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("BYTE")
+				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SHORTINT")
+				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INTEGER")
+				ELSIF obj = OPT.linttyp^.strobj THEN Ws("LONGINT")
+				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SHORTREAL")
+				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL")
+				ELSE
+					Ws(obj^.name^)
+				END
+			ELSIF (lang = "1") OR (lang = "2") THEN
+				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("SHORTINT")
+				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("INTEGER")
+				ELSIF obj = OPT.inttyp^.strobj THEN Ws("LONGINT")
+				ELSIF obj = OPT.linttyp^.strobj THEN Ws("HUGEINT")
+				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
+				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("LONGREAL")
+				ELSE
+					Ws(obj^.name^)
+				END
+			ELSE (* "7" *)
+				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("SYSTEM.INT8")
+				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SYSTEM.INT16")
+				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INTEGER")
+				ELSIF obj = OPT.linttyp^.strobj THEN Ws("SYSTEM.INT64")
+				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SYSTEM.REAL4")
+				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL")
+				ELSE
+					Ws(obj^.name^)
+				END
+			END
 		ELSE
-			IF (option = "x") & (typ^.ref > OPM.MaxStruct) THEN Wch("#"); Wi(typ^.ref - OPM.MaxStruct); Wch(" ") END ;
+			IF (option = "x") & (typ^.ref > OPM.MaxStruct) THEN Wch("#"); Wi(typ^.ref - OPM.MaxStruct); Wch(" ") END;
 			Wstruct(typ)
 		END
 	END Wtype;
@@ -306,8 +339,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			ELSE Args.Get(2, vname); option := vname[1]
 			END
 		END;
-		IF option = 0X THEN option := "C" END;
-		CASE option OF "1", "2", "3", "C", "7": OPT.InitScope(option) ELSE END;
+		CASE option OF "1".."3", "7": lang := option; ELSE lang := "C" END; OPT.InitScope(lang);
 		IF Args.argc >= 2 THEN
 			Ident(S, name);
 			NEW(T); Texts.Open(T, "");
