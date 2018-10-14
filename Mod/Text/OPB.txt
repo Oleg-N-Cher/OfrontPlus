@@ -728,10 +728,10 @@
 		  times:
 				IF f IN intSet THEN xv := xval^.intval; yv := yval^.intval;
 					IF (xv = 0) OR (yv = 0) OR	(* division with negative numbers is not defined *)
-						(xv > 0) & (yv > 0) & (yv <= MAX(INTEGER) DIV xv) OR
-						(xv > 0) & (yv < 0) & (yv >= MIN(INTEGER) DIV xv) OR
-						(xv < 0) & (yv > 0) & (xv >= MIN(INTEGER) DIV yv) OR
-						(xv < 0) & (yv < 0) & (xv # MIN(INTEGER)) & (yv # MIN(INTEGER)) & (-xv <= MAX(INTEGER) DIV (-yv)) THEN
+						(xv > 0) & (yv > 0) & (yv <= MAX(LONGINT) DIV xv) OR
+						(xv > 0) & (yv < 0) & (yv >= MIN(LONGINT) DIV xv) OR
+						(xv < 0) & (yv > 0) & (xv >= MIN(LONGINT) DIV yv) OR
+						(xv < 0) & (yv < 0) & (xv # MIN(LONGINT)) & (yv # MIN(LONGINT)) & (-xv <= MAX(LONGINT) DIV (-yv)) THEN
 						xval^.intval := xv * yv; SetIntType(x)
 					ELSE err(204)
 					END
