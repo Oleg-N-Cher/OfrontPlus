@@ -1156,8 +1156,11 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| entierfn: (*ENTIER*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF (OPM.AddressSize = 2) & (f IN realSet) THEN Convert(x, OPT.inttyp); x^.typ := OPT.inttyp
-				ELSIF f IN realSet THEN Convert(x, OPT.linttyp); x^.typ := OPT.linttyp
+				ELSIF f IN realSet THEN
+					IF (OPM.AddressSize = 2) OR (OPM.Language = "1") OR (OPM.Language = "2") THEN
+						Convert(x, OPT.inttyp); x^.typ := OPT.inttyp
+					ELSE Convert(x, OPT.linttyp); x^.typ := OPT.linttyp
+					END
 				ELSE x^.typ := OPT.linttyp; err(111)
 				END
 		| oddfn: (*ODD*)
