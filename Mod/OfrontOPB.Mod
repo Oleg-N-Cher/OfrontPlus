@@ -1156,10 +1156,10 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| entierfn: (*ENTIER*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN realSet THEN Convert(x, OPT.linttyp)
-				ELSE err(111)
-				END ;
-				x^.typ := OPT.linttyp
+				ELSIF (OPM.AddressSize = 2) & (f IN realSet) THEN Convert(x, OPT.inttyp); x^.typ := OPT.inttyp
+				ELSIF f IN realSet THEN Convert(x, OPT.linttyp); x^.typ := OPT.linttyp
+				ELSE x^.typ := OPT.linttyp; err(111)
+				END
 		| oddfn: (*ODD*)
 				MOp(odd, x)
 		| minfn: (*MIN*)
