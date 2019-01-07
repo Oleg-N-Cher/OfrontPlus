@@ -101,8 +101,10 @@ extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
 extern LONGINT SYSTEM_ASHL   (LONGINT x, INTEGER n);
 extern LONGINT SYSTEM_ABS    (LONGINT i);
 extern double  SYSTEM_ABSD   (double i);
-extern LONGINT SYSTEM_DIV    (LONGINT x, LONGINT y);
-extern LONGINT SYSTEM_MOD    (LONGINT x, LONGINT y);
+extern INTEGER SYSTEM_DIV    (INTEGER x, INTEGER y);
+extern LONGINT SYSTEM_DIVL   (LONGINT x, LONGINT y);
+extern INTEGER SYSTEM_MOD    (INTEGER x, INTEGER y);
+extern LONGINT SYSTEM_MODL   (LONGINT x, LONGINT y);
 extern INTEGER SYSTEM_ENTIER (REAL x);
 extern LONGINT SYSTEM_ENTIERL(REAL x);
 
@@ -178,8 +180,10 @@ static inline INTEGER __STRLEN (CHAR s[]) { // LEN(sx$)
 #define __CHRF(x, mod, pos)       ((CHAR)__RF(x, 256, mod, pos))
 #define __DIV(x, y)     ((x)>=0?(x)/(y):-1-(-1-(x))/(y))
 #define __DIVF(x, y)    SYSTEM_DIV(x, y)
-#define __MOD(x, y)     ((x)>=0?(x)%(y):__MODF(x,y))
+#define __DIVFL(x, y)   SYSTEM_DIVL(x, y)
+#define __MOD(x, y)     ((x)>=0?(x)%(y):(y)-1+((x)+1)%(y))
 #define __MODF(x, y)    SYSTEM_MOD(x, y)
+#define __MODFL(x, y)   SYSTEM_MODL(x, y)
 #define __ENTIER(x)     SYSTEM_ENTIER(x)
 #define __ENTIERL(x)    SYSTEM_ENTIERL(x)
 #define __ABS(x)        (((x)<0)?-(x):(x))
