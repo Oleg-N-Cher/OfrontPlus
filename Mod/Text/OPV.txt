@@ -738,17 +738,16 @@
 										ELSE OPM.WriteString("__ROT(")
 										END
 							|	div:
-										IF SideEffects(n) THEN
-											IF form < LInt THEN OPM.WriteString("(INTEGER)") END ;
-											OPM.WriteString("__DIVF(")
-										ELSE OPM.WriteString("__DIV(")
+										IF ~SideEffects(n) & (r^.class = Nconst) & (r^.conval^.intval > 0) THEN OPM.WriteString("__DIV(")
+										ELSIF form = LInt THEN OPM.WriteString("__DIVFL(")
+										ELSE OPM.WriteString("__DIVF(")
 										END
 							|	mod:
-										IF form < LInt THEN OPM.WriteString("(INTEGER)") END ;
-										IF SideEffects(n) THEN OPM.WriteString("__MODF(")
-										ELSE OPM.WriteString("__MOD(")
+										IF ~SideEffects(n) & (r^.class = Nconst) & (r^.conval^.intval > 0) THEN OPM.WriteString("__MOD(")
+										ELSIF form = LInt THEN OPM.WriteString("__MODFL(")
+										ELSE OPM.WriteString("__MODF(")
 										END
-							END ;
+							END;
 							expr(l, MinPrec);
 							OPM.WriteString(Comma);
 							IF (subclass IN {ash, lsh, rot}) & (r^.class = Nconst) & (r^.conval^.intval < 0) THEN
