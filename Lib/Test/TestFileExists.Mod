@@ -3,7 +3,7 @@ MODULE TestFileExists;
 IMPORT Args, Write := Console, p := Platform;
 
 VAR
-  filename: ARRAY 1024 OF CHAR;
+  filename: ARRAY 1024 OF SHORTCHAR;
 
 BEGIN
   IF Args.argc > 0 THEN
