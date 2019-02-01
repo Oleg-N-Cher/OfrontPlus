@@ -1335,7 +1335,7 @@ avoid unnecessary intermediate variables in OFront
 				p^.typ := OPT.notyp
 		| lenfn: (*LEN*)
 				IF ~(f IN intSet) OR (x^.class # Nconst) THEN err(69)
-				ELSIF f = SInt THEN
+				ELSIF f = Byte THEN
 					L := SHORT(SHORT(x^.conval^.intval)); typ := p^.typ;
 					WHILE (L > 0) & (typ^.comp IN {DynArr, Array}) DO typ := typ^.BaseTyp; DEC(L) END ;
 					IF (L # 0) OR ~(typ^.comp IN {DynArr, Array}) THEN err(132)
