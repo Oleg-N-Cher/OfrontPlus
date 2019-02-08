@@ -39,13 +39,15 @@ Ofront+ differences from Ofront/voc
 
   13. ORD(bool), ORD(set) supported in Oberon-3.
 
-  14. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
+  14. Arithmetic operations DIV0 and REM0 for integers, as in GPCP.
 
-  15. Advanced features for describing bindings to foreign libraries, system flag [stdcall].
+  15. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
 
-  16. It's possible to use modules written in Oberon, Oberon-2, Component Pascal & Oberon-3 together in one project.
+  16. Advanced features for describing bindings to foreign libraries, system flag [stdcall].
 
-  17. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
+  17. It's possible to use modules written in Oberon, Oberon-2, Component Pascal & Oberon-3 together in one project.
+
+  18. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
 
 
 Get it!

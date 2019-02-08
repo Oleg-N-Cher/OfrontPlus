@@ -27,7 +27,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		CProc = 9; Mod = 11; TProc = 13;
 
 		(* symbol values and ops *)
-		eql = 9; neq = 10; lss = 11; leq = 12; gtr = 13; geq = 14;
+		eql = 11; neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
 
 		(* nodes classes *)
 		Ninittd = 14;

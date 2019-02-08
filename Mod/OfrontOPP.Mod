@@ -13,19 +13,19 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 
 		(* symbol values *)
 		null = 0; times = 1; slash = 2; div = 3; mod = 4;
-		and = 5; plus = 6; minus = 7; or = 8; eql = 9;
-		neq = 10; lss = 11; leq = 12; gtr = 13; geq = 14;
-		in = 15; is = 16; arrow = 17; period = 18; comma = 19;
-		colon = 20; upto = 21; rparen = 22; rbrak = 23; rbrace = 24;
-		of = 25; then = 26; do = 27; to = 28; by = 29;
-		lparen = 30; lbrak = 31; lbrace = 32; not = 33; becomes = 34;
-		number = 35; nil = 36; string = 37; ident = 38; semicolon = 39;
-		bar = 40; end = 41; else = 42; elsif = 43; until = 44;
-		if = 45; case = 46; while = 47; repeat = 48; for = 49;
-		loop = 50; with = 51; exit = 52; return = 53; array = 54;
-		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
-		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
-		out = 71; dollar = 78;
+		div0 = 5; rem0 = 6; and = 7; plus = 8; minus = 9;
+		or = 10; eql = 11; neq = 12; lss = 13; leq = 14;
+		gtr = 15; geq = 16; in = 17; is = 18; arrow = 19;
+		period = 20; comma = 21; colon = 22; upto = 23; rparen = 24;
+		rbrak = 25; rbrace = 26; of = 27; then = 28; do = 29;
+		to = 30; by = 31; lparen = 32; lbrak = 33; lbrace = 34;
+		not = 35; becomes = 36; number = 37; nil = 38; string = 39;
+		ident = 40; semicolon = 41; bar = 42; end = 43; else = 44;
+		elsif = 45; until = 46; if = 47; case = 48; while = 49;
+		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
+		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
+		const = 60; type = 61; var = 62; procedure = 63; import = 64;
+		module = 65; out = 66; dollar = 67; eof = 68;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;

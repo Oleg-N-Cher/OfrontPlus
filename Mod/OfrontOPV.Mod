@@ -13,13 +13,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		CProc = 9; IProc = 10; Mod = 11; TProc = 13;
 
 		(* symbol values or ops *)
-		times = 1; slash = 2; div = 3; mod = 4;
-		and = 5; plus = 6; minus = 7; or = 8; eql = 9;
-		neq = 10; lss = 11; leq = 12; gtr = 13; geq = 14;
-		in = 15; is = 16; ash = 17; msk = 18; len = 19;
-		conv = 20; abs = 21; cap = 22; odd = 23; not = 33;
+		times = 1; slash = 2; div = 3; mod = 4; div0 = 5; rem0 = 6;
+		and = 7; plus = 8; minus = 9; or = 10; eql = 11;
+		neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
+		in = 17; is = 18; ash = 19; msk = 20; len = 21;
+		conv = 22; abs = 23; cap = 24; odd = 25; not = 35;
 		(*SYSTEM*)
-		adr = 24; cc = 25; bit = 26; lsh = 27; rot = 28; val = 29;
+		adr = 26; cc = 27; bit = 28; lsh = 29; rot = 30; val = 31;
 
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -269,6 +269,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								IF form = Set THEN RETURN 3 ELSE RETURN 8 END
 					|	div, mod:
 								RETURN 10 (* div/mod are replaced by functions *)
+					|	div0, rem0:
+								RETURN 8
 					|	plus:
 								IF form = Set THEN RETURN 2 ELSE RETURN 7 END
 					|	minus:
@@ -784,6 +786,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 									IF form = Set THEN OPM.WriteString(" & ~")
 									ELSE OPM.WriteString(" - ")
 									END;
+						|	div0:
+									OPM.WriteString(" / ")
+						|	rem0:
+									OPM.WriteString(" % ")
 						|	or:
 									OPM.WriteString(" || ")
 						END;
