@@ -108,6 +108,24 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		OBERON:  ARRAY 1024 OF CHAR;
 
+	(* ----------------------- System runtime ----------------------- *)
+
+	PROCEDURE Div0*(x, y: LONGINT): LONGINT;
+	BEGIN
+		IF (x < 0) = (y < 0) THEN RETURN x DIV y
+		ELSIF x < 0 THEN RETURN -x DIV (-y)
+		ELSE RETURN -(-x) DIV y
+		END
+	END Div0;
+
+	PROCEDURE Rem0*(x, y: LONGINT): LONGINT;
+	BEGIN
+		IF (x < 0) = (y < 0) THEN RETURN x MOD y
+		ELSIF x < 0 THEN RETURN x MOD (-y)
+		ELSE RETURN -(-x) MOD y
+		END
+	END Rem0;
+
 	(* ------------------------- Log Output ------------------------- *)
 
 	PROCEDURE LogW*(ch: CHAR);

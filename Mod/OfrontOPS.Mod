@@ -23,18 +23,19 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	    |  0          1          2          3          4
 	 ---|--------------------------------------------------------
 	  0 |  null       *          /          DIV        MOD
-	  5 |  &          +          -          OR         =
-	 10 |  #          <          <=         >          >=
-	 15 |  IN         IS         ^          .          ,
-	 20 |  :          ..         )          ]          }
-	 25 |  OF         THEN       DO         TO         BY
-	 30 |  (          [          {          ~          :=
-	 35 |  number     NIL        string     ident      ;
-	 40 |  |          END        ELSE       ELSIF      UNTIL
-	 45 |  IF         CASE       WHILE      REPEAT     FOR
-	 50 |  LOOP       WITH       EXIT       RETURN     ARRAY
-	 55 |  RECORD     POINTER    BEGIN      CONST      TYPE
-	 60 |  VAR        PROCEDURE  IMPORT     MODULE     eof    *)
+	  5 |  DIV0       REM0       &          +          -
+	 10 |  OR         =          #          <          <=
+	 15 |  >          >=         IN         IS         ^
+	 20 |  .          ,          :          ..         )
+	 25 |  ]          }          OF         THEN       DO
+	 30 |  TO         BY         (          [          {
+	 35 |  ~          :=         number     NIL        string
+	 40 |  ident      ;          |          END        ELSE
+	 45 |  ELSIF      UNTIL      IF         CASE       WHILE
+	 50 |  REPEAT     FOR        LOOP       WITH       EXIT
+	 55 |  RETURN     ARRAY      RECORD     POINTER    BEGIN
+	 60 |  CONST      TYPE       VAR        PROCEDURE  IMPORT
+	 65 |  MODULE     OUT        $          eof    *)
 
 	CONST
 		(* numtyp values *)
@@ -42,19 +43,19 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 
 		(*symbol values*)
 		null = 0; times = 1; slash = 2; div = 3; mod = 4;
-		and = 5; plus = 6; minus = 7; or = 8; eql = 9;
-		neq = 10; lss = 11; leq = 12; gtr = 13; geq = 14;
-		in = 15; is = 16; arrow = 17; period = 18; comma = 19;
-		colon = 20; upto = 21; rparen = 22; rbrak = 23; rbrace = 24;
-		of = 25; then = 26; do = 27; to = 28; by = 29;
-		lparen = 30; lbrak = 31; lbrace = 32; not = 33; becomes = 34;
-		number = 35; nil = 36; string = 37; ident = 38; semicolon = 39;
-		bar = 40; end = 41; else = 42; elsif = 43; until = 44;
-		if = 45; case = 46; while = 47; repeat = 48; for = 49;
-		loop = 50; with = 51; exit = 52; return = 53; array = 54;
-		record = 55; pointer = 56; begin = 57; const = 58; type = 59;
-		var = 60; procedure = 61; import = 62; module = 63; eof = 64;
-		out = 71; dollar = 78;
+		div0 = 5; rem0 = 6; and = 7; plus = 8; minus = 9;
+		or = 10; eql = 11; neq = 12; lss = 13; leq = 14;
+		gtr = 15; geq = 16; in = 17; is = 18; arrow = 19;
+		period = 20; comma = 21; colon = 22; upto = 23; rparen = 24;
+		rbrak = 25; rbrace = 26; of = 27; then = 28; do = 29;
+		to = 30; by = 31; lparen = 32; lbrak = 33; lbrace = 34;
+		not = 35; becomes = 36; number = 37; nil = 38; string = 39;
+		ident = 40; semicolon = 41; bar = 42; end = 43; else = 44;
+		elsif = 45; until = 46; if = 47; case = 48; while = 49;
+		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
+		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
+		const = 60; type = 61; var = 62; procedure = 63; import = 64;
+		module = 65; out = 66; dollar = 67; eof = 68;
 
 	VAR
 		ch: SHORTCHAR;     (*current character*)
@@ -258,6 +259,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "D": Identifier(s);
 						IF name = "DO" THEN s := do
 						ELSIF name = "DIV" THEN s := div
+						ELSIF ((OPM.Language = "C") OR (OPM.Language = "3")) & (name = "DIV0") THEN s := div0
 						END
 			| "E": Identifier(s);
 						IF name = "END" THEN s := end
@@ -281,7 +283,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "O": Identifier(s);
 						IF name = "OR" THEN s := or
 						ELSIF name = "OF" THEN s := of
-						ELSIF name = "OUT" THEN s := out
+						ELSIF (OPM.Language = "C") & (name = "OUT") THEN s := out
 						END
 			| "P": Identifier(s);
 						IF name = "PROCEDURE" THEN s := procedure
@@ -289,6 +291,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						END
 			| "R": Identifier(s);
 						IF name = "RECORD" THEN s := record
+						ELSIF ((OPM.Language = "C") OR (OPM.Language = "3")) & (name = "REM0") THEN s := rem0
 						ELSIF name = "REPEAT" THEN s := repeat
 						ELSIF name = "RETURN" THEN s := return
 						END

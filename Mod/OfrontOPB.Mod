@@ -12,13 +12,13 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	CONST
 		(* symbol values or ops *)
-		times = 1; slash = 2; div = 3; mod = 4;
-		and = 5; plus = 6; minus = 7; or = 8; eql = 9;
-		neq = 10; lss = 11; leq = 12; gtr = 13; geq = 14;
-		in = 15; is = 16; ash = 17; msk = 18; len = 19;
-		conv = 20; abs = 21; cap = 22; odd = 23; not = 33;
+		times = 1; slash = 2; div = 3; mod = 4; div0 = 5; rem0 = 6;
+		and = 7; plus = 8; minus = 9; or = 10; eql = 11;
+		neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
+		in = 17; is = 18; ash = 19; msk = 20; len = 21;
+		conv = 22; abs = 23; cap = 24; odd = 25; not = 35;
 		(*SYSTEM*)
-		adr = 24; cc = 25; bit = 26; lsh = 27; rot = 28; val = 29;
+		adr = 26; cc = 27; bit = 28; lsh = 29; rot = 30; val = 31;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -670,11 +670,21 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				END
 		| div:
 				IF f IN intSet THEN
-					IF yval^.intval # 0 THEN
+					IF (xval^.intval = MIN(LONGINT)) & (yval^.intval = -1) THEN err(204)
+					ELSIF yval^.intval # 0 THEN
 						xval^.intval := xval^.intval DIV yval^.intval; SetIntType(x)
 					ELSE err(205)
 					END
 				ELSIF f # Undef THEN err(103)
+				END
+		| div0:
+				IF f IN intSet THEN
+					IF (xval^.intval = MIN(LONGINT)) & (yval^.intval = -1) THEN err(204)
+					ELSIF yval^.intval # 0 THEN
+						xval^.intval := OPM.Div0(xval^.intval, yval^.intval); SetIntType(x)
+					ELSE err(205)
+					END
+				ELSIF f # Undef THEN err(140)
 				END
 		| mod:
 				IF f IN intSet THEN
@@ -683,6 +693,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(205)
 					END
 				ELSIF f # Undef THEN err(104)
+				END
+		| rem0:
+				IF f IN intSet THEN
+					IF yval^.intval # 0 THEN
+						xval^.intval := OPM.Rem0(xval^.intval, yval^.intval); SetIntType(x)
+					ELSE err(205)
+					END
+				ELSIF f # Undef THEN err(141)
 				END
 		| and:
 				IF f = Bool THEN
@@ -876,13 +894,13 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 							ELSIF val = 0 THEN do := FALSE
 							ELSIF log(val) = 1 THEN
 								t := y; y := z; z := t;
-								op := ash; y^.typ := OPT.sinttyp; y^.conval^.intval := exp; y^.obj := NIL
+								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := exp; y^.obj := NIL
 							END
 						ELSIF y^.class = Nconst THEN val := y^.conval^.intval;
 							IF val = 1 THEN do := FALSE
 							ELSIF val = 0 THEN do := FALSE; z := y
 							ELSIF log(val) = 1 THEN
-								op := ash; y^.typ := OPT.sinttyp; y^.conval^.intval := exp; y^.obj := NIL
+								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := exp; y^.obj := NIL
 							END
 						END
 					ELSIF ~(f IN {Undef, Real..Set}) THEN err(105); typ := OPT.undftyp
@@ -905,11 +923,24 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 							IF val = 0 THEN err(205)
 							ELSIF val = 1 THEN do := FALSE
 							ELSIF log(val) = 1 THEN
-								op := ash; y^.typ := OPT.sinttyp; y^.conval^.intval := -exp; y^.obj := NIL
+								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := -exp; y^.obj := NIL
 							END
 						END
 					ELSIF f # Undef THEN err(103); typ := OPT.undftyp
-					END ;
+					END;
+					IF do THEN NewOp(op, typ, z, y) END
+			| div0:
+					do := TRUE;
+					IF f IN intSet THEN
+						IF y^.class = Nconst THEN val := y^.conval^.intval;
+							IF val = 0 THEN err(205)
+							ELSIF val = 1 THEN do := FALSE
+							ELSIF log(val) = 1 THEN
+								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := -exp; y^.obj := NIL
+							END
+						END
+					ELSIF f # Undef THEN err(140); typ := OPT.undftyp
+					END;
 					IF do THEN NewOp(op, typ, z, y) END
 			| mod:
 					IF f IN intSet THEN
@@ -920,7 +951,18 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 							END
 						END
 					ELSIF f # Undef THEN err(104); typ := OPT.undftyp
-					END ;
+					END;
+					NewOp(op, typ, z, y)
+			| rem0:
+					IF f IN intSet THEN
+						IF y^.class = Nconst THEN
+							IF y^.conval^.intval = 0 THEN err(205)
+							ELSIF log(y^.conval^.intval) = 1 THEN
+								op := msk; y^.conval^.intval := ASH(LONG(LONG(LONG(-1))), exp); y^.obj := NIL
+							END
+						END
+					ELSIF f # Undef THEN err(141); typ := OPT.undftyp
+					END;
 					NewOp(op, typ, z, y)
 			| and:
 					IF f = Bool THEN
