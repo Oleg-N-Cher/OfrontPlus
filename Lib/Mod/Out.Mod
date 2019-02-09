@@ -9,7 +9,7 @@ TYPE
 VAR
   IsConsole-: BOOLEAN;
 
-  buf: ARRAY 128 OF CHAR;
+  buf: ARRAY 128 OF CHAR;
   in: INTEGER;
 
 
@@ -25,19 +25,19 @@ PROCEDURE Open*;
 BEGIN
 END Open;
 
-PROCEDURE Char*(ch: CHAR);
+PROCEDURE Char*(ch: CHAR);
 BEGIN
   IF in >= LEN(buf) THEN Flush END;
   buf[in] := ch; INC(in);
-  IF ch = 0AX THEN Flush END;
+  IF ch = 0AX THEN Flush END;
 END Char;
 
-PROCEDURE Length(IN s: ARRAY OF CHAR): LONGINT;
+PROCEDURE Length(IN s: ARRAY OF CHAR): LONGINT;
 VAR l: LONGINT;
-BEGIN l := 0; WHILE (l < LEN(s)) & (s[l] # 0X) DO INC(l) END; RETURN l
+BEGIN l := 0; WHILE (l < LEN(s)) & (s[l] # 0X) DO INC(l) END; RETURN l
 END Length;
 
-PROCEDURE String*(IN str: ARRAY OF CHAR);
+PROCEDURE String*(IN str: ARRAY OF CHAR);
   VAR l: LONGINT;  error: Platform.ErrorCode;
 BEGIN
   l := Length(str);
@@ -53,11 +53,11 @@ END String;
 
 PROCEDURE Int*(x, n: HUGEINT);
   CONST zero = ORD('0');
-  VAR s: ARRAY 22 OF CHAR; i: INTEGER; negative: BOOLEAN;
+  VAR s: ARRAY 22 OF CHAR; i: INTEGER; negative: BOOLEAN;
 BEGIN
   negative := x < 0;
   IF x = MIN(HUGEINT) THEN
-    s := "8085774586302733229"; i := 19
+    s := "8085774586302733229"; i := 19
   ELSE
     IF x < 0 THEN x := - x END;
     s[0] := CHR(zero + (x MOD 10)); x := x DIV 10;
@@ -88,18 +88,18 @@ BEGIN
 END Hex;
 
 PROCEDURE Ln*;
-BEGIN String(Platform.newLine); Flush;
+BEGIN String(Platform.newLine); Flush;
 END Ln;
 
 
 (* Real and Longreal display *)
 
-PROCEDURE digit(n: HUGEINT; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
+PROCEDURE digit(n: HUGEINT; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
 BEGIN
   DEC(i); s[i] := CHR(n MOD 10 + 48);
 END digit;
 
-PROCEDURE prepend(IN t: ARRAY OF CHAR; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
+PROCEDURE prepend(IN t: ARRAY OF CHAR; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
   VAR j: INTEGER; l: LONGINT;
 BEGIN
   l := Length(t); IF l > i THEN l := i END;
@@ -132,7 +132,7 @@ PROCEDURE RealP(x: LONGREAL; n: INTEGER; long: BOOLEAN);
 VAR
   e:   INTEGER;          (* Exponent field *)
   f:   HUGEINT;          (* Fraction field *)
-  s:   ARRAY 30 OF CHAR; (* Buffer built backwards *)
+  s:   ARRAY 30 OF CHAR; (* Buffer built backwards *)
   i:   INTEGER;          (* Index into s *)
   el:  INTEGER;          (* Exponent length *)
   x0:  LONGREAL;
@@ -143,14 +143,14 @@ VAR
   dr:  INTEGER;          (* Number of insignificant digits that can be dropped *)
 
 BEGIN
-  e  := SYSTEM.VAL(INTEGER, (SYSTEM.VAL(HUGEINT, x) DIV 10000000000000H) MOD 800H);
-  f  := SYSTEM.VAL(HUGEINT, x) MOD 10000000000000H;
+  e  := SYSTEM.VAL(INTEGER, (SYSTEM.VAL(HUGEINT, x) DIV 10000000000000L) MOD 800H);
+  f  := SYSTEM.VAL(HUGEINT, x) MOD 10000000000000L;
   nn := (SYSTEM.VAL(HUGEINT, x) < 0) & ~((e = 7FFH) & (f # 0)); (* Ignore sign on Nan *)
   IF nn THEN DEC(n) END;
 
   i := LEN(s);
   IF e = 7FFH THEN (* NaN / Infinity *)
-    IF f = 0 THEN prepend("Infinity", s, i) ELSE prepend("NaN", s, i) END
+    IF f = 0 THEN prepend("Infinity", s, i) ELSE prepend("NaN", s, i) END
   ELSE
     (* Calculate number of significant digits caller has proposed space for, and
        number of digits to generate. *)
@@ -229,7 +229,7 @@ END LongReal;
    The value is stored backwards, i.e. least significant digit
    first. n digits are written, with trailing zeros fill.
    On entry x has been scaled to the number of digits required. *)
-PROCEDURE ConvertL*(x: LONGREAL; n: INTEGER; VAR d: ARRAY OF CHAR);
+PROCEDURE ConvertL*(x: LONGREAL; n: INTEGER; VAR d: ARRAY OF CHAR);
   VAR i, j, k: HUGEINT;
 BEGIN
   IF x < 0 THEN x := -x END;
@@ -264,10 +264,10 @@ END Expo;
 
 PROCEDURE RealFix* (x: REAL; n, k: INTEGER);
   CONST maxD = 9;
-  VAR e, i: INTEGER; sign: CHAR; x0: REAL;
-    d: ARRAY maxD OF CHAR;
+  VAR e, i: INTEGER; sign: CHAR; x0: REAL;
+    d: ARRAY maxD OF CHAR;
 
-  PROCEDURE seq(ch: CHAR; n: INTEGER);
+  PROCEDURE seq(ch: CHAR; n: INTEGER);
   BEGIN WHILE n > 0 DO Char(ch); DEC(n) END
   END seq;
 
@@ -281,7 +281,7 @@ PROCEDURE RealFix* (x: REAL; n, k: INTEGER);
 BEGIN e := Expo(x);
   IF k < 0 THEN k := 0 END;
   IF e = 0 THEN seq(" ", n-k-2); Char("0"); seq(" ", k+1)
-  ELSIF e = 255 THEN String(" NaN"); seq(" ", n-4)
+  ELSIF e = 255 THEN String(" NaN"); seq(" ", n-4)
   ELSE e := (e - 127) * 77 DIV 256;
     IF x < 0 THEN sign := "-"; x := -x ELSE sign := " " END;
     IF e >= 0 THEN  (*x >= 1.0,  77/256 = log 2*) x := SHORT(x/Ten(e))
