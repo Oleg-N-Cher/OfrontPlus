@@ -726,8 +726,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				END
 		| minus:
 				IF f IN intSet THEN
-					IF (yval^.intval >= 0) & (xval^.intval >= MIN(INTEGER) + yval^.intval) OR
-						(yval^.intval < 0) & (xval^.intval <= MAX(INTEGER) + yval^.intval) THEN
+					IF (yval^.intval >= 0) & (xval^.intval >= MIN(LONGINT) + yval^.intval) OR
+						(yval^.intval < 0) & (xval^.intval <= MAX(LONGINT) + yval^.intval) THEN
 							DEC(xval^.intval, yval^.intval); SetIntType(x)
 					ELSE err(207)
 					END
@@ -1472,8 +1472,8 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class # Nconst) & (x^.typ^.size < p^.typ^.size) THEN err(-308) END;
 				IF (x^.class = Nconst) & (x^.typ^.form IN intSet) & (p^.typ^.form IN intSet) THEN
 					(* Convert integer constants in place allowing usage in CONST section *)
-					IF (p^.typ^.size = 4) & (x^.conval^.intval >= 80000000H) & (x^.conval^.intval <= 0FFFFFFFFH) THEN
-						DEC(x^.conval^.intval, 100000000H)
+					IF (p^.typ^.size = 4) & (x^.conval^.intval >= 80000000L) & (x^.conval^.intval <= 0FFFFFFFFL) THEN
+						DEC(x^.conval^.intval, 100000000L)
 					ELSIF (p^.typ^.size = 2) & (x^.conval^.intval >= 8000H) & (x^.conval^.intval <= 0FFFFH) THEN
 						DEC(x^.conval^.intval, 10000H)
 					ELSIF (p^.typ^.size = 1) & (x^.conval^.intval >= 80H) & (x^.conval^.intval <= 0FFH) THEN

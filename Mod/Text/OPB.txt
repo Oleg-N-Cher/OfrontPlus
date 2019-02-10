@@ -820,8 +820,8 @@
 				END
 		| minus:
 				IF f IN intSet THEN
-					IF (yval^.intval >= 0) & (xval^.intval >= MIN(INTEGER) + yval^.intval) OR
-						(yval^.intval < 0) & (xval^.intval <= MAX(INTEGER) + yval^.intval) THEN
+					IF (yval^.intval >= 0) & (xval^.intval >= MIN(LONGINT) + yval^.intval) OR
+						(yval^.intval < 0) & (xval^.intval <= MAX(LONGINT) + yval^.intval) THEN
 							DEC(xval^.intval, yval^.intval); SetIntType(x)
 					ELSE err(207)
 					END

@@ -80,7 +80,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
-		SetSize-, IndexSize-, MaxSet-, MaxHDig-: SHORTINT; MaxIndex-: LONGINT;
+		SetSize-, IndexSize-, MaxSet-: SHORTINT; MaxIndex-: LONGINT;
 
 		noerr-, warning156-: BOOLEAN;
 		curpos-, errpos*: INTEGER;	(* character and error position in source file *)
@@ -163,8 +163,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			SetSize := 4; MaxSet := 31;
 			IndexSize := 4;	(* size of the type of array index, see also SYSTEM_ARRLEN *)
 			MaxIndex := MAX(INTEGER)
-		END;
-		MaxHDig := 2*SIZE(LONGINT)
+		END
 	END GetProperties;
 
 	(* ------------------------- parameter handling -------------------------*)

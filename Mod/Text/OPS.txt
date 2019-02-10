@@ -146,20 +146,34 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 				IF ch = "X" THEN (* character *) OPM.Get(ch); numtyp := char;
 					IF n <= 2 THEN
 						WHILE i < n DO intval := intval*10H + Ord(dig[i], TRUE); INC(i) END
-					ELSE err(203)
+					ELSE err(203); intval := 1
 					END
 				ELSIF ch = "H" THEN (* hexadecimal *) OPM.Get(ch); numtyp := integer;
-					IF n <= OPM.MaxHDig THEN
-						IF (n = OPM.MaxHDig) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1 END;
+					IF (OPM.Language = "3") OR (OPM.Language = "7") THEN m := 2*SIZE(LONGINT)
+					ELSE m := 2*SIZE(INTEGER)
+					END;
+					IF n <= m THEN
+						IF (n = m) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1;
+							IF (OPM.Language = "3") OR (OPM.Language = "7") THEN err(203) END
+						END;
 						WHILE i < n DO intval := intval*10H + Ord(dig[i], TRUE); INC(i) END
-					ELSE err(203)
+					ELSE err(203); intval := 1
+					END;
+					IF (OPM.Language = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
+				ELSIF (ch = "L") & (OPM.Language # "3") & (OPM.Language # "7") THEN (* long hex *)
+					OPM.Get(ch); numtyp := integer;
+					IF n <= 2*SIZE(LONGINT) THEN
+						IF (n = 2*SIZE(LONGINT)) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1 END;
+						WHILE i < n DO intval := intval*10H + Ord(dig[i], TRUE); INC(i) END
+					ELSE err(203); intval := 1
 					END
 				ELSE (* decimal *) numtyp := integer;
 					WHILE i < n DO d := Ord(dig[i], FALSE); INC(i);
 						IF intval <= (MAX(LONGINT) - d) DIV 10 THEN intval := intval*10 + d
-						ELSE err(203)
+						ELSE err(203); intval := 1
 						END
-					END
+					END;
+					IF (OPM.Language = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
 				END
 			ELSE err(203)
 			END
