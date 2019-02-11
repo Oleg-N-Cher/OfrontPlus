@@ -112,18 +112,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE Div0*(x, y: LONGINT): LONGINT;
 	BEGIN
-		IF (x < 0) = (y < 0) THEN RETURN x DIV y
-		ELSIF x < 0 THEN RETURN -x DIV (-y)
-		ELSE RETURN -(-x) DIV y
-		END
+		ASSERT(y # 0); RETURN x DIV0 y
 	END Div0;
 
 	PROCEDURE Rem0*(x, y: LONGINT): LONGINT;
 	BEGIN
-		IF (x < 0) = (y < 0) THEN RETURN x MOD y
-		ELSIF x < 0 THEN RETURN x MOD (-y)
-		ELSE RETURN -(-x) MOD y
-		END
+		ASSERT(y # 0); RETURN x REM0 y
 	END Rem0;
 
 	(* ------------------------- Log Output ------------------------- *)
