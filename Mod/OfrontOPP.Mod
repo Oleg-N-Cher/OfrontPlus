@@ -41,7 +41,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
 		(*function number*)
-		haltfn = 0; newfn = 1; incfn = 13; sysnewfn = 30;
+		haltfn = 0; newfn = 1; incfn = 14; sysnewfn = 31;
 
 		(* nodes classes *)
 		Nvar = 0; Nvarpar = 1; Nfield = 2; Nderef = 3; Nindex = 4; Nguard = 5; Neguard = 6;

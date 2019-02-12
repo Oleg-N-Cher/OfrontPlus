@@ -36,11 +36,11 @@
 		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30;
 
 		(*function number*)
-		assign = 0; newfn = 1; incfn = 13; decfn = 14;
-		inclfn = 15; exclfn = 16; copyfn = 18; assertfn = 32;
+		assign = 0; newfn = 1; incfn = 14; decfn = 15;
+		inclfn = 16; exclfn = 17; copyfn = 19; assertfn = 33;
 
 		(*SYSTEM function number*)
-		getfn = 24; putfn = 25; getrfn = 26; putrfn = 27; sysnewfn = 30; movefn = 31;
+		getfn = 25; putfn = 26; getrfn = 27; putrfn = 28; sysnewfn = 31; movefn = 32;
 
 		(*procedure flags*)
 		isRedef = 2;

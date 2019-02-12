@@ -44,14 +44,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		assign = 0;
 		haltfn = 0; newfn = 1; absfn = 2; capfn = 3; ordfn = 4;
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
-		shortfn = 10; longfn = 11; sizefn = 12; incfn = 13; decfn = 14;
-		inclfn = 15; exclfn = 16; lenfn = 17; copyfn = 18; ashfn = 19; assertfn = 32;
-		bitsfn = 37;
+		shortfn = 10; longfn = 11; fltfn = 12; sizefn = 13; incfn = 14;
+		decfn = 15; inclfn = 16; exclfn = 17; lenfn = 18; copyfn = 19;
+		ashfn = 20; assertfn = 33; bitsfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 20; ccfn = 21; lshfn = 22; rotfn = 23;
-		getfn = 24; putfn = 25; getrfn = 26; putrfn = 27;
-		bitfn = 28; valfn = 29; sysnewfn = 30; movefn = 31;
+		adrfn = 21; ccfn = 22; lshfn = 23; rotfn = 24;
+		getfn = 25; putfn = 26; getrfn = 27; putrfn = 28;
+		bitfn = 29; valfn = 30; sysnewfn = 31; movefn = 32;
 
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
@@ -1199,11 +1199,17 @@ avoid unnecessary intermediate variables in OFront
 		| entierfn: (*ENTIER*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN realSet THEN
-					IF (OPM.AddressSize = 2) OR (OPM.Language = "1") OR (OPM.Language = "2") THEN
-						Convert(x, OPT.inttyp); x^.typ := OPT.inttyp
-					ELSE Convert(x, OPT.linttyp); x^.typ := OPT.linttyp
+					IF ((OPM.Language = "C") OR (OPM.Language = "3")) & (OPM.AddressSize # 2) THEN
+						Convert(x, OPT.linttyp)
+					ELSE (* "1", "2", "7" *)
+						Convert(x, OPT.inttyp)
 					END
-				ELSE x^.typ := OPT.linttyp; err(111)
+				ELSE err(111); x^.typ := OPT.inttyp
+				END
+		| fltfn: (*FLT*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN intSet THEN Convert(x, OPT.realtyp)
+				ELSE err(111)
 				END
 		| oddfn: (*ODD*)
 				MOp(odd, x)

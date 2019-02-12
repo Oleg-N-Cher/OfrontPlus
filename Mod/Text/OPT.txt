@@ -112,14 +112,14 @@
 		assign = 0;
 		haltfn = 0; newfn = 1; absfn = 2; capfn = 3; ordfn = 4;
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
-		shortfn = 10; longfn = 11; sizefn = 12; incfn = 13; decfn = 14;
-		inclfn = 15; exclfn = 16; lenfn = 17; copyfn = 18; ashfn = 19; assertfn = 32;
-		bitsfn = 37;
+		shortfn = 10; longfn = 11; fltfn = 12; sizefn = 13; incfn = 14;
+		decfn = 15; inclfn = 16; exclfn = 17; lenfn = 18; copyfn = 19;
+		ashfn = 20; assertfn = 33; bitsfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 20; ccfn = 21; lshfn = 22; rotfn = 23;
-		getfn = 24; putfn = 25; getrfn = 26; putrfn = 27;
-		bitfn = 28; valfn = 29; sysnewfn = 30; movefn = 31;
+		adrfn = 21; ccfn = 22; lshfn = 23; rotfn = 24;
+		getfn = 25; putfn = 26; getrfn = 27; putrfn = 28;
+		bitfn = 29; valfn = 30; sysnewfn = 31; movefn = 32;
 
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
@@ -1168,7 +1168,7 @@
 		ELSE (* "7" *)
 			EnterTyp("CHAR", Char, 1, chartyp);
 			EnterTypeAlias("INTEGER", int32, inttyp);
-			EnterTyp("REAL", LReal, 8, lrltyp)
+			EnterTyp("REAL", Real, 4, realtyp)
 		END;
 		EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
 		EnterBoolConst("TRUE",  1);
@@ -1177,7 +1177,12 @@
 		EnterProc("ABS", absfn);
 		EnterProc("CAP", capfn);
 		EnterProc("ORD", ordfn);
-		EnterProc("ENTIER", entierfn);
+		IF (lang # "7") THEN
+			EnterProc("ENTIER", entierfn)
+		ELSE
+			EnterProc("FLOOR", entierfn);
+			EnterProc("FLT", fltfn)
+		END;
 		EnterProc("ODD", oddfn);
 		EnterProc("MIN", minfn);
 		EnterProc("MAX", maxfn);
