@@ -832,7 +832,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			ProcPredefs(obj^.left, vis);
 			IF (obj^.mode IN {LProc, XProc}) & (obj^.vis >= vis) & ((obj^.history # removed) OR (obj^.mode = LProc)) THEN
 				(* previous XProc may be deleted or become LProc after interface change*)
-				IF vis = external THEN OPM.WriteString(Extern)
+				IF vis = external THEN
+					IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END
 				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
 				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
@@ -888,7 +889,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IdentList(OPT.topScope^.scope, 1); OPM.WriteLn;
 		GenDynTypes(n, external); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 1);
-		OPM.WriteString(Extern); OPM.WriteString("void *");
+		IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
+		OPM.WriteString("void *");
 		OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
 		EndStat; OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn;
@@ -1024,7 +1026,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
 			END
 		ELSE
-			OPM.WriteString(Export); OPM.WriteString("void *");
+			IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT) ELSE OPM.WriteString(Export) END;
+			OPM.WriteString("void *");
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt); OPM.WriteLn;
 		END ;
 		BegBlk; BegStat;
