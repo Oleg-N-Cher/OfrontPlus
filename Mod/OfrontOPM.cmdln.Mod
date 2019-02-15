@@ -210,6 +210,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END ;
 			INC(i)
+		END;
+		IF {dynlib, mainprog} * opt = {dynlib, mainprog} THEN EXCL(opt, mainprog);
+			LogWStr("  warning: option "); LogW(OptionChar); LogWStr("m ignored"); LogWLn
 		END
 	END ScanOptions;
 
