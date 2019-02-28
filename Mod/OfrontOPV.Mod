@@ -17,9 +17,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		and = 7; plus = 8; minus = 9; or = 10; eql = 11;
 		neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
 		in = 17; is = 18; ash = 19; msk = 20; len = 21;
-		conv = 22; abs = 23; cap = 24; odd = 25; not = 35;
+		conv = 22; abs = 23; cap = 24; odd = 25; asr = 26;
+		lsl = 27; ror = 28; not = 35;
 		(*SYSTEM*)
-		adr = 26; cc = 27; bit = 28; lsh = 29; rot = 30; val = 31;
+		lsh = 29; rot = 30; adr = 31; cc = 32; bit = 33; val = 34;
 
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -36,11 +37,11 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30;
 
 		(*function number*)
-		assign = 0; newfn = 1; incfn = 14; decfn = 15;
-		inclfn = 16; exclfn = 17; copyfn = 19; assertfn = 33;
+		assign = 0; newfn = 1; incfn = 18; decfn = 19;
+		inclfn = 20; exclfn = 21; copyfn = 23; assertfn = 37;
 
 		(*SYSTEM function number*)
-		getfn = 25; putfn = 26; getrfn = 27; putrfn = 28; sysnewfn = 31; movefn = 32;
+		getfn = 29; putfn = 30; getrfn = 31; putrfn = 32; sysnewfn = 35; movefn = 36;
 
 		(*procedure flags*)
 		isRedef = 2;
@@ -283,7 +284,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								RETURN 1
 					|	or:
 								RETURN 0
-					|	len, in, ash, msk, bit, lsh, rot:
+					|	len, in, ash, msk, bit, lsh, rot, asr, lsl, ror:
 								RETURN 10
 					END;
 		|	Nupto:
@@ -694,7 +695,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					CASE subclass OF
 					  len:
 					  		Len(l, SHORT(r^.conval^.intval), FALSE)
-					| in, ash, msk, bit, lsh, rot, div, mod:
+					| in, ash, msk, bit, lsh, rot, div, mod, asr, lsl, ror:
 							CASE subclass OF
 							|	in:
 										OPM.WriteString("__IN(")
@@ -712,6 +713,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 										ELSIF form = LInt THEN OPM.WriteString("__ASHFL(")
 										ELSE OPM.WriteString("__ASHF(")
 										END
+							|	asr:
+										OPM.WriteString("__ASHR(")
+							|	lsl:
+										OPM.WriteString("__LSHL(")
+							|	ror:
+										OPM.WriteString("__ROTR(")
 							|	msk:
 										OPM.WriteString("__MASK(");
 							|	bit:
@@ -746,8 +753,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 							IF (subclass IN {ash, lsh, rot}) & (r^.class = Nconst) & (r^.conval^.intval < 0) THEN
 								OPM.WriteInt(-r^.conval^.intval)
 							ELSE expr(r, MinPrec)
-							END ;
-							IF subclass IN {ash, lsh, rot} THEN OPM.WriteString(Comma); OPC.Ident(l^.typ^.strobj) END ;
+							END;
+							IF subclass IN {ash, lsh, rot, asr, lsl, ror} THEN
+								OPM.WriteString(Comma); OPC.Ident(l^.typ^.strobj)
+							END;
 							OPM.Write(CloseParen)
 					| eql .. geq:
 							IF l^.typ^.form IN {String, Comp} THEN

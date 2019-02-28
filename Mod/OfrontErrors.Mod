@@ -166,6 +166,7 @@ BEGIN
   | 207: Log.String("difference too large")
   | 208: Log.String("overflow in arithmetic shift")
   | 209: Log.String("case range too large")
+  | 210: Log.String("overflow in logical shift")
   | 213: Log.String("too many cases in case statement")
   | 218: Log.String("illegal value of parameter  (0 <= p < 256)")
   | 219: Log.String("machine registers cannot be accessed")

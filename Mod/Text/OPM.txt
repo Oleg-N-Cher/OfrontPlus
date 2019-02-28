@@ -150,6 +150,51 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END
 	END Rem0;
 
+   PROCEDURE [code] lsl(x: LONGINT; n: INTEGER): LONGINT
+		059H,             (*     POP  ECX          *)
+		0F6H, 0C1H, 020H, (*     TEST CL, 32       *)
+		074H, 003H,       (*     JZ   SHORT L1     *)
+		033H, 0D2H,       (*     XOR  EDX, EDX     *)
+		092H,             (*     XCHG EDX, EAX     *)
+		00FH, 0A5H, 0C2H, (* L1: SHLD EDX, EAX, CL *)
+		0D3H, 0E0H;       (*     SHL  EAX, CL      *)
+
+	PROCEDURE Lsl*(x: LONGINT; n: INTEGER): LONGINT;
+	BEGIN
+		ASSERT((0 <= n) & (n <= 63));
+		RETURN lsl(x, n)
+	END Lsl;
+
+   PROCEDURE [code] lsr(x: LONGINT; n: INTEGER): LONGINT
+		059H,             (*     POP  ECX          *)
+		0F6H, 0C1H, 020H, (*     TEST CL, 32       *)
+		074H, 003H,       (*     JZ   SHORT L1     *)
+		033H, 0C0H,       (*     XOR  EAX, EAX     *)
+		092H,             (*     XCHG EAX, EDX     *)
+		00FH, 0ADH, 0D6H, (* L1: SHRD EAX, EDX, CL *)
+		0D3H, 0EFH;       (*     SHR  EDX, CL      *)
+
+	PROCEDURE Lsr*(x: LONGINT; n: INTEGER): LONGINT;
+	BEGIN
+		ASSERT((0 <= n) & (n <= 63));
+		RETURN lsr(x, n)
+	END Lsr;
+
+	PROCEDURE [code] ror(x: LONGINT; n: INTEGER): LONGINT
+		059H,             (*     POP  ECX          *)
+		0F6H, 0C1H, 020H, (*     TEST CL, 32       *)
+		074H, 001H,       (*     JZ   SHORT L1     *)
+		092H,             (*     XCHG EAX, EDX     *)
+		08BH, 0F0H,       (* L1: MOV  ESI, EAX     *)
+		00FH, 0ADH, 0D0H, (*     SHRD EAX, EDX, CL *)
+		00FH, 0ADH, 0F2H; (*     SHRD EDX, ESI, CL *)
+
+	PROCEDURE Ror*(x: LONGINT; n: INTEGER): LONGINT;
+	BEGIN
+		ASSERT((0 <= n) & (n <= 63));
+		RETURN ror(x, n)
+	END Ror;
+
 	(* -------------------------  lookup with search path ------------------------- *)
 
 	PROCEDURE Scan(VAR dirs, dir: ARRAY OF CHAR; VAR pos: INTEGER);
