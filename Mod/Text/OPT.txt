@@ -427,8 +427,11 @@
 			IF obj^.mode = Con THEN
 				f := obj^.typ^.form; OPM.FPrint(fprint, f);
 				CASE f OF
-				| Byte, Bool, Char, SInt, Int, LInt:
+				| Byte, Bool, Char, SInt, Int:
 					OPM.FPrint(fprint, SHORT(obj^.conval^.intval))
+				| LInt:
+					OPM.FPrint(fprint, SHORT(obj^.conval^.intval));
+					OPM.FPrint(fprint, SHORT(ASH(obj^.conval^.intval, -32)))
 				| Set:
 					OPM.FPrintSet(fprint, obj^.conval^.setval)
 				| Real:
