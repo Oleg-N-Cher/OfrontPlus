@@ -91,7 +91,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		objname*: ARRAY 64 OF SHORTCHAR;
 
 		opt-, glbopt: SET;
-		GlobalLanguage, Language-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
+		GlobalLang, Lang-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 
 		crc32tab: ARRAY 256 OF INTEGER;
@@ -150,7 +150,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		END
 	END Rem0;
 
-   PROCEDURE [code] lsl(x: LONGINT; n: INTEGER): LONGINT
+	PROCEDURE [code] lsl(x: LONGINT; n: INTEGER): LONGINT
 		059H,             (*     POP  ECX          *)
 		0F6H, 0C1H, 020H, (*     TEST CL, 32       *)
 		074H, 003H,       (*     JZ   SHORT L1     *)
@@ -165,7 +165,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		RETURN lsl(x, n)
 	END Lsl;
 
-   PROCEDURE [code] lsr(x: LONGINT; n: INTEGER): LONGINT
+	PROCEDURE [code] lsr(x: LONGINT; n: INTEGER): LONGINT
 		059H,             (*     POP  ECX          *)
 		0F6H, 0C1H, 020H, (*     TEST CL, 32       *)
 		074H, 003H,       (*     JZ   SHORT L1     *)
@@ -312,7 +312,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "d": opt := opt / {dynlib}
-			| "1", "3", "C", "7"(*undocumented*): Language := SHORT(s[i])
+			| "1", "3", "C", "7"(*undocumented*): Lang := SHORT(s[i])
 
 			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
@@ -322,7 +322,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
-				ELSE Language := "2"
+				ELSE Lang := "2"
 				END
 			| "4":
 				IF s[i+1] = "4" THEN AddressSize := 4; Alignment := 4; INC(i)
@@ -396,7 +396,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			F: Files.File; R: Files.Reader; optstr: ARRAY 256 OF CHAR;
 	BEGIN
 		(* set options to initial defaults *)
-		Language := "C";	(* default input language: Component Pascal *)
+		Lang := "C";	(* default input language: Component Pascal *)
 		AddressSize := -1;	(* undefined *)
 		glbopt := defopt;
 		translateList := list; stop := FALSE;
@@ -429,13 +429,13 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		ELSE stop := TRUE
 		END;
 		(* Record global option settings for this command line *)
-		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment; GlobalLanguage := Language
+		GlobalAddressSize := AddressSize; GlobalAlignment := Alignment; GlobalLang := Lang
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
 		VAR pos: INTEGER;
 	BEGIN
-		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Language := GlobalLanguage;
+		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Lang := GlobalLang;
 		opt := glbopt;
 		IF translateList & (inS.start < end) & (inS.type = TextMappers.char) & (inS.char = "/") THEN
 			pos := inS.start; glbopt := defopt; inS.Scan;

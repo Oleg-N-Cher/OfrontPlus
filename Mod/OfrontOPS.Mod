@@ -146,18 +146,18 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 					ELSE err(203)
 					END
 				ELSIF ch = "H" THEN (* hexadecimal *) OPM.Get(ch); numtyp := integer;
-					IF (OPM.Language = "3") OR (OPM.Language = "7") THEN m := 2*SIZE(LONGINT)
+					IF (OPM.Lang = "3") OR (OPM.Lang = "7") THEN m := 2*SIZE(LONGINT)
 					ELSE m := 2*SIZE(INTEGER)
 					END;
 					IF n <= m THEN
 						IF (n = m) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1;
-							IF (OPM.Language = "3") OR (OPM.Language = "7") THEN err(203) END
+							IF (OPM.Lang = "3") OR (OPM.Lang = "7") THEN err(203) END
 						END;
 						WHILE i < n DO intval := intval*10H + Ord(dig[i], TRUE); INC(i) END;
-						IF (OPM.Language = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
+						IF (OPM.Lang = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
 					ELSE err(203); intval := 1 (* to prevent "division by zero" on DIV 10000000000000000H *)
 					END
-				ELSIF (ch = "L") & (OPM.Language # "3") & (OPM.Language # "7") THEN (* long hex *)
+				ELSIF (ch = "L") & (OPM.Lang # "3") & (OPM.Lang # "7") THEN (* long hex *)
 					OPM.Get(ch); numtyp := integer;
 					IF n <= 2*SIZE(LONGINT) THEN
 						IF (n = 2*SIZE(LONGINT)) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1 END;
@@ -170,7 +170,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						ELSE err(203)
 						END
 					END;
-					IF (OPM.Language = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
+					IF (OPM.Lang = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
 				END
 			ELSE err(203)
 			END
@@ -273,7 +273,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "D": Identifier(s);
 						IF name = "DO" THEN s := do
 						ELSIF name = "DIV" THEN s := div
-						ELSIF ((OPM.Language = "C") OR (OPM.Language = "3")) & (name = "DIV0") THEN s := div0
+						ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "DIV0") THEN s := div0
 						END
 			| "E": Identifier(s);
 						IF name = "END" THEN s := end
@@ -297,7 +297,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "O": Identifier(s);
 						IF name = "OR" THEN s := or
 						ELSIF name = "OF" THEN s := of
-						ELSIF (OPM.Language = "C") & (name = "OUT") THEN s := out
+						ELSIF (OPM.Lang = "C") & (name = "OUT") THEN s := out
 						END
 			| "P": Identifier(s);
 						IF name = "PROCEDURE" THEN s := procedure
@@ -305,7 +305,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						END
 			| "R": Identifier(s);
 						IF name = "RECORD" THEN s := record
-						ELSIF ((OPM.Language = "C") OR (OPM.Language = "3")) & (name = "REM0") THEN s := rem0
+						ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "REM0") THEN s := rem0
 						ELSIF name = "REPEAT" THEN s := repeat
 						ELSIF name = "RETURN" THEN s := return
 						END

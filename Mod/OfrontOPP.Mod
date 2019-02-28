@@ -283,12 +283,12 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct);
 		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last, res: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
-		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Language = "C")) THEN
+		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Lang = "C")) THEN
 			LOOP
 				sys := 0; vis := 0;
 				IF sym = var THEN OPS.Get(sym); mode := VarPar
-				ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
-				ELSIF (sym = out) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
+				ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+				ELSIF (sym = out) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
 				ELSE mode := Var
 				END;
 				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
@@ -312,7 +312,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
 				END;
-				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Language = "3") OR (OPM.Language = "7")) THEN
+				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Lang = "3") OR (OPM.Lang = "7")) THEN
 					par := first;
 					WHILE par # NIL DO
 						par^.mode := VarPar; par^.vis := inPar; (* read only array or record *)
@@ -424,7 +424,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				ELSE err(ident)
 				END
 			ELSIF sym = arrow THEN OPS.Get(sym); OPB.DeRef(x)
-			ELSIF (sym = dollar) & ((OPM.Language = "C") OR (OPM.Language = "3")) THEN
+			ELSIF (sym = dollar) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN
 				IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END;
 				OPS.Get(sym); OPB.StrDeref(x)
 			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
@@ -598,7 +598,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		VAR obj: OPT.Object;
 	BEGIN typ := OPT.undftyp; rec := NIL; vis := 0;
 		IF sym = var THEN OPS.Get(sym); mode := VarPar
-		ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+		ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
 		ELSE mode := Var END;
 		name := OPS.name; CheckSym(ident); CheckSym(colon);
 		IF sym = ident THEN OPT.Find(OPS.name, obj); OPS.Get(sym);
@@ -756,7 +756,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END;
 			CheckSysFlagProc(sys)
 		END;
-		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Language # "1") & (OPM.Language # "7") THEN TProcDecl
+		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Lang # "1") & (OPM.Lang # "7") THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(OPS.name, fwd);
 			name := OPS.name; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
