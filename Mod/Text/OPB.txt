@@ -1576,7 +1576,7 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
 					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
-					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(208)
+					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(210)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						maxExp := SHORT(x^.conval^.intval);
 						IF p^.typ = OPT.linttyp THEN p^.conval^.intval := OPM.Ror(p^.conval^.intval, maxExp)
