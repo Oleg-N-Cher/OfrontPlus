@@ -121,6 +121,24 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		ASSERT(y # 0); RETURN x REM0 y
 	END Rem0;
 
+	PROCEDURE Lsl*(x: LONGINT; n: INTEGER): LONGINT;
+	BEGIN
+		ASSERT((0 <= n) & (n <= 63));
+		RETURN SYSTEM.LSH(x, n)
+	END Lsl;
+
+	PROCEDURE Lsr*(x: LONGINT; n: INTEGER): LONGINT;
+	BEGIN
+		ASSERT((0 <= n) & (n <= 63));
+		RETURN SYSTEM.LSH(x, -n)
+	END Lsr;
+
+	PROCEDURE Ror*(x: LONGINT; n: INTEGER): LONGINT;
+	BEGIN
+		ASSERT((0 <= n) & (n <= 63));
+		RETURN SYSTEM.ROT(x, -n)
+	END Ror;
+
 	(* ------------------------- Log Output ------------------------- *)
 
 	PROCEDURE LogW*(ch: CHAR);

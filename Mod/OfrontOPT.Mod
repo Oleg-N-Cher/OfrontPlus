@@ -93,14 +93,15 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		assign = 0;
 		haltfn = 0; newfn = 1; absfn = 2; capfn = 3; ordfn = 4;
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
-		shortfn = 10; longfn = 11; fltfn = 12; sizefn = 13; incfn = 14;
-		decfn = 15; inclfn = 16; exclfn = 17; lenfn = 18; copyfn = 19;
-		ashfn = 20; assertfn = 33; bitsfn = 37;
+		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
+		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
+		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
+		assertfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 21; ccfn = 22; lshfn = 23; rotfn = 24;
-		getfn = 25; putfn = 26; getrfn = 27; putrfn = 28;
-		bitfn = 29; valfn = 30; sysnewfn = 31; movefn = 32;
+		adrfn = 25; ccfn = 26; lshfn = 27; rotfn = 28;
+		getfn = 29; putfn = 30; getrfn = 31; putrfn = 32;
+		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
 
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
@@ -1184,7 +1185,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF (lang = "1") OR (lang = "2") THEN
 			EnterProc("COPY", copyfn)
 		END;
-		EnterProc("ASH", ashfn);
+		IF lang = "7" THEN
+			EnterProc("ASR", asrfn);
+			EnterProc("LSL", lslfn);
+			EnterProc("ROR", rorfn)
+		ELSE
+			EnterProc("ASH", ashfn)
+		END;
 		EnterProc("ASSERT", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN
 			EnterProc("BITS", bitsfn)	(* Component Pascal BITS() *)

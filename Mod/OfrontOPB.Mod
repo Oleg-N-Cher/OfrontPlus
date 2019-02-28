@@ -8,7 +8,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	2018-02-14 olegncher, issue #44: unlimited length of strings (as in BB)
 *)
 
-	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
+	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM, SYSTEM;
 
 	CONST
 		(* symbol values or ops *)
@@ -16,9 +16,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		and = 7; plus = 8; minus = 9; or = 10; eql = 11;
 		neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
 		in = 17; is = 18; ash = 19; msk = 20; len = 21;
-		conv = 22; abs = 23; cap = 24; odd = 25; not = 35;
+		conv = 22; abs = 23; cap = 24; odd = 25; asr = 26;
+		lsl = 27; ror = 28; not = 35;
 		(*SYSTEM*)
-		adr = 26; cc = 27; bit = 28; lsh = 29; rot = 30; val = 31;
+		lsh = 29; rot = 30; adr = 31; cc = 32; bit = 33; val = 34;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -44,14 +45,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		assign = 0;
 		haltfn = 0; newfn = 1; absfn = 2; capfn = 3; ordfn = 4;
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
-		shortfn = 10; longfn = 11; fltfn = 12; sizefn = 13; incfn = 14;
-		decfn = 15; inclfn = 16; exclfn = 17; lenfn = 18; copyfn = 19;
-		ashfn = 20; assertfn = 33; bitsfn = 37;
+		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
+		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
+		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
+		assertfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 21; ccfn = 22; lshfn = 23; rotfn = 24;
-		getfn = 25; putfn = 26; getrfn = 27; putrfn = 28;
-		bitfn = 29; valfn = 30; sysnewfn = 31; movefn = 32;
+		adrfn = 25; ccfn = 26; lshfn = 27; rotfn = 28;
+		getfn = 29; putfn = 30; getrfn = 31; putrfn = 32;
+		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
 
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
@@ -1290,7 +1292,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF (~(x^.typ^.comp IN {DynArr, Array}) OR (x^.typ^.BaseTyp^.form # Char))
 					 & (f # String) THEN err(111)
 				END
-		| ashfn: (*ASH*)
+		| ashfn, asrfn, lslfn, rorfn: (*ASH, ASR, LSL, ROR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
 					IF f < Int THEN Convert(x, OPT.inttyp) END
@@ -1416,19 +1418,71 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f IN intSet THEN
 					IF p^.typ = OPT.linttyp THEN maxInt := MAX(LONGINT) ELSE maxInt := MAX(INTEGER) END;
 					maxExp := SHORT(log(maxInt DIV 2 + 1)); maxExp := exp;
-					IF (x^.class = Nconst) & ((-maxExp > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
+					IF (x^.class = Nconst) & ((-maxExp - 1 > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						IF x^.conval^.intval >= 0 THEN
 							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(LONG(LONG(1))), SHORT(x^.conval^.intval)) THEN
-								p^.conval^.intval := p^.conval^.intval * ASH(LONG(LONG(LONG(1))), SHORT(x^.conval^.intval))
+								p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))
 							ELSE err(208); p^.conval^.intval := 1
 							END
 						ELSE p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))
-						END ;
+						END;
 						p^.obj := NIL
 					ELSE
 						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
 						typ := p^.typ; p := NewOp(Ndop, ash, p, x); p^.typ := typ
+					END
+				ELSE err(111)
+				END
+		| asrfn: (*ASR*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN intSet THEN
+					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
+					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(208)
+					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
+						p^.conval^.intval := ASH(p^.conval^.intval, -SHORT(x^.conval^.intval));
+						p^.obj := NIL
+					ELSE
+						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
+						typ := p^.typ; p := NewOp(Ndop, asr, p, x); p^.typ := typ
+					END
+				ELSE err(111)
+				END
+		| lslfn: (*LSL*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN intSet THEN
+					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
+					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(208)
+					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
+						IF p^.typ = OPT.linttyp THEN maxInt := p^.conval^.intval;
+							p^.conval^.intval := OPM.Lsl(maxInt, SHORT(x^.conval^.intval));
+							IF OPM.Lsr(SHORT(p^.conval^.intval), SHORT(x^.conval^.intval)) # maxInt THEN err(-210)
+							END
+						ELSE maxExp := SHORT(p^.conval^.intval);
+							p^.conval^.intval := SYSTEM.LSH(maxExp, SHORT(x^.conval^.intval));
+							IF SYSTEM.LSH(SHORT(p^.conval^.intval), -SHORT(x^.conval^.intval)) # maxExp THEN err(-210)
+							END
+						END;
+						p^.obj := NIL
+					ELSE
+						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
+						typ := p^.typ; p := NewOp(Ndop, lsl, p, x); p^.typ := typ
+					END
+				ELSE err(111)
+				END
+		| rorfn: (*ROR*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN intSet THEN
+					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
+					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(208)
+					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
+						maxExp := SHORT(x^.conval^.intval);
+						IF p^.typ = OPT.linttyp THEN p^.conval^.intval := OPM.Ror(p^.conval^.intval, maxExp)
+						ELSE p^.conval^.intval := SYSTEM.ROT(SHORT(p^.conval^.intval), -maxExp) END;
+						p^.obj := NIL
+					ELSE
+						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
+						typ := p^.typ; p := NewOp(Ndop, ror, p, x); p^.typ := typ
 					END
 				ELSE err(111)
 				END
@@ -1623,14 +1677,12 @@ avoid unnecessary intermediate variables in OFront
 				END
 			ELSIF parno < 1 THEN err(65)
 			END
-		ELSIF fctno = bitsfn THEN
-			IF parno < 1 THEN err(65) END
 		ELSE (*SYSTEM*)
 			IF (parno < 1) OR
 				(fctno > ccfn) & (parno < 2) OR
 				(fctno = movefn) & (parno < 3) THEN err(65)
 			END
-		END ;
+		END;
 		par0 := p
 	END StFct;
 
