@@ -7,7 +7,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 	PROCEDURE Module*(VAR done: BOOLEAN);
 		VAR ext, new: BOOLEAN; p: OPT.Node;
 	BEGIN
-		OPT.InitScope(OPM.Language); OPV.Init; OPP.Module(p, OPM.opt);
+		OPT.InitScope(OPM.Lang); OPV.Init; OPP.Module(p, OPM.opt);
 		IF OPM.noerr THEN
 			OPV.AdrAndSize(OPT.topScope);
 			OPT.Export(ext, new);

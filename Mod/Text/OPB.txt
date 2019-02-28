@@ -1281,16 +1281,16 @@ avoid unnecessary intermediate variables in OFront
 		| ordfn: (*ORD*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f = Bool THEN
-					IF OPM.Language = "3" THEN Convert(x, OPT.bytetyp)
-					ELSIF OPM.Language = "7" THEN Convert(x, OPT.inttyp)
+					IF OPM.Lang = "3" THEN Convert(x, OPT.bytetyp)
+					ELSIF OPM.Lang = "7" THEN Convert(x, OPT.inttyp)
 					ELSE err(111)
 					END
 				ELSIF f = Char THEN
-					IF OPM.Language = "7" THEN Convert(x, OPT.inttyp)
+					IF OPM.Lang = "7" THEN Convert(x, OPT.inttyp)
 					ELSE Convert(x, OPT.sinttyp)
 					END
-				ELSIF (f = Set) & (OPM.Language # "1") & (OPM.Language # "2") THEN
-					IF (OPM.Language # "7") & (OPM.SetSize = 1) THEN Convert(x, OPT.bytetyp)
+				ELSIF (f = Set) & (OPM.Lang # "1") & (OPM.Lang # "2") THEN
+					IF (OPM.Lang # "7") & (OPM.SetSize = 1) THEN Convert(x, OPT.bytetyp)
 					ELSE Convert(x, OPT.inttyp)
 					END
 				ELSE err(111)
@@ -1303,7 +1303,7 @@ avoid unnecessary intermediate variables in OFront
 		| entierfn: (*ENTIER*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN realSet THEN
-					IF ((OPM.Language = "C") OR (OPM.Language = "3")) & (OPM.AddressSize # 2) THEN
+					IF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (OPM.AddressSize # 2) THEN
 						Convert(x, OPT.linttyp)
 					ELSE (* "1", "2", "7" *)
 						Convert(x, OPT.inttyp)

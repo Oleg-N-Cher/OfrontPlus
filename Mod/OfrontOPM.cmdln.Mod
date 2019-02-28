@@ -92,7 +92,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		objname*: ARRAY 64 OF CHAR;
 
 		opt-, glbopt: SET;
-		GlobalLanguage, Language-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
+		GlobalLang, Lang-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
 
 		crc32tab: ARRAY 256 OF INTEGER;
@@ -198,7 +198,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "d": opt := opt / {dynlib}
-			| "1", "3", "C", "7"(*undocumented*): Language := s[i]
+			| "1", "3", "C", "7"(*undocumented*): Lang := s[i]
 
 			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
@@ -208,7 +208,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
-				ELSE Language := "2"
+				ELSE Lang := "2"
 				END
 			| "4":
 				IF s[i+1] = "4" THEN AddressSize := 4; Alignment := 4; INC(i)
@@ -264,20 +264,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('    "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln
 		ELSE
 			(* set options to initial defaults *)
-			Language := "C";	(* default input language: Component Pascal *)
+			Lang := "C";	(* default input language: Component Pascal *)
 			AddressSize := -1;	(* undefined *)
 			glbopt := defopt; S := 1; s := "";
 			Args.Get(1, s); stop := FALSE;
 			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END;
 			(* Record global option settings for this command line *)
-			GlobalAddressSize := AddressSize; GlobalAlignment := Alignment;	GlobalLanguage := Language
+			GlobalAddressSize := AddressSize; GlobalAlignment := Alignment;	GlobalLang := Lang
 		END
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
-		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Language := GlobalLanguage;
+		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Lang := GlobalLang;
 		opt := glbopt;
 		s := ""; Args.Get(S, s);
 		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END ;

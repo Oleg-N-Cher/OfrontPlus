@@ -287,12 +287,12 @@
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct);
 		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last, res: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
-		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Language = "C")) THEN
+		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Lang = "C")) THEN
 			LOOP
 				sys := 0; vis := 0;
 				IF sym = var THEN OPS.Get(sym); mode := VarPar
-				ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
-				ELSIF (sym = out) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
+				ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+				ELSIF (sym = out) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
 				ELSE mode := Var
 				END ;
 				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
@@ -316,7 +316,7 @@
 				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
 				END;
-				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Language = "3") OR (OPM.Language = "7")) THEN
+				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Lang = "3") OR (OPM.Lang = "7")) THEN
 					par := first;
 					WHILE par # NIL DO
 						par^.mode := VarPar; par^.vis := inPar; (* read only array or record *)
@@ -428,7 +428,7 @@
 				ELSE err(ident)
 				END
 			ELSIF sym = arrow THEN OPS.Get(sym); OPB.DeRef(x)
-			ELSIF (sym = dollar) & ((OPM.Language = "C") OR (OPM.Language = "3")) THEN
+			ELSIF (sym = dollar) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN
 				IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END;
 				OPS.Get(sym); OPB.StrDeref(x)
 			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
@@ -629,7 +629,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			qualident(id); x := OPB.NewLeaf(id); selector(x);
 			IF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN StandProcCall(x)	(* x may be NIL *)
 			ELSIF sym = lparen THEN
-				IF (OPM.Language = "3") & (x^.obj^.mode = Typ) & (x^.obj^.typ^.form = Comp) & (x^.obj^.typ^.comp = Array) THEN
+				IF (OPM.Lang = "3") & (x^.obj^.mode = Typ) & (x^.obj^.typ^.form = Comp) & (x^.obj^.typ^.comp = Array) THEN
 				(* константный массив верхнего уровня*)
 					OPB.NewArrConst(x);
 					IF x^.obj^.typ^.BaseTyp^.form IN {Char,Byte} THEN (* ARRAY OF CHAR *)
@@ -715,7 +715,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		VAR obj: OPT.Object;
 	BEGIN typ := OPT.undftyp; rec := NIL; vis := 0;
 		IF sym = var THEN OPS.Get(sym); mode := VarPar
-		ELSIF (sym = in) & (OPM.Language = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+		ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
 		ELSE mode := Var END;
 		name := OPS.name; CheckSym(ident); CheckSym(colon);
 		IF sym = ident THEN OPT.Find(OPS.name, obj); OPS.Get(sym);
@@ -873,7 +873,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END;
 			CheckSysFlagProc(sys)
 		END;
-		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Language # "1") & (OPM.Language # "7") THEN TProcDecl
+		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Lang # "1") & (OPM.Lang # "7") THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(OPS.name, fwd);
 			name := OPS.name; CheckMark(vis);
 			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
@@ -1352,7 +1352,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END ;
 				OPB.Construct(Nrepeat, x, y)
 			ELSIF sym = for THEN
-				IF OPM.Language # "3" THEN ForOriginal ELSE ForImproved END
+				IF OPM.Lang # "3" THEN ForOriginal ELSE ForImproved END
 			ELSIF sym = loop THEN
 				OPS.Get(sym); INC(LoopLevel); StatSeq(x); DEC(LoopLevel);
 				OPB.Construct(Nloop, x, NIL); CheckSym(end); pos := OPM.errpos
