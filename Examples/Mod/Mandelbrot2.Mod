@@ -4,11 +4,11 @@ CONST iter = 768;
 VAR s: G.Bitmap;
   col: INTEGER;
   m: POINTER TO ARRAY OF ARRAY OF INTEGER;
-  angle: REAL;
+  angle: SHORTREAL;
 
-PROCEDURE Go(sx, sy: INTEGER; x, y: REAL);
+PROCEDURE Go(sx, sy: INTEGER; x, y: SHORTREAL);
 VAR col, i: INTEGER;
-  re, im, re2: REAL;
+  re, im, re2: SHORTREAL;
 BEGIN re := x; im := y; i := 0;
   REPEAT re2 := re * re - im * im;
     im := 2 * re * im; re := re2;
@@ -19,7 +19,7 @@ END Go;
 
 PROCEDURE Draw;
 VAR i, x, y: INTEGER;
-  shine: REAL;
+  shine: SHORTREAL;
 BEGIN shine := (1 - M.cos(angle)) * 1;
   FOR y := 0 TO s.h - 1 DO
     FOR x := 0 TO s.w - 1 DO
@@ -44,7 +44,7 @@ END Draw;
 
 PROCEDURE Do;
 VAR x, y: INTEGER;
-  x0, y0, x1, y1: REAL;
+  x0, y0, x1, y1: SHORTREAL;
 BEGIN G.Settings(320, 240, {G.fullscreen, G.spread});
   s := G.Init(); G.Flip; NEW(m, s.h, s.w);
   x0 := -0.63; x1 := -0.61; y0 := -0.45; y1 := -0.47;

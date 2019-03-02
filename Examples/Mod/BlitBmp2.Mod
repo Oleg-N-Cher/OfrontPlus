@@ -2,7 +2,7 @@ MODULE BlitBmp2;
 IMPORT G := Graph;
 CONST N = 100;
 VAR s, b: G.Bitmap;
-  x, y, vx, vy: ARRAY N OF REAL;
+  x, y, vx, vy: ARRAY N OF SHORTREAL;
   i: INTEGER;
 BEGIN
   s := G.Init();

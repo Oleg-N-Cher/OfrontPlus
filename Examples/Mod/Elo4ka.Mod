@@ -13,7 +13,7 @@ TYPE
 
 VAR
   screen: G.Bitmap;
-  a, b, alpha: INTEGER; angle: REAL; xn, yn: INTEGER;
+  a, b, alpha: INTEGER; angle: SHORTREAL; xn, yn: INTEGER;
   color: Color;
 
 PROCEDURE NextColor(): Color;

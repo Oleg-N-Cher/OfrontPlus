@@ -3,10 +3,10 @@ IMPORT G := Graph;
 VAR s: G.Bitmap;
   black: INTEGER;
 
-PROCEDURE Go(sx, sy: INTEGER; x, y: REAL);
+PROCEDURE Go(sx, sy: INTEGER; x, y: SHORTREAL);
 CONST iter = 768;
 VAR col, i: INTEGER;
-  re, im, re2: REAL;
+  re, im, re2: SHORTREAL;
 BEGIN re := x; im := y; i := 0;
   REPEAT re2 := re * re - im * im;
     im := 2 * re * im; re := re2;
@@ -21,7 +21,7 @@ END Go;
 
 PROCEDURE Do;
 VAR x, y: INTEGER;
-  x0, y0, x1, y1: REAL;
+  x0, y0, x1, y1: SHORTREAL;
 BEGIN G.Settings(640, 480, {G.spread});
   s := G.Init();
   black := G.MakeCol(0, 0, 0);
