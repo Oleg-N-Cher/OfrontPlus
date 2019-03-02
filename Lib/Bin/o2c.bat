@@ -8,6 +8,11 @@ SET OBERON=.;.\..\Sym;.\..\Mod
 ofront+ -sC -48 Heap.Mod -apx Types.Mod Platform.Windows.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
 IF errorlevel 1 PAUSE
 
+:: Eco
+
+ofront+ -sC -48 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.Mod ecoVector.Mod
+IF errorlevel 1 PAUSE
+
 :: OOC2
 
 ofront+ -sC -48 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
