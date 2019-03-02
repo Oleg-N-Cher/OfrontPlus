@@ -9,8 +9,8 @@ IF errorlevel 1 PAUSE
 ofront+ -mC -88 BlitBmp.Mod BlitBmp2.Mod Book.Mod Cnezinka.Mod Elo4ka.Mod Gradient24.Mod HelloWorld.Mod Mandelbrot.Mod Mandelbrot2.Mod TestHttp.Mod
 IF errorlevel 1 PAUSE
 
-SET StripExe=-nostartfiles ..\Mod\crt1.c -Wl,-e_WinMain@16 -D_WINMAIN
-SET StripDll=-nostartfiles ..\Mod\crt1dll.c
+SET StripExe=-nostartfiles ..\..\Lib\Mod\crt1.c -Wl,-e_WinMain@16 -D_WINMAIN
+SET StripDll=-nostartfiles ..\..\Lib\Mod\crt1dll.c
 SET LIB=-I..\..\Lib\Obj64 -I..\..\Lib\Mod ..\..\Lib\Ofront64.a
 SET CC=gcc.exe -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections -Wl,--file-alignment,512
 
