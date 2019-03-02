@@ -1,17 +1,8 @@
 @ECHO OFF
-IF NOT "%XDev%"=="" GOTO XDev
-ECHO Please set system variable XDev=X:\Path\To\XDev
-PAUSE
-EXIT
-
-::SET Aliasing=-fno-strict-aliasing
-SET Aliasing=-Wstrict-aliasing
-
-:XDev
-
+IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW64\bin
 CD ..\Obj64
-SET PATH=%XDev%\WinDev\Bin\MinGW64\bin
-SET CC=gcc.exe -I. -I..\Mod -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections %Aliasing% -c
+
+SET CC=gcc.exe -I..\Mod -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c
 SET AR=ar.exe -rc ..\Ofront64.a
 IF EXIST ..\Ofront64.a DEL ..\Ofront64.a
 
@@ -20,6 +11,12 @@ IF EXIST ..\Ofront64.a DEL ..\Ofront64.a
 %CC% ..\Mod\SYSTEM.c Heap.c Types.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
 IF errorlevel 1 PAUSE
 %AR% SYSTEM.o Heap.o Types.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+
+:: Eco
+
+%CC% ecoBigSets.c ecoBuffer.c ecoListen.c ecoLists.c ecoParser.c ecoVector.c
+IF errorlevel 1 PAUSE
+%AR% ecoBigSets.o ecoBuffer.o ecoListen.o ecoLists.o ecoParser.o ecoVector.o
 
 :: OOC2
 
