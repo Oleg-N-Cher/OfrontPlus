@@ -1,7 +1,7 @@
 MODULE Cnezinka;
 IMPORT t := Turtle;
 VAR
-  x: INTEGER; s: REAL;
+  x: INTEGER; s: SHORTREAL;
 BEGIN
   s := 1;
   FOR x := 1 TO 990 DO 
