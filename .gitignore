@@ -33,9 +33,9 @@ Examples/Obj64/*.c
 Examples/Obj64/*.h
 Examples/Obj64/*.sym
 Examples/x64/*.exe
-Examples/x64/MyDLL.dll
+Examples/x64/*.dll
 Examples/*.exe
-Examples/MyDLL.dll
+Examples/*.dll
 Sym/
 Sym64/
 ToDo/
