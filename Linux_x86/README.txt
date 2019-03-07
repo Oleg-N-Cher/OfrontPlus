@@ -8,4 +8,3 @@ Linux_x86/
     /Examples of programs written in Oberon (to build, use /Bin/build)
     /Obj      The working directory for Ofront+ object files
     /Sym      Ofront+ symbol files
-
