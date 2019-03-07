@@ -1,6 +1,6 @@
 #!/bin/sh
 cd ../Obj
-export CC="gcc -m64 -I. -I../../../Lib/Mod -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+export CC="gcc -m64 -fPIC -I. -I../../../Lib/Mod -Os -g0 -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 export AR="ar -rc ../libOfront.a"
 if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
 
