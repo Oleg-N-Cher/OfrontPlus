@@ -322,7 +322,7 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 #    define __stdcall __attribute__((__stdcall__))
 #  endif
 #  define main(argc, argv) __stdcall WinMain( \
-     SYSTEM_ADRINT __hInstance, SYSTEM_ADRINT __hPrevInstance, char* __lpCmdLine, int __nCmdShow)
+     void *__hInstance, void *__hPrevInstance, char *__lpCmdLine, int __nCmdShow)
      extern int argc;
      extern char *argv;
 #endif
