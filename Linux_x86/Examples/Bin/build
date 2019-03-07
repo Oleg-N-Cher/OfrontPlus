@@ -12,41 +12,38 @@ ofront+ -mC -44 BlitBmp.Mod BlitBmp2.Mod Book.Mod Cnezinka.Mod Elo4ka.Mod Gradie
 if [ $? != 0 ]; then exit 1; fi
 
 export LIB="-I../../Lib/Obj -I../../../Lib/Mod -L../../Lib -lOfront"
-export CC="gcc -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
+export CC="gcc -m32 -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
 
-$CC HelloWorld.c -o../HelloWorld $LIB
+$CC HelloWorld.c -s -o../HelloWorld $LIB
 if [ $? != 0 ]; then exit 1; fi
 
-# ------------ Generate MyDLL.so (because of the circular dependency) -------------
-$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def $LIB
+# ---------- Generate MyDLL.so (WARNING!!! The circular dependency!) ----------
+$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def -I../../Lib/Obj -I../../../Lib/Mod
 if [ $? != 0 ]; then exit 1; fi
-# ------------ Generate MyDLLuse -------------
+#nm -gC MyDLL.so
+# ---------- Generate MyDLLuse (WARNING!!! The circular dependency!) ----------
 $CC MyDLLuse.c -fPIC -oMyDLLuse -Wl,--retain-symbols-file,MyDLLuse.def $LIB MyDLL.so -Wl,-rpath,.
 if [ $? != 0 ]; then exit 1; fi
 #nm -gC MyDLLuse
-# ------------ Generate MyDLL.so -------------
-$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def -I../../Lib/Obj -I../../../Lib/Mod -Wl,-rpath,.
-if [ $? != 0 ]; then exit 1; fi
-#nm -gC MyDLL.so
 mv -f MyDLL.so ..
 mv -f MyDLLuse ..
-# --------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-$CC TestHttp.c -o../TestHttp $LIB -lcurl
+$CC TestHttp.c -s -o../TestHttp $LIB -lcurl
 if [ $? != 0 ]; then exit 1; fi
-$CC BlitBmp.c -o../BlitBmp $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC BlitBmp.c -s -o../BlitBmp $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
-$CC BlitBmp2.c -o../BlitBmp2 $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image 
+$CC BlitBmp2.c -s -o../BlitBmp2 $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image 
 if [ $? != 0 ]; then exit 1; fi
-$CC Book.c -o../Book $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC Book.c -s -o../Book $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
-$CC Cnezinka.c -o../Cnezinka $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC Cnezinka.c -s -o../Cnezinka $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
-$CC Elo4ka.c -o../Elo4ka $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC Elo4ka.c -s -o../Elo4ka $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
-$CC Gradient24.c -o../Gradient24 $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC Gradient24.c -s -o../Gradient24 $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
-$CC Mandelbrot.c -o../Mandelbrot $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC Mandelbrot.c -s -o../Mandelbrot $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
-$CC Mandelbrot2.c -o../Mandelbrot2 $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
+$CC Mandelbrot2.c -s -o../Mandelbrot2 $LIB -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image
 if [ $? != 0 ]; then exit 1; fi
