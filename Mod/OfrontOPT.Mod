@@ -1152,7 +1152,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTyp("LONGREAL", LReal, 8, lrltyp)
 		ELSE (* "7" *)
 			EnterTyp("CHAR", Char, 1, chartyp);
-			EnterTypeAlias("INTEGER", int32, inttyp);
+			IF OPM.AddressSize # 2 THEN
+				EnterTypeAlias("INTEGER", int32, inttyp)
+			ELSE
+				EnterTypeAlias("INTEGER", int16, sinttyp)
+			END;
 			EnterTyp("REAL", Real, 4, realtyp)
 		END;
 		EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
