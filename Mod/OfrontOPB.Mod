@@ -412,12 +412,12 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF f IN intSet + realSet +{Set}THEN
 						IF z^.class = Nconst THEN
 							IF f IN intSet THEN
-								IF z^.conval^.intval = MIN(INTEGER) THEN err(203)
+								IF z^.conval^.intval = MIN(LONGINT) THEN err(203)
 								ELSE z^.conval^.intval := -z^.conval^.intval; SetIntType(z)
 								END
 							ELSIF f IN realSet THEN z^.conval^.realval := -z^.conval^.realval
 							ELSE z^.conval^.setval := -z^.conval^.setval
-							END ;
+							END;
 							z^.obj := NIL
 						ELSE z := NewOp(op, typ, z)
 						END
@@ -427,11 +427,11 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF f IN intSet + realSet THEN
 						IF z^.class = Nconst THEN
 							IF f IN intSet THEN
-								IF z^.conval^.intval = MIN(INTEGER) THEN err(203)
+								IF z^.conval^.intval = MIN(LONGINT) THEN err(203)
 								ELSE z^.conval^.intval := ABS(z^.conval^.intval); SetIntType(z)
 								END
 							ELSE z^.conval^.realval := ABS(z^.conval^.realval)
-							END ;
+							END;
 							z^.obj := NIL
 						ELSE z := NewOp(op, typ, z)
 						END
@@ -791,17 +791,17 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF g IN realSet THEN CheckRealType(g, 203, x^.conval)
 				ELSE (*g = LInt*)
 					r := x^.conval^.realval;
-					IF (r < MIN(INTEGER)) OR (r > MAX(INTEGER)) THEN err(203); r := 1 END ;
+					IF (r < MIN(LONGINT)) OR (r > MAX(LONGINT)) THEN err(203); r := 1 END;
 					x^.conval^.intval := ENTIER(r); SetIntType(x)
 				END
 			ELSE (* (f IN {Char, Byte}) & (g IN {Byte} + intSet) OR (f = Undef) *)
-			END ;
+			END;
 			x^.obj := NIL
 		ELSIF (x^.class = Nmop) & (x^.subcl = conv) & ((x^.left^.typ^.form < f) OR (f > g)) THEN
 			(* don't create new node *)
 			IF x^.left^.typ = typ THEN (* and suppress existing node *) x := x^.left END
 		ELSE node := OPT.NewNode(Nmop); node^.subcl := conv; node^.left := x; x := node
-		END ;
+		END;
 		x^.typ := typ
 	END Convert;
 
