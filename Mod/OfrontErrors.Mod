@@ -47,7 +47,7 @@ BEGIN
   |  39: Log.String('";" missing')
 
   |  41: Log.String("END missing")
-
+  |  43: Log.String("BEGIN expected")
   |  44: Log.String("UNTIL missing")
 
   |  46: Log.String("EXIT not within loop statement")
