@@ -626,7 +626,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			OPM.Write('"');
 			IF typ^.strobj # NIL THEN OPM.WriteString(typ^.strobj^.name^) END ;
 			Str1('", #), {', typ^.size);
-			nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.AddressSize);
+			nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.AdrSize);
 			EndStat
 		END
 	END TDescDecl;
@@ -913,8 +913,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
 		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
-		OPM.Write(OPM.Lang); OPM.WriteString(" -"); OPM.WriteInt(OPM.AddressSize);
-		IF OPM.AddressSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
+		OPM.Write(OPM.Lang); OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
+		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;
 

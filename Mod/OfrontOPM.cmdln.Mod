@@ -93,7 +93,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		opt-, glbopt: SET;
 		GlobalLang, Lang-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
-		GlobalAddressSize, AddressSize-, GlobalAlignment, Alignment-: SHORTINT;
+		GlobalAdrSize, AdrSize-, GlobalAlignment, Alignment-: SHORTINT;
 
 		crc32tab: ARRAY 256 OF INTEGER;
 		lasterrpos: INTEGER;
@@ -165,12 +165,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE GetProperties;
 	BEGIN
-		warning156 := AddressSize = -1;
+		warning156 := AdrSize = -1;
 		IF warning156 THEN	(* this compiler's address size and alignment *)
-			AddressSize := SIZE(SYSTEM.PTR); GetAlignment(Alignment)
+			AdrSize := SIZE(SYSTEM.PTR); GetAlignment(Alignment)
 		END;
 		(* default characteristics *)
-		IF AddressSize = 2 THEN	(* Z80 and other 8 bit CPUs *)
+		IF AdrSize = 2 THEN	(* Z80 and other 8 bit CPUs *)
 			SetSize := 1; MaxSet := 7; IndexSize := 2; MaxIndex := MAX(SHORTINT)
 		ELSE
 			SetSize := 4; MaxSet := 31;
@@ -207,19 +207,19 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
 			*)
 			| "2":
-				IF s[i+1] = "1" THEN AddressSize := 2; Alignment := 1; INC(i)
+				IF s[i+1] = "1" THEN AdrSize := 2; Alignment := 1; INC(i)
 				ELSE Lang := "2"
 				END
 			| "4":
-				IF s[i+1] = "4" THEN AddressSize := 4; Alignment := 4; INC(i)
-				ELSIF s[i+1] = "8" THEN AddressSize := 4; Alignment := 8; INC(i)
+				IF s[i+1] = "4" THEN AdrSize := 4; Alignment := 4; INC(i)
+				ELSIF s[i+1] = "8" THEN AdrSize := 4; Alignment := 8; INC(i)
 				ELSE
 					LogWStr("  warning: option "); LogW(OptionChar); LogW("4");
 					IF s[i+1] # 0X THEN LogW(s[i+1]); INC(i) END;
 					LogWStr(" ignored"); LogWLn
 				END
 			| "8":
-				IF s[i+1] = "8" THEN AddressSize := 8; Alignment := 8; INC(i)
+				IF s[i+1] = "8" THEN AdrSize := 8; Alignment := 8; INC(i)
 				ELSE
 					LogWStr("  warning: option "); LogW(OptionChar); LogW("8");
 					IF s[i+1] # 0X THEN LogW(s[i+1]); INC(i) END;
@@ -265,19 +265,19 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		ELSE
 			(* set options to initial defaults *)
 			Lang := "C";	(* default input language: Component Pascal *)
-			AddressSize := -1;	(* undefined *)
+			AdrSize := -1;	(* undefined *)
 			glbopt := defopt; S := 1; s := "";
 			Args.Get(1, s); stop := FALSE;
 			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END;
 			(* Record global option settings for this command line *)
-			GlobalAddressSize := AddressSize; GlobalAlignment := Alignment;	GlobalLang := Lang
+			GlobalAdrSize := AdrSize; GlobalAlignment := Alignment;	GlobalLang := Lang
 		END
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
-		Alignment := GlobalAlignment; AddressSize := GlobalAddressSize; Lang := GlobalLang;
+		Alignment := GlobalAlignment; AdrSize := GlobalAdrSize; Lang := GlobalLang;
 		opt := glbopt;
 		s := ""; Args.Get(S, s);
 		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END ;
