@@ -665,7 +665,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			END;
 			CASE tag OF
 			| Sptr:
-				typ^.form := Pointer; typ^.size := OPM.AddressSize; typ^.n := 0; InStruct(typ^.BaseTyp)
+				typ^.form := Pointer; typ^.size := OPM.AdrSize; typ^.n := 0; InStruct(typ^.BaseTyp)
 			| Sarr:
 				typ^.form := Comp; typ^.comp := Array; InStruct(typ^.BaseTyp); typ^.n := SHORT(OPM.SymRInt());
 				typSize(typ) (* no bounds address !! *)
@@ -695,7 +695,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					impCtxt.nextTag := SHORT(OPM.SymRInt())
 				END
 			| Spro:
-				typ^.form := ProcTyp; typ^.size := OPM.AddressSize; InSign(mno, typ^.BaseTyp, typ^.link)
+				typ^.form := ProcTyp; typ^.size := OPM.AdrSize; InSign(mno, typ^.BaseTyp, typ^.link)
 			END ;
 			IF ref = impCtxt.minr THEN
 				WHILE ref < impCtxt.nofr DO
@@ -1104,12 +1104,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		undftyp^.BaseTyp := undftyp;
 
 		(*initialization of module SYSTEM*)
-		EnterTyp("PTR", Pointer, OPM.AddressSize, sysptrtyp);
+		EnterTyp("PTR", Pointer, OPM.AdrSize, sysptrtyp);
 		EnterTyp("INT8", Byte, 1, bytetyp);
 		EnterTyp("INT16", SInt, 2, sinttyp);
 		EnterTyp("INT32", Int, 4, inttyp);
 		EnterTyp("INT64", LInt, 8, linttyp);
-		CASE OPM.AddressSize OF
+		CASE OPM.AdrSize OF
 		| 2: EnterTypeAlias("ADRINT", adrint, sinttyp);
 		| 4: EnterTypeAlias("ADRINT", adrint, inttyp);
 		ELSE EnterTypeAlias("ADRINT", adrint, linttyp)
@@ -1152,7 +1152,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTyp("LONGREAL", LReal, 8, lrltyp)
 		ELSE (* "7" *)
 			EnterTyp("CHAR", Char, 1, chartyp);
-			IF OPM.AddressSize # 2 THEN
+			IF OPM.AdrSize # 2 THEN
 				EnterTypeAlias("INTEGER", int32, inttyp)
 			ELSE
 				EnterTypeAlias("INTEGER", int16, sinttyp)

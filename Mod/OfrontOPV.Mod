@@ -129,12 +129,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				TypSize(typ^.BaseTyp);
 				typ^.size := typ^.n * typ^.BaseTyp^.size
 			ELSIF f = Pointer THEN
-				typ^.size := OPM.AddressSize;
+				typ^.size := OPM.AdrSize;
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ^.n)
 				ELSE TypSize(typ^.BaseTyp)
 				END
 			ELSIF f = ProcTyp THEN
-				typ^.size := OPM.AddressSize;
+				typ^.size := OPM.AdrSize;
 			ELSIF c = DynArr THEN
 				btyp := typ^.BaseTyp; TypSize(btyp);
 				IF ODD(typ^.sysflag) THEN typ^.size := 4

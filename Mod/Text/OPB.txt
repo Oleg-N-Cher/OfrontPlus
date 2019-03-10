@@ -551,8 +551,8 @@
 					IF (z^.class < Nconst) OR (f = String) THEN z := NewOp(op, typ, z)
 					ELSE err(127)
 					END ;
-					IF OPM.AddressSize = 4 THEN z^.typ := OPT.inttyp
-					ELSIF OPM.AddressSize = 2 THEN z^.typ := OPT.sinttyp
+					IF OPM.AdrSize = 4 THEN z^.typ := OPT.inttyp
+					ELSIF OPM.AdrSize = 2 THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
 					END;
 			| cc: (*SYSTEM.CC*)
@@ -1303,7 +1303,7 @@ avoid unnecessary intermediate variables in OFront
 		| entierfn: (*ENTIER*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN realSet THEN
-					IF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (OPM.AddressSize # 2) THEN
+					IF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (OPM.AdrSize # 2) THEN
 						Convert(x, OPT.linttyp)
 					ELSE (* "1", "2", "7" *)
 						Convert(x, OPT.inttyp)
@@ -1416,11 +1416,11 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| getfn, putfn, bitfn, movefn: (*SYSTEM.GET, SYSTEM.PUT, SYSTEM.BIT, SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF OPM.AddressSize = 4 THEN
+				ELSIF OPM.AdrSize = 4 THEN
 					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
 					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
 					END
-				ELSIF OPM.AddressSize = 2 THEN
+				ELSIF OPM.AdrSize = 2 THEN
 					IF (x^.class = Nconst) & (f = Byte) THEN Convert(x, OPT.sinttyp)
 					ELSIF ~(f IN {SInt, Pointer}) THEN err(111); x^.typ := OPT.sinttyp
 					END
@@ -1662,11 +1662,11 @@ avoid unnecessary intermediate variables in OFront
 				p^.typ := OPT.notyp
 		| movefn: (*SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF OPM.AddressSize = 4 THEN
+				ELSIF OPM.AdrSize = 4 THEN
 					IF (x^.class = Nconst) & (f IN {Byte, SInt}) THEN Convert(x, OPT.inttyp)
 					ELSIF ~(f IN {Int, Pointer}) THEN err(111); x^.typ := OPT.inttyp
 					END
-				ELSIF OPM.AddressSize = 2 THEN
+				ELSIF OPM.AdrSize = 2 THEN
 					IF (x^.class = Nconst) & (f = Byte) THEN Convert(x, OPT.sinttyp)
 					ELSIF ~(f IN {SInt, Pointer}) THEN err(111); x^.typ := OPT.sinttyp
 					END
