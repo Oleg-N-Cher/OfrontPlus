@@ -1388,17 +1388,18 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF e THEN x^.subcl := 1 END
 			ELSIF sym = exit THEN
 				OPS.Get(sym);
-				IF LoopLevel = 0 THEN err(46) END ;
+				IF LoopLevel = 0 THEN err(46) END;
 				OPB.Construct(Nexit, x, NIL);
 				pos := OPM.errpos
 			ELSIF sym = return THEN OPS.Get(sym);
-				IF sym < semicolon THEN Expression(x) END ;
+				IF OPM.Lang = "7" THEN Expression(x); IF sym # end THEN err(41) END
+				ELSIF sym < semicolon THEN Expression(x) END;
 				IF level > 0 THEN OPB.Return(x, OPT.topScope^.link)
 				ELSE (* not standard Oberon *) OPB.Return(x, NIL)
-				END ;
+				END;
 				pos := OPM.errpos
-			END ;
-			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END ;
+			END;
+			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
 			IF sym = semicolon THEN OPS.Get(sym)
 			ELSIF (sym <= ident) OR (if <= sym) & (sym <= return) THEN err(semicolon)
 			ELSE EXIT
@@ -1498,15 +1499,16 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF x # NIL THEN
 				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END ;
 				lastdec := x
-			END ;
+			END;
 			CheckSym(semicolon)
-		END ;
+		END;
 		IF sym = begin THEN OPS.Get(sym); StatSeq(statseq)
+		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
-		END ;
+		END;
 		IF (level = 0) & (TDinit # NIL) THEN
 			lastTDinit^.link := statseq; statseq := TDinit
-		END ;
+		END;
 		CheckSym(end)
 	END Block;
 
