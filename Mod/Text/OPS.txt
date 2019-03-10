@@ -282,7 +282,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						IF name = "END" THEN s := end
 						ELSIF name = "ELSE" THEN s := else
 						ELSIF name = "ELSIF" THEN s := elsif
-						ELSIF name = "EXIT" THEN s := exit
+						ELSIF (OPM.Lang # "7") & (name = "EXIT") THEN s := exit
 						END
 			| "F": Identifier(s); IF name = "FOR" THEN s := for END
 			| "I": Identifier(s);
@@ -291,7 +291,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						ELSIF name = "IS" THEN s := is
 						ELSIF name = "IMPORT" THEN s := import
 						END
-			| "L": Identifier(s); IF name = "LOOP" THEN s := loop END
+			| "L": Identifier(s); IF (OPM.Lang # "7") & (name = "LOOP") THEN s := loop END
 			| "M": Identifier(s);
 						IF name = "MOD" THEN s := mod
 						ELSIF name = "MODULE" THEN s := module
