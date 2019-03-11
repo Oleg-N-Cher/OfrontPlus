@@ -43,15 +43,15 @@ BEGIN
   |  34: Log.String('":=" missing')
   |  35: Log.String('"," or OF expected')
 
-  |  38: Log.String("identifier expected")
   |  39: Log.String('";" missing')
+  |  40: Log.String("identifier expected")
 
-  |  41: Log.String("END missing")
-  |  43: Log.String("BEGIN expected")
+  |  43: Log.String("END missing")
   |  44: Log.String("UNTIL missing")
 
   |  46: Log.String("EXIT not within loop statement")
   |  47: Log.String("illegally marked identifier")
+  |  48: Log.String("incorrect use of RETURN")
 
   |  50: Log.String("expression should be constant")
   |  51: Log.String("constant not an integer")

@@ -29,13 +29,13 @@ insertMarkers	Insert Markers
 30	"(" missing
 34	":=" missing
 35	"," or OF expected
-38	identifier expected
 39	";" missing
-41	END missing
-43	BEGIN expected
+40	identifier expected
+43	END missing
 44	UNTIL missing
 46	EXIT not within loop statement
 47	illegally marked identifier
+48	incorrect use of RETURN
 50	expression should be constant
 51	constant not an integer
 52	identifier does not denote a type
