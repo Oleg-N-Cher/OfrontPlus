@@ -66,11 +66,11 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		CaseTable = ARRAY OPM.MaxCases OF
 			RECORD
 				low, high: INTEGER
-			END ;
+			END;
 
 	VAR
 		sym, level: BYTE;
-		LoopLevel: SHORTINT;
+		LoopLevel, ReturnLevel: SHORTINT;
 		TDinit, lastTDinit: OPT.Node;
 		nofFwdPtr: SHORTINT;
 		FwdPtr: ARRAY 64 OF OPT.Struct;
@@ -863,11 +863,11 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			pos := OPM.errpos
 		END CheckBool;
 
-	BEGIN stat := NIL; last := NIL;
+	BEGIN stat := NIL; last := NIL; INC(ReturnLevel);
 		LOOP x := NIL;
 			IF sym < ident THEN err(14);
 				REPEAT OPS.Get(sym) UNTIL sym >= ident
-			END ;
+			END;
 			IF sym = ident THEN
 				qualident(id); x := OPB.NewLeaf(id); selector(x);
 				IF sym = becomes THEN
@@ -984,19 +984,21 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				OPB.Construct(Nexit, x, NIL);
 				pos := OPM.errpos
 			ELSIF sym = return THEN OPS.Get(sym);
-				IF OPM.Lang = "7" THEN Expression(x); IF sym # end THEN err(41) END
+				IF OPM.Lang = "7" THEN Expression(x); IF ReturnLevel # 1 THEN err(48) END
 				ELSIF sym < semicolon THEN Expression(x) END;
 				IF level > 0 THEN OPB.Return(x, OPT.topScope^.link)
-				ELSE (* not standard Oberon *) OPB.Return(x, NIL)
+				ELSE (* not standard Oberon *) OPB.Return(x, NIL); err(-48)
 				END;
-				pos := OPM.errpos
+				pos := OPM.errpos;
+				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
 			END;
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
 			IF sym = semicolon THEN OPS.Get(sym)
 			ELSIF (sym <= ident) OR (if <= sym) & (sym <= return) THEN err(semicolon)
 			ELSE EXIT
 			END
-		END
+		END;
+		DEC(ReturnLevel)
 	END StatSeq;
 
 	PROCEDURE Block(VAR procdec, statseq: OPT.Node);
@@ -1100,7 +1102,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				procdec, statseq: OPT.Node;
 				c: INTEGER; done: BOOLEAN;
 	BEGIN
-		OPS.Init; LoopLevel := 0; level := 0; OPS.Get(sym);
+		OPS.Init; LoopLevel := 0; ReturnLevel := 0; level := 0; OPS.Get(sym);
 		IF sym = module THEN OPS.Get(sym) ELSE err(16) END ;
 		IF sym = ident THEN
 			OPM.LogW(" "); OPM.LogWStr(OPS.name);
