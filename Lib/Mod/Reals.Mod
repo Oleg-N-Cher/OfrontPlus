@@ -23,7 +23,7 @@ MODULE Reals;
     power := 10.0;
     WHILE e > 0 DO
       IF ODD(e) THEN r := r * power END ;
-      power := power * power; e := e DIV 2
+      power := power * power; e := SHORT(e DIV 2)
     END ;
     RETURN SHORT(r)
   END Ten;
@@ -34,7 +34,7 @@ MODULE Reals;
     power := 10.0;
     LOOP
       IF ODD(e) THEN r := r * power END ;
-      e := e DIV 2;
+      e := SHORT(e DIV 2);
       IF e <= 0 THEN RETURN r END ;
       power := power * power
     END
@@ -91,10 +91,10 @@ MODULE Reals;
     VAR i, k: SHORTINT; len: LONGINT;
   BEGIN i := 0; len := LEN(b);
     WHILE i < len DO
-      k := SHORT(ORD(S.VAL(CHAR, b[i])) DIV 16);
-      IF k > 9 THEN d[i*2] := k + 55 ELSE d[i*2] := k + 48 END ;
-      k := SHORT(ORD(S.VAL(CHAR, b[i])) MOD 16);
-      IF k > 9 THEN d[i*2+1] := k + 55 ELSE d[i*2+1] := k + 48 END ;
+      k := SHORT(SHORT(ORD(S.VAL(CHAR, b[i])) DIV 16));
+      IF k > 9 THEN d[i*2] := SHORT(SHORT(k + 55)) ELSE d[i*2] := SHORT(SHORT(k + 48)) END;
+      k := SHORT(SHORT(ORD(S.VAL(CHAR, b[i])) MOD 16));
+      IF k > 9 THEN d[i*2+1] := SHORT(SHORT(k + 55)) ELSE d[i*2+1] := SHORT(SHORT(k + 48)) END;
       INC(i)
     END
   END Unpack;

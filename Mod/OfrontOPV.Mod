@@ -124,7 +124,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				IF (typ^.strobj = NIL) & (typ^.align MOD 10000H = 0) THEN INC(recno); INC(base, recno * 10000H) END;
 				typ^.size := offset; typ^.align := base;
 				(* encode the trailing gap into the symbol table to allow dense packing of extended records *)
-				typ^.sysflag := typ^.sysflag MOD 100H + SHORT((offset - off0)*100H)
+				typ^.sysflag := SHORT(typ^.sysflag MOD 100H + SHORT((offset - off0)*100H))
 			ELSIF c = Array THEN
 				TypSize(typ^.BaseTyp);
 				typ^.size := typ^.n * typ^.BaseTyp^.size
@@ -185,7 +185,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		WHILE s[i] # 0X DO res[i] := s[i]; INC(i) END ;
 		IF i > 25 THEN i := 25 END ;
 		res[i] := "_"; res[i+1] := "_"; INC(i, 2); k := 0;
-		REPEAT n[k] := CHR((j MOD 10) + ORD("0")); j := j DIV 10; INC(k) UNTIL j = 0;
+		REPEAT n[k] := CHR((j MOD 10) + ORD("0")); j := SHORT(j DIV 10); INC(k) UNTIL j = 0;
 		REPEAT DEC(k); res[i] := n[k]; INC(i) UNTIL k = 0;
 		res[i] := 0X;
 		IF LEN(s^) <= i THEN NEW(s, i+1) END; s^ := res$

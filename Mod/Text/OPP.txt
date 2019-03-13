@@ -994,13 +994,14 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					obj := OPT.topScope^.scope;
 					IF obj = NIL THEN OPT.topScope^.scope := t
 					ELSE
-						WHILE obj^.link # NIL DO obj := obj^.link END ;
+						WHILE obj^.link # NIL DO obj := obj^.link END;
 						obj^.link := t
-					END ;
+					END;
 					z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
 					y := OPB.NewLeaf(t)
-				ELSIF (y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form) THEN err(113)
-				END ;
+				ELSIF (y^.typ^.form IN {Undef, Bool, Char}) THEN err(113)
+				ELSE OPB.CheckAssign(x^.left^.typ, y)
+				END;
 				OPB.Link(stat, last, x);
 				IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
 				pos := OPM.errpos; x := OPB.NewLeaf(id);

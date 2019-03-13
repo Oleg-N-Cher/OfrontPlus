@@ -1,4 +1,7 @@
 MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
+(*
+2002-04-11  jt: Number changed for BlackBox 1.4: SHORT(-e)
+*)
 
 	IMPORT OPM := OfrontOPM;
 
@@ -107,7 +110,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		BEGIN x := 1; p := 10;
 			WHILE e > 0 DO
 				IF ODD(e) THEN x := x*p END;
-				e := e DIV 2;
+				e := SHORT(e DIV 2);
 				IF e > 0 THEN p := p*p END (* prevent overflow *)
 			END;
 			RETURN x
@@ -115,8 +118,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 
 		PROCEDURE Ord(ch: SHORTCHAR; hex: BOOLEAN): SHORTINT;
 		BEGIN (* ("0" <= ch) & (ch <= "9") OR ("A" <= ch) & (ch <= "F") *)
-			IF ch <= "9" THEN RETURN ORD(ch) - ORD("0")
-			ELSIF hex THEN RETURN ORD(ch) - ORD("A") + 10
+			IF ch <= "9" THEN RETURN SHORT(ORD(ch) - ORD("0"))
+			ELSIF hex THEN RETURN SHORT(ORD(ch) - ORD("A") + 10)
 			ELSE err(2); RETURN 0
 			END
 		END Ord;
@@ -183,25 +186,25 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 				END;
 				IF ("0" <= ch) & (ch <= "9") THEN
 					REPEAT n := Ord(ch, FALSE); OPM.Get(ch);
-						IF e <= (MAX(SHORTINT) - n) DIV 10 THEN e := e*10 + n
+						IF e <= (MAX(SHORTINT) - n) DIV 10 THEN e := SHORT(e*10 + n)
 						ELSE err(203)
 						END
 					UNTIL (ch < "0") OR ("9" < ch);
-					IF neg THEN e := -e END
+					IF neg THEN e := SHORT(-e) END
 				ELSE err(2)
 				END
 			END;
-			DEC(e, i-d-m); (* decimal point shift *)
+			DEC(e, SHORT(i-d-m)); (* decimal point shift *)
 			IF expCh = "E" THEN numtyp := real;
 				IF (1-OPM.MaxRExp < e) & (e <= OPM.MaxRExp) THEN
-					IF e < 0 THEN realval := SHORT(f / Ten(-e))
+					IF e < 0 THEN realval := SHORT(f / Ten(SHORT(-e)))
 					ELSE realval := SHORT(f * Ten(e))
 					END
 				ELSE err(203)
 				END
 			ELSE numtyp := longreal;
 				IF (1-OPM.MaxLExp < e) & (e <= OPM.MaxLExp) THEN
-					IF e < 0 THEN lrlval := f / Ten(-e)
+					IF e < 0 THEN lrlval := f / Ten(SHORT(-e))
 					ELSE lrlval := f * Ten(e)
 					END
 				ELSE err(203)

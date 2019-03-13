@@ -150,8 +150,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE PerfectHash (IN s: ARRAY OF SHORTCHAR): SHORTINT;
 		VAR i, h: SHORTINT;
 	BEGIN i := 0; h := 0;
-		WHILE (s[i] # 0X) & (i < 5) DO h := 3*h + ORD(s[i]); INC(i) END;
-		RETURN h MOD 105
+		WHILE (s[i] # 0X) & (i < 5) DO h := SHORT(3*h + ORD(s[i])); INC(i) END;
+		RETURN SHORT(h MOD 105)
 	END PerfectHash;
 
 	PROCEDURE Ident* (obj: OPT.Object);
@@ -1381,7 +1381,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END Enter;
 
 	BEGIN n := 0;
-		FOR i := 0 TO 104 DO hashtab[i] := -1 END ;
+		FOR i := 0 TO 104 DO hashtab[i] := -1 END;
 		Enter("asm");
 		Enter("auto");
 		Enter("break");

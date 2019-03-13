@@ -412,7 +412,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
         IF ch = "+" THEN Read(S, ch) END
       END;
       WHILE ("0" <= ch) & (ch <= "9") DO
-        e := e*10 + ORD(ch) - 30H; Read(S, ch)
+        e := SHORT(e*10 + ORD(ch) - 30H); Read(S, ch)
       END
     END ReadScaleFactor;
 
@@ -435,7 +435,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       WHILE (ch # 22X) & (ch >= " ") & (i # 63) DO  (* << *)
         S.s[i] := ch; INC(i); Read(S, ch)
       END;
-      S.s[i] := 0X; S.len := i+1; Read(S, ch); S.class := 2
+      S.s[i] := 0X; S.len := SHORT(SHORT(i+1)); Read(S, ch); S.class := 2
     ELSE
       IF ch = "-" THEN neg := TRUE; Read(S, ch) ELSE neg := FALSE END ;
       IF ("0" <= ch) & (ch <= "9") THEN (*number*)
@@ -451,7 +451,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
         END;
         IF ch = "H" THEN (*hex number*)
           Read(S, ch); S.class := 3;
-          IF i-j > 8 THEN j := i-8 END ;
+          IF i-j > 8 THEN j := SHORT(SHORT(i-8)) END;
           k := ORD(d[j]) - 30H; INC(j);
           IF (i-j = 7) & (k >= 8) THEN DEC(k, 16) END ;
           WHILE j < i DO k := k*10H + (ORD(d[j]) - 30H); INC(j) END ;
@@ -636,16 +636,16 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       REPEAT Write(W, " "); DEC(n) UNTIL n <= 8;
       (*there are 2 < n <= 8 digits to be written*)
       IF x < 0.0 THEN Write(W, "-"); x := -x ELSE Write(W, " ") END;
-      e := (e - 127) * 77  DIV 256;
-      IF e >= 0 THEN x := x / Reals.Ten(e) ELSE x := Reals.Ten(-e) * x END;
+      e := SHORT((e - 127) * 77 DIV 256);
+      IF e >= 0 THEN x := x / Reals.Ten(e) ELSE x := Reals.Ten(SHORT(-e)) * x END;
       IF x >= 10.0 THEN x := 0.1*x; INC(e) END;
-      x0 := Reals.Ten(n-1); x := x0*x + 0.5;
+      x0 := Reals.Ten(SHORT(n-1)); x := x0*x + 0.5;
       IF x >= 10.0*x0 THEN x := x*0.1; INC(e) END;
       Reals.Convert(x, n, d);
       DEC(n); Write(W, d[n]); Write(W, ".");
       REPEAT DEC(n); Write(W, d[n]) UNTIL n = 0;
       Write(W, "E");
-      IF e < 0 THEN Write(W, "-"); e := -e ELSE Write(W, "+") END;
+      IF e < 0 THEN Write(W, "-"); e := SHORT(-e) ELSE Write(W, "+") END;
       Write(W, CHR(e DIV 10 + 30H)); Write(W, CHR(e MOD 10 + 30H))
     END
   END WriteReal;
@@ -667,28 +667,28 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
 
   BEGIN e := Reals.Expo(x);
     IF k < 0 THEN k := 0 END;
-    IF e = 0 THEN seq(" ", n-k-2); Write(W, "0"); seq(" ", k+1)
-    ELSIF e = 255 THEN WriteString(W, " NaN"); seq(" ", n-4)
-    ELSE e := (e - 127) * 77 DIV 256;
+    IF e = 0 THEN seq(" ", SHORT(n-k-2)); Write(W, "0"); seq(" ", SHORT(k+1))
+    ELSIF e = 255 THEN WriteString(W, " NaN"); seq(" ", SHORT(n-4))
+    ELSE e := SHORT((e - 127) * 77 DIV 256);
       IF x < 0 THEN sign := "-"; x := -x ELSE sign := " " END;
       IF e >= 0 THEN  (*x >= 1.0,  77/256 = log 2*) x := x/Reals.Ten(e)
-        ELSE (*x < 1.0*) x := Reals.Ten(-e) * x
+        ELSE (*x < 1.0*) x := Reals.Ten(SHORT(-e)) * x
       END;
       IF x >= 10.0 THEN x := 0.1*x; INC(e) END;
       (* 1 <= x < 10 *)
-      IF k+e >= maxD-1 THEN k := maxD-1-e
-        ELSIF k+e < 0 THEN k := -e; x := 0.0
+      IF k+e >= maxD-1 THEN k := SHORT(maxD-1-e)
+        ELSIF k+e < 0 THEN k := SHORT(-e); x := 0.0
       END;
-      x0 := Reals.Ten(k+e); x := x0*x + 0.5;
+      x0 := Reals.Ten(SHORT(k+e)); x := x0*x + 0.5;
       IF x >= 10.0*x0 THEN INC(e) END;
       (*e = no. of digits before decimal point*)
-      INC(e); i := k+e; Reals.Convert(x, i, d);
+      INC(e); i := SHORT(k+e); Reals.Convert(x, i, d);
       IF e > 0 THEN
-        seq(" ", n-e-k-2); Write(W, sign); dig(e);
+        seq(" ", SHORT(n-e-k-2)); Write(W, sign); dig(e);
         Write(W, "."); dig(k)
-      ELSE seq(" ", n-k-3);
+      ELSE seq(" ", SHORT(n-k-3));
         Write(W, sign); Write(W, "0"); Write(W, ".");
-        seq("0", -e); dig(k+e)
+        seq("0", SHORT(-e)); dig(SHORT(k+e))
       END
     END
   END WriteRealFix;
@@ -718,12 +718,12 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       IF x < 0 THEN Write(W, "-"); x := -x ELSE Write(W, " ") END;
 
       (* Scale e to be an exponent of 10 rather than 2 *)
-      e := SHORT(LONG(e - 1023) * 77 DIV 256);
-      IF e >= 0 THEN x := x / Reals.TenL(e) ELSE x := Reals.TenL(-e) * x END ;
+      e := SHORT(SHORT(LONG(e - 1023) * 77 DIV 256));
+      IF e >= 0 THEN x := x / Reals.TenL(e) ELSE x := Reals.TenL(SHORT(-e)) * x END ;
       IF x >= 10.0D0 THEN x := 0.1D0 * x; INC(e) END;
 
       (* Scale x to the number of digits requested *)
-      x0 := Reals.TenL(n-1); x := x0*x + 0.5D0;
+      x0 := Reals.TenL(SHORT(n-1)); x := x0*x + 0.5D0;
       IF x >= 10.0D0*x0 THEN x := 0.1D0 * x; INC(e) END ;
 
       (* Generate the mantissa digits of x *)
@@ -733,8 +733,8 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       REPEAT DEC(n); Write(W, d[n]) UNTIL n = 0;
 
       Write(W, "D");
-      IF e < 0 THEN Write(W, "-"); e := -e ELSE Write(W, "+") END;
-      Write(W, CHR(e DIV 100 + 30H)); e := e MOD 100;
+      IF e < 0 THEN Write(W, "-"); e := SHORT(-e) ELSE Write(W, "+") END;
+      Write(W, CHR(e DIV 100 + 30H)); e := SHORT(e MOD 100);
       Write(W, CHR(e DIV 10 + 30H));
       Write(W, CHR(e MOD 10 + 30H))
     END

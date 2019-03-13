@@ -163,7 +163,7 @@ PROCEDURE exponent*(x: SHORTREAL): SHORTINT;
 BEGIN
   IF x = ZERO THEN RETURN 0 (* NOTE: x=0.0 should raise exception *)
   ELSE
-    RETURN SHORT(SYSTEM.LSH(SYSTEM.VAL(INTEGER, x), -23) MOD 256) - 127
+    RETURN SHORT(SYSTEM.LSH(SYSTEM.VAL(INTEGER, x), -23) MOD 256 - 127)
   END
 END exponent;
 
@@ -201,7 +201,7 @@ PROCEDURE ulp*(x: SHORTREAL): SHORTREAL;
    value exists; otherwise an exception shall occur and may be raised.
 *)
 BEGIN
-  RETURN scale(ONE, exponent(x)-places+1)
+  RETURN scale(ONE, SHORT(exponent(x)-places+1))
 END ulp;
 
 PROCEDURE succ*(x: SHORTREAL): SHORTREAL;
@@ -291,7 +291,7 @@ BEGIN
   IF x < ZERO THEN ErrorHandler(IllegalRoot); x := -x END;
 
   (* reduce the input number to the range 0.5 <= x <= 1.0 *)
-  xMant := fraction(x) * HALF; xExp := exponent(x) + 1;
+  xMant := fraction(x) * HALF; xExp := SHORT(exponent(x) + 1);
 
   (* initial estimate of the square root *)
   yEst := P0 + P1 * xMant;
@@ -303,7 +303,7 @@ BEGIN
   IF ODD(xExp) THEN yEst := yEst * sqrtHalf; INC(xExp) END;
 
   (* single Newtonian iteration to produce real number accuracy *)
-  RETURN scale(yEst, xExp DIV 2)
+  RETURN scale(yEst, SHORT(xExp DIV 2))
 END sqrt;
 
 PROCEDURE exp* (x: SHORTREAL): SHORTREAL;
@@ -339,7 +339,7 @@ BEGIN
   IF x <= ZERO THEN ErrorHandler(IllegalLog); RETURN -large END;
 
   (* reduce the range of the input *)
-  f := fraction(x) * HALF; n := exponent(x) + 1;
+  f := fraction(x) * HALF; n := SHORT(exponent(x) + 1);
   IF f > sqrtHalf THEN zn := (f - HALF) - HALF; zd := f * HALF + HALF
   ELSE zn := f - HALF; zd := zn * HALF + HALF; DEC(n)
   END;
@@ -526,7 +526,7 @@ BEGIN
 
   (* extract the exponent of base to m and clear exponent of base in g *)
   g := fraction(base) * HALF;
-  m := exponent(base) + 1;
+  m := SHORT(exponent(base) + 1);
 
   (* determine p table offset with an unrolled binary search *)
   p := 1;
@@ -600,17 +600,17 @@ BEGIN
   END;
 
   (* trap potential overflows and underflows *)
-  Exp := (exponent(x) + 1) * base; y := LnInfinity * ln2Inv;
+  Exp := SHORT((exponent(x) + 1) * base); y := LnInfinity * ln2Inv;
   IF Exp > y THEN ErrorHandler(Overflow); RETURN Adjust(large)
   ELSIF Exp< - y THEN RETURN ZERO
   END;
 
   (* compute x * *base using an optimised algorithm from Knuth, slightly
      altered : p442, The Art Of Computer Programming, Vol 2 *)
-  y := ONE; IF base < 0 THEN neg := TRUE; base := -base ELSE neg:= FALSE END;
+  y := ONE; IF base < 0 THEN neg := TRUE; base := SHORT(-base) ELSE neg:= FALSE END;
   LOOP
     IF ODD(base) THEN y := y * x END;
-    base := base DIV 2; IF base = 0 THEN EXIT END;
+    base := SHORT(base DIV 2); IF base = 0 THEN EXIT END;
     x := x * x;
   END;
   IF neg THEN RETURN ONE/y ELSE RETURN y END
