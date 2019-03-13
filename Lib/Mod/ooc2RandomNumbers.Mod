@@ -61,7 +61,7 @@ PROCEDURE Random*() : SHORTREAL;
 (**Calculates a number @samp{x} with @samp{0.0 <= x < 1.0}.  *)
   BEGIN
     NextRND;
-    RETURN (z-1)*(1 / (modulo-1))
+    RETURN SHORT((z-1)*(1 / (modulo-1)))
   END Random;
 
 BEGIN

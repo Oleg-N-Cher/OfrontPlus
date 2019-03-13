@@ -380,7 +380,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
         ELSE buf := f.bufs[i]
         END
       ELSE
-        f.swapper := (f.swapper + 1) MOD nofbufs;
+        f.swapper := SHORT((f.swapper + 1) MOD nofbufs);
         buf := f.bufs[f.swapper];
         Flush(buf)
       END;
@@ -612,7 +612,7 @@ Especially Length would become fairly complex.
     IF SIZE(SHORTINT) = 1 THEN
       x := ORD(b[0])
     ELSE
-      x := ORD(b[0]) + ORD(b[1])*256
+      x := SHORT(ORD(b[0]) + ORD(b[1])*256)
     END
   END ReadSInt;
 
@@ -677,8 +677,8 @@ Especially Length would become fairly complex.
   PROCEDURE ReadNum* (VAR R: Rider; VAR x: LONGINT);
     VAR s: INTEGER; ch: SHORTCHAR;
   BEGIN s := 0; x := 0; ReadChar(R, ch);
-    WHILE ORD(ch) >= 128 DO INC(x, ASH(LONG(LONG(ORD(ch) - 128)), s) ); INC(s, 7); ReadChar(R, ch) END;
-    INC(x, ASH(LONG(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64)), s) )
+    WHILE ORD(ch) >= 128 DO INC(x, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7); ReadChar(R, ch) END;
+    INC(x, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) )
   END ReadNum;
 
   PROCEDURE WriteBool* (VAR R: Rider; x: BOOLEAN);

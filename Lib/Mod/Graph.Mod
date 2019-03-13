@@ -1397,7 +1397,7 @@ END Random;
 PROCEDURE Uniform*(): SHORTREAL;
 BEGIN
   NextRND;
-  RETURN (randomSeed - 1) * (1 / (randomModulo - 1))
+  RETURN SHORT((randomSeed - 1) * (1 / (randomModulo - 1)))
 END Uniform;
 
 PROCEDURE Randomize*;

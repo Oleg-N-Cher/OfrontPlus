@@ -515,7 +515,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				IF i < nofGmod THEN mno := i	(*module already present*)
 				ELSE
 					head := NewObj(); head^.mode := Head; head^.name := name;
-					mno := nofGmod; head^.mnolev := -mno;
+					mno := nofGmod; head^.mnolev := SHORT(SHORT(-mno));
 					IF nofGmod < maxImps THEN
 						GlbMod[mno] := head; INC(nofGmod)
 					ELSE err(227)
@@ -572,7 +572,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		InStruct(res);
 		tag := SHORT(OPM.SymRInt()); last := NIL;
 		WHILE tag # Send DO
-			new := NewObj(); new^.mnolev := -mno;
+			new := NewObj(); new^.mnolev := SHORT(SHORT(-mno));
 			IF last = NIL THEN par := new ELSE last^.link := new END;
 			IF tag = Ssys THEN
 				new^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt());
@@ -613,7 +613,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR tag: INTEGER; obj: Object;
 	BEGIN
 		tag := impCtxt.nextTag;
-		obj := NewObj(); obj^.mnolev := -mno;
+		obj := NewObj(); obj^.mnolev := SHORT(SHORT(-mno));
 		IF tag = Stpro THEN
 			obj^.mode := TProc; obj^.conval := NewConst(); obj^.conval^.intval := -1;
 			InSign(mno, obj^.typ, obj^.link); obj^.vis := external; InName(obj^.name);
@@ -654,11 +654,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				ELSE typ := NewStr(Undef, Basic)
 				END
 			END ;
-			impCtxt.ref[ref] := typ; impCtxt.old[ref] := old; typ^.ref := ref + maxStruct;
+			impCtxt.ref[ref] := typ; impCtxt.old[ref] := old; typ^.ref := SHORT(ref + maxStruct);
 			(* ref >= maxStruct: not exported yet, ref used for err 155 *)
 			typ^.mno := mno; typ^.allocated := TRUE;
 			typ^.strobj := obj; obj^.mode := Typ; obj^.typ := typ;
-			obj^.mnolev := -mno; obj^.vis := internal; (* name not visible here *)
+			obj^.mnolev := SHORT(SHORT(-mno)); obj^.vis := internal; (* name not visible here *)
 			tag := SHORT(OPM.SymRInt());
 			IF tag = Ssys THEN
 				typ^.sysflag := SHORT(SHORT(OPM.SymRInt())); tag := SHORT(OPM.SymRInt())
@@ -685,7 +685,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				typ^.n := SHORT(OPM.SymRInt());
 				impCtxt.nextTag := SHORT(OPM.SymRInt()); last := NIL;
 				WHILE (impCtxt.nextTag >= Sfld) & (impCtxt.nextTag <= Shdpro) DO
-					fld := InFld(); fld^.mnolev := -mno;
+					fld := InFld(); fld^.mnolev := SHORT(SHORT(-mno));
 					IF last # NIL THEN last^.link := fld END ;
 					last := fld; InsertImport(fld, typ^.link, dummy);
 					impCtxt.nextTag := SHORT(OPM.SymRInt())
@@ -741,7 +741,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			InStruct(typ); obj := typ^.strobj;
 			IF ~impCtxt.self THEN obj^.vis := external END	(* type name visible now, obj^.fprint already done *)
 		ELSE
-			obj := NewObj(); obj^.mnolev := -mno; obj^.vis := external;
+			obj := NewObj(); obj^.mnolev := SHORT(SHORT(-mno)); obj^.vis := external;
 			IF tag = Ssys THEN
 				obj^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt())
 			END;
@@ -821,7 +821,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				Insert(aliasName, obj);
 				obj^.mode := Mod; obj^.scope := GlbMod[mno].right;
 				GlbMod[mno].link := obj;
-				obj^.mnolev  := -mno; obj^.typ := notyp;
+				obj^.mnolev  := SHORT(SHORT(-mno)); obj^.typ := notyp;
 				OPM.CloseOldSym
 			ELSIF impCtxt.self THEN
 				newsf := TRUE; extsf := TRUE; sfpresent := FALSE

@@ -522,10 +522,10 @@ BEGIN
 
   (* compute x**base using an optimised algorithm from Knuth, slightly
      altered : p442, The Art Of Computer Programming, Vol 2 *)
-  y := ONE; IF base < 0 THEN neg := TRUE; base := -base ELSE neg:= FALSE END;
+  y := ONE; IF base < 0 THEN neg := TRUE; base := SHORT(-base) ELSE neg:= FALSE END;
   LOOP
     IF ODD(base) THEN y := y*x END;
-    base := base DIV 2; IF base=0 THEN EXIT END;
+    base := SHORT(base DIV 2); IF base=0 THEN EXIT END;
     x := x*x;
   END;
   IF neg THEN RETURN ONE/y ELSE RETURN y END

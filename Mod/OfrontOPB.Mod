@@ -185,15 +185,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.conval := OPT.NewConst(); x^.conval^.setval := {}; RETURN x
 	END EmptySet;
 
-	PROCEDURE SetIntType(node: OPT.Node);
+	PROCEDURE SetIntType(node: OPT.Node; raw: BOOLEAN);
 		VAR v: LONGINT;
 	BEGIN v := node^.conval^.intval;
-		IF (MIN(BYTE) <= v) & (v <= MAX(BYTE)) THEN node^.typ := OPT.bytetyp
-		ELSIF (MIN(SHORTINT) <= v) & (v <= MAX(SHORTINT)) THEN node^.typ := OPT.sinttyp
+		IF ~raw THEN raw := (OPM.Lang # "C") OR (OPM.AdrSize = 2) END;
+		IF raw & (MIN(BYTE) <= v) & (v <= MAX(BYTE)) THEN node^.typ := OPT.bytetyp
+		ELSIF raw & (MIN(SHORTINT) <= v) & (v <= MAX(SHORTINT)) THEN node^.typ := OPT.sinttyp
 		ELSIF (MIN(INTEGER) <= v) & (v <= MAX(INTEGER)) THEN node^.typ := OPT.inttyp
-		ELSIF (MIN(LONGINT) <= v) & (v <= MAX(LONGINT)) (*bootstrap or cross*) THEN
-			node^.typ := OPT.linttyp
-		ELSE err(203); node^.typ := OPT.sinttyp; node^.conval^.intval := 1
+		ELSE node^.typ := OPT.linttyp
 		END
 	END SetIntType;
 
@@ -201,7 +200,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		VAR x: OPT.Node;
 	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
-		x^.conval^.intval := intval; SetIntType(x); RETURN x
+		x^.conval^.intval := intval; SetIntType(x, FALSE); RETURN x
 	END NewIntConst;
 
 	PROCEDURE NewRealConst*(realval: REAL; typ: OPT.Struct): OPT.Node;
@@ -304,6 +303,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		ELSE err(83); x^.typ := OPT.undftyp
 		END
 	END Field;
+
+	PROCEDURE^ Convert(VAR x: OPT.Node; typ: OPT.Struct);
 
 	PROCEDURE TypTest*(VAR x: OPT.Node; obj: OPT.Object; guard: BOOLEAN);
 
@@ -413,13 +414,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						IF z^.class = Nconst THEN
 							IF f IN intSet THEN
 								IF z^.conval^.intval = MIN(LONGINT) THEN err(203)
-								ELSE z^.conval^.intval := -z^.conval^.intval; SetIntType(z)
+								ELSE z^.conval^.intval := -z^.conval^.intval; SetIntType(z, FALSE)
 								END
 							ELSIF f IN realSet THEN z^.conval^.realval := -z^.conval^.realval
 							ELSE z^.conval^.setval := -z^.conval^.setval
 							END;
 							z^.obj := NIL
-						ELSE z := NewOp(op, typ, z)
+						ELSE
+							IF (OPM.Lang = "C") & (OPM.AdrSize # 2) & (f < Int) THEN Convert(z, OPT.inttyp) END;
+							z := NewOp(op, z^.typ, z)
 						END
 					ELSE err(97)
 					END
@@ -428,12 +431,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						IF z^.class = Nconst THEN
 							IF f IN intSet THEN
 								IF z^.conval^.intval = MIN(LONGINT) THEN err(203)
-								ELSE z^.conval^.intval := ABS(z^.conval^.intval); SetIntType(z)
+								ELSE z^.conval^.intval := ABS(z^.conval^.intval); SetIntType(z, FALSE)
 								END
 							ELSE z^.conval^.realval := ABS(z^.conval^.realval)
 							END;
 							z^.obj := NIL
-						ELSE z := NewOp(op, typ, z)
+						ELSE
+							IF (OPM.Lang = "C") & (OPM.AdrSize # 2) & (f < Int) THEN Convert(z, OPT.inttyp) END;
+							z := NewOp(op, z^.typ, z)
 						END
 					ELSE err(111)
 					END
@@ -457,10 +462,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			| adr: (*SYSTEM.ADR*)
 					IF (z^.class = Nconst) & (f = Char) & (z^.conval^.intval >= 20H) THEN
 						CharToString(z); f := String
-					END ;
+					END;
 					IF (z^.class < Nconst) OR (f = String) THEN z := NewOp(op, typ, z)
 					ELSE err(127)
-					END ;
+					END;
 					IF OPM.AdrSize = 4 THEN z^.typ := OPT.inttyp
 					ELSIF OPM.AdrSize = 2 THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
@@ -490,6 +495,30 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		ELSIF g # NilTyp THEN err(100)
 		END
 	END CheckPtr;
+
+	PROCEDURE Promote(VAR left, right: OPT.Node; op: INTEGER);	(* check expression compatibility *)
+		VAR f, g: INTEGER; new: OPT.Struct;
+	BEGIN
+		f := left^.typ^.form; g := right^.typ^.form; new := left^.typ;
+		IF f IN intSet + realSet THEN
+			IF g IN intSet + realSet THEN
+				IF (f = Real) & (right^.class = Nconst) & (g IN realSet) & (left^.class # Nconst)
+				OR (g = Real) & (left^.class = Nconst) & (f IN realSet) & (right^.class # Nconst) THEN
+					new := OPT.realtyp	(* SR *)
+				ELSIF (f = LReal) OR (g = LReal) THEN new := OPT.lrltyp
+				ELSIF (f = Real) OR (g = Real) THEN new := OPT.realtyp	(* SR *)
+				ELSIF op = slash THEN new := OPT.lrltyp
+				ELSIF (f = LInt) OR (g = LInt) THEN new := OPT.linttyp
+				ELSE new := OPT.inttyp
+				END
+			ELSE err(100)
+			END
+		END;
+		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp}) THEN
+			IF g # new^.form THEN Convert(right, new) END;
+			IF f # new^.form THEN Convert(left, new) END
+		END
+	END Promote;
 
 	PROCEDURE CheckParameters*(fp, ap: OPT.Object; checkNames: BOOLEAN);
 		VAR ft, at: OPT.Struct;
@@ -640,7 +669,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						(xv > 0) & (yv < 0) & (yv >= MIN(LONGINT) DIV xv) OR
 						(xv < 0) & (yv > 0) & (xv >= MIN(LONGINT) DIV yv) OR
 						(xv < 0) & (yv < 0) & (xv # MIN(LONGINT)) & (yv # MIN(LONGINT)) & (-xv <= MAX(LONGINT) DIV (-yv)) THEN
-						xval^.intval := xv * yv; SetIntType(x)
+						xval^.intval := xv * yv; SetIntType(x, FALSE)
 					ELSE err(204)
 					END
 				ELSIF f IN realSet THEN
@@ -674,7 +703,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF f IN intSet THEN
 					IF (xval^.intval = MIN(LONGINT)) & (yval^.intval = -1) THEN err(204)
 					ELSIF yval^.intval # 0 THEN
-						xval^.intval := xval^.intval DIV yval^.intval; SetIntType(x)
+						xval^.intval := xval^.intval DIV yval^.intval; SetIntType(x, FALSE)
 					ELSE err(205)
 					END
 				ELSIF f # Undef THEN err(103)
@@ -683,7 +712,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF f IN intSet THEN
 					IF (xval^.intval = MIN(LONGINT)) & (yval^.intval = -1) THEN err(204)
 					ELSIF yval^.intval # 0 THEN
-						xval^.intval := OPM.Div0(xval^.intval, yval^.intval); SetIntType(x)
+						xval^.intval := OPM.Div0(xval^.intval, yval^.intval); SetIntType(x, FALSE)
 					ELSE err(205)
 					END
 				ELSIF f # Undef THEN err(140)
@@ -691,7 +720,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| mod:
 				IF f IN intSet THEN
 					IF yval^.intval # 0 THEN
-						xval^.intval := xval^.intval MOD yval^.intval; SetIntType(x)
+						xval^.intval := xval^.intval MOD yval^.intval; SetIntType(x, FALSE)
 					ELSE err(205)
 					END
 				ELSIF f # Undef THEN err(104)
@@ -699,7 +728,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| rem0:
 				IF f IN intSet THEN
 					IF yval^.intval # 0 THEN
-						xval^.intval := OPM.Rem0(xval^.intval, yval^.intval); SetIntType(x)
+						xval^.intval := OPM.Rem0(xval^.intval, yval^.intval); SetIntType(x, FALSE)
 					ELSE err(205)
 					END
 				ELSIF f # Undef THEN err(141)
@@ -713,7 +742,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF f IN intSet THEN
 					temp := (yval^.intval >= 0) & (xval^.intval <= MAX(LONGINT) - yval^.intval);
 					IF temp OR (yval^.intval < 0) & (xval^.intval >= MIN(LONGINT) - yval^.intval) THEN
-							INC(xval^.intval, yval^.intval); SetIntType(x)
+							INC(xval^.intval, yval^.intval); SetIntType(x, FALSE)
 					ELSE err(206)
 					END
 				ELSIF f IN realSet THEN
@@ -730,7 +759,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF f IN intSet THEN
 					IF (yval^.intval >= 0) & (xval^.intval >= MIN(LONGINT) + yval^.intval) OR
 						(yval^.intval < 0) & (xval^.intval <= MAX(LONGINT) + yval^.intval) THEN
-							DEC(xval^.intval, yval^.intval); SetIntType(x)
+							DEC(xval^.intval, yval^.intval); SetIntType(x, FALSE)
 					ELSE err(207)
 					END
 				ELSIF f IN realSet THEN
@@ -780,7 +809,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ELSIF f IN intSet THEN
 				IF g = Set THEN x^.conval^.setval := IntToSet(SHORT(x^.conval^.intval))
 				ELSIF g IN intSet THEN
-					IF f > g THEN SetIntType(x);
+					IF f > g THEN SetIntType(x, TRUE);
 						IF x^.typ^.form > g THEN err(203); x^.conval^.intval := 1 END
 					END
 				ELSIF g IN realSet THEN x^.conval^.realval := x^.conval^.intval; x^.conval^.intval := OPM.ConstNotAlloc
@@ -792,7 +821,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSE (*g = LInt*)
 					r := x^.conval^.realval;
 					IF (r < MIN(LONGINT)) OR (r > MAX(LONGINT)) THEN err(203); r := 1 END;
-					x^.conval^.intval := ENTIER(r); SetIntType(x)
+					x^.conval^.intval := ENTIER(r); SetIntType(x, FALSE)
 				END
 			ELSE (* (f IN {Char, Byte}) & (g IN {Byte} + intSet) OR (f = Undef) *)
 			END;
@@ -838,179 +867,182 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	BEGIN z := x;
 		IF (z^.class = Ntype) OR (z^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)
-		ELSIF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 		ELSE
-			IF z^.typ # y^.typ THEN
-				g := y^.typ^.form;
-				CASE z^.typ^.form OF
-				   Char:
-						IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
-				| Byte:
-						IF g IN intSet + realSet THEN Convert(z, y^.typ)
-						ELSE  err(100)
+			IF (OPM.Lang = "C") & (OPM.AdrSize # 2) THEN Promote(z, y, op) END;
+			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
+			ELSE
+				IF z^.typ # y^.typ THEN
+					g := y^.typ^.form;
+					CASE z^.typ^.form OF
+					   Char:
+							IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
+					| Byte:
+							IF g IN intSet + realSet THEN Convert(z, y^.typ)
+							ELSE  err(100)
+							END
+					| SInt:
+							IF g = Byte THEN Convert(y, z^.typ)
+							ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
+							ELSE  err(100)
+							END
+					| Int:
+							IF g IN {Byte, SInt} THEN Convert(y, z^.typ)
+							ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
+							ELSE  err(100)
+							END
+					| LInt:
+							IF g IN intSet THEN Convert(y, z^.typ)
+							ELSIF g IN realSet THEN Convert(z, y^.typ)
+							ELSE  err(100)
+							END
+					| Real:
+							IF g IN intSet THEN Convert(y, z^.typ)
+							ELSIF g IN realSet THEN Convert(z, y^.typ)
+							ELSE  err(100)
+							END
+					| LReal:
+							IF g IN intSet + realSet THEN Convert(y, z^.typ)
+							ELSIF g IN realSet THEN Convert(y, z^.typ)
+							ELSE  err(100)
+							END
+					| NilTyp:
+							IF ~(g IN {Pointer, ProcTyp}) THEN err(100) END
+					| Pointer:
+							CheckPtr(z, y)
+					| ProcTyp:
+							IF g # NilTyp THEN err(100) END
+					| String:
+					| Comp:
+							IF z^.typ^.comp = Record THEN err(100) END
+					ELSE err(100)
+					END
+				END ;	(* {z^.typ = y^.typ} *)
+				typ := z^.typ; f := typ^.form; g := y^.typ^.form;
+				CASE op OF
+				  times:
+						do := TRUE;
+						IF f IN intSet THEN
+							IF z^.class = Nconst THEN val := z^.conval^.intval;
+								IF val = 1 THEN do := FALSE; z := y
+								ELSIF val = 0 THEN do := FALSE
+								ELSIF log(val) = 1 THEN
+									t := y; y := z; z := t;
+									op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := exp; y^.obj := NIL
+								END
+							ELSIF y^.class = Nconst THEN val := y^.conval^.intval;
+								IF val = 1 THEN do := FALSE
+								ELSIF val = 0 THEN do := FALSE; z := y
+								ELSIF log(val) = 1 THEN
+									op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := exp; y^.obj := NIL
+								END
+							END
+						ELSIF ~(f IN {Undef, Real..Set}) THEN err(105); typ := OPT.undftyp
+						END ;
+						IF do THEN NewOp(op, typ, z, y) END
+				| slash:
+						IF f IN intSet THEN
+							IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN err(205) END ;
+							Convert(z, OPT.realtyp); Convert(y, OPT.realtyp);
+							typ := OPT.realtyp
+						ELSIF f IN realSet THEN
+							IF (y^.class = Nconst) & (y^.conval^.realval = 0.0) THEN err(205) END
+						ELSIF (f # Set) & (f # Undef) THEN err(102); typ := OPT.undftyp
+						END ;
+						NewOp(op, typ, z, y)
+				| div:
+						do := TRUE;
+						IF f IN intSet THEN
+							IF y^.class = Nconst THEN val := y^.conval^.intval;
+								IF val = 0 THEN err(205)
+								ELSIF val = 1 THEN do := FALSE
+								ELSIF log(val) = 1 THEN
+									op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := -exp; y^.obj := NIL
+								END
+							END
+						ELSIF f # Undef THEN err(103); typ := OPT.undftyp
+						END;
+						IF do THEN NewOp(op, typ, z, y) END
+				| div0:
+						do := TRUE;
+						IF f IN intSet THEN
+							IF y^.class = Nconst THEN val := y^.conval^.intval;
+								IF val = 0 THEN err(205)
+								ELSIF val = 1 THEN do := FALSE
+								ELSIF log(val) = 1 THEN
+									op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := -exp; y^.obj := NIL
+								END
+							END
+						ELSIF f # Undef THEN err(140); typ := OPT.undftyp
+						END;
+						IF do THEN NewOp(op, typ, z, y) END
+				| mod:
+						IF f IN intSet THEN
+							IF y^.class = Nconst THEN
+								IF y^.conval^.intval = 0 THEN err(205)
+								ELSIF log(y^.conval^.intval) = 1 THEN
+									op := msk; y^.conval^.intval := ASH(LONG(-1), exp); y^.obj := NIL
+								END
+							END
+						ELSIF f # Undef THEN err(104); typ := OPT.undftyp
+						END;
+						NewOp(op, typ, z, y)
+				| rem0:
+						IF f IN intSet THEN
+							IF y^.class = Nconst THEN
+								IF y^.conval^.intval = 0 THEN err(205)
+								ELSIF log(y^.conval^.intval) = 1 THEN
+									op := msk; y^.conval^.intval := ASH(LONG(-1), exp); y^.obj := NIL
+								END
+							END
+						ELSIF f # Undef THEN err(141); typ := OPT.undftyp
+						END;
+						NewOp(op, typ, z, y)
+				| and:
+						IF f = Bool THEN
+							IF z^.class = Nconst THEN
+								IF IntToBool(z^.conval^.intval) THEN z := y END
+							ELSIF (y^.class = Nconst) & IntToBool(y^.conval^.intval) THEN (* optimize z & TRUE -> z *)
+					(*	ELSIF (y^.class = Nconst) & ~IntToBool(y^.conval^.intval) THEN
+								don't optimize z & FALSE -> FALSE: side effects possible	*)
+							ELSE NewOp(op, typ, z, y)
+							END
+						ELSIF f # Undef THEN err(94); z^.typ := OPT.undftyp
 						END
-				| SInt:
-						IF g = Byte THEN Convert(y, z^.typ)
-						ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
-						ELSE  err(100)
+				| plus:
+						IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(105); typ := OPT.undftyp END ;
+						do := TRUE;
+						IF f IN intSet THEN
+							IF (z^.class = Nconst) & (z^.conval^.intval = 0) THEN do := FALSE; z := y END ;
+							IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN do := FALSE END
+						END ;
+						IF do THEN NewOp(op, typ, z, y) END
+				| minus:
+						IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
+						IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
+				| or:
+						IF f = Bool THEN
+							IF z^.class = Nconst THEN
+								IF ~IntToBool(z^.conval^.intval) THEN z := y END
+							ELSIF (y^.class = Nconst) & ~IntToBool(y^.conval^.intval) THEN (* optimize z OR FALSE -> z *)
+					(*	ELSIF (y^.class = Nconst) & IntToBool(y^.conval^.intval) THEN
+								don't optimize z OR TRUE -> TRUE: side effects possible	*)
+							ELSE NewOp(op, typ, z, y)
+							END
+						ELSIF f # Undef THEN err(95); z^.typ := OPT.undftyp
 						END
-				| Int:
-						IF g IN {Byte, SInt} THEN Convert(y, z^.typ)
-						ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
-						ELSE  err(100)
-						END
-				| LInt:
-						IF g IN intSet THEN Convert(y, z^.typ)
-						ELSIF g IN realSet THEN Convert(z, y^.typ)
-						ELSE  err(100)
-						END
-				| Real:
-						IF g IN intSet THEN Convert(y, z^.typ)
-						ELSIF g IN realSet THEN Convert(z, y^.typ)
-						ELSE  err(100)
-						END
-				| LReal:
-						IF g IN intSet + realSet THEN Convert(y, z^.typ)
-						ELSIF g IN realSet THEN Convert(y, z^.typ)
-						ELSE  err(100)
-						END
-				| NilTyp:
-						IF ~(g IN {Pointer, ProcTyp}) THEN err(100) END
-				| Pointer:
-						CheckPtr(z, y)
-				| ProcTyp:
-						IF g # NilTyp THEN err(100) END
-				| String:
-				| Comp:
-						IF z^.typ^.comp = Record THEN err(100) END
-				ELSE err(100)
+				| eql, neq:
+						IF (f IN {Undef..Set, NilTyp, Pointer, ProcTyp}) OR strings(z, y) THEN typ := OPT.booltyp
+						ELSE err(107); typ := OPT.undftyp
+						END ;
+						NewOp(op, typ, z, y)
+				| lss, leq, gtr, geq:
+						IF (f IN {Undef, Byte, Char..LReal}) OR strings(z, y) THEN typ := OPT.booltyp
+						ELSE err(108); typ := OPT.undftyp
+						END ;
+						NewOp(op, typ, z, y)
 				END
-			END ;	(* {z^.typ = y^.typ} *)
-			typ := z^.typ; f := typ^.form; g := y^.typ^.form;
-			CASE op OF
-			  times:
-					do := TRUE;
-					IF f IN intSet THEN
-						IF z^.class = Nconst THEN val := z^.conval^.intval;
-							IF val = 1 THEN do := FALSE; z := y
-							ELSIF val = 0 THEN do := FALSE
-							ELSIF log(val) = 1 THEN
-								t := y; y := z; z := t;
-								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := exp; y^.obj := NIL
-							END
-						ELSIF y^.class = Nconst THEN val := y^.conval^.intval;
-							IF val = 1 THEN do := FALSE
-							ELSIF val = 0 THEN do := FALSE; z := y
-							ELSIF log(val) = 1 THEN
-								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := exp; y^.obj := NIL
-							END
-						END
-					ELSIF ~(f IN {Undef, Real..Set}) THEN err(105); typ := OPT.undftyp
-					END ;
-					IF do THEN NewOp(op, typ, z, y) END
-			| slash:
-					IF f IN intSet THEN
-						IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN err(205) END ;
-						Convert(z, OPT.realtyp); Convert(y, OPT.realtyp);
-						typ := OPT.realtyp
-					ELSIF f IN realSet THEN
-						IF (y^.class = Nconst) & (y^.conval^.realval = 0.0) THEN err(205) END
-					ELSIF (f # Set) & (f # Undef) THEN err(102); typ := OPT.undftyp
-					END ;
-					NewOp(op, typ, z, y)
-			| div:
-					do := TRUE;
-					IF f IN intSet THEN
-						IF y^.class = Nconst THEN val := y^.conval^.intval;
-							IF val = 0 THEN err(205)
-							ELSIF val = 1 THEN do := FALSE
-							ELSIF log(val) = 1 THEN
-								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := -exp; y^.obj := NIL
-							END
-						END
-					ELSIF f # Undef THEN err(103); typ := OPT.undftyp
-					END;
-					IF do THEN NewOp(op, typ, z, y) END
-			| div0:
-					do := TRUE;
-					IF f IN intSet THEN
-						IF y^.class = Nconst THEN val := y^.conval^.intval;
-							IF val = 0 THEN err(205)
-							ELSIF val = 1 THEN do := FALSE
-							ELSIF log(val) = 1 THEN
-								op := ash; y^.typ := OPT.bytetyp; y^.conval^.intval := -exp; y^.obj := NIL
-							END
-						END
-					ELSIF f # Undef THEN err(140); typ := OPT.undftyp
-					END;
-					IF do THEN NewOp(op, typ, z, y) END
-			| mod:
-					IF f IN intSet THEN
-						IF y^.class = Nconst THEN
-							IF y^.conval^.intval = 0 THEN err(205)
-							ELSIF log(y^.conval^.intval) = 1 THEN
-								op := msk; y^.conval^.intval := ASH(LONG(LONG(LONG(-1))), exp); y^.obj := NIL
-							END
-						END
-					ELSIF f # Undef THEN err(104); typ := OPT.undftyp
-					END;
-					NewOp(op, typ, z, y)
-			| rem0:
-					IF f IN intSet THEN
-						IF y^.class = Nconst THEN
-							IF y^.conval^.intval = 0 THEN err(205)
-							ELSIF log(y^.conval^.intval) = 1 THEN
-								op := msk; y^.conval^.intval := ASH(LONG(LONG(LONG(-1))), exp); y^.obj := NIL
-							END
-						END
-					ELSIF f # Undef THEN err(141); typ := OPT.undftyp
-					END;
-					NewOp(op, typ, z, y)
-			| and:
-					IF f = Bool THEN
-						IF z^.class = Nconst THEN
-							IF IntToBool(z^.conval^.intval) THEN z := y END
-						ELSIF (y^.class = Nconst) & IntToBool(y^.conval^.intval) THEN (* optimize z & TRUE -> z *)
-				(*	ELSIF (y^.class = Nconst) & ~IntToBool(y^.conval^.intval) THEN
-							don't optimize z & FALSE -> FALSE: side effects possible	*)
-						ELSE NewOp(op, typ, z, y)
-						END
-					ELSIF f # Undef THEN err(94); z^.typ := OPT.undftyp
-					END
-			| plus:
-					IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(105); typ := OPT.undftyp END ;
-					do := TRUE;
-					IF f IN intSet THEN
-						IF (z^.class = Nconst) & (z^.conval^.intval = 0) THEN do := FALSE; z := y END ;
-						IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN do := FALSE END
-					END ;
-					IF do THEN NewOp(op, typ, z, y) END
-			| minus:
-					IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
-					IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
-			| or:
-					IF f = Bool THEN
-						IF z^.class = Nconst THEN
-							IF ~IntToBool(z^.conval^.intval) THEN z := y END
-						ELSIF (y^.class = Nconst) & ~IntToBool(y^.conval^.intval) THEN (* optimize z OR FALSE -> z *)
-				(*	ELSIF (y^.class = Nconst) & IntToBool(y^.conval^.intval) THEN
-							don't optimize z OR TRUE -> TRUE: side effects possible	*)
-						ELSE NewOp(op, typ, z, y)
-						END
-					ELSIF f # Undef THEN err(95); z^.typ := OPT.undftyp
-					END
-			| eql, neq:
-					IF (f IN {Undef..Set, NilTyp, Pointer, ProcTyp}) OR strings(z, y) THEN typ := OPT.booltyp
-					ELSE err(107); typ := OPT.undftyp
-					END ;
-					NewOp(op, typ, z, y)
-			| lss, leq, gtr, geq:
-					IF (f IN {Undef, Byte, Char..LReal}) OR strings(z, y) THEN typ := OPT.booltyp
-					ELSE err(108); typ := OPT.undftyp
-					END ;
-					NewOp(op, typ, z, y)
 			END
-		END ;
+		END;
 		x := z
 	END Op;
 
@@ -1056,19 +1088,27 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.typ := OPT.settyp
 	END SetElem;
 
-	PROCEDURE CheckAssign(x: OPT.Struct; ynode: OPT.Node);	(* x := y *)
+	PROCEDURE CheckAssign*(x: OPT.Struct; ynode: OPT.Node);	(* x := y *)
 		VAR f, g: SHORTINT; y, p, q: OPT.Struct;
 	BEGIN
 		y := ynode^.typ; f := x^.form; g := y^.form;
-		IF (ynode^.class = Ntype) OR (ynode^.class = Nproc) & (f # ProcTyp) THEN err(126) END ;
+		IF (ynode^.class = Ntype) OR (ynode^.class = Nproc) & (f # ProcTyp) THEN err(126) END;
 		CASE f OF
 		  Undef, String:
-		| Byte, Bool, Char, Set:
+		| Bool, Char, Set:
 				IF g # f THEN err(113) END
+		| Byte:
+				IF (ynode^.class = Nconst) &
+					(MIN(BYTE) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(BYTE)) THEN (* Ok *)
+				ELSIF g # f THEN err(113) END
 		| SInt:
-				IF ~(g IN {Byte, SInt}) THEN err(113) END
+				IF (ynode^.class = Nconst) &
+					(MIN(SHORTINT) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(SHORTINT)) THEN (* Ok *)
+				ELSIF ~(g IN {Byte, SInt}) THEN err(113) END
 		| Int:
-				IF ~(g IN {Byte, SInt, Int}) THEN err(113) END
+				IF (ynode^.class = Nconst) &
+					(MIN(INTEGER) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(INTEGER)) THEN (* Ok *)
+				ELSIF ~(g IN {Byte, SInt, Int}) THEN err(113) END
 		| LInt:
 				IF ~(g IN intSet) THEN err(113) END
 		| Real:
@@ -1398,7 +1438,7 @@ avoid unnecessary intermediate variables in OFront
 							| 4: p^.typ := OPT.inttyp
 							ELSE p^.typ := OPT.linttyp
 							END
-						ELSE p := x; p^.conval^.intval := typ^.n; SetIntType(p)
+						ELSE p := x; p^.conval^.intval := typ^.n; SetIntType(p, FALSE)
 						END
 					END
 				ELSE err(132)
@@ -1421,7 +1461,7 @@ avoid unnecessary intermediate variables in OFront
 					IF (x^.class = Nconst) & ((-maxExp - 1 > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						IF x^.conval^.intval >= 0 THEN
-							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(LONG(LONG(1))), SHORT(x^.conval^.intval)) THEN
+							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(1), SHORT(x^.conval^.intval)) THEN
 								p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))
 							ELSE err(208); p^.conval^.intval := 1
 							END
@@ -1784,7 +1824,7 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN
 		IF x^.class = Nproc THEN typ := x^.typ;
 			lev := x^.obj^.mnolev;
-			IF lev > 0 THEN StaticLink(OPT.topScope^.mnolev-lev) END ;
+			IF lev > 0 THEN StaticLink(SHORT(SHORT(OPT.topScope^.mnolev-lev))) END;
 			IF x^.obj^.mode = IProc THEN err(121) END
 		ELSIF (x^.class = Nfield) & (x^.obj^.mode = TProc) THEN typ := x^.typ;
 			x^.class := Nproc; p := x^.left; x^.left := NIL; p^.link := apar; apar := p; fp := x^.obj^.link

@@ -104,7 +104,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		ELSE lev := obj^.mnolev;
 			IF (obj^.mode IN {Var, VarPar}) & (lev # level) THEN
 				obj^.leaf := FALSE;
-				IF lev > 0 THEN OPB.StaticLink(level-lev) END
+				IF lev > 0 THEN OPB.StaticLink(SHORT(SHORT(level-lev))) END
 			END
 		END ;
 		id := obj
@@ -180,7 +180,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				IF (base^.mode = Typ) & (base^.typ^.comp = Record) THEN
 					IF base^.typ = banned THEN err(58)
 					ELSE base^.typ^.pvused := TRUE;
-						typ^.BaseTyp := base^.typ; typ^.extlev := base^.typ^.extlev + 1; typ^.sysflag := base^.typ^.sysflag
+						typ^.BaseTyp := base^.typ; typ^.extlev := SHORT(SHORT(base^.typ^.extlev + 1)); typ^.sysflag := base^.typ^.sysflag
 					END
 				ELSE err(52)
 				END
@@ -926,8 +926,9 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 						END ;
 						z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
 						y := OPB.NewLeaf(t)
-					ELSIF (y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form) THEN err(113)
-					END ;
+					ELSIF (y^.typ^.form IN {Undef, Bool, Char}) THEN err(113)
+					ELSE OPB.CheckAssign(x^.left^.typ, y)
+					END;
 					OPB.Link(stat, last, x);
 					IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
 					pos := OPM.errpos; x := OPB.NewLeaf(id);

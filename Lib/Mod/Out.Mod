@@ -114,7 +114,7 @@ VAR r, power: LONGREAL;
 BEGIN r := 1.0D0; power := 1.0D1;
   WHILE e > 0 DO
     IF ODD(e) THEN r := r*power END;
-    power := power*power; e := e DIV 2
+    power := power*power; e := SHORT(e DIV 2)
   END;
   RETURN r
 END Ten;
@@ -156,13 +156,13 @@ BEGIN
        number of digits to generate. *)
     IF long THEN
       el := 3;
-      dr := n-6;                    (* Leave room for dp and '+D000' *)
+      dr := SHORT(n-6);             (* Leave room for dp and '+D000' *)
       IF dr > 17 THEN dr := 17 END; (* Limit to max useful significant digits *)
       d := dr;                      (* Number of digits to generate *)
       IF d < 15 THEN d := 15 END    (* Generate enough digits to do trailing zero supporession *)
     ELSE
       el := 2;
-      dr := n-5;                    (* Leave room for dp and '+E00' *)
+      dr := SHORT(n-5);             (* Leave room for dp and '+E00' *)
       IF dr > 9 THEN dr := 9 END;   (* Limit to max useful significant digits *)
       d := dr;                      (* Number of digits to generate *)
       IF d < 6 THEN d := 6 END      (* Generate enough digits to do trailing zero supporession *)
@@ -176,18 +176,18 @@ BEGIN
       IF nn THEN x := -x END;
 
       (* Scale e to be an exponent of 10 rather than 2 *)
-      e := SHORT(LONG(e - 1023) * 77 DIV 256);
-      IF e >= 0 THEN x := x / Ten(e) ELSE x := Ten(-e) * x END ;
+      e := SHORT(SHORT(LONG(e - 1023) * 77 DIV 256));
+      IF e >= 0 THEN x := x / Ten(e) ELSE x := Ten(SHORT(-e)) * x END ;
       IF x >= 10.0D0 THEN x := 0.1D0 * x; INC(e) END;
 
       (* Generate the exponent digits *)
-      en := e < 0; IF en THEN e := - e END;
-      WHILE el > 0 DO digit(e, s, i); e := e DIV 10; DEC(el) END;
+      en := e < 0; IF en THEN e := SHORT(- e) END;
+      WHILE el > 0 DO digit(e, s, i); e := SHORT(e DIV 10); DEC(el) END;
       DEC(i); IF en THEN s[i] := "-" ELSE s[i] := "+" END;
 
       (* Scale x to enough significant digits to reliably test for trailing
          zeroes or to the amount of space available, if greater. *)
-      x0 := Ten(d-1);
+      x0 := Ten(SHORT(d-1));
       x  := x0 * x;
       x  := x + 0.5D0; (* Do not combine with previous line as doing so
                           introduces a least significant bit difference
@@ -209,7 +209,7 @@ BEGIN
   END;
 
   (* Generate leading padding *)
-  DEC(n, LEN(s)-i); WHILE n > 0 DO Char(" "); DEC(n) END;
+  DEC(n, SHORT(LEN(s)-i)); WHILE n > 0 DO Char(" "); DEC(n) END;
 
   (* Render prepared number from right end of buffer s *)
   IF nn THEN Char("-") END;
@@ -259,7 +259,7 @@ PROCEDURE Expo*(x: REAL): INTEGER;
   VAR i: INTEGER;
 BEGIN
   SYSTEM.GET(SYSTEM.ADR(x)+2, i);
-  RETURN (i DIV 128) MOD 256
+  RETURN SHORT((i DIV 128) MOD 256)
 END Expo;
 
 PROCEDURE RealFix* (x: REAL; n, k: INTEGER);
@@ -280,28 +280,28 @@ PROCEDURE RealFix* (x: REAL; n, k: INTEGER);
 
 BEGIN e := Expo(x);
   IF k < 0 THEN k := 0 END;
-  IF e = 0 THEN seq(" ", n-k-2); Char("0"); seq(" ", k+1)
-  ELSIF e = 255 THEN String(" NaN"); seq(" ", n-4)
-  ELSE e := (e - 127) * 77 DIV 256;
+  IF e = 0 THEN seq(" ", SHORT(n-k-2)); Char("0"); seq(" ", SHORT(k+1))
+  ELSIF e = 255 THEN String(" NaN"); seq(" ", SHORT(n-4))
+  ELSE e := SHORT((e - 127) * 77 DIV 256);
     IF x < 0 THEN sign := "-"; x := -x ELSE sign := " " END;
     IF e >= 0 THEN  (*x >= 1.0,  77/256 = log 2*) x := SHORT(x/Ten(e))
-      ELSE (*x < 1.0*) x := SHORT(Ten(-e) * x)
+      ELSE (*x < 1.0*) x := SHORT(Ten(SHORT(-e)) * x)
     END;
     IF x >= 10.0 THEN x := 0.1*x; INC(e) END;
     (* 1 <= x < 10 *)
-    IF k+e >= maxD-1 THEN k := maxD-1-e
-      ELSIF k+e < 0 THEN k := -e; x := 0.0
+    IF k+e >= maxD-1 THEN k := SHORT(maxD-1-e)
+      ELSIF k+e < 0 THEN k := SHORT(-e); x := 0.0
     END;
-    x0 := SHORT(Ten(k+e)); x := x0*x + 0.5;
+    x0 := SHORT(Ten(SHORT(k+e))); x := x0*x + 0.5;
     IF x >= 10.0*x0 THEN INC(e) END;
     (*e = no. of digits before decimal point*)
-    INC(e); i := k+e; ConvertL(x, i, d);
+    INC(e); i := SHORT(k+e); ConvertL(x, i, d);
     IF e > 0 THEN
-      seq(" ", n-e-k-2); Char(sign); dig(e);
+      seq(" ", SHORT(n-e-k-2)); Char(sign); dig(e);
       Char("."); dig(k)
-    ELSE seq(" ", n-k-3);
+    ELSE seq(" ", SHORT(n-k-3));
       Char(sign); Char("0"); Char(".");
-      seq("0", -e); dig(k+e)
+      seq("0", SHORT(-e)); dig(SHORT(k+e))
     END
   END
 END RealFix;
