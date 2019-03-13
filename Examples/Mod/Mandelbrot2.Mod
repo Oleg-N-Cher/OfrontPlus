@@ -50,8 +50,8 @@ BEGIN G.Settings(320, 240, {G.fullscreen, G.spread});
   x0 := -0.63; x1 := -0.61; y0 := -0.45; y1 := -0.47;
   FOR y := 0 TO s.h - 1 DO
     FOR x := 0 TO s.w - 1 DO
-      Go(x, y, x0 + x / (s.w - 1) * (x1 - x0),
-               y0 + y / (s.h - 1) * (y1 - y0))
+      Go(x, y, x0 + SHORT(x / (s.w - 1)) * (x1 - x0),
+               y0 + SHORT(y / (s.h - 1)) * (y1 - y0))
     END
   END;
   angle := 0; col := 4;
