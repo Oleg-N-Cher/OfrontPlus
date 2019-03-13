@@ -106,7 +106,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				obj^.leaf := FALSE;
 				IF lev > 0 THEN OPB.StaticLink(SHORT(SHORT(level-lev))) END
 			END
-		END ;
+		END;
 		id := obj
 	END qualident;
 
@@ -921,9 +921,9 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 						obj := OPT.topScope^.scope;
 						IF obj = NIL THEN OPT.topScope^.scope := t
 						ELSE
-							WHILE obj^.link # NIL DO obj := obj^.link END ;
+							WHILE obj^.link # NIL DO obj := obj^.link END;
 							obj^.link := t
-						END ;
+						END;
 						z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
 						y := OPB.NewLeaf(t)
 					ELSIF (y^.typ^.form IN {Undef, Bool, Char}) THEN err(113)

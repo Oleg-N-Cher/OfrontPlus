@@ -335,7 +335,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		IF n >= 0 THEN LogWStr("  err ")
 		ELSE LogWStr("  warning "); n := SHORT(-n)
-		END ;
+		END;
 		LogWNum(n, 1);
 		LogWStr("  ");
 		(*NEW(T); Texts.Open(T, "OfrontErrors.Text"); Texts.OpenScanner(S, T, 0);

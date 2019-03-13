@@ -22,9 +22,9 @@ MODULE Reals;
   BEGIN r := 1.0;
     power := 10.0;
     WHILE e > 0 DO
-      IF ODD(e) THEN r := r * power END ;
+      IF ODD(e) THEN r := r * power END;
       power := power * power; e := SHORT(e DIV 2)
-    END ;
+    END;
     RETURN SHORT(r)
   END Ten;
   

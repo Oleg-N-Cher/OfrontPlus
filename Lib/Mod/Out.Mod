@@ -181,7 +181,7 @@ BEGIN
       IF x >= 10.0D0 THEN x := 0.1D0 * x; INC(e) END;
 
       (* Generate the exponent digits *)
-      en := e < 0; IF en THEN e := SHORT(- e) END;
+      en := e < 0; IF en THEN e := SHORT(-e) END;
       WHILE el > 0 DO digit(e, s, i); e := SHORT(e DIV 10); DEC(el) END;
       DEC(i); IF en THEN s[i] := "-" ELSE s[i] := "+" END;
 

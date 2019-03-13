@@ -1224,7 +1224,7 @@ avoid unnecessary intermediate variables in OFront
 					ELSE err(111)
 					END
 				ELSIF f = Char THEN
-					IF OPM.Lang = "7" THEN Convert(x, OPT.inttyp)
+					IF ((OPM.Lang = "С") OR (OPM.Lang = "7")) & (OPM.AdrSize # 2) THEN Convert(x, OPT.inttyp)
 					ELSE Convert(x, OPT.sinttyp)
 					END
 				ELSIF (f = Set) & (OPM.Lang # "1") & (OPM.Lang # "2") THEN
@@ -1408,7 +1408,8 @@ avoid unnecessary intermediate variables in OFront
 				ELSE
 					IF x^.typ # p^.typ THEN
 						IF (x^.class = Nconst) & (f IN intSet) THEN Convert(x, p^.typ)
-						ELSIF ~(f IN intSet) OR (x^.typ^.size > p^.typ^.size) THEN err(111)
+						ELSIF ~(f IN intSet) THEN err(111)
+						ELSIF x^.typ^.size > p^.typ^.size THEN err(-301)
 						END
 					END ;
 					p := NewOp(Nassign, fctno, p, x);
