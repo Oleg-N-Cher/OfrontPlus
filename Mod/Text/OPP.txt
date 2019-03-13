@@ -110,7 +110,7 @@
 				obj^.leaf := FALSE;
 				IF lev > 0 THEN OPB.StaticLink(SHORT(SHORT(level-lev))) END
 			END
-		END ;
+		END;
 		id := obj
 	END qualident;
 
