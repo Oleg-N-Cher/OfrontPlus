@@ -284,7 +284,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		REPEAT ch := name[i]; OPM.FPrint(fp, ORD(ch)); INC(i) UNTIL ch = 0X
 	END FPrintName;
 
-	PROCEDURE ^IdFPrint*(typ: Struct);
+	PROCEDURE ^IdFPrint(typ: Struct);
 
 	PROCEDURE FPrintSign(VAR fp: INTEGER; result: Struct; par: Object);
 	(* depends on assignment compatibility of params only *)
@@ -299,7 +299,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END FPrintSign;
 
-	PROCEDURE IdFPrint*(typ: Struct);	(* idfp codifies assignment compatibility *)
+	PROCEDURE IdFPrint(typ: Struct);	(* idfp codifies assignment compatibility *)
 		VAR btyp: Struct; strobj: Object; idfp: INTEGER; f, c: SHORTINT;
 	BEGIN
 		IF ~typ^.idfpdone THEN
@@ -319,7 +319,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END IdFPrint;
 
-	PROCEDURE FPrintStr*(typ: Struct);
+	PROCEDURE FPrintStr(typ: Struct);
 		VAR f, c: SHORTINT; btyp: Struct; strobj, bstrobj: Object; pbfp, pvfp: INTEGER;
 
 		PROCEDURE ^FPrintFlds(fld: Object; adr: INTEGER; visible: BOOLEAN);
@@ -400,7 +400,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END FPrintStr;
 
-	PROCEDURE FPrintObj*(obj: Object);
+	PROCEDURE FPrintObj(obj: Object);
 		VAR fprint, f, m: INTEGER; rval: SHORTREAL; ext: ConstExt;
 	BEGIN
 		IF ~obj^.fpdone THEN
@@ -444,7 +444,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END FPrintObj;
 
-	PROCEDURE FPrintErr*(obj: Object; errno: SHORTINT);
+	PROCEDURE FPrintErr(obj: Object; errno: SHORTINT);
 		VAR i, j: SHORTINT; ch: SHORTCHAR;
 	BEGIN
 		IF obj^.mnolev # 0 THEN

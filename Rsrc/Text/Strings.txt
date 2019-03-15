@@ -10,32 +10,32 @@ insertMarkers	Insert Markers
 3	illegal character in string
 4	identifier does not match procedure (or module) name
 5	comment not closed
-9	"=" expected
+11	"=" expected
 12	type definition starts with incorrect symbol
 13	factor starts with incorrect symbol
 14	statement starts with incorrect symbol
 15	declaration followed by incorrect symbol
 16	MODULE expected
-18	"." missing
-19	"," missing
-20	":" missing
-22	")" missing
-23	"]" missing
-24	"}" missing
-25	OF missing
-26	THEN missing
-27	DO missing
-28	TO missing
-30	"(" missing
-34	":=" missing
+20	"." missing
+21	"," missing
+22	":" missing
+24	")" missing
+25	"]" missing
+26	"}" missing
+27	OF missing
+28	THEN missing
+29	DO missing
+30	TO missing
+32	"(" missing
 35	"," or OF expected
-39	";" missing
+36	":=" missing
 40	identifier expected
+41	";" missing
 43	END missing
-44	UNTIL missing
-46	EXIT not within loop statement
-47	illegally marked identifier
-48	incorrect use of RETURN
+46	UNTIL missing
+47	EXIT not within loop statement
+48	illegally marked identifier
+49	incorrect use of RETURN
 50	expression should be constant
 51	constant not an integer
 52	identifier does not denote a type
