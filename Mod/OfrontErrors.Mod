@@ -5,6 +5,13 @@ List of Ofront error numbers
 NW, RC, JT / 16.1.95
 *)
 
+CONST
+  (*symbol values*)
+  eql = 11; period = 20; comma = 21; colon = 22; rparen = 24;
+  rbrak = 25; rbrace = 26; of = 27; then = 28; do = 29;
+  to = 30; lparen = 32; becomes = 36; ident = 40; semicolon = 41;
+  end = 43; until = 46;
+
 PROCEDURE LogErrMsg*(n: SHORTINT);
 BEGIN
   CASE n OF
@@ -18,7 +25,7 @@ BEGIN
   |   4: Log.String("identifier does not match procedure name")
   |   5: Log.String("comment not closed")
 
-  |   9: Log.String('"=" expected')
+  |       eql: Log.String('"=" expected')
 
   |  12: Log.String("type definition starts with incorrect symbol")
   |  13: Log.String("factor starts with incorrect symbol")
@@ -26,32 +33,29 @@ BEGIN
   |  15: Log.String("declaration followed by incorrect symbol")
   |  16: Log.String("MODULE expected")
 
-  |  18: Log.String('"." missing')
-  |  19: Log.String('"," missing')
-  |  20: Log.String('":" missing')
+  |    period: Log.String('"." missing')
+  |     comma: Log.String('"," missing')
+  |     colon: Log.String('":" missing')
+  |    rparen: Log.String('")" missing')
+  |     rbrak: Log.String('"]" missing')
+  |    rbrace: Log.String('"}" missing')
+  |        of: Log.String("OF missing")
+  |      then: Log.String("THEN missing")
+  |        do: Log.String("DO missing")
+  |        to: Log.String("TO missing")
+  |    lparen: Log.String('"(" missing')
 
-  |  22: Log.String('")" missing')
-  |  23: Log.String('"]" missing')
-  |  24: Log.String('"}" missing')
-  |  25: Log.String("OF missing")
-  |  26: Log.String("THEN missing")
-  |  27: Log.String("DO missing")
-  |  28: Log.String("TO missing")
-
-  |  30: Log.String('"(" missing')
-
-  |  34: Log.String('":=" missing')
   |  35: Log.String('"," or OF expected')
 
-  |  39: Log.String('";" missing')
-  |  40: Log.String("identifier expected")
+  |   becomes: Log.String('":=" missing')
+  |     ident: Log.String("identifier expected")
+  | semicolon: Log.String('";" missing')
+  |       end: Log.String("END missing")
+  |     until: Log.String("UNTIL missing")
 
-  |  43: Log.String("END missing")
-  |  44: Log.String("UNTIL missing")
-
-  |  46: Log.String("EXIT not within loop statement")
-  |  47: Log.String("illegally marked identifier")
-  |  48: Log.String("incorrect use of RETURN")
+  |  47: Log.String("EXIT not within loop statement")
+  |  48: Log.String("illegally marked identifier")
+  |  49: Log.String("incorrect use of RETURN")
 
   |  50: Log.String("expression should be constant")
   |  51: Log.String("constant not an integer")

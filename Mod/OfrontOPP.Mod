@@ -120,8 +120,8 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE CheckMark(VAR vis: BYTE);
 	BEGIN OPS.Get(sym);
 		IF (sym = times) OR (sym = minus) THEN
-			IF level > 0 THEN err(47) END ;
-			IF sym = times THEN vis := external ELSE vis := externalR END ;
+			IF level > 0 THEN err(48) END;
+			IF sym = times THEN vis := external ELSE vis := externalR END;
 			OPS.Get(sym)
 		ELSE vis := internal
 		END
@@ -981,14 +981,14 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				IF e THEN x^.subcl := 1 END
 			ELSIF sym = exit THEN
 				OPS.Get(sym);
-				IF LoopLevel = 0 THEN err(46) END;
+				IF LoopLevel = 0 THEN err(47) END;
 				OPB.Construct(Nexit, x, NIL);
 				pos := OPM.errpos
 			ELSIF sym = return THEN OPS.Get(sym);
-				IF OPM.Lang = "7" THEN Expression(x); IF ReturnLevel # 1 THEN err(48) END
+				IF OPM.Lang = "7" THEN Expression(x); IF ReturnLevel # 1 THEN err(49) END
 				ELSIF sym < semicolon THEN Expression(x) END;
 				IF level > 0 THEN OPB.Return(x, OPT.topScope^.link)
-				ELSE (* not standard Oberon *) OPB.Return(x, NIL); err(-48)
+				ELSE (* not standard Oberon *) OPB.Return(x, NIL); err(-49)
 				END;
 				pos := OPM.errpos;
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
