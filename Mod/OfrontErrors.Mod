@@ -173,7 +173,6 @@ BEGIN
   | 210: Log.String("overflow in logical shift")
   | 213: Log.String("too many cases in case statement")
   | 218: Log.String("illegal value of parameter  (0 <= p < 256)")
-  | 219: Log.String("machine registers cannot be accessed")
   | 220: Log.String("illegal value of parameter")
   | 221: Log.String("too many pointers in a record")
   | 222: Log.String("too many global pointers")
