@@ -32,10 +32,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MaxHaltNr* = 255;
 		MaxSysFlag* = 1;
 
-		MaxCC* = -1;	(* SYSTEM.CC, GETREG, PUTREG; not implementable in Ofront *)
-		MinRegNr* = 0;
-		MaxRegNr* = -1;
-
 		LANotAlloc* = -1;	(* XProc link adr initialization *)
 		ConstNotAlloc* = -1;	(* for allocation of string and real constants *)
 		TDAdrUndef* = -1;	(* no type desc allocated *)

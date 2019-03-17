@@ -99,8 +99,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		assertfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 25; ccfn = 26; lshfn = 27; rotfn = 28;
-		getfn = 29; putfn = 30; getrfn = 31; putrfn = 32;
+		adrfn = 25; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
 		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
 
 		(* module visibility of objects *)
@@ -1118,13 +1117,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("BYTE", byte, bytetyp)
 		END;
 		EnterProc("ADR", adrfn);
-		EnterProc("CC", ccfn);
 		EnterProc("LSH", lshfn);
 		EnterProc("ROT", rotfn);
 		EnterProc("GET", getfn);
 		EnterProc("PUT", putfn);
-		EnterProc("GETREG", getrfn);
-		EnterProc("PUTREG", putrfn);
 		EnterProc("BIT", bitfn);
 		EnterProc("VAL", valfn);
 		EnterProc("NEW", sysnewfn);
@@ -1293,12 +1289,13 @@ expr          design
                         cap                expr                nextexpr
                         odd                expr                nextexpr
                         adr                expr                nextexpr SYSTEM.ADR
-                        cc                 Nconst              nextexpr SYSTEM.CC
                         val                expr                nextexpr SYSTEM.VAL
               Ndop      times              expr      expr      nextexpr
                         slash              expr      expr      nextexpr
                         div                expr      expr      nextexpr
+                        div0               expr      expr      nextexpr
                         mod                expr      expr      nextexpr
+                        rem0               expr      expr      nextexpr
                         and                expr      expr      nextexpr
                         plus               expr      expr      nextexpr
                         minus              expr      expr      nextexpr
@@ -1341,8 +1338,6 @@ stat          NIL
                         copyfn             design    expr      stat
                         getfn              design    expr      stat     SYSTEM.GET
                         putfn              expr      expr      stat     SYSTEM.PUT
-                        getrfn             design    Nconst    stat     SYSTEM.GETREG
-                        putrfn             Nconst    expr      stat     SYSTEM.PUTREG
                         sysnewfn           design    expr      stat     SYSTEM.NEW
                         movefn             expr      expr      stat     SYSTEM.MOVE
                                                                         (right^.link = 3rd par)

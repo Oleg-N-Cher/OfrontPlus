@@ -19,7 +19,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		conv = 22; abs = 23; cap = 24; odd = 25; asr = 26;
 		lsl = 27; ror = 28; not = 35;
 		(*SYSTEM*)
-		lsh = 29; rot = 30; adr = 31; cc = 32; bit = 33; val = 34;
+		lsh = 29; rot = 30; adr = 31; bit = 33; val = 34;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -51,8 +51,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		assertfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 25; ccfn = 26; lshfn = 27; rotfn = 28;
-		getfn = 29; putfn = 30; getrfn = 31; putrfn = 32;
+		adrfn = 25; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
 		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
 
 		(* module visibility of objects *)
@@ -469,15 +468,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF OPM.AdrSize = 4 THEN z^.typ := OPT.inttyp
 					ELSIF OPM.AdrSize = 2 THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
-					END;
-			| cc: (*SYSTEM.CC*)
-					IF (f IN intSet) & (z^.class = Nconst) THEN
-						IF (0 <= z^.conval^.intval) & (z^.conval^.intval <= OPM.MaxCC) THEN z := NewOp(op, typ, z) ELSE err(219) END
-					ELSE err(69)
-					END ;
-					z^.typ := OPT.booltyp
+					END
 			END
-		END ;
+		END;
 		x := z
 	END MOp;
 
@@ -1346,8 +1339,6 @@ avoid unnecessary intermediate variables in OFront
 					typSize(x^.typ); x^.typ^.pvused := TRUE; x := NewIntConst(x^.typ^.size)
 				ELSE err(111); x := NewIntConst(1)
 				END
-		| ccfn: (*SYSTEM.CC*)
-				MOp(cc, x)
 		| lshfn, rotfn: (*SYSTEM.LSH, SYSTEM.ROT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF ~(f IN intSet + {Byte, Char, Set}) THEN err(111)
@@ -1366,11 +1357,6 @@ avoid unnecessary intermediate variables in OFront
 					IF (x^.class = Nconst) & (f IN {Byte, SInt, Int}) THEN Convert(x, OPT.linttyp)
 					ELSIF ~(f IN {LInt, Pointer}) THEN err(111); x^.typ := OPT.linttyp
 					END
-				END
-		| getrfn, putrfn: (*SYSTEM.GETREG, SYSTEM.PUTREG*)
-				IF (f IN intSet) & (x^.class = Nconst) THEN
-					IF (x^.conval^.intval < OPM.MinRegNr) OR (x^.conval^.intval > OPM.MaxRegNr) THEN err(220) END
-				ELSE err(69)
 				END
 		| valfn: (*SYSTEM.VAL*)
 				IF x^.class # Ntype THEN err(110)
@@ -1544,16 +1530,16 @@ avoid unnecessary intermediate variables in OFront
 					IF fctno = lshfn THEN p := NewOp(Ndop, lsh, p, x) ELSE p := NewOp(Ndop, rot, p, x) END ;
 					p^.typ := p^.left^.typ
 				END
-		| getfn, putfn, getrfn, putrfn: (*SYSTEM.GET, SYSTEM.PUT, SYSTEM.GETREG, SYSTEM.PUTREG*)
+		| getfn, putfn: (*SYSTEM.GET, SYSTEM.PUT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN {Undef..Set, Pointer, ProcTyp} THEN
-					IF (fctno = getfn) OR (fctno = getrfn) THEN
-						IF NotVar(x) THEN err(112) END ;
+					IF fctno = getfn THEN
+						IF NotVar(x) THEN err(112) END;
 						t := x; x := p; p := t
-					END ;
+					END;
 					p := NewOp(Nassign, fctno, p, x)
 				ELSE err(111)
-				END ;
+				END;
 				p^.typ := OPT.notyp
 		| bitfn: (*SYSTEM.BIT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1720,7 +1706,7 @@ avoid unnecessary intermediate variables in OFront
 			END
 		ELSE (*SYSTEM*)
 			IF (parno < 1) OR
-				(fctno > ccfn) & (parno < 2) OR
+				(fctno > adrfn) & (parno < 2) OR
 				(fctno = movefn) & (parno < 3) THEN err(65)
 			END
 		END;

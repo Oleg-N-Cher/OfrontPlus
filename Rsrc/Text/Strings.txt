@@ -147,7 +147,6 @@ insertMarkers	Insert Markers
 210	overflow in logical shift
 213	too many cases in case statement
 218	illegal value of parameter  (0 <= p < 256)
-219	machine registers cannot be accessed
 220	illegal value of parameter
 221	too many pointers in a record
 222	too many global pointers

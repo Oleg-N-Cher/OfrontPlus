@@ -20,7 +20,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		conv = 22; abs = 23; cap = 24; odd = 25; asr = 26;
 		lsl = 27; ror = 28; not = 35;
 		(*SYSTEM*)
-		lsh = 29; rot = 30; adr = 31; cc = 32; bit = 33; val = 34;
+		lsh = 29; rot = 30; adr = 31; bit = 33; val = 34;
 
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -41,7 +41,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		inclfn = 20; exclfn = 21; copyfn = 23; assertfn = 37;
 
 		(*SYSTEM function number*)
-		getfn = 29; putfn = 30; getrfn = 31; putrfn = 32; sysnewfn = 35; movefn = 36;
+		getfn = 29; putfn = 30; sysnewfn = 35; movefn = 36;
 
 		(*procedure flags*)
 		isRedef = 2;
@@ -259,7 +259,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					CASE subclass OF
 						not, minus, adr, val, conv:
 								RETURN 9
-					|	is, abs, cap, odd, cc, bit:
+					|	is, abs, cap, odd, bit:
 								RETURN 10
 					END
 		|	Ndop:
@@ -1086,7 +1086,6 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					|	(*SYSTEM*)putfn:
 								OPM.WriteString(PutFunc); expr(n^.left, MinPrec); OPM.WriteString(Comma); expr(n^.right, MinPrec);
 								OPM.WriteString(Comma); OPC.Ident(n^.right^.typ^.strobj); OPM.Write(CloseParen)
-					|	(*SYSTEM*)getrfn, putrfn: OPM.err(200)
 					|	(*SYSTEM*)sysnewfn:
 								OPM.WriteString("__SYSNEW(");
 								design(n^.left, MinPrec); OPM.WriteString(", ");
