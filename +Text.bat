@@ -12,7 +12,7 @@ IF errorlevel 1 PAUSE
 IF errorlevel 1 PAUSE
 %txt% Mod\OPP.odc Mod\Text\OPP.txt
 IF errorlevel 1 PAUSE
-%txt% Mod\OPS.odc Mod\Text\OPS.txt
+%txt% Mod\OPS.odc Mod\OfrontOPS.Mod
 IF errorlevel 1 PAUSE
 %txt% Mod\OPT.odc Mod\Text\OPT.txt
 IF errorlevel 1 PAUSE
