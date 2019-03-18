@@ -189,7 +189,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN IF topScope # NIL THEN topScope := topScope^.left END
 	END CloseScope;
 
-	PROCEDURE Init*(VAR(*IN*) name: ARRAY OF SHORTCHAR; opt: SET);
+	PROCEDURE Init*(IN name: ARRAY OF SHORTCHAR; opt: SET);
 		CONST nsf = 4; fpc = 8; esf = 9;
 	BEGIN
 		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
@@ -223,7 +223,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := obj
 	END FindImport;
 
-	PROCEDURE Find*(VAR(*IN*) name: OPS.Name; VAR res: Object);
+	PROCEDURE Find*(IN name: OPS.Name; VAR res: Object);
 		VAR obj, head: Object;
 	BEGIN head := topScope;
 		LOOP obj := head^.right;
@@ -241,7 +241,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := obj
 	END Find;
 
-	PROCEDURE FindField*(VAR(*IN*) name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
+	PROCEDURE FindField*(IN name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
 		VAR obj: Object;
 	BEGIN
 		WHILE typ # NIL DO obj := typ^.link;
@@ -831,7 +831,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*-------------------------- Export --------------------------*)
 
-	PROCEDURE OutName(VAR(*IN*) name: ARRAY OF SHORTCHAR);
+	PROCEDURE OutName(IN name: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.SymWCh(ch); INC(i) UNTIL ch = 0X

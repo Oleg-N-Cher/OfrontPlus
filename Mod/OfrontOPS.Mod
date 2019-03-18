@@ -15,7 +15,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	(* name, str, numtyp, intval, realval, lrlval are implicit results of Get *)
 
 	VAR
-		name*: Name;
+		name-: Name;
 		str-: String;
 		numtyp-: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
 		intval-: LONGINT;	(* integer value or string length (incl. 0X) *)
