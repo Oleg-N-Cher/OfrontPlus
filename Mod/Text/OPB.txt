@@ -1913,7 +1913,7 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN
 		IF x^.class = Nproc THEN typ := x^.typ;
 			lev := x^.obj^.mnolev;
-			IF lev > 0 THEN StaticLink(SHORT(SHORT(OPT.topScope^.mnolev-lev))) END ;
+			IF lev > 0 THEN StaticLink(SHORT(SHORT(OPT.topScope^.mnolev-lev))) END;
 			IF x^.obj^.mode = IProc THEN err(121) END
 		ELSIF (x^.class = Nfield) & (x^.obj^.mode = TProc) THEN typ := x^.typ;
 			x^.class := Nproc; p := x^.left; x^.left := NIL; p^.link := apar; apar := p; fp := x^.obj^.link
