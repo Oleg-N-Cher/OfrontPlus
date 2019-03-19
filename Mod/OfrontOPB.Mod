@@ -1150,7 +1150,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END
 				ELSE (*DynArr*) err(113)
 				END
-		END ;
+		END;
 		IF (ynode^.class = Nconst) & (g < f) & (g IN {Byte, SInt..Real}) & (f IN {SInt..LReal}) THEN
 			Convert(ynode, x)
 		END
@@ -1217,7 +1217,7 @@ avoid unnecessary intermediate variables in OFront
 					ELSE err(111)
 					END
 				ELSIF f = Char THEN
-					IF ((OPM.Lang = "С") OR (OPM.Lang = "7")) & (OPM.AdrSize # 2) THEN Convert(x, OPT.inttyp)
+					IF ((OPM.Lang = "C") OR (OPM.Lang = "7")) & (OPM.AdrSize # 2) THEN Convert(x, OPT.inttyp)
 					ELSE Convert(x, OPT.sinttyp)
 					END
 				ELSIF (f = Set) & (OPM.Lang # "1") & (OPM.Lang # "2") THEN
@@ -1397,7 +1397,7 @@ avoid unnecessary intermediate variables in OFront
 						ELSIF ~(f IN intSet) THEN err(111)
 						ELSIF x^.typ^.size > p^.typ^.size THEN err(-301)
 						END
-					END ;
+					END;
 					p := NewOp(Nassign, fctno, p, x);
 					p^.typ := OPT.notyp
 				END
@@ -1414,11 +1414,11 @@ avoid unnecessary intermediate variables in OFront
 				IF ~(f IN intSet) OR (x^.class # Nconst) THEN err(69)
 				ELSIF f = Byte THEN
 					L := SHORT(SHORT(x^.conval^.intval)); typ := p^.typ;
-					WHILE (L > 0) & (typ^.comp IN {DynArr, Array}) DO typ := typ^.BaseTyp; DEC(L) END ;
+					WHILE (L > 0) & (typ^.comp IN {DynArr, Array}) DO typ := typ^.BaseTyp; DEC(L) END;
 					IF (L # 0) OR ~(typ^.comp IN {DynArr, Array}) THEN err(132)
 					ELSE x^.obj := NIL;
 						IF typ^.comp = DynArr THEN
-							WHILE p^.class = Nindex DO p := p^.left; INC(x^.conval^.intval) END ;	(* possible side effect ignored *)
+							WHILE p^.class = Nindex DO p := p^.left; INC(x^.conval^.intval) END;	(* possible side effect ignored *)
 							p := NewOp(Ndop, len, p, x);
 							CASE OPM.IndexSize OF
 							| 2: p^.typ := OPT.sinttyp
