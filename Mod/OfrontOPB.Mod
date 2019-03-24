@@ -507,7 +507,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ELSE err(100)
 			END
 		END;
-		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp}) THEN
+		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp, Char, String}) THEN
 			IF g # new^.form THEN Convert(right, new) END;
 			IF f # new^.form THEN Convert(left, new) END
 		END
