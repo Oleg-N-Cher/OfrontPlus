@@ -985,7 +985,8 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				OPB.Construct(Nexit, x, NIL);
 				pos := OPM.errpos
 			ELSIF sym = return THEN OPS.Get(sym);
-				IF OPM.Lang = "7" THEN Expression(x); IF ReturnLevel # 1 THEN err(49) END
+				IF OPM.Lang = "7" THEN
+					IF (sym < semicolon) & (ReturnLevel = 1) THEN Expression(x) ELSE err(49) END
 				ELSIF sym < semicolon THEN Expression(x) END;
 				IF level > 0 THEN OPB.Return(x, OPT.topScope^.link)
 				ELSE (* not standard Oberon *) OPB.Return(x, NIL); err(-49)
