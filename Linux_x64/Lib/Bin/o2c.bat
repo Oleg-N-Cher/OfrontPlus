@@ -8,6 +8,11 @@ SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\Lib\Mod
 ofront+ -sC -88 Heap.Mod -apx Types.Mod Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
 IF errorlevel 1 PAUSE
 
+:: Eco
+
+ofront+ -sC -88 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoPars$
+IF errorlevel 1 PAUSE
+
 :: OOC2
 
 ofront+ -eC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
