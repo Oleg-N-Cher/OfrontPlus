@@ -18,7 +18,7 @@
 
 ***************************************************************************)
 
-MODULE EcoBigSets;
+MODULE ecoBigSets;
 
 (* $L+ use absolute long addressing for global variables *)
 
@@ -185,7 +185,7 @@ BEGIN (* SymmetricDiff *)
   END; (* WHILE *)
 END SymmetricDiff;
 
-END EcoBigSets.
+END ecoBigSets.
 
 (***************************************************************************
 
@@ -197,4 +197,3 @@ END EcoBigSets.
   - Start of revision control
 
 ***************************************************************************)
-

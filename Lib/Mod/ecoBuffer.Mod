@@ -1,4 +1,4 @@
-MODULE EcoBuffer; (*cyclic buffer of integers*)
+MODULE ecoBuffer; (*cyclic buffer of integers*)
  CONST N = 100;
  VAR nonempty-, nonfull-: BOOLEAN;
    in, out, n: INTEGER;
@@ -19,4 +19,4 @@ MODULE EcoBuffer; (*cyclic buffer of integers*)
   END get;
 BEGIN (*initialize*) n := 0; in := 0; out := 0;
  nonempty := FALSE; nonfull := TRUE
-END EcoBuffer.
+END ecoBuffer.
