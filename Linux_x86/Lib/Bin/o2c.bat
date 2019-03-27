@@ -10,7 +10,7 @@ IF errorlevel 1 PAUSE
 
 :: Eco
 
-ofront+ -sC -44 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoPars$
+ofront+ -sC -44 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.Mod
 IF errorlevel 1 PAUSE
 
 :: OOC2
