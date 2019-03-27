@@ -1319,7 +1319,7 @@ avoid unnecessary intermediate variables in OFront
 					ELSE err(111)
 					END
 				ELSIF f = Char THEN
-					IF ((OPM.Lang = "C") OR (OPM.Lang = "7")) & (OPM.AdrSize # 2) THEN Convert(x, OPT.inttyp)
+					IF (OPM.Lang = "7") & (OPM.AdrSize # 2) THEN Convert(x, OPT.inttyp)
 					ELSE Convert(x, OPT.sinttyp)
 					END
 				ELSIF (f = Set) & (OPM.Lang # "1") & (OPM.Lang # "2") THEN
