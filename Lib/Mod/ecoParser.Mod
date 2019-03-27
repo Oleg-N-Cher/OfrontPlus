@@ -1,6 +1,6 @@
 (* Copyright (C) 1997-2015, Oleg N. Cher *)
 
-MODULE EcoParser; (** portable *)
+MODULE ecoParser; (** portable *)
 
 TYPE
 	Char      * = SHORTCHAR;
@@ -351,4 +351,4 @@ BEGIN
 	NEW(prsPtr); prsPtr^.Init(buf, bufLen, ctxDeep); RETURN prsPtr
 END NewParser;
 
-END EcoParser.
+END ecoParser.

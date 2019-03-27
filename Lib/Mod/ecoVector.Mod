@@ -1,4 +1,4 @@
-MODULE EcoVector;
+MODULE ecoVector;
 (* https://github.com/corani/oberon-stdlib/blob/master/Vector.m *)
 
 TYPE
@@ -188,4 +188,4 @@ BEGIN
     END
 END Swap;
 
-END EcoVector.
+END ecoVector.

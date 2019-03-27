@@ -3,7 +3,7 @@
  Author: zita@pegasus.dvz.fh-aachen.de
 *)
 
-MODULE EcoListen;
+MODULE ecoListen;
 TYPE
  Element* = POINTER TO ElementDesc;
  ElementDesc* = RECORD END;
@@ -57,4 +57,4 @@ TYPE
                 END
         END Find;
 
-END EcoListen.
+END ecoListen.

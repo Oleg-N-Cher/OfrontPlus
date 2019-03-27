@@ -16,7 +16,7 @@
 
 **************************************************************************)
 
-MODULE EcoLists;
+MODULE ecoLists;
 
 TYPE
   NodePtr* = POINTER TO Node;
@@ -337,4 +337,4 @@ BEGIN
   IF mark.remallowed=0 THEN mark.remallowed := 1; END;
 END SetMark;
 
-END EcoLists.
+END ecoLists.
