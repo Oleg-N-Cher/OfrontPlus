@@ -186,10 +186,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE SetIntType(node: OPT.Node; raw: BOOLEAN);
 		VAR v: LONGINT;
-	BEGIN v := node^.conval^.intval;
-		IF ~raw THEN raw := (OPM.Lang # "C") OR (OPM.AdrSize = 2) END;
+	BEGIN v := node^.conval^.intval; IF ~raw THEN raw := (OPM.Lang # "C") & (OPM.Lang # "3") END;
 		IF raw & (MIN(BYTE) <= v) & (v <= MAX(BYTE)) THEN node^.typ := OPT.bytetyp
-		ELSIF raw & (MIN(SHORTINT) <= v) & (v <= MAX(SHORTINT)) THEN node^.typ := OPT.sinttyp
+		ELSIF (raw OR (OPM.AdrSize = 2)) & (MIN(SHORTINT) <= v) & (v <= MAX(SHORTINT))
+			THEN node^.typ := OPT.sinttyp
 		ELSIF (MIN(INTEGER) <= v) & (v <= MAX(INTEGER)) THEN node^.typ := OPT.inttyp
 		ELSE node^.typ := OPT.linttyp
 		END
@@ -420,7 +420,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 							END;
 							z^.obj := NIL
 						ELSE
-							IF (OPM.Lang = "C") & (OPM.AdrSize # 2) & (f < Int) THEN Convert(z, OPT.inttyp) END;
+							IF (OPM.Lang = "C") & (f < Int) THEN
+								IF OPM.AdrSize = 2 THEN Convert(z, OPT.sinttyp) ELSE Convert(z, OPT.inttyp) END
+							END;
 							z := NewOp(op, z^.typ, z)
 						END
 					ELSE err(97)
@@ -436,7 +438,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 							END;
 							z^.obj := NIL
 						ELSE
-							IF (OPM.Lang = "C") & (OPM.AdrSize # 2) & (f < Int) THEN Convert(z, OPT.inttyp) END;
+							IF (OPM.Lang = "C") & (f < Int) THEN
+								IF OPM.AdrSize = 2 THEN Convert(z, OPT.sinttyp) ELSE Convert(z, OPT.inttyp) END
+							END;
 							z := NewOp(op, z^.typ, z)
 						END
 					ELSE err(111)
@@ -502,6 +506,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF (f = Real) OR (g = Real) THEN new := OPT.realtyp	(* SR *)
 				ELSIF op = slash THEN new := OPT.lrltyp
 				ELSIF (f = LInt) OR (g = LInt) THEN new := OPT.linttyp
+				ELSIF (f = Int) OR (g = Int) THEN new := OPT.inttyp
+				ELSIF OPM.AdrSize = 2 THEN new := OPT.sinttyp
 				ELSE new := OPT.inttyp
 				END
 			ELSE err(100)
@@ -861,7 +867,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	BEGIN z := x;
 		IF (z^.class = Ntype) OR (z^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)
 		ELSE
-			IF (OPM.Lang = "C") & (OPM.AdrSize # 2) THEN Promote(z, y, op) END;
+			IF (OPM.Lang = "C") THEN Promote(z, y, op) END;
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
 				IF z^.typ # y^.typ THEN
@@ -1378,7 +1384,7 @@ avoid unnecessary intermediate variables in OFront
 	END StPar0;
 
 	PROCEDURE StPar1*(VAR par0: OPT.Node; x: OPT.Node; fctno: BYTE);	(* x: second parameter of standard proc *)
-		VAR f, L: SHORTINT; typ: OPT.Struct; p, t: OPT.Node; maxInt: LONGINT; maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
+		VAR f: SHORTINT; typ: OPT.Struct; p, t: OPT.Node; maxInt: LONGINT; L, maxExp: INTEGER;	(* max n in ASH(LONG(1), n) on this machine *)
 
 		PROCEDURE NewOp(class, subcl: BYTE; left, right: OPT.Node): OPT.Node;
 			VAR node: OPT.Node;
@@ -1411,9 +1417,8 @@ avoid unnecessary intermediate variables in OFront
 				END ;
 				p^.typ := OPT.notyp
 		| lenfn: (*LEN*)
-				IF ~(f IN intSet) OR (x^.class # Nconst) THEN err(69)
-				ELSIF f = Byte THEN
-					L := SHORT(SHORT(x^.conval^.intval)); typ := p^.typ;
+				IF (f IN intSet) & (x^.class = Nconst) THEN
+					L := SHORT(x^.conval^.intval); typ := p^.typ;
 					WHILE (L > 0) & (typ^.comp IN {DynArr, Array}) DO typ := typ^.BaseTyp; DEC(L) END;
 					IF (L # 0) OR ~(typ^.comp IN {DynArr, Array}) THEN err(132)
 					ELSE x^.obj := NIL;
@@ -1428,7 +1433,7 @@ avoid unnecessary intermediate variables in OFront
 						ELSE p := x; p^.conval^.intval := typ^.n; SetIntType(p, FALSE)
 						END
 					END
-				ELSE err(132)
+				ELSE err(69)
 				END
 		| copyfn: (*COPY*)
 				IF NotVar(x) THEN err(112)
