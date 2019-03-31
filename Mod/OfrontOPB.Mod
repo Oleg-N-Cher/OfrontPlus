@@ -186,7 +186,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE SetIntType(node: OPT.Node; raw: BOOLEAN);
 		VAR v: LONGINT;
-	BEGIN v := node^.conval^.intval; IF ~raw THEN raw := (OPM.Lang # "C") & (OPM.Lang # "3") END;
+	BEGIN v := node^.conval^.intval;
+		IF ~raw THEN raw := (OPM.Lang # "C") & (OPM.Lang # "7") END;
 		IF raw & (MIN(BYTE) <= v) & (v <= MAX(BYTE)) THEN node^.typ := OPT.bytetyp
 		ELSIF (raw OR (OPM.AdrSize = 2)) & (MIN(SHORTINT) <= v) & (v <= MAX(SHORTINT))
 			THEN node^.typ := OPT.sinttyp
@@ -504,7 +505,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					new := OPT.realtyp	(* SR *)
 				ELSIF (f = LReal) OR (g = LReal) THEN new := OPT.lrltyp
 				ELSIF (f = Real) OR (g = Real) THEN new := OPT.realtyp	(* SR *)
-				ELSIF op = slash THEN new := OPT.lrltyp
+				ELSIF (op = slash) & (OPM.Lang # "7") THEN new := OPT.lrltyp
 				ELSIF (f = LInt) OR (g = LInt) THEN new := OPT.linttyp
 				ELSIF (f = Int) OR (g = Int) THEN new := OPT.inttyp
 				ELSIF OPM.AdrSize = 2 THEN new := OPT.sinttyp
@@ -867,7 +868,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	BEGIN z := x;
 		IF (z^.class = Ntype) OR (z^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)
 		ELSE
-			IF (OPM.Lang = "C") THEN Promote(z, y, op) END;
+			IF (OPM.Lang = "C") OR (OPM.Lang = "7") THEN Promote(z, y, op) END;
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
 				IF z^.typ # y^.typ THEN

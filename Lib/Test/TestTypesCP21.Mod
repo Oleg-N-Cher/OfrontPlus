@@ -21,11 +21,11 @@ BEGIN
 	i := SYSTEM.ROT(i, i);
 	l := SYSTEM.ROT(l, l);
 	(* SYSTEM.GET *)
-	SYSTEM.GET(SHORT(i), b); SYSTEM.GET(SHORT(i), s); SYSTEM.GET(SHORT(i), i); SYSTEM.GET(SHORT(i), l);
+	SYSTEM.GET(s, b); SYSTEM.GET(s, s); SYSTEM.GET(s, i); SYSTEM.GET(s, l);
 	SYSTEM.GET(p, b); SYSTEM.GET(p, s); SYSTEM.GET(p, i); SYSTEM.GET(p, l);
 	SYSTEM.GET(a, b); SYSTEM.GET(a, s); SYSTEM.GET(a, i); SYSTEM.GET(a, l);
 	(* SYSTEM.PUT *)
-	SYSTEM.PUT(SHORT(i), b); SYSTEM.PUT(SHORT(i), s); SYSTEM.PUT(SHORT(i), i); SYSTEM.PUT(SHORT(i), l);
+	SYSTEM.PUT(s, b); SYSTEM.PUT(s, s); SYSTEM.PUT(s, i); SYSTEM.PUT(s, l);
 	SYSTEM.PUT(p, b); SYSTEM.PUT(p, s); SYSTEM.PUT(p, i); SYSTEM.PUT(p, l);
 	SYSTEM.PUT(a, b); SYSTEM.PUT(a, s); SYSTEM.PUT(a, i); SYSTEM.PUT(a, l);
 	SYSTEM.PUT(a, SHORT(0));
