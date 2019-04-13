@@ -396,7 +396,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		END NewOp;
 
 	BEGIN z := x;
-		IF (z^.class = Ntype) OR (z^.class = Nproc) THEN err(126)
+		IF (z^.class = Ntype) OR (z^.class = Nproc) & (op # adr) THEN err(126)
 		ELSE typ := z^.typ; f := typ^.form;
 			CASE op OF
 			  not:
@@ -467,7 +467,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (z^.class = Nconst) & (f = Char) & (z^.conval^.intval >= 20H) THEN
 						CharToString(z); f := String
 					END;
-					IF (z^.class < Nconst) OR (f = String) THEN z := NewOp(op, typ, z)
+					IF (z^.class < Nconst) OR (z^.class = Nproc) OR (f = String) THEN z := NewOp(op, typ, z)
 					ELSE err(127)
 					END;
 					IF OPM.AdrSize = 4 THEN z^.typ := OPT.inttyp
