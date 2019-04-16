@@ -963,57 +963,65 @@
 
 
 	BEGIN z := x;
-		IF (z^.class = Ntype) OR (z^.class = Nproc) OR (y^.class = Ntype) OR (y^.class = Nproc) THEN err(126)
+		IF (z^.class = Ntype) OR (y^.class = Ntype) THEN err(126)
 		ELSE
 			IF (OPM.Lang = "C") OR (OPM.Lang = "7") THEN Promote(z, y, op) END;
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
-				IF z^.typ # y^.typ THEN
-					g := y^.typ^.form;
-					CASE z^.typ^.form OF
-					   Char:
-							IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
-					| Byte:
-							IF g IN intSet + realSet THEN Convert(z, y^.typ)
-							ELSE  err(100)
-							END
-					| SInt:
-							IF g = Byte THEN Convert(y, z^.typ)
-							ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
-							ELSE  err(100)
-							END
-					| Int:
-							IF g IN {Byte, SInt} THEN Convert(y, z^.typ)
-							ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
-							ELSE  err(100)
-							END
-					| LInt:
-							IF g IN intSet THEN Convert(y, z^.typ)
-							ELSIF g IN realSet THEN Convert(z, y^.typ)
-							ELSE  err(100)
-							END
-					| Real:
-							IF g IN intSet THEN Convert(y, z^.typ)
-							ELSIF g IN realSet THEN Convert(z, y^.typ)
-							ELSE  err(100)
-							END
-					| LReal:
-							IF g IN intSet + realSet THEN Convert(y, z^.typ)
-							ELSIF g IN realSet THEN Convert(y, z^.typ)
-							ELSE  err(100)
-							END
-					| NilTyp:
-							IF ~(g IN {Pointer, ProcTyp}) THEN err(100) END
-					| Pointer:
-							CheckPtr(z, y)
-					| ProcTyp:
-							IF g # NilTyp THEN err(100) END
-					| String:
-					| Comp:
-							IF z^.typ^.comp = Record THEN err(100) END
-					ELSE err(100)
+				IF z^.class = Nproc THEN	(* comparison of a procedure with a procedure variable *)
+					IF y^.class = Nproc THEN err(126) END;
+					IF y^.typ^.form = ProcTyp THEN CheckProc(y^.typ, z^.obj) ELSE err(100) END
+				ELSIF y^.class = Nproc THEN	(* comparison of a procedure variable with a procedure *)
+					IF z^.class = Nproc THEN err(126) END;
+					IF z^.typ^.form = ProcTyp THEN CheckProc(z^.typ, y^.obj) ELSE err(100) END
+				ELSE
+					IF z^.typ # y^.typ THEN
+						g := y^.typ^.form;
+						CASE z^.typ^.form OF
+						  Char:
+								IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
+						| Byte:
+								IF g IN intSet + realSet THEN Convert(z, y^.typ)
+								ELSE  err(100)
+								END
+						| SInt:
+								IF g = Byte THEN Convert(y, z^.typ)
+								ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
+								ELSE  err(100)
+								END
+						| Int:
+								IF g IN {Byte, SInt} THEN Convert(y, z^.typ)
+								ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
+								ELSE  err(100)
+								END
+						| LInt:
+								IF g IN intSet THEN Convert(y, z^.typ)
+								ELSIF g IN realSet THEN Convert(z, y^.typ)
+								ELSE  err(100)
+								END
+						| Real:
+								IF g IN intSet THEN Convert(y, z^.typ)
+								ELSIF g IN realSet THEN Convert(z, y^.typ)
+								ELSE  err(100)
+								END
+						| LReal:
+								IF g IN intSet + realSet THEN Convert(y, z^.typ)
+								ELSIF g IN realSet THEN Convert(y, z^.typ)
+								ELSE  err(100)
+								END
+						| NilTyp:
+								IF ~(g IN {Pointer, ProcTyp}) THEN err(100) END
+						| Pointer:
+								CheckPtr(z, y)
+						| ProcTyp:
+								IF g # NilTyp THEN err(100) END
+						| String:
+						| Comp:
+								IF z^.typ^.comp = Record THEN err(100) END
+						ELSE err(100)
+						END
 					END
-				END ;	(* {z^.typ = y^.typ} *)
+				END;	(* {z^.typ = y^.typ} *)
 				typ := z^.typ; f := typ^.form; g := y^.typ^.form;
 				CASE op OF
 				  times:
