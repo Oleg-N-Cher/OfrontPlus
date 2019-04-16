@@ -1112,7 +1112,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| LInt:
 				IF ~(g IN intSet) THEN err(113) END
 		| Real:
-				IF ~(g IN {Byte, SInt..Real}) THEN err(113) END
+				IF (ynode^.class = Nconst) & (g = LReal) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN (* Ok *)
+				ELSIF ~(g IN {Byte, SInt..Real}) THEN err(113) END
 		| LReal:
 				IF ~(g IN {Byte, SInt..LReal}) THEN err(113) END
 		| Pointer:

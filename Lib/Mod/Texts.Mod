@@ -720,11 +720,11 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       (* Scale e to be an exponent of 10 rather than 2 *)
       e := SHORT(SHORT(LONG(e - 1023) * 77 DIV 256));
       IF e >= 0 THEN x := x / Reals.TenL(e) ELSE x := Reals.TenL(SHORT(-e)) * x END ;
-      IF x >= 10.0D0 THEN x := 0.1D0 * x; INC(e) END;
+      IF x >= 10.0E0 THEN x := 0.1E0 * x; INC(e) END;
 
       (* Scale x to the number of digits requested *)
-      x0 := Reals.TenL(SHORT(n-1)); x := x0*x + 0.5D0;
-      IF x >= 10.0D0*x0 THEN x := 0.1D0 * x; INC(e) END;
+      x0 := Reals.TenL(SHORT(n-1)); x := x0*x + 0.5E0;
+      IF x >= 10.0E0*x0 THEN x := 0.1E0 * x; INC(e) END;
 
       (* Generate the mantissa digits of x *)
       Reals.ConvertL(x, n, d);
