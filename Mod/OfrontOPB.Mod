@@ -872,11 +872,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
 				IF z^.class = Nproc THEN	(* comparison of a procedure with a procedure variable *)
-					IF y^.class = Nproc THEN err(126) END;
-					IF y^.typ^.form = ProcTyp THEN CheckProc(y^.typ, z^.obj) ELSE err(100) END
+					IF y^.class = Nproc THEN err(126)
+					ELSIF y^.typ^.form = ProcTyp THEN CheckProc(y^.typ, z^.obj)
+					ELSE err(100)
+					END
 				ELSIF y^.class = Nproc THEN	(* comparison of a procedure variable with a procedure *)
-					IF z^.class = Nproc THEN err(126) END;
-					IF z^.typ^.form = ProcTyp THEN CheckProc(z^.typ, y^.obj) ELSE err(100) END
+					IF z^.class = Nproc THEN err(126)
+					ELSIF z^.typ^.form = ProcTyp THEN CheckProc(z^.typ, y^.obj)
+					ELSE err(100)
+					END
 				ELSE
 					IF z^.typ # y^.typ THEN
 						g := y^.typ^.form;
