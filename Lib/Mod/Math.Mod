@@ -309,7 +309,7 @@ END sqrt;
 PROCEDURE exp* (x: SHORTREAL): SHORTREAL;
   (* Returns the exponential of x for x < Ln(MAX(SHORTREAL)) *)
   CONST
-    ln2 = 0.6931471805599453094172321D0;
+    ln2 = 0.6931471805599453094172321E0;
     P0 = 0.24999999950E+0; P1 = 0.41602886268E-2; Q1 = 0.49987178778E-1;
   VAR xn, g, p, q, z: SHORTREAL; n: INTEGER;
 BEGIN
@@ -510,7 +510,7 @@ PROCEDURE power* (base, exp: SHORTREAL): SHORTREAL;
      for base > 0 *)
   CONST P1 = 0.83357541E-1; K = 0.4426950409;
     Q1 = 0.69314675; Q2 = 0.24018510; Q3 = 0.54360383E-1;
-    OneOver16 = 0.0625;
+    OneOver16 = SHORT(0.0625);
     XMAX = 16 * (expoMax + 1) - 1;
     (* XMIN = 16 * expoMin; *) XMIN = -2016; (* to make it easier for voc; -- noch *)
   VAR z, g, R, v, u2, u1, w1, w2: SHORTREAL; w: REAL;

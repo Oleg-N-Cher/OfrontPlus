@@ -111,7 +111,7 @@ END prepend;
 
 PROCEDURE Ten*(e: INTEGER): LONGREAL;
 VAR r, power: LONGREAL;
-BEGIN r := 1.0D0; power := 1.0D1;
+BEGIN r := 1.0E0; power := 1.0E1;
   WHILE e > 0 DO
     IF ODD(e) THEN r := r*power END;
     power := power*power; e := SHORT(e DIV 2)
@@ -178,7 +178,7 @@ BEGIN
       (* Scale e to be an exponent of 10 rather than 2 *)
       e := SHORT(SHORT(LONG(e - 1023) * 77 DIV 256));
       IF e >= 0 THEN x := x / Ten(e) ELSE x := Ten(SHORT(-e)) * x END ;
-      IF x >= 10.0D0 THEN x := 0.1D0 * x; INC(e) END;
+      IF x >= 10.0E0 THEN x := 0.1E0 * x; INC(e) END;
 
       (* Generate the exponent digits *)
       en := e < 0; IF en THEN e := SHORT(-e) END;
@@ -189,10 +189,10 @@ BEGIN
          zeroes or to the amount of space available, if greater. *)
       x0 := Ten(SHORT(d-1));
       x  := x0 * x;
-      x  := x + 0.5D0; (* Do not combine with previous line as doing so
+      x  := x + 0.5E0; (* Do not combine with previous line as doing so
                           introduces a least significant bit difference
                           between 32 bit and 64 bit builds. *)
-      IF x >= 10.0D0 * x0 THEN x := 0.1D0 * x; INC(e) END;
+      IF x >= 10.0E0 * x0 THEN x := 0.1E0 * x; INC(e) END;
       m := Entier64(x)
     END;
 
@@ -237,8 +237,8 @@ BEGIN
 
   IF (SIZE(LONGINT) < 8) & (n > 9) THEN
     (* There are more decimal digits than can be held in a single LONGINT *)
-    i := ENTIER(x /      1000000000.0D0);  (* The 10th and higher digits *)
-    j := ENTIER(x - (i * 1000000000.0D0)); (* The low 9 digits *)
+    i := ENTIER(x /      1000000000.0E0);  (* The 10th and higher digits *)
+    j := ENTIER(x - (i * 1000000000.0E0)); (* The low 9 digits *)
     (* First generate the low 9 digits. *)
     IF j < 0 THEN j := 0 END;
     WHILE k < 9 DO
