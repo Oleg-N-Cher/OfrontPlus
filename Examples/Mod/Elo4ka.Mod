@@ -39,7 +39,7 @@ BEGIN
     G.ClearScreen;
     FOR b := 0 TO 64 DO
       FOR a := 0 TO 255 BY 8 DO
-        angle := Math.pi/128*a+alpha+b;
+        angle := SHORT(Math.pi/128)*a+alpha+b;
         yn := SHORT(ENTIER(Math.cos(angle)*(R-b)));
         IF yn > 0 THEN
           xn := SHORT(ENTIER(Math.sin(angle)*(R-b)));
