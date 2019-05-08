@@ -385,6 +385,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.intval := OPM.ConstNotAlloc
 	END CheckRealType;
 
+	PROCEDURE GetRealConstType(f, nr: SHORTINT; x: OPT.Const; VAR typ: OPT.Struct);
+	BEGIN
+		IF (OPM.Lang = "C") & (f IN realSet) THEN	(* SR *)
+			typ := OPT.lrltyp
+		END;
+		CheckRealType(f, nr, x)
+	END GetRealConstType;
+
 	PROCEDURE MOp*(op: BYTE; VAR x: OPT.Node);
 		VAR f: SHORTINT; typ: OPT.Struct; z: OPT.Node;
 
@@ -675,7 +683,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) <= 1.0;
 					IF temp OR (ABS(xval^.realval) <= MAX(REAL) / ABS(yval^.realval)) THEN
-						xval^.realval := xval^.realval * yval^.realval; CheckRealType(f, 204, xval)
+						xval^.realval := xval^.realval * yval^.realval; GetRealConstType(f, 204, xval, x^.typ)
 					ELSE err(204)
 					END
 				ELSIF f = Set THEN
@@ -685,14 +693,14 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| slash:
 				IF f IN intSet THEN
 					IF yval^.intval # 0 THEN
-						xval^.realval := xval^.intval / yval^.intval; CheckRealType(Real, 205, xval)
+						xval^.realval := xval^.intval / yval^.intval; GetRealConstType(Real, 205, xval, x^.typ)
 					ELSE err(205); xval^.realval := 1.0
 					END ;
 					x^.typ := OPT.realtyp
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) >= 1.0;
 					IF temp OR (ABS(xval^.realval) <= MAX(REAL) * ABS(yval^.realval)) THEN
-						xval^.realval := xval^.realval / yval^.realval; CheckRealType(f, 205, xval)
+						xval^.realval := xval^.realval / yval^.realval; GetRealConstType(f, 205, xval, x^.typ)
 					ELSE err(205)
 					END
 				ELSIF f = Set THEN
@@ -748,7 +756,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF f IN realSet THEN
 					temp := (yval^.realval >= 0.0) & (xval^.realval <= MAX(REAL) - yval^.realval);
 					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= MIN(REAL) - yval^.realval) THEN
-							xval^.realval := xval^.realval + yval^.realval; CheckRealType(f, 206, xval)
+							xval^.realval := xval^.realval + yval^.realval; GetRealConstType(f, 206, xval, x^.typ)
 					ELSE err(206)
 					END
 				ELSIF f = Set THEN
@@ -765,7 +773,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF f IN realSet THEN
 					temp := (yval^.realval >= 0.0) & (xval^.realval >= MIN(REAL) + yval^.realval);
 					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= MAX(REAL) + yval^.realval) THEN
-							xval^.realval := xval^.realval - yval^.realval; CheckRealType(f, 207, xval)
+							xval^.realval := xval^.realval - yval^.realval; GetRealConstType(f, 207, xval, x^.typ)
 					ELSE err(207)
 					END
 				ELSIF f = Set THEN
