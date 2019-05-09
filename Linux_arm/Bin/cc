@@ -1,6 +1,6 @@
 #!/bin/sh
 cd ../Obj
-export CC="gcc -I../Lib/Obj -I../../Lib/Mod -L../Lib -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
+export CC="gcc -I../Lib/Obj -I../../Lib/Mod -L../Lib -no-pie -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
 
 $CC -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c
 if [ $? != 0 ]; then exit 1; fi
