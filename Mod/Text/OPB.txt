@@ -478,7 +478,7 @@
 	PROCEDURE GetRealConstType(f, nr: SHORTINT; x: OPT.Const; VAR typ: OPT.Struct);
 	BEGIN
 		IF (OPM.Lang = "C") & (f IN realSet) THEN	(* SR *)
-			typ := OPT.lrltyp
+			typ := OPT.lrltyp; f := LReal
 		END;
 		CheckRealType(f, nr, x)
 	END GetRealConstType;

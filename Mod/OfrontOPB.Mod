@@ -376,19 +376,19 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	BEGIN
 		IF f = Real THEN min := MIN(SHORTREAL); max := MAX(SHORTREAL)
 		ELSE min := MIN(REAL); max := MAX(REAL)
-		END ;
+		END;
 		r := ABS(x^.realval);
 		IF (r > max) OR (r < min) THEN
 				err(nr); x^.realval := 1.0
 		ELSIF f = Real THEN x^.realval := SHORT(x^.realval)	(* single precision only *)
-		END ;
+		END;
 		x^.intval := OPM.ConstNotAlloc
 	END CheckRealType;
 
 	PROCEDURE GetRealConstType(f, nr: SHORTINT; x: OPT.Const; VAR typ: OPT.Struct);
 	BEGIN
 		IF (OPM.Lang = "C") & (f IN realSet) THEN	(* SR *)
-			typ := OPT.lrltyp
+			typ := OPT.lrltyp; f := LReal
 		END;
 		CheckRealType(f, nr, x)
 	END GetRealConstType;
