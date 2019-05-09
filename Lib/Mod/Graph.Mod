@@ -1411,7 +1411,8 @@ PROCEDURE Init*(): Bitmap;
 VAR flags: SET; success: BOOLEAN; w, h, nw, nh: INTEGER;
     s: ARRAY 2000 OF CHAR;
 BEGIN screen := NIL;
-  IF SDL.Init({SDL.initVideo}) = 0 THEN
+  IF SDL.Init({SDL.initVideo}) # 0 THEN GetError(s); Out.String(s); Out.Ln
+  ELSE
     flags := {};
     IF wantFullscreen THEN
       flags := flags + SDL.windowFullscreenDesktop;

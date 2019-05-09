@@ -1,8 +1,9 @@
 MODULE Book;
-IMPORT G := Graph;
+IMPORT G := Graph, Out;
 VAR screen: G.Bitmap;
 BEGIN
   screen := G.Init();
+  IF screen = NIL THEN Out.String("Couldn't init graphic"); Out.Ln; HALT(1) END;
   G.Line(screen, 200, 50, 450, 50, G.MakeCol(255, 0, 0));
   G.Line(screen, 150, 350, 400, 350, G.MakeCol(255, 0, 0));
   G.Line(screen, 200, 50, 150, 350, G.MakeCol(255, 0, 0));

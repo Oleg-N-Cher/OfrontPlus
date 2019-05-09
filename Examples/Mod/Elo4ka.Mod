@@ -3,7 +3,7 @@
 *)
 
 MODULE Elo4ka; (** portable *)
-IMPORT G := Graph, Math;
+IMPORT G := Graph, Math, Out;
 
 CONST
   Xoff = 256 DIV 2; Yoff = 192-48; R = 64;
@@ -33,6 +33,7 @@ END NextColor;
 BEGIN
   G.Settings(256, 192, {G.fullscreen, G.sharpPixels});
   screen := G.Init();
+  IF screen = NIL THEN Out.String("Couldn't init graphic"); Out.Ln; HALT(1) END;
   alpha := 0;
   color := 0;
   REPEAT
