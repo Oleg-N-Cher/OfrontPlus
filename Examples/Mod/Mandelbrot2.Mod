@@ -1,5 +1,5 @@
 MODULE Mandelbrot2;
-IMPORT G := Graph, M := Math;
+IMPORT G := Graph, M := Math, Out;
 CONST iter = 768;
 VAR s: G.Bitmap;
   col: INTEGER;
@@ -46,7 +46,9 @@ PROCEDURE Do;
 VAR x, y: INTEGER;
   x0, y0, x1, y1: SHORTREAL;
 BEGIN G.Settings(320, 240, {G.fullscreen, G.spread});
-  s := G.Init(); G.Flip; NEW(m, s.h, s.w);
+  s := G.Init();
+  IF s = NIL THEN Out.String("Couldn't init graphic"); Out.Ln; HALT(1) END;
+  G.Flip; NEW(m, s.h, s.w);
   x0 := -0.63; x1 := -0.61; y0 := -0.45; y1 := -0.47;
   FOR y := 0 TO s.h - 1 DO
     FOR x := 0 TO s.w - 1 DO

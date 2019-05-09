@@ -1,11 +1,12 @@
 MODULE BlitBmp2;
-IMPORT G := Graph;
+IMPORT G := Graph, Out;
 CONST N = 100;
 VAR s, b: G.Bitmap;
   x, y, vx, vy: ARRAY N OF SHORTREAL;
   i: INTEGER;
 BEGIN
   s := G.Init();
+  IF s = NIL THEN Out.String("Couldn't init graphic"); Out.Ln; HALT(1) END;
   b := G.LoadBitmap('Rocket.png'); IF b = NIL THEN HALT(1) END;
   FOR i := 0 TO N - 1 DO
     x[i] := s.w * G.Uniform();

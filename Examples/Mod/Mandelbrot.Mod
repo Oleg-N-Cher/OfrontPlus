@@ -1,5 +1,5 @@
 MODULE Mandelbrot;
-IMPORT G := Graph;
+IMPORT G := Graph, Out;
 VAR s: G.Bitmap;
   black: INTEGER;
 
@@ -24,6 +24,7 @@ VAR x, y: INTEGER;
   x0, y0, x1, y1: SHORTREAL;
 BEGIN G.Settings(640, 480, {G.spread});
   s := G.Init();
+  IF s = NIL THEN Out.String("Couldn't init graphic"); Out.Ln; HALT(1) END;
   black := G.MakeCol(0, 0, 0);
   y0 := 1; y1 := -1;
   x1 := 2 * SHORT(s.w / s.h / 3);
