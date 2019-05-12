@@ -613,7 +613,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 	PROCEDURE^ compStat (n: OPT.Node; exp: BOOLEAN);
 
-	PROCEDURE expr (n: OPT.Node; prec: SHORTINT);
+	PROCEDURE expr_val (n: OPT.Node; prec: SHORTINT; lvalue: BOOLEAN);
 		VAR
 			class: SHORTINT;
 			subclass: SHORTINT;
@@ -678,8 +678,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 									expr(l, exprPrec)
 								END
 					|	val: (*SYSTEM*)
-								IF ~((l^.typ^.form = Pointer) & (l^.class IN {Nvar, Nfield}))
-								& (n^.typ^.form IN {Int, LInt, Pointer, Set, ProcTyp}) & (l^.typ^.form IN {Int, LInt, Pointer, Set, ProcTyp})
+								IF ~lvalue
+								& (n^.typ^.form IN {Byte..LInt, Pointer, Set, ProcTyp}) & (l^.typ^.form IN {Byte..LInt, Pointer, Set, ProcTyp})
 								& (n^.typ^.size = l^.typ^.size) OR ~(l^.class IN {Nvar, Nvarpar, Nfield, Nindex}) THEN
 									OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.Write(CloseParen);
 									expr(l, exprPrec)
@@ -823,6 +823,11 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		IF (exprPrec <= prec) & (class IN {Nconst, Nupto, Nmop, Ndop, Ncall, Nguard}) THEN
 			OPM.Write(CloseParen)
 		END
+	END expr_val;
+
+	PROCEDURE expr (n: OPT.Node; prec: SHORTINT);
+	BEGIN
+		expr_val(n, prec, FALSE)
 	END expr;
 
 	PROCEDURE^ stat(n: OPT.Node; outerProc: OPT.Object);
@@ -1067,9 +1072,9 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 									NewArr(n^.left, n^.right)
 								END
 					|	incfn, decfn:
-								expr(n^.left, MinPrec); OPC.Increment(n^.subcl = decfn); expr(n^.right, MinPrec)
+								expr_val(n^.left, MinPrec, TRUE); OPC.Increment(n^.subcl = decfn); expr(n^.right, MinPrec)
 					|	inclfn, exclfn:
-								expr(n^.left, MinPrec); OPC.SetInclude(n^.subcl = exclfn); OPM.WriteString(SetOfFunc); expr(n^.right, MinPrec);
+								expr_val(n^.left, MinPrec, TRUE); OPC.SetInclude(n^.subcl = exclfn); OPM.WriteString(SetOfFunc); expr(n^.right, MinPrec);
 								OPM.Write(CloseParen)
 					|	copyfn:
 								OPM.WriteString(CopyFunc);
