@@ -258,8 +258,8 @@ PROCEDURE LoadImports (m: Module);
 (* Fill m.imp, i.e. load the list of imported modules by opening and scanning the file m.name. *)
 VAR sym: INTEGER;
 
-   PROCEDURE SkipToImportSection (): BOOLEAN;
-   (* Skip module heading up to the IMPORT section, return TRUE on success. *)
+   PROCEDURE SkipToModuleSection (): BOOLEAN;
+   (* Skip module heading up to the MODULE section, return TRUE on success. *)
    BEGIN
       eot := FALSE; Read;
       REPEAT
@@ -270,15 +270,24 @@ VAR sym: INTEGER;
          IF sym = ident THEN
             GetSym (sym);
             IF sym = semicolon THEN
-               REPEAT
-                  GetSym (sym);
-               UNTIL eot OR (sym = import);
-               IF sym = import THEN
-                  GetSym (sym);
-                  RETURN TRUE
-               END
+               RETURN TRUE
             END
          END
+      END;
+      RETURN FALSE
+   END SkipToModuleSection;
+
+   PROCEDURE SkipToImportSection (): BOOLEAN;
+   (* Skip module heading up to the IMPORT section, return TRUE on success. *)
+   BEGIN
+      IF ~eot THEN
+         REPEAT
+            GetSym (sym);
+         UNTIL eot OR (sym = import);
+         IF sym = import THEN
+            GetSym (sym);
+            RETURN TRUE
+         END;
       END;
       RETURN FALSE
    END SkipToImportSection;
@@ -333,8 +342,10 @@ VAR sym: INTEGER;
 BEGIN
    IF OpenStream (m.name) THEN
       INCL (m.attr, mFound);
-      IF SkipToImportSection () THEN
-         ProcessImportSection ();
+      IF SkipToModuleSection () THEN m.name := id$;
+         IF SkipToImportSection () THEN
+            ProcessImportSection ();
+         END;
       END;
    END;
 END LoadImports;
