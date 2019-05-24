@@ -1,17 +1,20 @@
-<*+main*> (** This marks the main module of a program. *)
-MODULE ImportGraph;
+MODULE ImportGraph; (*$MAIN*)
 
 (* ------------------------------------------------------------------------
  * (c) 2008 - 2010 by Alexander Iljin
  * ------------------------------------------------------------------------ *)
 
-IMPORT Out,CmdLine,Streams,Files,Str;
+IMPORT Out := Console, CmdLine := Args, Files, Str := Strings;
 
 (** -----------------------------------------------------------------------
   * This console program outputs a module import graph starting from a given
   * set of modules. The output format is the GraphVis' DOT text file.
   * This version is adapted for use with BlackBox sources.
   * ----------------------------------------------------------------------- *)
+
+TYPE
+   CHAR = SHORTCHAR;
+   FileName = ARRAY 260 OF CHAR;
 
 CONST
    MaxIdentLen = 64;
@@ -56,8 +59,8 @@ TYPE
 VAR
    ch: CHAR;
    eot: BOOLEAN;
-   s: Streams.Stream;
-   id: ARRAY MaxIdentLen OF CHAR;
+   f: Files.File; r: Files.Rider;
+   id, arg: ARRAY MaxIdentLen OF CHAR;
    keyTab: ARRAY NumKeywords OF
       RECORD sym: INTEGER; id: ARRAY 7 OF CHAR END;
    numKW: INTEGER; (* number of keywords defined (0..NumKeywords-1) *)
@@ -67,8 +70,8 @@ PROCEDURE Read;
 (* Read next character from stream s to ch. Set eot if appropriate. *)
 BEGIN
    IF ~eot THEN
-      s.ReadByte (ch);
-      eot := s.err # Streams.OK
+      Files.ReadChar (r, ch);
+      eot := r.eof
    ELSE
       ch := 0X
    END
@@ -178,7 +181,7 @@ BEGIN
    WHILE (m.next # NIL) & (m.next.name # name) DO m := m.next END;
    IF m.next = NIL THEN
       NEW (new);
-      COPY (name, new.name);
+      new.name := name$;
       new.attr := {};
       m.next := new;
    END;
@@ -199,23 +202,23 @@ BEGIN
    WHILE (ident [i] # 0X) & ('a' <= ident [i]) & (ident [i] <= 'z') DO
       INC (i);
    END;
-   COPY ('', subsystem);
+   subsystem := '';
    IF ident [i] # 0X THEN
-      Str.CopyPart (ident, subsystem, 0, i - 1);
-      COPY ('', name);
-      Str.CopyPart (ident, name, i, LEN (name));
+			Str.Extract (ident, 0, i, subsystem);
+      name := '';
+      Str.Extract (ident, i, LEN (name), name);
    ELSE
-      COPY (ident, name);
+      name := ident$;
    END;
 END ExtractSubsystem;
 
 PROCEDURE BlackListed (VAR name: ARRAY OF CHAR): BOOLEAN;
 (* Return TRUE if the module name is to be excluded from view. *)
 VAR
-   sub, tmp: Files.FileName;
+   sub, tmp: FileName;
 BEGIN
    ExtractSubsystem (id, sub, tmp);
-   RETURN (name = 'SYSTEM') OR (sub = 'Win')
+   RETURN (name = 'SYSTEM') OR (name = 'COM') OR (sub = 'Win')
 END BlackListed;
 
 PROCEDURE OpenStream (VAR fname: ARRAY OF CHAR): BOOLEAN;
@@ -224,17 +227,31 @@ PROCEDURE OpenStream (VAR fname: ARRAY OF CHAR): BOOLEAN;
  * 'path' is set according to the folder in which the module was found.
  * Return TRUE on success. *)
 VAR
-   name, full: Files.FileName;
+   name, full: FileName;
 BEGIN
-   ExtractSubsystem (fname, full, name);
-   IF full # '' THEN
-      Str.AppendC (full, '\Mod\');
-   ELSE (* no subsystem part found => "System" subsystem *)
-      full := 'System\Mod\';
+   name := fname$; Str.Append (".Mod", name);
+   f := Files.Old (name);
+   IF f = NIL THEN
+      full := "Mod\"; Str.Append (name, full);
+      f := Files.Old (full);
+      IF f = NIL THEN
+         full := "Lib\Mod\"; Str.Append (name, full);
+         f := Files.Old (full);
+         IF f = NIL THEN
+            ExtractSubsystem (fname, full, name);
+            IF full # '' THEN
+               Str.Append ('\Mod\', full);
+            ELSE (* no subsystem part found => "System" subsystem *)
+               full := 'System\Mod\';
+            END;
+            Str.Append (name, full);
+            Str.Append ('.odc', full);
+            f := Files.Old (full);
+         END;
+      END;
    END;
-   Str.Append (full, name);
-   Str.AppendC (full, '.odc');
-   RETURN Files.OpenBuffered (s, full, Files.ReadMode, FALSE, FALSE)
+   IF f # NIL THEN Files.Set(r, f, 0) END;
+   RETURN f # NIL
 END OpenStream;
 
 PROCEDURE LoadImports (m: Module);
@@ -271,7 +288,7 @@ VAR sym: INTEGER;
    VAR
       ref: ModuleRef;
       err: BOOLEAN;
-      sub,name: Files.FileName;
+      sub,name: FileName;
    BEGIN
       err := FALSE;
       WHILE (sym = ident) & ~err DO
@@ -390,7 +407,7 @@ PROCEDURE InitScanner ();
 
    PROCEDURE AddKeyword (sym: INTEGER; id: ARRAY OF CHAR);
    BEGIN
-      keyTab [numKW].sym := sym; COPY (id, keyTab [numKW].id);
+      keyTab [numKW].sym := sym; keyTab [numKW].id := id$;
       INC (numKW)
    END AddKeyword;
 
@@ -434,9 +451,9 @@ VAR i: INTEGER; m: Module; tmp: ModuleRef;
 
 BEGIN
    InitScanner;
-   i := 0; NEW (first); first.name [0] := 0X;
-   WHILE i < LEN (CmdLine.cmdParams^) DO
-      tmp := EnlistModule (CmdLine.cmdParams [i]^);
+   i := 1; NEW (first); first.name [0] := 0X;
+   WHILE i < CmdLine.argc DO
+			CmdLine.Get(i, arg); tmp := EnlistModule (arg);
       INC (i)
    END;
    m := first.next;
@@ -469,14 +486,14 @@ END DumpList;
 *)
 
 BEGIN
-   Out.Open;
-   IF CmdLine.cmdParams # NIL THEN
+   IF CmdLine.argc # 1 THEN
+      Files.SetSearchPath(".");
       Out.String ('strict digraph G{');
       Out.Ln;
       OutputImports (TRUE);
       Out.String ('}');
       Out.Ln;
---      DumpList
+(*      DumpList *)
    ELSE
       Out.String('Usage: module1 [module2 ...]');
       Out.Ln
