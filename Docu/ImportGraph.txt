@@ -1,0 +1,20 @@
+ImportGraph is an application to be used in conjunction with the freeware
+GraphVis package (www.graphviz.org). ImportGraph parses a list of modules from
+the command line and outputs a GraphVis document depicting the import
+hierarchy. The document is sent to the stdout and can be redirected to a file.
+
+To avoid visual clutter the following node legend is used:
+ - red text: module imports SYSTEM;
+ - square: module imports Windows;
+ - no shape: ModuleName.ob2 not found (typically XDS libraries);
+ - ellipse: other modules.
+
+For example, the following batch code:
+ImportGraph.exe ImportGraph > graph.dot
+"c:\Program Files\Graphviz\bin\dot" -Tpng graph.dot > graph.png
+
+Produces graph.png image depicting the modules used by ImportGraph.
+
+For use with BlackBox the program must be executed in the BlackBox root folder.
+Example:
+"c:\Program Files\BlackBox\ImportGraph.exe" HostMenus > graph.dot

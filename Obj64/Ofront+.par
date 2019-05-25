@@ -1,1 +1,1 @@
--sC -88 BrowserCmd.Mod -m OCatCmd.Mod -m OfrontCmd.Mod -m
+-sC -88 BrowserCmd.Mod -m ImportGraph.Mod -m OCatCmd.Mod -m OfrontCmd.Mod -m

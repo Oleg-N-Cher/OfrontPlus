@@ -20,7 +20,7 @@ EXIT
 
 :ImportGraph
 IF NOT "%1"=="ImportGraph" GOTO OCat
-%CC% ImportGraph.c %lib% -o..\Bin64\ImportGraph.exe -ffunction-sections
+%CC% ImportGraph.c %lib% -o..\Bin64\graphviz.exe -ffunction-sections
 IF errorlevel 1 PAUSE
 EXIT
 
@@ -45,7 +45,7 @@ EXIT
 :BuildAll
 %CC% BrowserCmd.c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPC.c OfrontOPV.c %lib% -o..\Bin64\showdef.exe -ffunction-sections
 IF errorlevel 1 PAUSE
-%CC% ImportGraph.c %lib% -o..\Bin64\ImportGraph.exe -ffunction-sections
+%CC% ImportGraph.c %lib% -o..\Bin64\graphviz.exe -ffunction-sections
 IF errorlevel 1 PAUSE
 %CC% OCatCmd.c %lib% -o..\Bin64\ocat.exe -ffunction-sections
 IF errorlevel 1 PAUSE
