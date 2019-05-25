@@ -524,7 +524,9 @@ BEGIN
       Out.Ln;
 (*      DumpList *)
    ELSE
-      Out.String("Usage: module1 [module2 ...]");
+      Out.String("Usage: [-r] module1 [module2 ...]"); Out.Ln;
+      Out.String('  If "-r", then use marking to reduce the number of import links shown.'); Out.Ln;
+      Out.String('  E.g., given (A->B, B->C, A->C) do not display A->C.');
       Out.Ln
    END
 END ImportGraph.
