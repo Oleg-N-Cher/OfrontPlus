@@ -1,10 +1,11 @@
-MODULE ImportGraph; (*$MAIN*)
+MODULE ImportGraph;
 
 (* ------------------------------------------------------------------------
  * (c) 2008 - 2010 by Alexander Iljin
+ * 2019, adapted for Ofront+ by Oleg N. Cher
  * ------------------------------------------------------------------------ *)
 
-IMPORT Out := Console, CmdLine := Args, Files, Str := Strings;
+IMPORT Out := Console, CmdLine := Args, Files, Str := Strings, Platform;
 
 (** -----------------------------------------------------------------------
   * This console program outputs a module import graph starting from a given
@@ -221,6 +222,20 @@ BEGIN
    RETURN (name = 'SYSTEM') OR (name = 'COM') OR (sub = 'Win')
 END BlackListed;
 
+PROCEDURE OpenFile (path: ARRAY OF CHAR): Files.File;
+VAR
+   i: INTEGER;
+BEGIN
+   IF Platform.Unix THEN
+      i := 0;
+      WHILE (i < LEN(path)) & (path[i] # 0X) DO
+         IF path[i] = "\" THEN path[i] := "/" END;
+         INC(i);
+      END;
+   END;
+   RETURN Files.Old (path)
+END OpenFile;
+
 PROCEDURE OpenStream (VAR fname: ARRAY OF CHAR): BOOLEAN;
 (* Open the file fname in the global stream s for reading. File with the name fname is
  * looked for in the current folder and in some other folders relative to current.
@@ -230,13 +245,13 @@ VAR
    name, full: FileName;
 BEGIN
    name := fname$; Str.Append (".Mod", name);
-   f := Files.Old (name);
+   f := OpenFile (name);
    IF f = NIL THEN
       full := "Mod\"; Str.Append (name, full);
-      f := Files.Old (full);
+      f := OpenFile (full);
       IF f = NIL THEN
          full := "Lib\Mod\"; Str.Append (name, full);
-         f := Files.Old (full);
+         f := OpenFile (full);
          IF f = NIL THEN
             ExtractSubsystem (fname, full, name);
             IF full # '' THEN
@@ -246,7 +261,7 @@ BEGIN
             END;
             Str.Append (name, full);
             Str.Append ('.odc', full);
-            f := Files.Old (full);
+            f := OpenFile (full);
          END;
       END;
    END;
