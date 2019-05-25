@@ -81,7 +81,7 @@ END Read;
 PROCEDURE GetSym (VAR sym: INTEGER);
 
    PROCEDURE Comment;
-   (* The current ch upon entry must point to the '*' of the starting sequence. *)
+   (* The current ch upon entry must point to the "*" of the starting sequence. *)
    BEGIN
       Read;
       LOOP
@@ -141,29 +141,29 @@ PROCEDURE GetSym (VAR sym: INTEGER);
    END Ident;
 
 BEGIN
-   WHILE ~eot & (ch <= ' ') DO Read END;
+   WHILE ~eot & (ch <= " ") DO Read END;
    IF eot THEN
       sym := eof
    ELSE
       CASE ch OF
-      | 'A'..'Z', 'a'..'z':
+      | "A".."Z", "a".."z":
          Ident
-      | ':':
+      | ":":
          Read;
-         IF ch = '=' THEN Read; sym := becomes ELSE sym := colon END
-      | ';':
+         IF ch = "=" THEN Read; sym := becomes ELSE sym := colon END
+      | ";":
          Read; sym := semicolon
-      | ',':
+      | ",":
          Read; sym := comma
-      | '(':
+      | "(":
          Read;
-         IF ch = '*' THEN Comment; GetSym (sym) ELSE sym := lparen END
-      | '<':
+         IF ch = "*" THEN Comment; GetSym (sym) ELSE sym := lparen END
+      | "<":
          Read;
-         IF ch = '*' THEN CompDir; GetSym (sym) ELSE sym := less END
-      | '-':
+         IF ch = "*" THEN CompDir; GetSym (sym) ELSE sym := less END
+      | "-":
          Read;
-         IF ch = '-' THEN WingComment; GetSym (sym) ELSE sym := minus END
+         IF ch = "-" THEN WingComment; GetSym (sym) ELSE sym := minus END
       ELSE
          Read; sym := null
       END
@@ -197,16 +197,16 @@ VAR
    i: INTEGER; (* subsystem name end position *)
 BEGIN
    i := 0;
-   WHILE (ident [i] # 0X) & ('A' <= ident [i]) & (ident [i] <= 'Z') DO
+   WHILE (ident [i] # 0X) & ("A" <= ident [i]) & (ident [i] <= "Z") DO
       INC (i);
    END;
-   WHILE (ident [i] # 0X) & ('a' <= ident [i]) & (ident [i] <= 'z') DO
+   WHILE (ident [i] # 0X) & ("a" <= ident [i]) & (ident [i] <= "z") DO
       INC (i);
    END;
-   subsystem := '';
+   subsystem := "";
    IF ident [i] # 0X THEN
 			Str.Extract (ident, 0, i, subsystem);
-      name := '';
+      name := "";
       Str.Extract (ident, i, LEN (name), name);
    ELSE
       name := ident$;
@@ -219,7 +219,7 @@ VAR
    sub, tmp: FileName;
 BEGIN
    ExtractSubsystem (id, sub, tmp);
-   RETURN (name = 'SYSTEM') OR (name = 'COM') OR (sub = 'Win')
+   RETURN (name = "SYSTEM") OR (name = "COM") OR (sub = "Win")
 END BlackListed;
 
 PROCEDURE OpenFile (path: ARRAY OF CHAR): Files.File;
@@ -254,13 +254,13 @@ BEGIN
          f := OpenFile (full);
          IF f = NIL THEN
             ExtractSubsystem (fname, full, name);
-            IF full # '' THEN
-               Str.Append ('\Mod\', full);
+            IF full # "" THEN
+               Str.Append ("\Mod\", full);
             ELSE (* no subsystem part found => "System" subsystem *)
-               full := 'System\Mod\';
+               full := "System\Mod\";
             END;
             Str.Append (name, full);
-            Str.Append ('.odc', full);
+            Str.Append (".odc", full);
             f := OpenFile (full);
          END;
       END;
@@ -327,16 +327,16 @@ VAR sym: INTEGER;
          END;
          IF ~err THEN
             IF (sym = comma) OR (sym = semicolon) THEN
-               IF id = 'SYSTEM' THEN
+               IF id = "SYSTEM" THEN
                   INCL (m.attr, mSystem);
-               ELSIF (id = 'KERNEL32') OR (id = 'GDI32') OR (id = 'USER32')
-                  OR (id = 'SHELL32') OR (id = 'COMDLG32') OR (id = 'ADVAPI32')
-                  OR (id = 'COM')
+               ELSIF (id = "KERNEL32") OR (id = "GDI32") OR (id = "USER32")
+                  OR (id = "SHELL32") OR (id = "COMDLG32") OR (id = "ADVAPI32")
+                  OR (id = "COM")
                THEN
                   INCL (m.attr, mWindows);
                ELSE
                   ExtractSubsystem (id, sub, name);
-                  IF sub = 'Win' THEN
+                  IF sub = "Win" THEN
                      INCL (m.attr, mWindows);
                   END;
                END;
@@ -375,17 +375,17 @@ VAR
 
    PROCEDURE OutputName (m: Module);
    BEGIN
-      Out.String ('"');
+      Out.Char ('"');
       Out.String (m.name);
-      Out.String ('"');
+      Out.Char ('"');
    END OutputName;
 
    PROCEDURE OutputLink (from, to: Module);
    BEGIN
       OutputName (from);
-      Out.String ('->');
+      Out.String ("->");
       OutputName (to);
-      Out.String ('; ');
+      Out.String ("; ");
    END OutputLink;
 
 BEGIN
@@ -395,13 +395,13 @@ BEGIN
          IF mSystem IN m.attr THEN
             (* highlight modules importing SYSTEM *)
             OutputName (m);
-            Out.String (' [fontcolor = red]; ');
+            Out.String (" [fontcolor = red]; ");
             res := TRUE;
          END;
          IF mWindows IN m.attr THEN
             (* shape modules importing Windows *)
             OutputName (m);
-            Out.String (' [shape = box]; ');
+            Out.String (" [shape = box]; ");
             res := TRUE;
          END;
          ref := m.imp;
@@ -424,7 +424,7 @@ BEGIN
    ELSE
       res := TRUE;
       Out.String (m.name);
-      Out.String (' [shape = plaintext];')
+      Out.String (" [shape = plaintext];")
    END;
    RETURN res
 END OutputData;
@@ -439,8 +439,8 @@ PROCEDURE InitScanner ();
 
 BEGIN
    numKW := 0;
-   AddKeyword (module, 'MODULE');
-   AddKeyword (import, 'IMPORT')
+   AddKeyword (module, "MODULE");
+   AddKeyword (import, "IMPORT")
 END InitScanner;
 
 PROCEDURE OutputImports (reduced: BOOLEAN);
@@ -479,7 +479,10 @@ BEGIN
    InitScanner;
    i := 1; NEW (first); first.name [0] := 0X;
    WHILE i < CmdLine.argc DO
-			CmdLine.Get(i, arg); tmp := EnlistModule (arg);
+			CmdLine.Get(i, arg);
+			IF arg = "-r" THEN reduced := ~reduced;
+			ELSE tmp := EnlistModule (arg);
+			END;
       INC (i)
    END;
    m := first.next;
@@ -505,7 +508,7 @@ VAR m: Module;
 BEGIN
    m := first;
    WHILE m # NIL DO
-      Out.String (m.name); Out.String (';');
+      Out.String (m.name); Out.Char (";");
       m := m.next
    END
 END DumpList;
@@ -514,14 +517,14 @@ END DumpList;
 BEGIN
    IF CmdLine.argc # 1 THEN
       Files.SetSearchPath(".");
-      Out.String ('strict digraph G{');
+      Out.String ("strict digraph G{");
       Out.Ln;
-      OutputImports (TRUE);
-      Out.String ('}');
+      OutputImports (FALSE);
+      Out.Char ("}");
       Out.Ln;
 (*      DumpList *)
    ELSE
-      Out.String('Usage: module1 [module2 ...]');
+      Out.String("Usage: module1 [module2 ...]");
       Out.Ln
    END
 END ImportGraph.

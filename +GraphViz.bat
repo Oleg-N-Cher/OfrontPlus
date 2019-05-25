@@ -1,7 +1,7 @@
 @ECHO OFF
 SET GraphViz=%XDev%\Bin\graphviz
 
-Bin\graphviz.exe Platform.Windows OfrontOPM.cmdln OfrontCmd > OfrontPlus.dot
+Bin\graphviz.exe -r Platform.Windows OfrontOPM.cmdln OfrontCmd > OfrontPlus.dot
 "%GraphViz%\bin\dot" -Tpng OfrontPlus.dot > OfrontPlus.png
 
 ::"%GraphViz%\bin\fdp" -Tpng OfrontPlus.dot > OfrontPlus.png
