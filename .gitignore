@@ -1,5 +1,6 @@
 Arch/
 Code/
+Bin/graphviz.exe
 Bin/ocat.exe
 Bin/showdef.exe
 Lib/Obj/
@@ -61,8 +62,10 @@ Linux_x64/showdef
 Linux_x64/Lib/*.a
 Obj/*.c
 Obj/*.h
+Obj/*.o
 Obj64/*.c
 Obj64/*.h
+Obj64/*.o
 Examples/Obj/*.a
 Examples/Obj/*.c
 Examples/Obj/*.h
