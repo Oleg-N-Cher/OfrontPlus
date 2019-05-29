@@ -275,7 +275,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		typ := dcl^.typ; prev := typ;
 		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & (typ^.form # NoTyp)
-			& ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr)) DO
+			& ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & ~ODD(typ^.BaseTyp^.sysflag)) DO
 			prev := typ; typ := typ^.BaseTyp
 		END ;
 		obj := typ^.strobj;
@@ -294,7 +294,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
-		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) THEN
+		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & ~ODD(typ^.BaseTyp^.sysflag) THEN
 			typ := typ^.BaseTyp^.BaseTyp; nofdims := 1;
 			WHILE typ^.comp = DynArr DO INC(nofdims); typ := typ^.BaseTyp END ;
 			OPM.WriteString(Struct); BegBlk;
