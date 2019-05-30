@@ -121,6 +121,7 @@ insertMarkers	Insert Markers
 133	system flag doesn't match forward declaration
 135	SYSTEM not imported
 136	LEN applied to untagged array
+137	unknown array length
 138	NEW not allowed for untagged structures
 139	test applied to untagged record
 140	operand type inapplicable to DIV0

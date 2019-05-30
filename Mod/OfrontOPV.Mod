@@ -581,6 +581,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			ELSIF (comp = Record) & (mode = VarPar) THEN
 				IF ~ODD(typ^.sysflag) THEN OPM.WriteString(", "); TypeOf(n) END
 			ELSIF (comp = DynArr) & ~ODD(typ^.sysflag) THEN
+				IF ODD(n^.typ^.sysflag) & (n^.typ^.comp # Array) THEN OPM.err(137) END;
 				IF n^.class = Nconst THEN (* ap is string constant *)
 					OPM.WriteString(Comma);
 					IF OPM.IndexSize > 4 THEN OPM.WriteString("(LONGINT)") END;
