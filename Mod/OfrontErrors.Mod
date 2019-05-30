@@ -142,6 +142,7 @@ BEGIN
   | 133: Log.String("system flag doesn't match forward declaration")
   | 135: Log.String("SYSTEM not imported")
   | 136: Log.String("LEN applied to untagged array")
+  | 137: Log.String("unknown array length")
   | 138: Log.String("NEW not allowed for untagged structures")
   | 139: Log.String("test applied to untagged record")
   | 140: Log.String("operand type inapplicable to DIV0")
