@@ -284,8 +284,8 @@
 	END Short2Size;
 
 	PROCEDURE NewShortConst*(uintval: LONGINT; size: INTEGER): OPT.Node;
-		(*  создание новой знаковой константы длиной size байтов, по соответствующей
-		(кодируемой той же комбинацией битов)  беззнаковой константе uintval *)
+		(* создание новой знаковой константы длиной size байтов по соответствующей
+		(кодируемой той же комбинацией битов) беззнаковой константе uintval *)
 	VAR x: OPT.Node;
 	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
@@ -573,9 +573,7 @@
 					ELSE z^.typ := OPT.linttyp
 					END
 			| unsgn: (* (unsigned) для div *)
-					IF f IN intSet THEN  z := NewOp(op, typ, z)
-					ELSE err(127)
-					END
+					IF f IN intSet THEN z := NewOp(op, typ, z) ELSE err(127) END
 			END
 		END;
 		x := z

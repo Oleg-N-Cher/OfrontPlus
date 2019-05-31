@@ -1034,7 +1034,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF B^.class = Nconst THEN Nmax := B^.conval^.intval
 											ELSE Nmax := OPB.Max(id^.typ^.form)
 				END;
-				L := OPM.LongCardDiv(Nmax - Nmin, Step) + 1;
+				L := OPM.UDiv(Nmax - Nmin, Step) + 1;
 			ELSE
 				IF A^.class = Nconst THEN Nmax := A^.conval^.intval
 											ELSE Nmax := OPB.Max(id^.typ^.form)
@@ -1042,7 +1042,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF B^.class = Nconst THEN Nmin:= B^.conval^.intval
 											ELSE Nmin:= OPB.Min(id^.typ^.form)
 				END;
-				L := OPM.LongCardDiv(Nmax - Nmin, -Step) + 1
+				L := OPM.UDiv(Nmax - Nmin, -Step) + 1
 			END;
 			e := (A^.class = Nconst) & (B^.class = Nconst);
 			(* если обе константы, то можно вычислить точно *)
@@ -1113,7 +1113,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			где cond задается как apar^.subcl *)
 		END FindCond;
 
-		PROCEDURE ForImproved; (* Implemented by Oleg Komlev (Saferoll) *)
+		PROCEDURE ForImproved;	(* Concept and implementation by Oleg Komlev *)
 		BEGIN (* построение синтаксического дерева для FOR *)
 			OPS.Get(sym);	(* взять символ после FOR *)
 			IF sym = ident THEN qualident(id);	(* если это идентификатор, уточнить его *)
@@ -1353,7 +1353,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END ;
 				OPB.Construct(Nrepeat, x, y)
 			ELSIF sym = for THEN
-				IF OPM.Lang # "3" THEN ForOriginal ELSE ForImproved END
+				IF (OPM.Lang = "3") = (OPM.rightfor IN OPM.opt) THEN ForOriginal ELSE ForImproved END
 			ELSIF sym = loop THEN
 				OPS.Get(sym); INC(LoopLevel); StatSeq(x); DEC(LoopLevel);
 				OPB.Construct(Nloop, x, NIL); CheckSym(end); pos := OPM.errpos

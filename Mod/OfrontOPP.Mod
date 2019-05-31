@@ -1,4 +1,4 @@
-MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
+﻿MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 
 (* changes
   	2015-10-07 jt, check for IMPORT SYSTEM added in CheckSysFlag
@@ -26,6 +26,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
 		module = 65; out = 66; dollar = 67; eof = 68;
+		unsgn = 40; (* псевдооперация unsigned для div *)
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -78,6 +79,13 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	PROCEDURE^ Type(VAR typ, banned: OPT.Struct);
 	PROCEDURE^ Expression(VAR x: OPT.Node);
 	PROCEDURE^ Block(VAR procdec, statseq: OPT.Node);
+
+	PROCEDURE Sign(n: LONGINT): INTEGER;
+	BEGIN
+		IF n = 0 THEN RETURN 0 END;
+		IF n > 0 THEN RETURN 1 END;
+		RETURN -1
+	END Sign;
 
 	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
@@ -139,7 +147,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 					IF (sf < 0) OR (sf > OPM.MaxSysFlag) THEN err(220); sf := 0 END
 				ELSE err(51); sf := 0
 				END;
-				sysflag := SHORT(SHORT(sf));
+				sysflag := SHORT(SHORT(sf))
 			END;
 			CheckSym(rbrak)
 		ELSE sysflag := default
@@ -818,7 +826,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 	END CaseLabelList;
 
 	PROCEDURE StatSeq(VAR stat: OPT.Node);
-		VAR fpar, id, t, obj: OPT.Object; idtyp: OPT.Struct; e: BOOLEAN;
+		VAR fpar, id, t, obj: OPT.Object; idtyp: OPT.Struct; e: BOOLEAN; L: LONGINT;
 				s, x, y, z, apar, last, lastif: OPT.Node; pos: INTEGER; name: OPS.Name;
 
 		PROCEDURE CasePart(VAR x: OPT.Node);
@@ -863,6 +871,333 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 			pos := OPM.errpos
 		END CheckBool;
 
+		PROCEDURE ForOriginal;
+		BEGIN
+			OPS.Get(sym);
+			IF sym = ident THEN qualident(id);
+				IF ~(id^.typ^.form IN intSet) THEN err(68) END ;
+				CheckSym(becomes); Expression(y); pos := OPM.errpos;
+				x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
+				CheckSym(to); Expression(y); pos := OPM.errpos;
+				IF y^.class # Nconst THEN
+					name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
+					t^.mode := Var; t^.typ := x^.left^.typ;
+					obj := OPT.topScope^.scope;
+					IF obj = NIL THEN OPT.topScope^.scope := t
+					ELSE
+						WHILE obj^.link # NIL DO obj := obj^.link END;
+						obj^.link := t
+					END;
+					z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
+					y := OPB.NewLeaf(t)
+				ELSIF (y^.typ^.form IN {Undef, Bool, Char}) THEN err(113)
+				ELSE OPB.CheckAssign(x^.left^.typ, y)
+				END;
+				OPB.Link(stat, last, x);
+				IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
+				pos := OPM.errpos; x := OPB.NewLeaf(id);
+				IF z^.conval^.intval > 0 THEN OPB.Op(leq, x, y)
+				ELSIF z^.conval^.intval < 0 THEN OPB.Op(geq, x, y)
+				ELSE err(63); OPB.Op(geq, x, y)
+				END ;
+				CheckSym(do); StatSeq(s);
+				y := OPB.NewLeaf(id); OPB.StPar1(y, z, incfn); SetPos(y);
+				IF s = NIL THEN s := y
+				ELSE z := s;
+					WHILE z^.link # NIL DO z := z^.link END ;
+					z^.link := y
+				END ;
+				CheckSym(end); OPB.Construct(Nwhile, x, s)
+			ELSE err(ident)
+			END
+		END ForOriginal;
+
+		PROCEDURE CalcNumIters(A, B: OPT.Node; Step: LONGINT);
+		(* Вычисляем количество итераций цикла FOR. Результат:
+		e=TRUE, если L = точное количество итераций
+		e=FALSE, если L -верхняя граница кол-ва итераций (количество итераций <=L) *)
+			VAR Nmin, Nmax: LONGINT;
+		BEGIN
+			IF Step>0 THEN
+				IF A^.class = Nconst THEN Nmin := A^.conval^.intval
+											ELSE Nmin := OPB.Min(id^.typ^.form)
+				END;
+				IF B^.class = Nconst THEN Nmax := B^.conval^.intval
+											ELSE Nmax := OPB.Max(id^.typ^.form)
+				END;
+				L := OPM.UDiv(Nmax - Nmin, Step) + 1;
+			ELSE
+				IF A^.class = Nconst THEN Nmax := A^.conval^.intval
+											ELSE Nmax := OPB.Max(id^.typ^.form)
+				END;
+				IF B^.class = Nconst THEN Nmin:= B^.conval^.intval
+											ELSE Nmin:= OPB.Min(id^.typ^.form)
+				END;
+				L := OPM.UDiv(Nmax - Nmin, -Step) + 1
+			END;
+			e := (A^.class = Nconst) & (B^.class = Nconst);
+			(* если обе константы, то можно вычислить точно *)
+		END CalcNumIters;
+
+		PROCEDURE CalcNlast(A, B: OPT.Node; Step: LONGINT): LONGINT;
+		(* Вычисляем значение переменной цикла на последней итерации *)
+		BEGIN
+			ASSERT( (A^.class = Nconst) & (B^.class = Nconst) );
+			RETURN A^.conval^.intval + (L-1) * Step
+		END CalcNlast;
+
+		PROCEDURE FindCond(A, B: OPT.Node; Step: LONGINT);
+		(* найти оптимальное условие id?0 для замены цикла FOR
+		циклом REPEAT UNTIL id?0 *)
+		VAR Nlast: LONGINT; sgnPostLast, sgnPredLast: INTEGER; cond: SHORTINT;
+		BEGIN
+			cond := null; (* пока условие не нашли *)
+			Nlast := CalcNlast(A, B, Step); (* последнее за границы типа не выйдет *)
+			(* в отличие от последующего или предыдущего *)
+			sgnPostLast := Sign(OPB.Short2Size(Nlast + Step, id^.typ^.size));
+			sgnPredLast := Sign(OPB.Short2Size(Nlast - Step, id^.typ^.size));
+			IF Nlast = 0 THEN cond := -eql
+			ELSIF ( Sign(Nlast) = -Sign(Step) ) & (Sign(Nlast) # sgnPostLast )THEN
+				CASE sgnPostLast OF
+				|-1: cond := lss;
+				| 0: cond := eql;
+				| 1: cond := geq;
+				END
+			ELSIF Sign(Nlast) = Sign(Step) THEN
+				IF (Sign(Nlast) # sgnPostLast) & (Sign(A^.conval^.intval + Step) # sgnPostLast) THEN
+					(* тут можно бы воспользоваться флажком переполнения , если бы из С был доступ *)
+					CASE sgnPostLast OF
+					|-1: cond := lss;
+					| 0: cond := eql;
+					| 1: IF A^.conval^.intval + Step = 0 THEN cond := gtr ELSE cond := geq END;
+					END;
+				END
+			END;
+
+			IF ((cond = null) OR (cond = gtr)) & (Sign(Nlast) = Sign(Step)) &
+				 (sgnPredLast # Sign(Nlast)) THEN
+					CASE Sign(Nlast) OF
+					|-1: cond := -lss;
+					| 0: cond := -eql;
+					| 1: IF sgnPredLast = 0 THEN cond := -gtr ELSE cond := -geq END;
+					END
+				END;
+			IF cond # null THEN
+			(* вспомогательная переменная не нужна *)
+				t := id;
+				apar := OPB.NewLeaf(id);
+				IF cond < 0 THEN
+					 idtyp := NIL;
+					 OPB.Assign(apar, OPB.NewIntConst(0))
+				ELSE
+					idtyp := id^.typ;
+					ASSERT(idtyp # NIL);
+					 OPB.Assign(apar, z)
+				 END;
+				 apar^.subcl := SHORT(SHORT(ABS(cond)))
+			ELSE
+				t := NIL; (* нужна вспомогательная переменная *)
+			END;
+			(* если t=id то можно обойтись без вспомогательной переменной, применив
+			либо REPEAT INC(id,Step); тело цикла; UNTIL id cond 0	(при idtyp=NIL)
+			либо REPEAT тело цикла; INC(id,Step) UNTIL id cond 0	(при idtyp # NIL)
+			где cond задается как apar^.subcl *)
+		END FindCond;
+
+		PROCEDURE ForImproved; (* Concept and implementation by Oleg Komlev *)
+		BEGIN (* построение синтаксического дерева для FOR *)
+			OPS.Get(sym);	(* взять символ после FOR *)
+			IF sym = ident THEN qualident(id);	(* если это идентификатор, уточнить его *)
+				IF id^.typ^.form IN intSet THEN	(* он должен быть целого типа*)
+					CheckSym(becomes); Expression(apar); pos := OPM.errpos;	(* потом д б  «:=  А » *)
+					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
+					(* apar = "A" *)
+					CheckSym(to); Expression(y); pos := OPM.errpos;	(* далее д б ТО выражение (В) *)
+					IF sym = by THEN	(* если далее задан шаг BY Step,*)
+						OPS.Get(sym); ConstExpression(z)	(* то читаем его как константное выражение*)
+					ELSE
+						z := OPB.NewIntConst(1)	(*иначе берем константу 1*)
+					END ;
+
+					(* x = "id:=A"; y=B; z=Step; apar="A" *)
+					obj := NIL;	(* по умолчанию IF нужен*)
+					IF (y^.class = Nconst) THEN	(* если В - константа *)
+						IF (x^.left^.typ^.form = Byte) & (( y^.conval^.intval < OPB.Min(Byte)) OR ( y^.conval^.intval > OPB.Max(Byte)))
+						 OR (x^.left^.typ^.form # Byte)&((y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form)) THEN
+							err(113); y := OPB.NewIntConst(0) (* то это д б константа совместимого типа *)
+						END;
+						IF apar^.class = Nconst THEN (* А и В - константы*)
+							IF (z^.conval^.intval > 0) & (apar^.conval^.intval <= y^.conval^.intval ) OR
+								(z^.conval^.intval < 0) & (apar^.conval^.intval >= y^.conval^.intval ) THEN
+									obj := id; (* условие IF не нужно*)
+							ELSE
+									id := NIL (* цикл не выполнится ни разу *)
+							END
+						ELSE	(* В - константа, А -нет*)
+								IF (z^.conval^.intval > 0) & (y^.conval^.intval = OPB.Max(id^.typ^.form)) OR
+								(z^.conval^.intval < 0) & (y^.conval^.intval = OPB.Min(id^.typ^.form)) THEN
+									obj := id; (* условие IF не нужно*)
+								END
+						END
+					ELSE
+						IF apar^.class = Nconst THEN	(* A - константа, B -нет*)
+							IF (z^.conval^.intval > 0) & (apar^.conval^.intval = OPB.Min(id^.typ^.form)) OR
+							(z^.conval^.intval < 0) & (apar^.conval^.intval = OPB.Max(id^.typ^.form)) THEN
+								obj := id; (* условие IF не нужно*)
+							END
+						END
+					END;
+
+					IF id # NIL THEN
+						CalcNumIters(apar, y, z^.conval^.intval) ;
+						IF y^.class # Nconst THEN SetPos(y) END (* запомнить позицию В ??? *)
+					END;
+					pos := OPM.errpos;	(* теперь указатель ошибок указывает на Step*)
+					IF (z^.conval^.intval = 0) OR (z^.typ^.form IN {Undef, Bool, Char}) OR (z^.typ^.form > x^.left^.typ^.form) THEN
+						IF (x^.left^.typ^.form # Byte) OR (z^.conval^.intval < OPB.Min(Byte)) OR ( z^.conval^.intval > OPB.Max(Byte))
+						THEN err(63); z := OPB.NewIntConst(1)
+						END;
+					END;
+
+					(* id = NIL - цикл не выполнится ни разу *)
+					(* иначе: x = "id:=A"; z=Step; apar="A"; y = "B" *)
+					(* если e=TRUE, то L = кол-во итераций иначе L>=кол-во итераций *)
+					IF id # NIL THEN
+						IF L # 1 THEN (* попытаться обойтись без вспомогательной переменной*)
+							IF e THEN
+								FindCond(apar, y, z^.conval^.intval);
+							ELSE
+								(* если точно не подсчитать, то нужна вспомогательная переменная
+								хотя в некоторых случаях можно и тут обойтись без нее*)
+								IF z^.conval^.intval = OPB.Min(id^.typ^.form) THEN
+									t := id; (* вспомогательная переменная не нужна *)
+									idtyp := id^.typ; (* инкремент в конце цикла *)
+									apar := OPB.NewLeaf(id);
+									OPB.Assign(apar, z);
+									apar^.subcl := geq (* условие id>=0 *)
+								ELSE
+									t := NIL; (* нужна вспомогательная переменная *)
+								END
+							END
+						END;
+						IF t # id THEN (* заводим вспомогательную переменную*)
+							name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
+							t^.mode := Var; t^.typ := x^.left^.typ;
+							fpar := OPT.topScope^.scope;
+							IF fpar = NIL THEN OPT.topScope^.scope := t
+							ELSE
+								WHILE fpar^.link # NIL DO fpar := fpar^.link END ;
+								fpar^.link := t
+							END ;
+							apar := OPB.NewLeaf(t);
+							OPB.Assign(apar, OPB.NewIntConst(-1));
+							apar^.subcl := eql;	(* условие t=0 *)
+						END;
+
+						IF (t = id) & (idtyp = NIL) THEN	(* а вот тут возможен выход константы за границы типа,
+						поэтому свернем ее *)
+							x^.right := OPB.NewShortConst(x^.right^.conval^.intval - z^.conval^.intval, id^.typ^.size);
+						END;
+						OPB.Link(stat, last, x); x := NIL;	(* добавим в дерево id := A или id := A -Step *)
+
+						IF (t # id) & (L # 1) THEN (* строим t:= колво итераций *)
+							IF e THEN
+								s := OPB.NewShortConst(L, id^.typ^.size)
+							ELSE
+								IF (obj = NIL) & ( y^.class # Nconst) THEN (* нужно t := B*)
+									pos := SHORT(y^.conval^.intval); (* восстановим позицию *)
+									x := OPB.NewLeaf(t); OPB.Assign(x, y); SetPos(x); (* t:=B *)
+									OPB.Link(stat, last, x); (* добавим в дерево t:= B *)
+									y := x;
+								END;
+								pos := OPM.errpos;
+								x := OPB.NewLeaf(id);
+								IF y^.class = Nconst	THEN s := OPB.NewIntConst(y^.conval^.intval)
+								ELSIF y^.class = Nassign THEN s := OPB.NewLeaf(t)
+								ELSE s := y
+								END;
+								IF z^.conval^.intval > 0 THEN	(* подготовим выражение "кол-во повторений" *)
+									OPB.Op(minus, s, x); (* B-x *)
+									OPB.MOp(unsgn, s);
+									OPB.Op(div, s, OPB.NewIntConst( z^.conval^.intval));	(* (B-x) div Step *)
+									OPB.Op(plus, s, OPB.NewIntConst(1));	(* (B-x) div Step +1 *)
+								ELSE	(* в зависимости от знака Step*)
+									OPB.Op(minus, x, s); (* x-B *)
+									OPB.MOp(unsgn, x);
+									OPB.Op(div, x, OPB.NewIntConst( -z^.conval^.intval));	(* (x-B) div Step *)
+									OPB.Op(plus, x, OPB.NewIntConst(1));	(* (x-B) div Step +1 *)
+									s := x;
+								END;
+							END;
+							x := OPB.NewLeaf(t); OPB.Assign(x, s); SetPos(x);(* строим узел х=«t:= колво итераций*)
+						ELSE	(* фиктивный узел id=0 *)
+							x := OPB.NewLeaf(id); OPB.Assign(x, OPB.NewIntConst(0)); SetPos(x);
+						END
+					ELSE x := NIL  (* от цикла не остается ничего *)
+					END; (* id # NIL   *)
+
+					CheckSym(do); StatSeq(s); CheckSym(end);
+
+					IF id # NIL THEN
+						(* х=«t:= колво итераций; z=Step; apar="A"; y = "t := B"(или просто "В"); s="тело цикла" *)
+						IF (t = id) & (idtyp = NIL) THEN
+							x^.link := s;
+							s := OPB.NewLeaf(id); OPB.StPar1(s, z, incfn); SetPos(s);	(* s= "INC(id,Step)" *)
+							IF x^.link # NIL THEN s^.link := x^.link; x^.link := NIL END;
+						END;
+						(* s="INC(id,Step)";тело цикла" *)
+
+						IF L # 1 THEN
+							(* строим спецусловие для ForUntil: y=«id := z» или «id := 0» *)
+							SetPos(apar);
+							OPB.Construct(Nrepeat, s, apar); (* постоили REPEAT UNTIL*)
+							SetPos(s);
+							IF t # id THEN (* нужен инкремент id*)
+								apar := OPB.NewLeaf(id); OPB.StPar1(apar, z, incfn);
+								SetPos(apar);	(* apar= "INC(id,Step)" *)
+								x^.link := apar;
+
+								apar := s^.left; (* тело цикла*)
+								IF apar = NIL THEN s^.left := x^.link
+								ELSE
+									WHILE apar^.link # NIL DO apar := apar^.link END ;
+									(* apar - последний оператор в теле цикла*)
+									apar^.link := x^.link;
+								END;
+								x^.link := NIL;
+							END;
+
+							(* х="t:= колво итераций"; z=Step; y = "t:= B" ( "B") ; s="REPAT... UNTIL" *)
+							IF t # id THEN x^.link := s;	(* х="t:= колво итераций; REPAT... UNTIL" *)
+										ELSE x := s
+							END;
+
+						ELSE
+							x := s;
+						END;
+
+						(* строим IF *)
+						IF obj = NIL	(* цикл может не исполниться ни разу*) THEN (* нужен IF *)
+							IF y^.class = Nassign THEN y := OPB.NewLeaf(t) END; (* присваивали t:=B*)
+							s := OPB.NewLeaf(id);
+							IF z^.conval^.intval > 0 THEN OPB.Op(leq,s,y)
+															ELSE OPB.Op(geq,s,y)
+							END;
+							OPB.Construct(Nif, s, x); SetPos(s); lastif := s;	(* строим IF id<=B THEN ...*)
+							OPB.Construct(Nifelse, s, NIL);						(* ветви ELSE нет*)
+							OPB.OptIf(s);
+							x := s;
+						END;
+						pos := OPM.errpos;
+					ELSE
+						x := NIL;	(* от цикла не остается ничего *)
+					END; (* id # NIL*)
+				ELSE err(68); sym := while;  (* id не целый, обработаем блок как  будто WHILE *)
+				END;
+			ELSE err(ident)
+			END
+		END ForImproved;
+	
 	BEGIN stat := NIL; last := NIL; INC(ReturnLevel);
 		LOOP x := NIL;
 			IF sym < ident THEN err(14);
@@ -909,43 +1244,7 @@ MODULE OfrontOPP;	(* NW, RC 6.3.89 / 10.2.94 *)	(* object model 4.12.93 *)
 				END ;
 				OPB.Construct(Nrepeat, x, y)
 			ELSIF sym = for THEN
-				OPS.Get(sym);
-				IF sym = ident THEN qualident(id);
-					IF ~(id^.typ^.form IN intSet) THEN err(68) END ;
-					CheckSym(becomes); Expression(y); pos := OPM.errpos;
-					x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
-					CheckSym(to); Expression(y); pos := OPM.errpos;
-					IF y^.class # Nconst THEN
-						name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
-						t^.mode := Var; t^.typ := x^.left^.typ;
-						obj := OPT.topScope^.scope;
-						IF obj = NIL THEN OPT.topScope^.scope := t
-						ELSE
-							WHILE obj^.link # NIL DO obj := obj^.link END;
-							obj^.link := t
-						END;
-						z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
-						y := OPB.NewLeaf(t)
-					ELSIF (y^.typ^.form IN {Undef, Bool, Char}) THEN err(113)
-					ELSE OPB.CheckAssign(x^.left^.typ, y)
-					END;
-					OPB.Link(stat, last, x);
-					IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
-					pos := OPM.errpos; x := OPB.NewLeaf(id);
-					IF z^.conval^.intval > 0 THEN OPB.Op(leq, x, y)
-					ELSIF z^.conval^.intval < 0 THEN OPB.Op(geq, x, y)
-					ELSE err(63); OPB.Op(geq, x, y)
-					END ;
-					CheckSym(do); StatSeq(s);
-					y := OPB.NewLeaf(id); OPB.StPar1(y, z, incfn); SetPos(y);
-					IF s = NIL THEN s := y
-					ELSE z := s;
-						WHILE z^.link # NIL DO z := z^.link END ;
-						z^.link := y
-					END ;
-					CheckSym(end); OPB.Construct(Nwhile, x, s)
-				ELSE err(ident)
-				END
+				IF (OPM.Lang = "3") = (OPM.rightfor IN OPM.opt) THEN ForOriginal ELSE ForImproved END
 			ELSIF sym = loop THEN
 				OPS.Get(sym); INC(LoopLevel); StatSeq(x); DEC(LoopLevel);
 				OPB.Construct(Nloop, x, NIL); CheckSym(end); pos := OPM.errpos
