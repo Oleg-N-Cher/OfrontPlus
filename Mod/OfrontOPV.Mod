@@ -21,6 +21,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		lsl = 27; ror = 28; not = 35;
 		(*SYSTEM*)
 		lsh = 29; rot = 30; adr = 31; bit = 33; val = 34;
+		unsgn = 40; (* псевдооперация unsigned для div *)
 
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -257,7 +258,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					RETURN 9
 		|	Nmop:
 					CASE subclass OF
-						not, minus, adr, val, conv:
+						not, minus, adr, val, conv, unsgn:
 								RETURN 9
 					|	is, abs, cap, odd, bit:
 								RETURN 10
@@ -693,6 +694,14 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								END
 					|	bit:
 								OPM.WriteString(SetOfFunc); expr(l, MinPrec); OPM.Write(CloseParen)
+					|	unsgn:
+								CASE form OF
+								| Byte: OPM.WriteString("(__U_BYTE)")
+								| SInt: OPM.WriteString("(__U_SHORTINT)")
+								| Int: OPM.WriteString("(__U_INTEGER)")
+								ELSE OPM.WriteString("(__U_LONGINT)")
+								END;
+								OPM.Write("("); expr(l, MinPrec); OPM.Write(")")
 					ELSE OPM.err(200)
 					END
 		|	Ndop:
@@ -1015,6 +1024,31 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 	PROCEDURE stat(n: OPT.Node; outerProc: OPT.Object);
 		VAR proc: OPT.Object; saved: ExitInfo; l, r: OPT.Node;
+
+		(* строит условие цикла do...while() для оператора FOR *)
+		PROCEDURE ForUntil (id: OPT.Node; cond: SHORTINT; z: OPT.Node);
+		(* id-переменная цикла, cond - условие завершения цикла, z -шаг *)
+			VAR step: LONGINT;
+		BEGIN
+			step := z^.conval^.intval;
+			IF cond = neq THEN OPM.WriteString( "!" ) ; END;
+			IF step = 1 THEN OPM.WriteString( "++" ) ; OPC.CompleteIdent(id^.obj)
+			ELSIF step = -1 THEN OPM.WriteString( "--" ) ; OPC.CompleteIdent(id^.obj)
+			ELSIF step = 0 THEN OPC.CompleteIdent(id^.obj)  (* только сравнение, изменение переменной происходит в начале цикла *)
+			ELSE (* шаг не единичный *)
+				IF cond # eql THEN OPM.WriteString( "(" ) END;
+				OPC.CompleteIdent(id^.obj); OPM.WriteString( "+=" ); expr(z, MinPrec);
+				IF cond # eql THEN OPM.WriteString( ")" ) END;
+			END;
+			CASE cond OF (* условие ~cond *)
+			eql, neq :    (* empty *);
+			| lss  : OPM.WriteString(" >= 0");
+			| leq  : OPM.WriteString(" > 0");
+			| gtr   : OPM.WriteString(" <= 0");
+			| geq : OPM.WriteString(" < 0");
+			END;
+		END ForUntil;
+
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
 			OPM.errpos := SHORT(n^.conval^.intval);
@@ -1125,7 +1159,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						DEC(exit.level)
 			|	Nrepeat:
 						INC(exit.level); OPM.WriteString("do "); OPC.BegBlk; stat(n^.left, outerProc); OPC.EndBlk0;
-						OPM.WriteString(" while (!");  expr(n^.right, 9); OPM.Write(CloseParen);
+						IF n^.right^.class = Nassign THEN (* цикл FOR *)
+							OPM.WriteString(" while (");
+							ForUntil(n^.right^.left, n^.right^.subcl, n^.right^.right);
+							OPM.Write(")")
+						ELSE (* обычный REPEAT/UNTIL *)
+							OPM.WriteString(" while (!");  expr(n^.right, 9); OPM.Write(CloseParen)
+						END;
 						DEC(exit.level)
 			|	Nloop:
 						saved := exit; exit.level := 0; exit.label := -1;

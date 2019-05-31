@@ -25,6 +25,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		dynlib* = 11;	(* translate module to be a dynamic library *)
+		rightfor* = 12;	(* "right" FOR by Oleg Komlev *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -121,12 +122,12 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	(* ------------------------- System runtime ------------------------- *)
 
 	TYPE
-		LongCard  =  LONGINT;
+		LongCard = LONGINT;
 
-	PROCEDURE LongCardDiv*(c, m: LongCard): LongCard;
+	PROCEDURE UDiv*(x, y: LongCard): LongCard;
 	BEGIN
-		RETURN MultiCardinals.Div(c, m)
-	END LongCardDiv;
+		ASSERT(y # 0); RETURN MultiCardinals.Div(x, y)
+	END UDiv;
 
 	PROCEDURE Div0*(x, y: LONGINT): LONGINT;
 	BEGIN
@@ -308,6 +309,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "d": opt := opt / {dynlib}
+			| "f": opt := opt / {rightfor}
 			| "1", "3"(*undocumented*), "C", "7": Lang := SHORT(s[i])
 
 			(* target machine address size and alignment

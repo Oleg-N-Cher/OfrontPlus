@@ -1,4 +1,4 @@
-MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
+﻿MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 (* build parse tree *)
 
 (* changes
@@ -20,6 +20,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		lsl = 27; ror = 28; not = 35;
 		(*SYSTEM*)
 		lsh = 29; rot = 30; adr = 31; bit = 33; val = 34;
+		unsgn = 40;
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -202,6 +203,52 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
 		x^.conval^.intval := intval; SetIntType(x, FALSE); RETURN x
 	END NewIntConst;
+
+	PROCEDURE Min*(tf: BYTE): LONGINT;
+		VAR m: LONGINT;
+	BEGIN
+		CASE tf OF
+		| Byte: m := MIN(BYTE)
+		| SInt: m := MIN(SHORTINT)
+		| Int: m := MIN(INTEGER)
+		| LInt: m := MIN(LONGINT)
+		END;
+		RETURN m
+	END Min;
+
+	PROCEDURE Max*(tf: BYTE): LONGINT;
+		VAR m: LONGINT;
+	BEGIN
+		CASE tf OF
+		| Byte: m := MAX(BYTE)
+		| SInt: m := MAX(SHORTINT)
+		| Int: m := MAX(INTEGER)
+		| LInt: m := MAX(LONGINT)
+		END;
+		RETURN m
+	END Max;
+
+	PROCEDURE Short2Size*(n: LONGINT; size: INTEGER): LONGINT;
+    		(* укорачивает знаковую константу  до size байтов *)
+	BEGIN
+		CASE size OF
+			| 8:
+			| 4: n := n MOD 100000000L
+			| 2: n := n MOD 10000H
+			| 1: n := n MOD 100H
+		END;
+		RETURN n
+	END Short2Size;
+
+	PROCEDURE NewShortConst*(uintval: LONGINT; size: INTEGER): OPT.Node;
+		(* создание новой знаковой константы длиной size байтов по соответствующей
+		(кодируемой той же комбинацией битов) беззнаковой константе uintval *)
+	VAR x: OPT.Node;
+	BEGIN
+		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
+		x^.conval^.intval := Short2Size(uintval, size);
+		SetIntType(x, FALSE); RETURN x
+	END NewShortConst;
 
 	PROCEDURE NewRealConst*(realval: REAL; typ: OPT.Struct): OPT.Node;
 		VAR x: OPT.Node;
@@ -482,6 +529,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSIF OPM.AdrSize = 2 THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
 					END
+			| unsgn: (* (unsigned) для div *)
+					IF f IN intSet THEN z := NewOp(op, typ, z) ELSE err(127) END
 			END
 		END;
 		x := z
@@ -818,7 +867,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF g = Set THEN x^.conval^.setval := IntToSet(SHORT(x^.conval^.intval))
 				ELSIF g IN intSet THEN
 					IF f > g THEN SetIntType(x, TRUE);
-						IF x^.typ^.form > g THEN err(203); x^.conval^.intval := 1 END
+						IF (g # Byte)&(x^.typ^.form > g) OR
+						(g=Byte)&( (x^.conval^.intval < Min(Byte)) OR (x^.conval^.intval > Max(Byte)) )
+						THEN err(203); x^.conval^.intval := 1
+						END
 					END
 				ELSIF g IN realSet THEN x^.conval^.realval := x^.conval^.intval; x^.conval^.intval := OPM.ConstNotAlloc
 				ELSE (*g = Char*) k := x^.conval^.intval;
