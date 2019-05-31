@@ -1744,6 +1744,7 @@ avoid unnecessary intermediate variables in OFront
 	PROCEDURE DynArrParCheck(ftyp, atyp: OPT.Struct; fvarpar: BOOLEAN);
 		VAR f: SHORTINT;
 	BEGIN (* ftyp^.comp = DynArr *)
+		IF ~ODD(ftyp^.sysflag) & ODD(atyp^.sysflag) & (atyp^.comp # Array) THEN err(137) END;
 		f := atyp^.comp; ftyp := ftyp^.BaseTyp; atyp := atyp^.BaseTyp;
 		IF ftyp = OPT.bytetyp THEN (* ok, but ... *)
 			IF ~(f IN {Array, DynArr}) OR ~(atyp^.form IN {Byte..SInt}) THEN err(-301) END (* ... warning 301 *)
@@ -1759,7 +1760,7 @@ avoid unnecessary intermediate variables in OFront
 					END
 				ELSE err(66)
 				END
-			END ;
+			END
 		ELSE err(67)
 		END
 	END DynArrParCheck;
