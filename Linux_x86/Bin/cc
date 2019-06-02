@@ -15,6 +15,10 @@ if [ $? != 0 ]; then exit 1; fi
 $CC BrowserCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -lOfront -o../showdef
 if [ $? != 0 ]; then exit 1; fi
 
+## ImportGraph
+
+$CC ImportGraph.c -lOfront -o../graphviz
+
 ## OCat
 
 $CC OCatCmd.c -lOfront -o../ocat

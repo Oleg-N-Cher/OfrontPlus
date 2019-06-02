@@ -25,6 +25,7 @@ Linux_arm/Examples/HelloWorld
 Linux_arm/Examples/Mandelbrot*
 Linux_arm/Examples/MyDLLuse
 Linux_arm/Examples/TestHttp
+Linux_arm/graphviz
 Linux_arm/ocat
 Linux_arm/showdef
 Linux_arm/Lib/*.a
@@ -41,6 +42,7 @@ Linux_x86/Examples/HelloWorld
 Linux_x86/Examples/Mandelbrot*
 Linux_x86/Examples/MyDLLuse
 Linux_x86/Examples/TestHttp
+Linux_x86/graphviz
 Linux_x86/ocat
 Linux_x86/showdef
 Linux_x86/Lib/*.a
@@ -57,6 +59,7 @@ Linux_x64/Examples/HelloWorld
 Linux_x64/Examples/Mandelbrot*
 Linux_x64/Examples/MyDLLuse
 Linux_x64/Examples/TestHttp
+Linux_x64/graphviz
 Linux_x64/ocat
 Linux_x64/showdef
 Linux_x64/Lib/*.a
