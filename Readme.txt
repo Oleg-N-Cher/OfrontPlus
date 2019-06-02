@@ -33,7 +33,7 @@ Ofront+ differences from Ofront/voc
 
   10. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) & 0DX+0AX (Windows).
 
-  11. "Right FOR" available in Oberon-3 (concept and implementation by Oleg Komlev).
+  11. "Correct FOR" available in Oberon-3 (concept and implementation by Oleg Komlev).
 
   12. Constant arrays available in Oberon-3 (yet only in Ofront+ for BlackBox).
 
