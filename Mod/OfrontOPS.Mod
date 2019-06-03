@@ -284,7 +284,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						ELSIF name = "ELSIF" THEN s := elsif
 						ELSIF (OPM.Lang # "7") & (name = "EXIT") THEN s := exit
 						END
-			| "F": Identifier(s); IF name = "FOR" THEN s := for END
+			| "F": Identifier(s); IF (OPM.Lang # "1") & (name = "FOR") THEN s := for END
 			| "I": Identifier(s);
 						IF name = "IF" THEN s := if
 						ELSIF name = "IN" THEN s := in

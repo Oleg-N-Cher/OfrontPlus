@@ -250,26 +250,26 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.Ln;
 			Console.String(title); Console.Ln;
 			Console.String("Copyright (c) Software Templ OG, 1995-2019 & VEDAsoft Oberon Club, 2013-2019"); Console.Ln; Console.Ln;
-			Console.String("SYNOPSIS"); Console.Ln;
 			Console.String('  command = "'); Console.String(cmd); Console.String('" options {file options}.'); Console.Ln;
 			Console.String('  options = ["-" {option} ].'); Console.Ln;
-			Console.String('  option  = "m" | "s" | "e" | "i" | "r" | "x" | "a" | "p" | "t" | "d"'); Console.Ln;
-			Console.String('            [ "1" | "2" | "C" | "7" ]    [ "21" |"44" |"48" | "88" ].'); Console.Ln;
-			Console.String('    "m": generate a main module                                 (off)'); Console.Ln;
-			Console.String('    "s": allow changing the symbol file                         (off)'); Console.Ln;
-			Console.String('    "e": allow extending the module interface                   (off)'); Console.Ln;
-			Console.String('    "i": include header and body prefix files (Module.h0/.c0)   (off)'); Console.Ln;
-			Console.String('    "r": check value ranges                                     (off)'); Console.Ln;
-			Console.String('    "x": check array indices                                     (on)'); Console.Ln;
-			Console.String('    "a": check assertions                                        (on)'); Console.Ln;
-			Console.String('    "p": pointer initialization                                  (on)'); Console.Ln;
-			Console.String('    "t": check type guards                                       (on)'); Console.Ln;
-			Console.String('    "d": translate a module into dynamic library (.dll/.so)     (off)'); Console.Ln;
-			Console.String('    "1": Oberon  "2": Oberon-2  "C": Component Pascal  "7": Oberon-07'); Console.Ln;
-			Console.String('    "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
-			Console.String('    "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;
-			Console.String('    "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
-			Console.String('    "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln
+			Console.String('  option  = "m" | "s" | "e" | "i" | "r" | "x" | "a" | "p" | "t" | "f" | "d"'); Console.Ln;
+			Console.String('            [ "1" | "2" | "C" | "7" | "3" ]    [ "21" |"44" |"48" | "88" ].'); Console.Ln;
+			Console.String('       "m": generate a main module                                  (off)'); Console.Ln;
+			Console.String('       "s": allow changing the symbol file                          (off)'); Console.Ln;
+			Console.String('       "e": allow extending the module interface                    (off)'); Console.Ln;
+			Console.String('       "i": include header and body prefix files (Module.h0/.c0)    (off)'); Console.Ln;
+			Console.String('       "r": check value ranges                                      (off)'); Console.Ln;
+			Console.String('       "x": check array indices                                      (on)'); Console.Ln;
+			Console.String('       "a": check assertions                                         (on)'); Console.Ln;
+			Console.String('       "p": pointer initialization                                   (on)'); Console.Ln;
+			Console.String('       "t": check type guards                                        (on)'); Console.Ln;
+			Console.String('       "f": allow "correct" FOR (concept by Oleg Komlev)            (off)'); Console.Ln;
+			Console.String('       "d": translate a module into dynamic library (.dll/.so)      (off)'); Console.Ln;
+			Console.String('  "1": Oberon "2": Oberon-2 "C": Component Pascal "7": Oberon-07 "3": Oberon-3'); Console.Ln;
+			Console.String('  "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
+			Console.String('  "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;
+			Console.String('  "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
+			Console.String('  "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln
 		ELSE
 			(* set options to initial defaults *)
 			Lang := "C";	(* default input language: Component Pascal *)
