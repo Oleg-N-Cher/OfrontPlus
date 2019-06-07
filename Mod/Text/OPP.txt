@@ -988,7 +988,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				CheckSym(becomes); Expression(y); pos := OPM.errpos;
 				x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
 				CheckSym(to); Expression(y); pos := OPM.errpos;
-				IF y^.class # Nconst THEN
+				IF (OPM.Lang # "7") & (y^.class # Nconst) THEN
 					name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
 					t^.mode := Var; t^.typ := x^.left^.typ;
 					obj := OPT.topScope^.scope;
