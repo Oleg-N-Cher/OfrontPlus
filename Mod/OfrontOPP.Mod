@@ -1005,7 +1005,7 @@
 		END FindCond;
 
 		PROCEDURE ForImproved; (* Concept and implementation by Oleg Komlev *)
-			PROCEDURE  varFor(id:OPT.Object):BOOLEAN;
+			PROCEDURE varFor(id: OPT.Object): BOOLEAN;
 			BEGIN
 				RETURN (id^.mode = Var) & (id^.vis = 0) & (id^.mnolev = level)
 			END varFor;
