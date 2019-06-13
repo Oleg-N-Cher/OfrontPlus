@@ -97,6 +97,7 @@ BEGIN
   |  87: Log.String("guarded or tested variable is neither a pointer nor a VAR- or IN-parameter record")
   |  88: Log.String("open array not allowed as variable, record field or array element")
   |  90: Log.String("dereferenced variable is not a character array")
+  |  91: Log.String("control variable must be local")
 
   |  92: Log.String("operand of IN not an integer, or not a set")
   |  93: Log.String("set element type is not an integer")

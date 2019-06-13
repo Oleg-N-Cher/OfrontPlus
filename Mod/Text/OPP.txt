@@ -1114,10 +1114,15 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		END FindCond;
 
 		PROCEDURE ForImproved;	(* Concept and implementation by Oleg Komlev *)
+			PROCEDURE  varFor(id:OPT.Object):BOOLEAN;
+			BEGIN
+				RETURN (id^.mode = Var) & (id^.vis = 0) & (id^.mnolev = level)
+			END varFor;
 		BEGIN (* построение синтаксического дерева для FOR *)
 			OPS.Get(sym);	(* взять символ после FOR *)
 			IF sym = ident THEN qualident(id);	(* если это идентификатор, уточнить его *)
-				IF id^.typ^.form IN intSet THEN	(* он должен быть целого типа*)
+				IF id^.typ^.form IN intSet THEN	(* он должен быть целого типа *)
+					IF ~varFor(id) THEN err(91) END;	(* он должен быть нужной локальности *)
 					CheckSym(becomes); Expression(apar); pos := OPM.errpos;	(* потом д б  «:=  А » *)
 					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
 					(* apar = "A" *)
@@ -1301,7 +1306,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					ELSE
 						x := NIL;	(* от цикла не остается ничего *)
 					END; (* id # NIL*)
-				ELSE err(68); sym := while;  (* id не целый, обработаем блок как  будто WHILE *)
+				ELSE err(68); sym := while;  (* id не целый, обработаем блок как будто WHILE *)
 				END;
 			ELSE err(ident)
 			END
