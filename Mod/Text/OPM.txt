@@ -7,7 +7,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 *)
 
 	IMPORT SYSTEM, Strings, Files, Models, Out, Stores, TextControllers, TextModels, TextMappers,
-		TextViews, Views, Dialog, Fonts, Ports, Controllers, Properties, DevMarkers, Windows, MultiCardinals;
+		TextViews, Views, Dialog, Fonts, Ports, Controllers, Properties, DevMarkers, Windows;
 
 	CONST
 		OptionChar* = "-";
@@ -124,9 +124,39 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 	TYPE
 		LongCard = LONGINT;
 
+PROCEDURE [code] udiv (x, y: LongCard): LongCard
+	068H, 3EH,1FH,0,0, (*     PUSH   1F3EH ; Set FPU mode *)
+	0D9H, 02CH, 024H,  (*     FLDCW  [ESP]                *)
+	059H,              (*     POP    ECX                  *)
+	068H, 0,0,80H,5FH, (*     PUSH   $5F800000            *)
+	0DFH, 06DH, 008H,  (*     FILD   QWORD PTR [EBP+8]    *)
+	085H, 0D2H,        (*     TEST   EDX, EDX             *)
+	079H, 003H,        (*     JNS    SHORT L0             *)
+	0D8H, 004H, 024H,  (*     FADD   DWORD PTR [ESP]      *)
+	0DFH, 06DH, 010H,  (* L0: FILD   QWORD PTR [EBP+16]   *)
+	083H, 7DH, 14H, 0, (*     CMP    DWORD PTR [EBP+20],0 *)
+	079H, 003H,        (*     JNS    SHORT L1             *)
+	0D8H, 004H, 024H,  (*     FADD   DWORD PTR [ESP]      *)
+	0DEH, 0F9H,        (* L1: FDIVP                       *)
+	068H, 0,0,0,05FH,  (*     PUSH   $5F000000            *)
+	0D8H, 014H, 024H,  (*     FCOM   DWORD PTR [ESP]      *)
+	059H,              (*     POP    ECX                  *)
+	0DFH, 0E0H,        (*     FNSTSW AX                   *)
+	09EH,              (*     SAHF                        *)
+	072H, 003H,        (*     JB     SHORT L2             *)
+	0D8H, 024H, 024H,  (*     FSUB   DWORD PTR [ESP]      *)
+	059H,              (* L2: POP    ECX                  *)
+	0DFH, 03CH, 024H,  (*     FISTP  QWORD PTR [ESP]      *)
+	09BH,              (*     FWAIT                       *)
+	058H,              (*     POP    EAX                  *)
+	05AH,              (*     POP    EDX                  *)
+	068H, 3EH,03H,0,0, (*     PUSH   $33E ; Rest FPU mode *)
+	0D9H, 02CH, 024H,  (*     FLDCW  [ESP]                *)
+	059H;              (*     POP    ECX                  *)
+
 	PROCEDURE UDiv*(x, y: LongCard): LongCard;
 	BEGIN
-		ASSERT(y # 0); RETURN MultiCardinals.Div(x, y)
+		ASSERT(y # 0); RETURN udiv(x, y)
 	END UDiv;
 
 	PROCEDURE Div0*(x, y: LONGINT): LONGINT;
