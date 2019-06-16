@@ -766,6 +766,7 @@
 				ELSIF f # Undef THEN err(103)
 				END
 		| div0:
+				IF OPM.Lang # "3" THEN err(-303) END;
 				IF f IN intSet THEN
 					IF (xval^.intval = MIN(LONGINT)) & (yval^.intval = -1) THEN err(204)
 					ELSIF yval^.intval # 0 THEN
@@ -783,6 +784,7 @@
 				ELSIF f # Undef THEN err(104)
 				END
 		| rem0:
+				IF OPM.Lang # "3" THEN err(-303) END;
 				IF f IN intSet THEN
 					IF yval^.intval # 0 THEN
 						xval^.intval := OPM.Rem0(xval^.intval, yval^.intval); SetIntType(x, FALSE)
@@ -1035,6 +1037,7 @@
 						END;
 						IF do THEN NewOp(op, typ, z, y) END
 				| div0:
+						IF OPM.Lang # "3" THEN err(-303) END;
 						do := TRUE;
 						IF f IN intSet THEN
 							IF y^.class = Nconst THEN val := y^.conval^.intval;
@@ -1059,6 +1062,7 @@
 						END;
 						NewOp(op, typ, z, y)
 				| rem0:
+						IF OPM.Lang # "3" THEN err(-303) END;
 						IF f IN intSet THEN
 							IF y^.class = Nconst THEN
 								IF y^.conval^.intval = 0 THEN err(205)
