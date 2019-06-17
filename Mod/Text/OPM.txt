@@ -607,7 +607,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			END ;
 			noerr := FALSE
 		ELSE
-			IF pos >= 0 THEN LogWLn; LogWStr("  pos"); LogWNum(pos, 6) END ;
+			IF pos >= 0 THEN LogWLn; LogWStr("  pos "); LogWNum(pos, 1) END;
 			LogWStr("  warning  "); s := "#ofront:"; AppInt(-n, 8, s);
 			Dialog.MapString(s, s); LogWStr('"'); LogWStr(SHORT(s)); LogWStr('"');
 			IF pos < 0 THEN LogWLn END
