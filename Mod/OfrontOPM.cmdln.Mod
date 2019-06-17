@@ -362,10 +362,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF n >= 0 THEN
 			noerr := FALSE;
 			IF (pos < lasterrpos) OR (lasterrpos + 9 < pos) THEN lasterrpos := pos; LogWLn; LogWStr("  ");
-				IF n < 249 THEN LogWStr("  line "); LogWNum(pos DIV 256, 1);
-					LogWStr("  pos "); LogWNum(pos MOD 256 + 1, 1); LogErrMsg(n)
-				ELSIF n = 255 THEN LogWStr("  line "); LogWNum(pos DIV 256, 1);
-					LogWStr("  pos "); LogWNum(pos MOD 256 + 1, 1); LogWStr("  pc "); LogWNum(breakpc, 1)
+				IF n < 249 THEN LogWStr("  "); LogWNum(pos DIV 256, 1);
+					LogW(":"); LogWNum(pos MOD 256 + 1, 1); LogErrMsg(n)
+				ELSIF n = 255 THEN LogWStr("  "); LogWNum(pos DIV 256, 1);
+					LogW(":"); LogWNum(pos MOD 256 + 1, 1); LogWStr("  pc "); LogWNum(breakpc, 1)
 				ELSIF n = 254 THEN LogWStr("pc not found")
 				ELSE LogWStr(objname);
 					IF n = 253 THEN LogWStr(" is new, compile with option e")
@@ -378,7 +378,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			END
 		ELSE
 			IF pos >= 0 THEN LogWLn;
-				LogWStr("  line "); LogWNum(pos DIV 256, 1); LogWStr("  pos "); LogWNum(pos MOD 256 + 1, 1)
+				LogWStr("  "); LogWNum(pos DIV 256, 1); LogW(":"); LogWNum(pos MOD 256 + 1, 1)
 			END ;
 			LogErrMsg(n);
 			IF pos < 0 THEN LogWLn END
