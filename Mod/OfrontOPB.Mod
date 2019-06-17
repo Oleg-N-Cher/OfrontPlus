@@ -1376,6 +1376,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f = Int THEN Convert(x, OPT.sinttyp)
 				ELSIF f = LInt THEN Convert(x, OPT.inttyp)
 				ELSIF f = LReal THEN Convert(x, OPT.realtyp)
+				ELSIF (f = Char) & (x^.class # Nconst) & (OPM.Lang = "C") THEN (* CHAR => SHORTCHAR *)
 				ELSE err(111)
 				END
 		| longfn: (*LONG*)
@@ -1384,7 +1385,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f = SInt THEN Convert(x, OPT.inttyp)
 				ELSIF f = Int THEN Convert(x, OPT.linttyp)
 				ELSIF f = Real THEN Convert(x, OPT.lrltyp)
-				ELSIF f = Char THEN Convert(x, OPT.linttyp)
+				ELSIF (f = Char) & (OPM.Lang = "C") THEN (* SHORTCHAR => CHAR *)
 				ELSE err(111)
 				END
 		| incfn, decfn: (*INC, DEC*)
