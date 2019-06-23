@@ -1,4 +1,4 @@
-To build the examples, install the following packages:
+To build the examples, install the following packages (for Linux ARM):
 
 libsdl2-dev
 libsdl2-image-dev
