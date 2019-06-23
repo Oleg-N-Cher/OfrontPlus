@@ -1,4 +1,4 @@
-To build the examples, install the following packages (for Win64/x64):
+To build the examples, install the following packages (for Linux/x64):
 
 libsdl2-dev
 libsdl2-image-dev
