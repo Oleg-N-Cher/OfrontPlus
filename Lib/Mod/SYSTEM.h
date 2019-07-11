@@ -118,12 +118,18 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 // Assertions and Halts
 
-extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
-extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
+#if defined(__GNUC__) && ___GNUC__ <= 2 && __GNUC_MINOR__ <= 4
+#  define __NORETURN
+#else
+#  define __NORETURN __attribute__((noreturn))
+#endif
 
-#define __HALT(n)                                SYSTEM_HALT(n, "", -1)
-#define __HALT_NEW(n, mod, pos)                  SYSTEM_HALT(n, mod, pos)
-#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, mod, pos)
+extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN;
+extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN;
+
+#define __HALT(n)                                SYSTEM_HALT(n, (CHAR*)"", -1)
+#define __HALT_NEW(n, mod, pos)                  SYSTEM_HALT(n, (CHAR*)mod, pos)
+#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, (CHAR*)mod, pos)
 
 
 // String copy, comparison and calculate length
@@ -202,9 +208,9 @@ static inline INTEGER __STRLEN (CHAR s[]) { // LEN(sx$)
 // Runtime checks
 
 #define __X(i, ub, mod, pos)   (((__U_LONGINT)(i)<(__U_LONGINT)(ub))?i:(__HALT_NEW(-2,mod,pos), 0))
-#define __XF(i, ub, mod, pos)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub), mod, pos)
+#define __XF(i, ub, mod, pos)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub), (CHAR*)mod, pos)
 #define __R(i, ub, mod, pos)   (((__U_LONGINT)(i)<(__U_LONGINT)(ub))?i:(__HALT_NEW(-8,mod,pos),0))
-#define __RF(i, ub, mod, pos)  SYSTEM_RCHK((LONGINT)(i), (LONGINT)(ub), mod, pos)
+#define __RF(i, ub, mod, pos)  SYSTEM_RCHK((LONGINT)(i), (LONGINT)(ub), (CHAR*)mod, pos)
 #define __RETCHK(mod, pos)     __retchk: __HALT_NEW(-3, mod, pos); return 0;
 #define __CASECHK(mod, pos)    __HALT_NEW(-4, mod, pos)
 #define __WITHCHK(mod, pos)    __HALT_NEW(-7, mod, pos)
