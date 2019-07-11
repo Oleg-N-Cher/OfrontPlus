@@ -237,12 +237,12 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32
 
-    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) {
+    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN {
       if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(n, mod, pos);
       exit(n);
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) {
+    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN {
       if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(n, mod, pos);
       exit(n);
     }
@@ -280,12 +280,12 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #   include "_windows.h"
 
-    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) {
+    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN {
       if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(n, mod, pos);
       ExitProcess((UINT)(n));
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) {
+    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN {
       if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(n, mod, pos);
       ExitProcess((UINT)(n));
     }
