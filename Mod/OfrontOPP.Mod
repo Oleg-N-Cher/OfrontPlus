@@ -457,6 +457,7 @@
 		IF sym # rparen THEN
 			LOOP Expression(apar);
 				IF fpar # NIL THEN
+					IF (OPM.Lang = "C") & (apar.typ.form = Pointer) & (fpar.typ.form = Comp) THEN OPB.DeRef(apar) END;
 					OPB.Param(apar, fpar); OPB.Link(aparlist, last, apar);
 					fpar := fpar^.link;
 				ELSE err(64)
@@ -575,10 +576,20 @@
 		IF sym = minus THEN OPS.Get(sym); Term(x); OPB.MOp(minus, x)
 		ELSIF sym = plus THEN OPS.Get(sym); Term(x); OPB.MOp(plus, x)
 		ELSE Term(x)
-		END ;
+		END;
 		WHILE (plus <= sym) & (sym <= or) DO
-			addop := sym; OPS.Get(sym);
-			Term(y); OPB.Op(addop, x, y)
+			addop := sym; OPS.Get(sym); Term(y);
+			IF OPM.Lang = "C" THEN
+				IF x.typ.form = Pointer THEN OPB.DeRef(x) END;
+				IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char) THEN
+					OPB.StrDeref(x)
+				END;
+				IF y.typ.form = Pointer THEN OPB.DeRef(y) END;
+				IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form = Char) THEN
+					OPB.StrDeref(y)
+				END
+			END;
+			OPB.Op(addop, x, y)
 		END
 	END SimpleExpression;
 
@@ -1211,7 +1222,9 @@
 			IF sym = ident THEN
 				qualident(id); x := OPB.NewLeaf(id); selector(x);
 				IF sym = becomes THEN
-					OPS.Get(sym); Expression(y); OPB.Assign(x, y)
+					OPS.Get(sym); Expression(y);
+					IF (OPM.Lang = "C") & (y.typ.form = Pointer) & (x.typ.form = Comp) THEN OPB.DeRef(y) END;
+					OPB.Assign(x, y)
 				ELSIF sym = eql THEN
 					err(becomes); OPS.Get(sym); Expression(y); OPB.Assign(x, y)
 				ELSIF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN
