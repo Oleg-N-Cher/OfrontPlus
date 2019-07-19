@@ -429,7 +429,7 @@
 				END
 			ELSIF sym = arrow THEN OPS.Get(sym); OPB.DeRef(x)
 			ELSIF (sym = dollar) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN
-				IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END;
+				IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN OPB.DeRef(x) END;
 				OPS.Get(sym); OPB.StrDeref(x)
 			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
 					((x^.obj = NIL) OR (x^.obj^.mode # TProc)) THEN
