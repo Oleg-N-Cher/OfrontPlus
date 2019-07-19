@@ -1420,21 +1420,31 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| shortfn: (*SHORT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f = SInt THEN Convert(x, OPT.bytetyp)
-				ELSIF f = Int THEN Convert(x, OPT.sinttyp)
-				ELSIF f = LInt THEN Convert(x, OPT.inttyp)
-				ELSIF f = LReal THEN Convert(x, OPT.realtyp)
-				ELSIF (f = Char) & (x^.class # Nconst) & (OPM.Lang = "C") THEN (* CHAR => SHORTCHAR *)
-				ELSE err(111)
+				ELSE
+					IF (OPM.Lang = "C") & (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char) THEN
+						StrDeref(x); f := x.typ.form
+					END;
+					IF f = SInt THEN Convert(x, OPT.bytetyp)
+					ELSIF f = Int THEN Convert(x, OPT.sinttyp)
+					ELSIF f = LInt THEN Convert(x, OPT.inttyp)
+					ELSIF f = LReal THEN Convert(x, OPT.realtyp)
+					ELSIF (f = Char) & (x^.class # Nconst) & (OPM.Lang = "C") THEN (* CHAR => SHORTCHAR *)
+					ELSE err(111)
+					END
 				END
 		| longfn: (*LONG*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f = Byte THEN Convert(x, OPT.sinttyp)
-				ELSIF f = SInt THEN Convert(x, OPT.inttyp)
-				ELSIF f = Int THEN Convert(x, OPT.linttyp)
-				ELSIF f = Real THEN Convert(x, OPT.lrltyp)
-				ELSIF (f = Char) & (OPM.Lang = "C") THEN (* SHORTCHAR => CHAR *)
-				ELSE err(111)
+				ELSE
+					IF (OPM.Lang = "C") & (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char) THEN
+						StrDeref(x); f := x.typ.form
+					END;
+					IF f = Byte THEN Convert(x, OPT.sinttyp)
+					ELSIF f = SInt THEN Convert(x, OPT.inttyp)
+					ELSIF f = Int THEN Convert(x, OPT.linttyp)
+					ELSIF f = Real THEN Convert(x, OPT.lrltyp)
+					ELSIF (f = Char) & (OPM.Lang = "C") THEN (* SHORTCHAR => CHAR *)
+					ELSE err(111)
+					END
 				END
 		| incfn, decfn: (*INC, DEC*)
 				IF NotVar(x) THEN err(112)
@@ -1449,7 +1459,7 @@ avoid unnecessary intermediate variables in OFront
 		| lenfn: (*LEN*)
 				IF (* (x^.class = Ntype) OR *) (x^.class = Nproc) THEN err(126)	(* !!! *)
 				ELSE
-					IF x^.typ^.form = Pointer THEN DeRef(x) END;
+					IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN DeRef(x) END;
 					IF (x^.class = Nconst) & (x^.typ^.form = Char) THEN CharToString(x) END;
 					IF ~(x^.typ^.comp IN {DynArr, Array}) & ~(x^.typ^.form = String) THEN err(131) END
 				END
