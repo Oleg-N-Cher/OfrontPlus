@@ -597,8 +597,16 @@
 		VAR y: OPT.Node; obj: OPT.Object; relation: BYTE;
 	BEGIN SimpleExpression(x);
 		IF (eql <= sym) & (sym <= geq) THEN
-			relation := sym; OPS.Get(sym);
-			SimpleExpression(y); OPB.Op(relation, x, y)
+			relation := sym; OPS.Get(sym); SimpleExpression(y);
+			IF OPM.Lang = "C" THEN
+				IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char) THEN
+					OPB.StrDeref(x)
+				END;
+				IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form = Char) THEN
+					OPB.StrDeref(y)
+				END
+			END;
+			OPB.Op(relation, x, y)
 		ELSIF sym = in THEN
 			OPS.Get(sym); SimpleExpression(y); OPB.In(x, y)
 		ELSIF sym = is THEN
