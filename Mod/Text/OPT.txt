@@ -43,7 +43,7 @@
 			arr*: ConstArr; (*  для данных константного массива *)
 		END ;
 
-		ObjDesc* = EXTENSIBLE RECORD
+		ObjDesc* = RECORD
 			left*, right*, link*, scope*: Object;
 			name*: OPS.String;	(* name = null OR name^ # "" *)
 			leaf*: BOOLEAN;
@@ -59,7 +59,7 @@
 			x*: SHORTINT	(* linkadr and x can be freely used by the backend *)
 		END ;
 
-		StrDesc* = EXTENSIBLE RECORD
+		StrDesc* = RECORD
 			form*, comp*, mno*, extlev*: BYTE;
 			ref*, sysflag*: SHORTINT;
 			n*, size*, align*, txtpos*: INTEGER;	(* align is alignment for records and len offset for dynarrs *)
@@ -69,7 +69,7 @@
 			link*, strobj*: Object
 		END ;
 
-		NodeDesc* = EXTENSIBLE RECORD
+		NodeDesc* = RECORD
 			left*, right*, link*: Node;
 			class*, subcl*: BYTE;
 			readonly*: BOOLEAN;
