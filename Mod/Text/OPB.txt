@@ -973,7 +973,7 @@
 	BEGIN z := x;
 		IF (z^.class = Ntype) OR (y^.class = Ntype) THEN err(126)
 		ELSE
-			IF (OPM.Lang = "C") OR (OPM.Lang = "7") THEN Promote(z, y, op) END;
+			IF (OPM.Lang > "3") THEN Promote(z, y, op) END;
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
 				IF z^.class = Nproc THEN	(* comparison of a procedure with a procedure variable *)

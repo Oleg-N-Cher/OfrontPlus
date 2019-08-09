@@ -180,7 +180,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		ELSE (* fraction *)
 			f := 0; e := 0; expCh := "E";
 			WHILE n > 0 DO (* 0 <= f < 1 *) DEC(n); f := (Ord(dig[n], FALSE) + f)/10 END;
-			IF (ch = "E") OR (ch = "D") & (OPM.Lang <= "2") THEN expCh := ch; OPM.Get(ch); neg := FALSE;
+			IF (ch = "E") OR (ch = "D") & (OPM.Lang <= "3") THEN expCh := ch; OPM.Get(ch); neg := FALSE;
 				IF ch = "-" THEN neg := TRUE; OPM.Get(ch)
 				ELSIF ch = "+" THEN OPM.Get(ch)
 				END;
@@ -195,7 +195,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 				END
 			END;
 			DEC(e, SHORT(i-d-m)); (* decimal point shift *)
-			IF (expCh = "E") & (OPM.Lang # "C") & (OPM.Lang # "3") THEN numtyp := real;
+			IF (expCh = "E") & (OPM.Lang # "C") THEN numtyp := real;
 				IF (1-OPM.MaxRExp < e) & (e <= OPM.MaxRExp) THEN
 					IF e < 0 THEN realval := SHORT(f / Ten(SHORT(-e)))
 					ELSE realval := SHORT(f * Ten(e))
