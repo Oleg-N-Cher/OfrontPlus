@@ -685,20 +685,10 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF sym = minus THEN OPS.Get(sym); Term(x); OPB.MOp(minus, x)
 		ELSIF sym = plus THEN OPS.Get(sym); Term(x); OPB.MOp(plus, x)
 		ELSE Term(x)
-		END;
+		END ;
 		WHILE (plus <= sym) & (sym <= or) DO
-			addop := sym; OPS.Get(sym); Term(y);
-			IF OPM.Lang = "C" THEN
-				IF x.typ.form = Pointer THEN OPB.DeRef(x) END;
-				IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char) THEN
-					OPB.StrDeref(x)
-				END;
-				IF y.typ.form = Pointer THEN OPB.DeRef(y) END;
-				IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form = Char) THEN
-					OPB.StrDeref(y)
-				END
-			END;
-			OPB.Op(addop, x, y)
+			addop := sym; OPS.Get(sym);
+			Term(y); OPB.Op(addop, x, y)
 		END
 	END SimpleExpression;
 
@@ -706,16 +696,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		VAR y: OPT.Node; obj: OPT.Object; relation: BYTE;
 	BEGIN SimpleExpression(x);
 		IF (eql <= sym) & (sym <= geq) THEN
-			relation := sym; OPS.Get(sym); SimpleExpression(y);
-			IF OPM.Lang = "C" THEN
-				IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char) THEN
-					OPB.StrDeref(x)
-				END;
-				IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form = Char) THEN
-					OPB.StrDeref(y)
-				END
-			END;
-			OPB.Op(relation, x, y)
+			relation := sym; OPS.Get(sym);
+			SimpleExpression(y); OPB.Op(relation, x, y)
 		ELSIF sym = in THEN
 			OPS.Get(sym); SimpleExpression(y); OPB.In(x, y)
 		ELSIF sym = is THEN
