@@ -817,7 +817,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 					base := NIL
 				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) & (obj^.typ^.form = Pointer) THEN
 					OPM.WriteString(" = NIL")
-				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN (* элементы конст.массива *)
+				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL) & (vis # 1) THEN (* элементы конст.массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
 					BegStat;
 					obj^.conval^.intval := 0;
