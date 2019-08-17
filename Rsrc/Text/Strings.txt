@@ -27,6 +27,8 @@ insertMarkers	Insert Markers
 29	DO missing
 30	TO missing
 32	"(" missing
+33	CONST, TYPE, VAR, PROCEDURE, BEGIN, or END missing
+34	PROCEDURE, BEGIN, or END missing
 35	"," or OF expected
 36	":=" missing
 40	identifier expected
@@ -95,7 +97,6 @@ insertMarkers	Insert Markers
 106	operand type inapplicable to -
 107	operand type inapplicable to = or #
 108	operand type inapplicable to relation
-109	overriding method must be exported
 110	operand is not a type
 111	operand inapplicable to (this) function
 112	operand is not a variable
@@ -136,6 +137,26 @@ insertMarkers	Insert Markers
 156	default target machine address size and alignment used
 157	syntax error in parameter file
 177	IN only allowed for records and arrays
+178	illegal attribute
+179	abstract methods of exported records must be exported
+180	illegal receiver type
+181	base type is not extensible
+182	base procedure is not extensible
+183	non-matching export
+184	attribute does not match with forward declaration
+185	missing NEW attribute
+186	illegal NEW attribute
+187	new empty procedure in non extensible record
+188	extensible procedure in non extensible record
+189	illegal attribute change
+190	record must be abstract
+191	base type must be abstract
+192	unimplemented abstract procedures in base types
+193	abstract or limited records may not be allocated
+194	no supercall allowed to abstract or empty procedures
+195	empty procedures may not have out parameters or return a value
+196	procedure is implement-only exported
+197	extension of limited type must be limited
 200	not yet implemented
 201	lower bound of set range greater than higher bound
 202	set element greater than MAX(SET) or less than 0
@@ -153,7 +174,6 @@ insertMarkers	Insert Markers
 221	too many pointers in a record
 222	too many global pointers
 223	too many record types
-224	too many pointer types
 225	address of pointer variable too large (move forward in text)
 226	too many exported procedures
 227	too many imported modules

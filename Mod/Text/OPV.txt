@@ -543,6 +543,7 @@
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE n # NIL DO typ := fp^.typ;
+			IF (typ^.form = n^.typ^.form) & (typ^.form IN {Byte..Set}) THEN typ := n^.typ END;
 			comp := typ^.comp; form := typ^.form; mode := fp^.mode; prec := MinPrec;
 			IF (mode = VarPar) THEN
 				IF (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
@@ -550,7 +551,7 @@
 				ELSIF (fp^.vis = outPar) & (OPC.NofPtrs(typ) # 0) & (aptyp # OPT.niltyp) THEN
 					(*IPFree(n, ap)*)
 				END
-			END ;
+			END;
 			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
 				IF mode = VarPar THEN
 					IF n^.typ^.form # NilTyp THEN
