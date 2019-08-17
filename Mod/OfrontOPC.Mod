@@ -58,6 +58,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		LenExt = "__len";
 		DynTypExt = "__typ";
 		TagExt = "__typ";
+		RecExt = "__rec";
 
 		OpenParen = "(";
 		CloseParen = ")";
@@ -154,6 +155,19 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		RETURN SHORT(h MOD 105)
 	END PerfectHash;
 
+	PROCEDURE WriteName (IN s: ARRAY OF SHORTCHAR);
+		VAR i: INTEGER; ch: SHORTCHAR;
+	BEGIN
+		IF s = "Windows" THEN OPM.WriteString("Windows_")
+		ELSE
+			i := 0; ch := s[0];
+			WHILE ch # 0X DO
+				IF ch = "^" THEN OPM.WriteString(RecExt) ELSE OPM.Write(ch) END;
+				INC(i); ch := s[i]
+			END
+		END
+	END WriteName;
+
 	PROCEDURE Ident* (obj: OPT.Object);
 		VAR mode, level, h: SHORTINT;
 	BEGIN
@@ -164,6 +178,18 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF hashtab[h] >= 0 THEN
 				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
 			END
+		ELSIF (mode = Typ) & (obj^.typ^.form IN {Byte..Set}) THEN
+			CASE obj^.typ^.form OF
+				| Byte: OPM.WriteString("BYTE")
+				| Bool: OPM.WriteString("BOOLEAN")
+				| Char: OPM.WriteString("CHAR")
+				| SInt: OPM.WriteString("SHORTINT")
+				| Int: OPM.WriteString("INTEGER")
+				| LInt: OPM.WriteString("LONGINT")
+				| Real: OPM.WriteString("SHORTREAL")
+				| LReal: OPM.WriteString("REAL")
+				| Set: OPM.WriteString("SET")
+			END
 		ELSE
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
 				IF mode = TProc THEN Ident(obj^.link^.typ^.strobj)
@@ -171,21 +197,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					OPM.WriteString(OPT.GlbMod[-level].name^);
 					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END ;
 				ELSE OPM.WriteString(OPM.modName)
-				END ;
+				END;
 				OPM.Write(Underscore)
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END;
-			IF obj = OPT.chartyp^.strobj THEN OPM.WriteString("CHAR")
-			ELSIF obj = OPT.bytetyp^.strobj THEN OPM.WriteString("BYTE")
-			ELSIF obj = OPT.sinttyp^.strobj THEN OPM.WriteString("SHORTINT")
-			ELSIF obj = OPT.inttyp^.strobj THEN OPM.WriteString("INTEGER")
-			ELSIF obj = OPT.linttyp^.strobj THEN OPM.WriteString("LONGINT")
-			ELSIF obj = OPT.realtyp^.strobj THEN OPM.WriteString("SHORTREAL")
-			ELSIF obj = OPT.lrltyp^.strobj THEN OPM.WriteString("REAL")
-			ELSE
-				OPM.WriteString(obj^.name^)
-			END
+			WriteName(obj^.name^)
 		END
 	END Ident;
 
@@ -506,6 +523,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE DefineType(str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
+		IF str^.form IN {Byte..Set} THEN RETURN END;
 		IF (OPM.currFile = OPM.BodyFile) OR (str^.ref < OPM.MaxStruct (*for hidden exports*) ) THEN
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
@@ -624,7 +642,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			Andent(typ); OPM.WriteString("__desc");
 			Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
 			OPM.Write('"');
-			IF typ^.strobj # NIL THEN OPM.WriteString(typ^.strobj^.name^) END ;
+			IF typ^.strobj # NIL THEN WriteName(typ^.strobj^.name^) END;
 			Str1('", #), {', typ^.size);
 			nofptrs := 0; PutPtrOffsets(typ, 0, nofptrs); Str1("#}}", -(nofptrs + 1) * OPM.AdrSize);
 			EndStat
@@ -712,10 +730,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
 				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, FALSE);
 				off := fld.adr + fld.typ.size; base := fld.typ; fld := fld.link;
+				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set}) THEN base := fld.typ END;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.typ = base) & (fld.adr = off)
 (* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)) DO
-					OPM.WriteString(", "); DeclareObj(fld, FALSE); off := fld.adr + fld.typ.size; fld := fld.link
-				END ;
+					OPM.WriteString(", "); DeclareObj(fld, FALSE); off := fld.adr + fld.typ.size; fld := fld.link;
+					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set}) THEN base := fld.typ END
+				END;
 				EndStat
 			END
 		END ;
@@ -733,6 +753,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		base := NIL; first := TRUE;
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
+				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set}) THEN base := obj^.typ END;
 				IF (obj^.typ # base) OR (obj^.vis # lastvis) THEN	(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;

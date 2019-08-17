@@ -36,6 +36,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			fprint*: INTEGER;
 			typ*: Struct;
 			conval*: Const;
+			nlink*: Object;	(* link for name list, declaration order for methods, library link for imp obj *)
 			adr*, linkadr*: INTEGER;
 			x*: SHORTINT	(* linkadr and x can be freely used by the backend *)
 		END ;
@@ -44,7 +45,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			form*, comp*, mno*, extlev*: BYTE;
 			ref*, sysflag*: SHORTINT;
 			n*, size*, align*, txtpos*: INTEGER;	(* align is alignment for records and len offset for dynarrs *)
-			allocated*, pbused*, pvused*, fpdone, idfpdone: BOOLEAN;
+			allocated*, pbused*, pvused*, exp*, fpdone, idfpdone: BOOLEAN;
+			attribute*: BYTE;
 			idfp, pbfp*, pvfp*:INTEGER;
 			BaseTyp*: Struct;
 			link*, strobj*: Object
@@ -79,7 +81,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	CONST
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
-		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13;
+		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13; Attr = 20;
 
 		(* structure forms *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -102,6 +104,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		adrfn = 25; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
 		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
 
+		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval) *)
+		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
+
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
@@ -116,6 +121,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Svalpar = 23; Svarpar = 24; Sfld = 25; Srfld = 26; Shdptr = 27; Shdpro = 28; Stpro = 29; Shdtpro = 30;
 		Sxpro = 31; Sipro = 32; Scpro = 33; Sstruct = 34; Ssys = 35; Sptr = 36; Sarr = 37; Sdarr = 38; Srec = 39; Spro = 40;
 		Sinpar = 25; Soutpar = 26;
+		Slimrec = 25; Sabsrec = 26; Sextrec = 27; Slimpro = 31; Sabspro = 32; Semppro = 33; Sextpro = 34; Simpo = 22;
 
 	TYPE
 		ImpCtxt = RECORD [untagged]
@@ -141,6 +147,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		expCtxt: ExpCtxt;
 		nofhdfld: INTEGER;
 		newsf, findpc, extsf, sfpresent, symExtended, symNew: BOOLEAN;
+		depth: INTEGER;
 
 	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
@@ -195,7 +202,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
 		SelfName := name$; topScope^.name := NewName(name);
 		GlbMod[0] := topScope; nofGmod := 1;
-		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE
+		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE;
+		depth := 0
 	END Init;
 
 	PROCEDURE Close*;
@@ -205,6 +213,35 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		i := 0; WHILE i < maxImps DO GlbMod[i] := NIL; INC(i) END ;
 		i := FirstRef; WHILE i < maxStruct DO impCtxt.ref[i] := NIL; impCtxt.old[i] := NIL; INC(i) END
 	END Close;
+
+	PROCEDURE SameType (x, y: Struct): BOOLEAN;
+	BEGIN
+		RETURN (x = y) OR (x.form = y.form) & ~(x.form IN {Pointer, ProcTyp, Comp}) OR (x = undftyp) OR (y = undftyp)
+	END SameType;
+
+	PROCEDURE EqualType* (x, y: Struct): BOOLEAN;
+		VAR xp, yp: Object; n: INTEGER;
+	BEGIN
+		n := 0;
+		WHILE (n < 100) & (x # y)
+			& (((x.comp = DynArr) & (y.comp = DynArr) & (x.sysflag = y.sysflag))
+				OR ((x.form = Pointer) & (y.form = Pointer))
+				OR ((x.form = ProcTyp) & (y.form = ProcTyp))) DO
+			IF x.form = ProcTyp THEN
+				IF x.sysflag # y.sysflag THEN RETURN FALSE END;
+				xp := x.link; yp := y.link;
+				INC(depth);
+				WHILE (xp # NIL) & (yp # NIL) & (xp.mode = yp.mode) & (xp.sysflag = yp.sysflag)
+						& (xp.vis = yp.vis) & (depth < 100) & EqualType(xp.typ, yp.typ) DO
+					xp := xp.link; yp := yp.link
+				END;
+				DEC(depth);
+				IF (xp # NIL) OR (yp # NIL) THEN RETURN FALSE END
+			END;
+			x := x.BaseTyp; y := y.BaseTyp; INC(n)
+		END;
+		RETURN SameType(x, y)
+	END EqualType;
 
 	PROCEDURE FindImport*(mod: Object; VAR res: Object);
 		VAR obj: Object;
@@ -357,13 +394,22 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END FPrintFlds;
 
 		PROCEDURE FPrintTProcs(obj: Object);	(* modifies pbfp and pvfp *)
+			VAR fp: INTEGER;
 		BEGIN
 			IF obj # NIL THEN
 				FPrintTProcs(obj^.left);
 				IF obj^.mode = TProc THEN
 					IF obj^.vis # internal THEN
-						OPM.FPrint(pbfp, TProc); OPM.FPrint(pbfp, obj^.adr DIV 10000H);
-						FPrintSign(pbfp, obj^.typ, obj^.link); FPrintName(pbfp, obj^.name^)
+						fp := 0;
+						IF obj.vis = externalR THEN OPM.FPrint(fp, externalR) END;
+						IF limAttr IN obj.conval.setval THEN OPM.FPrint(fp, limAttr)
+						ELSIF absAttr IN obj.conval.setval THEN OPM.FPrint(fp, absAttr)
+						ELSIF empAttr IN obj.conval.setval THEN OPM.FPrint(fp, empAttr)
+						ELSIF extAttr IN obj.conval.setval THEN OPM.FPrint(fp, extAttr)
+						END;
+						OPM.FPrint(fp, TProc); OPM.FPrint(fp, obj^.adr DIV 10000H);
+						FPrintSign(fp, obj^.typ, obj^.link); FPrintName(fp, obj^.name^);
+						OPM.FPrint(pvfp, fp); OPM.FPrint(pbfp, fp)
 					ELSIF OPM.ExpHdTProc THEN
 						OPM.FPrint(pvfp, TProc); OPM.FPrint(pvfp, obj^.adr DIV 10000H)
 					END
@@ -453,7 +499,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			REPEAT ch := obj^.name[j]; OPM.objname[i] := ch; INC(j); INC(i) UNTIL ch = 0X;
 		ELSE
 			OPM.objname := obj^.name^$
-		END ;
+		END;
 		IF errno = 249 THEN
 			IF OPM.noerr THEN err(errno) END
 		ELSIF errno = 253 THEN	(* extension *)
@@ -613,16 +659,23 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		tag := impCtxt.nextTag;
 		obj := NewObj(); obj^.mnolev := SHORT(SHORT(-mno));
-		IF tag = Stpro THEN
-			obj^.mode := TProc; obj^.conval := NewConst(); obj^.conval^.intval := -1;
-			InSign(mno, obj^.typ, obj^.link); obj^.vis := external; InName(obj^.name);
-			obj^.adr := 10000H*SHORT(OPM.SymRInt())
-		ELSE	(* tag = Shdtpro *)
+		IF tag = Shdtpro THEN
 			obj^.mode := TProc; obj^.name := NewName(OPM.HdTProcName);
 			obj^.link := NewObj();	(* dummy, easier in Browser *)
 			obj^.typ := undftyp; obj^.vis := internal;
 			obj^.adr := 10000H*SHORT(OPM.SymRInt())
-		END ;
+		ELSE
+			obj^.vis := external;
+			IF tag = Simpo THEN obj^.vis := externalR; tag := SHORT(OPM.SymRInt()) END;
+			obj^.mode := TProc; obj^.conval := NewConst(); obj^.conval^.intval := -1;
+			InSign(mno, obj^.typ, obj^.link); InName(obj^.name);
+			obj^.adr := 10000H*SHORT(OPM.SymRInt());
+			IF tag = Slimpro THEN INCL(obj.conval.setval, limAttr)
+			ELSIF tag = Sabspro THEN INCL(obj.conval.setval, absAttr)
+			ELSIF tag = Semppro THEN INCL(obj.conval.setval, empAttr)
+			ELSIF tag = Sextpro THEN INCL(obj.conval.setval, extAttr)
+			END
+		END;
 		RETURN obj
 	END InTProc;
 
@@ -674,16 +727,20 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				ELSE typ^.n := 0
 				END ;
 				typSize(typ)
-			| Srec:
+			| Srec, Sabsrec, Slimrec, Sextrec:
 				typ^.form := Comp; typ^.comp := Record; InStruct(typ^.BaseTyp);
 				IF typ^.BaseTyp = notyp THEN typ^.BaseTyp := NIL END;
 				typ.extlev := 0; t := typ.BaseTyp;
 				(* do not take extlev from base type due to possible cycles! *)
-				WHILE t # NIL DO INC(typ^.extlev); t := t.BaseTyp END;
+				WHILE (t # NIL) & (t^.comp = Record) DO INC(typ^.extlev); t := t.BaseTyp END;
 				typ^.size := SHORT(OPM.SymRInt()); typ^.align := SHORT(OPM.SymRInt());
 				typ^.n := SHORT(OPM.SymRInt());
+				IF tag = Sabsrec THEN typ^.attribute := absAttr
+				ELSIF tag = Slimrec THEN typ^.attribute := limAttr
+				ELSIF tag = Sextrec THEN typ^.attribute := extAttr
+				END;
 				impCtxt.nextTag := SHORT(OPM.SymRInt()); last := NIL;
-				WHILE (impCtxt.nextTag >= Sfld) & (impCtxt.nextTag <= Shdpro) DO
+				WHILE (impCtxt.nextTag >= Sfld) & (impCtxt.nextTag <= Shdpro) OR (impCtxt.nextTag = Ssys) DO
 					fld := InFld(); fld^.mnolev := SHORT(SHORT(-mno));
 					IF last # NIL THEN last^.link := fld END ;
 					last := fld; InsertImport(fld, typ^.link, dummy);
@@ -695,7 +752,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				END
 			| Spro:
 				typ^.form := ProcTyp; typ^.size := OPM.AdrSize; InSign(mno, typ^.BaseTyp, typ^.link)
-			END ;
+			| Salias:
+				InStruct(t);
+				typ^.form := t^.form; typ^.comp := Basic; typ^.size := t^.size;
+				typ^.pbfp := t^.pbfp; typ^.pvfp := t^.pvfp; typ^.fpdone := TRUE;
+				typ^.idfp := t^.idfp; typ^.idfpdone := TRUE; typ^.BaseTyp := t
+			END;
 			IF ref = impCtxt.minr THEN
 				WHILE ref < impCtxt.nofr DO
 					t := impCtxt.ref[ref]; FPrintStr(t);
@@ -902,22 +964,23 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	PROCEDURE OutTProcs(typ: Struct; obj: Object);
 	BEGIN
 		IF obj # NIL THEN
-			OutTProcs(typ, obj^.left);
 			IF obj^.mode = TProc THEN
-				IF (typ^.BaseTyp # NIL) & (obj^.adr DIV 10000H < typ^.BaseTyp^.n) & (obj^.vis = internal) THEN
-					OPM.Mark(109, typ^.txtpos)
-					(* hidden and overriding, not detected in OPP because record exported indirectly or via aliasing *)
-				END ;
-				IF OPM.ExpHdTProc OR (obj^.vis # internal) THEN
-					IF obj^.vis # internal THEN
-						OPM.SymWInt(Stpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^);
-						OPM.SymWInt(obj^.adr DIV 10000H)
-					ELSE
-						OPM.SymWInt(Shdtpro);
-						OPM.SymWInt(obj^.adr DIV 10000H)
-					END
+				IF obj^.vis # internal THEN
+					IF obj^.vis = externalR THEN OPM.SymWInt(Simpo) END;
+					IF limAttr IN obj^.conval^.setval THEN OPM.SymWInt(Slimpro)
+					ELSIF absAttr IN obj^.conval^.setval THEN OPM.SymWInt(Sabspro)
+					ELSIF empAttr IN obj^.conval^.setval THEN OPM.SymWInt(Semppro)
+					ELSIF extAttr IN obj^.conval^.setval THEN OPM.SymWInt(Sextpro)
+					ELSE OPM.SymWInt(Stpro)
+					END;
+					OutSign(obj^.typ, obj^.link); OutName(obj^.name^);
+					OPM.SymWInt(obj^.adr DIV 10000H)
+				ELSIF OPM.ExpHdTProc THEN
+					OPM.SymWInt(Shdtpro);
+					OPM.SymWInt(obj^.adr DIV 10000H)
 				END
-			END ;
+			END;
+			OutTProcs(typ, obj^.left);
 			OutTProcs(typ, obj^.right)
 		END
 	END OutTProcs;
@@ -953,7 +1016,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				| DynArr:
 					OPM.SymWInt(Sdarr); OutStr(typ^.BaseTyp)
 				| Record:
-					OPM.SymWInt(Srec);
+					IF typ^.attribute = limAttr THEN OPM.SymWInt(Slimrec)
+					ELSIF typ^.attribute = absAttr THEN OPM.SymWInt(Sabsrec)
+					ELSIF typ^.attribute = extAttr THEN OPM.SymWInt(Sextrec)
+					ELSE OPM.SymWInt(Srec)
+					END;
 					IF typ^.BaseTyp = NIL THEN OutStr(notyp) ELSE OutStr(typ^.BaseTyp) END ;
 					(* BaseTyp should be Notyp, too late to change *)
 					OPM.SymWInt(typ^.size); OPM.SymWInt(typ^.align); OPM.SymWInt(typ^.n);
@@ -961,6 +1028,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					IF nofhdfld > OPM.MaxHdFld THEN OPM.Mark(223, typ^.txtpos) END ;
 					OutTProcs(typ, typ^.link); OPM.SymWInt(Send)
 				END
+			ELSE	(* alias structure *)
+				OPM.SymWInt(Salias); OutStr(typ^.BaseTyp)
 			END
 		END
 	END OutStr;
@@ -1095,6 +1164,12 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
+	PROCEDURE EnterAttr(IN name: OPS.Name; num: SHORTINT);
+		VAR obj: Object;
+	BEGIN Insert(name, obj);
+		obj^.mode := Attr; obj^.adr := num
+	END EnterAttr;
+
 	PROCEDURE InitScope*(lang: SHORTCHAR);
 	BEGIN
 		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
@@ -1196,6 +1271,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF (lang = "C") OR (lang = "3") THEN
 			EnterProc("BITS", bitsfn)	(* Component Pascal BITS() *)
 		END;
+		EnterAttr("ABSTRACT", absAttr);
+		EnterAttr("LIMITED", limAttr);
+		EnterAttr("EMPTY", empAttr);
+		EnterAttr("EXTENSIBLE", extAttr);
 		impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
 		impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
 		impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;
@@ -1206,7 +1285,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InitScope;
 
 BEGIN
-	NEW(null, 1); null^[0] := 0X; InitScope("C")	(* default input language: Component Pascal *)
+	NEW(null, 1); null^ := ""; InitScope("C")	(* default input language: Component Pascal *)
 END OfrontOPT.
 
 Objects:

@@ -544,10 +544,11 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE n # NIL DO typ := fp^.typ;
+			IF (typ^.form = n^.typ^.form) & (typ^.form IN {Byte..Set}) THEN typ := n^.typ END;
 			comp := typ^.comp; form := typ^.form; mode := fp^.mode; prec := MinPrec;
 			IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
 				OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
-			END ;
+			END;
 			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
 				IF mode = VarPar THEN
 					IF n^.typ^.form # NilTyp THEN

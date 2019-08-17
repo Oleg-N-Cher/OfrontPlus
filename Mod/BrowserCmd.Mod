@@ -18,6 +18,9 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
+		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval) *)
+		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
+
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
@@ -61,9 +64,14 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				END;
 				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 			END;
-			Ws(par^.name^); Ws(": "); Wtype(par^.typ);
+			Ws(par^.name^);
+			WHILE (par^.link # NIL) & (par^.link^.typ = par^.typ) & (par^.link^.mode = par^.mode)
+					& (par^.link^.vis = par^.vis) & (par^.link^.sysflag = par^.sysflag) DO
+				par := par^.link; Ws(", "); Ws(par^.name^)
+			END;
+			Ws(": "); Wtype(par^.typ);
 			par := par^.link
-		END ;
+		END;
 		IF paren THEN Wch(")") END ;
 		IF res THEN Ws(": "); Wtype(result) END
 	END Wsign;
@@ -168,6 +176,13 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				END ;
 				Ws(") "); Ws(obj^.name^);
 				Wsign(obj^.typ, obj^.link^.link);
+				IF lang = "C" THEN
+					IF newAttr IN BITS(obj^.link^.typ^.attribute) THEN Ws(", NEW") END;
+					IF absAttr IN BITS(obj^.link^.typ^.attribute) THEN Ws(", ABSTRACT")
+					ELSIF empAttr IN BITS(obj^.link^.typ^.attribute) THEN Ws(", EMPTY")
+					ELSIF extAttr IN BITS(obj^.link^.typ^.attribute) THEN Ws(", EXTENSIBLE")
+					END
+				END;
 				Wch(";");
 				IF option = "x" THEN Indent(1);
 					Ws("(* methno: "); Wi(obj^.adr DIV 10000H);  Ws(" *)")
@@ -205,6 +220,12 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				| DynArr:
 						Ws("ARRAY"); SysFlag; Ws(" OF "); Wtype(typ^.BaseTyp)
 				| Record:
+						IF lang = "C" THEN
+							IF typ^.attribute = absAttr THEN Ws("ABSTRACT ")
+							ELSIF typ^.attribute = limAttr THEN Ws("LIMITED ")
+							ELSIF typ^.attribute = extAttr THEN Ws("EXTENSIBLE ")
+							END
+						END;
 						Ws("RECORD"); SysFlag;
 						IF typ^.BaseTyp # NIL THEN Ws(" ("); Wtype(typ^.BaseTyp); Wch(")") END;
 						Wln; fld := typ^.link;
@@ -225,6 +246,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 							Ws(" nofm: "); Wi(typ^.n); Ws(" *)")
 						END
 				END
+		ELSE
+			IF (typ.BaseTyp # OPT.undftyp) THEN Wtype(typ^.BaseTyp) END	(* alias structures *)
 		END
 	END Wstruct;
 

@@ -577,30 +577,20 @@
 		END
 	END Promote;
 
-	PROCEDURE CheckParameters*(fp, ap: OPT.Object; checkNames: BOOLEAN);
+	PROCEDURE CheckParameters*(fp, ap: OPT.Object; checkNames: BOOLEAN); (* checks par list match *)
 		VAR ft, at: OPT.Struct;
 	BEGIN
 		WHILE fp # NIL DO
 			IF ap # NIL THEN
 				ft := fp^.typ; at := ap^.typ;
-				WHILE (ft^.comp = DynArr) & (at^.comp = DynArr) DO
-					ft := ft^.BaseTyp; at := at^.BaseTyp
-				END ;
-				IF ft # at THEN
-					IF (ft^.form = ProcTyp) & (at^.form = ProcTyp) THEN
-						IF ft^.BaseTyp = at^.BaseTyp THEN CheckParameters(ft^.link, at^.link, FALSE)
-						ELSE err(117)
-						END
-					ELSE err(115)
-					END
-				END ;
-				IF (fp^.mode # ap^.mode) OR (fp^.sysflag # ap^.sysflag) OR (fp^.vis # ap^.vis)
+				IF ~OPT.EqualType(ft, at)
+					OR (fp^.mode # ap^.mode) OR (fp^.sysflag # ap^.sysflag) OR (fp^.vis # ap^.vis)
 					OR checkNames & (fp^.name^ # ap^.name^) THEN err(115) END;
 				ap := ap^.link
 			ELSE err(116)
-			END ;
+			END;
 			fp := fp^.link
-		END ;
+		END;
 		IF ap # NIL THEN err(116) END
 	END CheckParameters;
 
@@ -944,8 +934,8 @@
 					ELSE err(100)
 					END
 				ELSE
-					IF z^.typ # y^.typ THEN
-						g := y^.typ^.form;
+					f := z^.typ^.form; g := y^.typ^.form;
+					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Byte..Set})) THEN
 						CASE z^.typ^.form OF
 						  Char:
 								IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
@@ -1825,7 +1815,7 @@ avoid unnecessary intermediate variables in OFront
 						IF atyp = NIL THEN err(113) END
 					ELSE err(66)
 					END
-				ELSE err(66)
+				ELSIF ~OPT.EqualType(ftyp, atyp) THEN err(66)
 				END
 			END
 		ELSE err(67)
@@ -1877,7 +1867,7 @@ avoid unnecessary intermediate variables in OFront
 						IF q = NIL THEN err(111) END
 					ELSIF (fp^.typ = OPT.sysptrtyp) & (ap^.typ^.form = Pointer) THEN (* ok *)
 					ELSIF fp^.vis = inPar THEN CheckAssign(fp^.typ, ap)
-					ELSIF (ap^.typ # fp^.typ) THEN err(123)
+					ELSIF ~OPT.EqualType(fp^.typ, ap^.typ) THEN err(123)
 					ELSIF (fp^.typ^.form = Pointer) & (ap^.class = Nguard) THEN err(123)
 					END
 				END

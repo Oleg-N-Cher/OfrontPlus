@@ -30,7 +30,7 @@
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
-		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13;
+		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13; Attr = 20;
 
 		(* Structure forms *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
@@ -60,10 +60,21 @@
 		(* procedure flags (conval^.setval) *)
 		hasBody = 1; isRedef = 2; slNeeded = 3;
 
+		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval)*)
+		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
+
 		(* sysflags *)
 		nilBit = 1;
 
 	TYPE
+		Elem = POINTER TO RECORD
+			next: Elem;
+			struct: OPT.Struct;
+			obj, base: OPT.Object;
+			pos: INTEGER;
+			name: OPS.String
+		END;
+
 		CaseTable = ARRAY OPM.MaxCases OF
 			RECORD
 				low, high: INTEGER
@@ -73,12 +84,192 @@
 		sym, level: BYTE;
 		LoopLevel, ReturnLevel: SHORTINT;
 		TDinit, lastTDinit: OPT.Node;
-		nofFwdPtr: SHORTINT;
-		FwdPtr: ARRAY 64 OF OPT.Struct;
+		userList, recList: Elem;
 
-	PROCEDURE^ Type(VAR typ, banned: OPT.Struct);
+	PROCEDURE^ Type(VAR typ: OPT.Struct; VAR name: OPS.String);
 	PROCEDURE^ Expression(VAR x: OPT.Node);
 	PROCEDURE^ Block(VAR procdec, statseq: OPT.Node);
+
+	(* forward type handling *)
+
+	PROCEDURE IncompleteType (typ: OPT.Struct): BOOLEAN;
+	BEGIN
+		IF typ.form = Pointer THEN
+			IF typ = OPT.sysptrtyp THEN RETURN FALSE END;
+			typ := typ.BaseTyp
+		END;
+		RETURN (typ = OPT.undftyp) OR (typ.comp = Record) & (typ.BaseTyp = OPT.undftyp)
+	END IncompleteType;
+
+	PROCEDURE SetType (struct: OPT.Struct; obj: OPT.Object; typ: OPT.Struct; name: OPS.String);
+		VAR u: Elem;
+	BEGIN
+		IF obj # NIL THEN obj.typ := typ ELSE struct.BaseTyp := typ END;
+		IF name # NIL THEN
+			NEW(u); u.struct := struct; u.obj := obj; u.pos := OPM.errpos; u.name := name;
+			u.next := userList; userList := u
+		END
+	END SetType;
+
+	PROCEDURE CheckAlloc (VAR typ: OPT.Struct; dynAllowed: BOOLEAN; pos: INTEGER);
+	BEGIN
+		typ.pvused := TRUE;
+		IF typ.comp = DynArr THEN
+			IF ~dynAllowed THEN OPM.Mark(88, pos); typ := OPT.undftyp END
+		ELSIF typ.comp = Record THEN
+			IF (typ.attribute = absAttr) OR (typ.attribute = limAttr) & (typ.mno # 0) THEN
+				OPM.Mark(193, pos); typ := OPT.undftyp
+			END
+		END
+	END CheckAlloc;
+
+	PROCEDURE CheckRecursiveType (outer, inner: OPT.Struct; pos: INTEGER);
+		VAR fld: OPT.Object;
+	BEGIN
+		IF outer = inner THEN OPM.Mark(58, pos)
+		ELSIF inner.comp IN {Array, DynArr} THEN CheckRecursiveType(outer, inner.BaseTyp, pos)
+		ELSIF inner.comp = Record THEN
+			fld := inner.link;
+			WHILE (fld # NIL) & (fld.mode = Fld) DO
+				CheckRecursiveType(outer, fld.typ, pos);
+				fld := fld.link
+			END;
+			IF inner.BaseTyp # NIL THEN CheckRecursiveType(outer, inner.BaseTyp, pos) END
+		END
+	END CheckRecursiveType;
+
+	PROCEDURE FixType (struct: OPT.Struct; obj: OPT.Object; typ: OPT.Struct; pos: INTEGER);
+	(* fix forward reference *)
+		VAR t: OPT.Struct; f, bf: OPT.Object; i: SHORTINT;
+	BEGIN
+		IF obj # NIL THEN
+			IF obj.mode = Var THEN	(* variable type *)
+				IF struct # NIL THEN	(* receiver type *)
+					IF (typ.form # Pointer) OR (typ.BaseTyp # struct) THEN OPM.Mark(180, pos) END;
+				ELSE CheckAlloc(typ, obj.mnolev > level, pos)	(* TRUE for parameters *)
+				END
+			ELSIF obj.mode = VarPar THEN	(* varpar type *)
+				IF struct # NIL THEN	(* varpar receiver type *)
+					IF typ # struct THEN OPM.Mark(180, pos) END
+				END
+			ELSIF obj.mode = Fld THEN	(* field type *)
+				CheckAlloc(typ, FALSE, pos);
+				CheckRecursiveType(struct, typ, pos)
+			ELSIF obj.mode = TProc THEN	(* proc return type *)
+				IF typ.form = Comp THEN typ := OPT.undftyp; OPM.Mark(54, pos) END
+			ELSIF obj.mode = Typ THEN	(* alias type *)
+				IF typ.form IN {Byte..Set, LInt} THEN	(* make alias structure *)
+					t := OPT.NewStr(typ.form, Basic); i := t.ref;
+					t^ := typ^; t.ref := i; t.strobj := obj; t.mno := 0;
+					t.BaseTyp := typ; typ := t
+				END;
+				IF obj.vis # internal THEN
+					IF typ.comp = Record THEN typ.exp := TRUE
+					ELSIF typ.form = Pointer THEN typ.BaseTyp.exp := TRUE
+					END
+				END
+			ELSE HALT(100)
+			END;
+			obj.typ := typ
+		ELSE
+			IF struct.form = Pointer THEN	(* pointer base type *)
+				IF (typ.comp # Record) & ~(typ.comp IN {Array, DynArr}) THEN
+					typ := OPT.undftyp; OPM.Mark(57, pos)
+				END;
+				IF (struct.strobj # NIL) & (struct.strobj.vis # internal) THEN typ.exp := TRUE END;
+			ELSIF struct.comp = Array THEN	(* array base type *)
+				CheckAlloc(typ, FALSE, pos);
+				CheckRecursiveType(struct, typ, pos)
+			ELSIF struct.comp = DynArr THEN	(* array base type *)
+				CheckAlloc(typ, TRUE, pos);
+				CheckRecursiveType(struct, typ, pos)
+			ELSIF struct.comp = Record THEN	(* record base type *)
+				IF typ.form = Pointer THEN typ := typ.BaseTyp END;
+				typ.pvused := TRUE; struct.extlev := SHORT(SHORT(typ.extlev + 1));
+				IF (typ.attribute = 0) OR (typ.attribute = limAttr) & (typ.mno # 0) THEN OPM.Mark(181, pos)
+				ELSIF (struct.attribute = absAttr) & (typ.attribute # absAttr) THEN OPM.Mark(191, pos)
+				ELSIF (typ.attribute = limAttr) & (struct.attribute # limAttr) THEN OPM.Mark(197, pos)
+				END;
+				f := struct.link;
+				WHILE f # NIL DO	(* check for field name conflicts *)
+					OPT.FindField(f.name, typ, bf);
+					IF bf # NIL THEN OPM.Mark(1, pos) END;
+					f := f.link
+				END;
+				CheckRecursiveType(struct, typ, pos)
+			ELSIF struct.form = ProcTyp THEN	(* proc type return type *)
+				IF typ.form = Comp THEN typ := OPT.undftyp; OPM.Mark(54, pos) END;
+			ELSE HALT(100)
+			END;
+			struct.BaseTyp := typ
+		END
+	END FixType;
+
+	PROCEDURE CheckForwardTypes;
+		VAR u, next: Elem; progress: BOOLEAN; name: OPS.Name;
+	BEGIN
+		u := userList; userList := NIL;
+		WHILE u # NIL DO
+			next := u.next; name := u.name$; OPT.Find(name, u.base);
+			IF u.base = NIL THEN OPM.Mark(0, u.pos)
+			ELSIF u.base.mode # Typ THEN OPM.Mark(72, u.pos)
+			ELSE u.next := userList; userList := u	(* reinsert *)
+			END;
+			u := next
+		END;
+		REPEAT	(* iteration for multy level alias *)
+			u := userList; userList := NIL; progress := FALSE;
+			WHILE u # NIL DO
+				next := u.next;
+				IF IncompleteType(u.base.typ) THEN
+					u.next := userList; userList := u	(* reinsert *)
+				ELSE
+					progress := TRUE;
+					FixType(u.struct, u.obj, u.base.typ, u.pos)
+				END;
+				u := next
+			END
+		UNTIL (userList = NIL) OR ~progress;
+		u := userList;	(* remaining type relations are cyclic *)
+		WHILE u # NIL DO
+			IF (u.obj = NIL) OR (u.obj.mode = Typ) THEN OPM.Mark(58, u.pos) END;
+			u := u.next
+		END;
+	END CheckForwardTypes;
+
+	PROCEDURE CheckUnimpl (m: OPT.Object; typ: OPT.Struct; pos: INTEGER);
+		VAR obj: OPT.Object;
+	BEGIN
+		IF m # NIL THEN
+			IF (m.mode = TProc) & (absAttr IN m.conval.setval) THEN
+				OPT.FindField(m.name^, typ, obj);
+				IF (obj = NIL) OR (obj.mode # TProc) OR (absAttr IN obj.conval.setval) THEN
+					OPM.Mark(192, pos);
+					OPM.LogWLn; OPM.LogWStr("  ");
+					IF typ.strobj # NIL THEN
+						OPM.LogWStr(m.name); OPM.LogWStr(" not implemented in "); OPM.LogWStr(typ.strobj.name)
+					ELSE
+						OPM.LogWStr(m.name); OPM.LogWStr(" not implemented");
+					END
+				END
+			END;
+			CheckUnimpl(m.left, typ, pos);
+			CheckUnimpl(m.right, typ, pos)
+		END
+	END CheckUnimpl;
+	
+	PROCEDURE CheckRecords (rec: Elem);
+		VAR b: OPT.Struct;
+	BEGIN
+		WHILE rec # NIL DO	(* check for unimplemented methods in base type *)
+			b := rec.struct.BaseTyp;
+			WHILE (b # NIL) & (b # OPT.undftyp) DO
+				CheckUnimpl(b.link, rec.struct, rec.pos);
+				b := b.BaseTyp
+			END;
+			rec := rec.next
+		END
+	END CheckRecords;
 
 	PROCEDURE Sign(n: LONGINT): INTEGER;
 	BEGIN
@@ -125,13 +316,17 @@
 		END
 	END ConstExpression;
 
-	PROCEDURE CheckMark(VAR vis: BYTE);
+	PROCEDURE CheckMark(obj: OPT.Object);	(* !!! *)
 	BEGIN OPS.Get(sym);
 		IF (sym = times) OR (sym = minus) THEN
-			IF level > 0 THEN err(48) END;
-			IF sym = times THEN vis := external ELSE vis := externalR END;
+			IF ((OPM.Lang = "1") OR (OPM.Lang = "7")) & (sym = minus) THEN err(48)
+			ELSIF (level > 0) OR ~(obj^.mode IN {Var, Fld}) & (sym = minus) THEN err(48)
+			END;
+			IF (sym = times) & ~((OPM.Lang = "7") & (obj^.mode IN {Var, Fld})) THEN obj^.vis := external
+			ELSE obj^.vis := externalR
+			END;
 			OPS.Get(sym)
-		ELSE vis := internal
+		ELSE obj^.vis := internal
 		END
 	END CheckMark;
 
@@ -176,70 +371,171 @@
 		END
 	END CheckSysFlagProc;
 
-	PROCEDURE RecordType(VAR typ, banned: OPT.Struct);
-		VAR fld, first, last, base: OPT.Object;
-			ftyp: OPT.Struct; sysflag: SHORTINT;
+	PROCEDURE Extends(x, b: OPT.Struct): BOOLEAN;
+	BEGIN
+		IF (b^.form = Pointer) & (x^.form = Pointer) THEN b := b^.BaseTyp; x := x^.BaseTyp END;
+		IF (b^.comp = Record) & (x^.comp = Record) THEN
+			REPEAT x := x^.BaseTyp UNTIL (x = NIL) OR (x = b)
+		END;
+		RETURN x = b
+	END Extends;
+
+	PROCEDURE CheckOverwrite (proc, base: OPT.Object; rec: OPT.Struct);
+		VAR o, bo: OPT.Object;
+	BEGIN
+		IF base # NIL THEN
+			IF base.conval.setval * {absAttr, empAttr, extAttr} = {} THEN err(182) END;
+			IF (proc.link.mode # base.link.mode) OR (proc.link.vis # base.link.vis)
+				OR ~Extends(proc.link.typ, base.link.typ) THEN err(115) END;
+			o := proc.link; bo := base.link;
+			WHILE (o # NIL) & (bo # NIL) DO
+				IF (bo.sysflag # 0) & (o.sysflag = 0) THEN	(* propagate sysflags *)
+					o.sysflag := bo.sysflag
+				END;
+				o := o.link; bo := bo.link
+			END;
+			OPB.CheckParameters(proc.link.link, base.link.link, FALSE);
+			IF ~Extends(proc.typ, base.typ) THEN err(117) END;
+			IF (base.vis # proc.vis) & ((proc.vis # internal) OR rec.exp) THEN err(183) END;
+			INCL(proc.conval.setval, isRedef)
+		END
+	END CheckOverwrite;
+
+	PROCEDURE GetAttributes (proc, base: OPT.Object; owner: OPT.Struct);	(* read method attributes *)
+		VAR attr, battr: SET; o: OPT.Object;
+	BEGIN
+		attr := {};
+		IF sym = comma THEN	(* read attributes *)
+			OPS.Get(sym);
+			IF sym = ident THEN
+				OPT.Find(OPS.name, o);
+				IF (o # NIL) & (o.mode = SProc) & (o.adr = newfn) THEN
+					IF OPM.Lang = "C" THEN INCL(attr, newAttr) ELSE err(178) END;
+					OPS.Get(sym);
+					IF sym = comma THEN
+						OPS.Get(sym);
+						IF sym = ident THEN OPT.Find(OPS.name, o) ELSE o := NIL; err(ident) END
+					ELSE o := NIL
+					END
+				END;
+				IF o # NIL THEN
+					IF (o.mode # Attr) OR (o.adr = limAttr) OR (OPM.Lang # "C") THEN err(178)
+					ELSE INCL(attr, o.adr)
+					END;
+					OPS.Get(sym)
+				END
+			ELSE err(ident)
+			END
+		END;
+		IF (base = NIL) & ~(newAttr IN attr) THEN INCL(attr, newAttr); IF OPM.Lang = "C" THEN err(185) END
+		ELSIF (base # NIL) & (newAttr IN attr) THEN err(186)
+		END;
+		IF (OPM.Lang = "2") OR (OPM.Lang = "3") THEN INCL(attr, extAttr) END;
+		IF absAttr IN attr THEN
+			IF owner.attribute # absAttr THEN err(190) END;
+			IF (proc.vis = internal) & owner.exp THEN err(179) END
+		END;
+		IF (owner.attribute = 0) OR (owner.attribute = limAttr) THEN
+			IF (empAttr IN attr) & (newAttr IN attr) THEN err(187)
+(*
+			ELSIF extAttr IN attr THEN err(188)
+*)
+			END
+		END;
+		IF base # NIL THEN
+			battr := base.conval.setval;
+			IF empAttr IN battr THEN
+				IF absAttr IN attr THEN err(189) END
+			ELSIF ~(absAttr IN battr) THEN
+				IF (absAttr IN attr) OR (empAttr IN attr) THEN err(189) END
+			END
+		END;
+		IF empAttr IN attr THEN
+			IF proc.typ # OPT.notyp THEN err(195)
+			ELSE
+				o := proc.link; WHILE (o # NIL) & (o.vis # outPar) DO o := o.link END;
+				IF o # NIL THEN err(195) END
+			END
+		END;
+		proc.conval.setval := attr
+	END GetAttributes;
+
+	PROCEDURE RecordType(VAR typ: OPT.Struct; attr: OPT.Object);
+		VAR fld, first, last: OPT.Object; r: Elem; ftyp: OPT.Struct; name: OPS.String;
 	BEGIN typ := OPT.NewStr(Comp, Record); typ^.BaseTyp := NIL;
-		CheckSysFlag(sysflag, -1);
+		IF OPM.Lang # "C" THEN typ^.attribute := extAttr END;
+		CheckSysFlag(typ^.sysflag, 0);
+		IF attr # NIL THEN
+			IF (OPM.Lang = "C") & (attr^.adr # empAttr) THEN typ^.attribute := SHORT(SHORT(attr.adr))
+			ELSE err(178)
+			END
+		END;
 		IF sym = lparen THEN
 			OPS.Get(sym); (*record extension*)
 			IF sym = ident THEN
-				qualident(base);
-				IF (base^.mode = Typ) & (base^.typ^.comp = Record) THEN
-					IF base^.typ = banned THEN err(58)
-					ELSE base^.typ^.pvused := TRUE;
-						typ^.BaseTyp := base^.typ; typ^.extlev := SHORT(SHORT(base^.typ^.extlev + 1)); typ^.sysflag := base^.typ^.sysflag
+				Type(ftyp, name);
+				IF ftyp^.form = Pointer THEN ftyp := ftyp^.BaseTyp END;
+				SetType(typ, NIL, ftyp, name);
+				IF (ftyp^.comp = Record) (* & (ftyp # OPT.anytyp) *) THEN
+					ftyp^.pvused := TRUE; typ^.extlev := SHORT(SHORT(ftyp^.extlev + 1));
+					IF (ftyp^.attribute = 0) OR (ftyp^.attribute = limAttr) & (ftyp^.mno # 0) THEN err(181)
+					ELSIF (typ^.attribute = absAttr) & (ftyp^.attribute # absAttr) THEN err(191)
+					ELSIF (ftyp^.attribute = limAttr) & (typ^.attribute # limAttr) THEN err(197)
 					END
-				ELSE err(52)
+				ELSIF ftyp # OPT.undftyp THEN err(53)
 				END
 			ELSE err(ident)
-			END ;
+			END;
+			IF typ^.attribute # absAttr THEN	(* save typ for unimplemented method check *)
+				NEW(r); r.struct := typ; r.pos := OPM.errpos; r.next := recList; recList := r
+			END;
 			CheckSym(rparen)
-		END ;
-		IF sysflag >= 0 THEN typ^.sysflag := sysflag END ;
-		OPT.OpenScope(0, NIL); first := NIL; last := NIL;
+		END;
+		OPT.OpenScope(0, NIL);
+		first := NIL; last := NIL;
 		LOOP
 			IF sym = ident THEN
 				LOOP
 					IF sym = ident THEN
-						IF typ^.BaseTyp # NIL THEN
+						IF (typ^.BaseTyp # NIL) & (typ^.BaseTyp # OPT.undftyp) THEN
 							OPT.FindField(OPS.name, typ^.BaseTyp, fld);
 							IF fld # NIL THEN err(1) END
-						END ;
-						OPT.Insert(OPS.name, fld); CheckMark(fld^.vis);
+						END;
+						OPT.Insert(OPS.name, fld);
 						fld^.mode := Fld; fld^.link := NIL; fld^.typ := OPT.undftyp;
-						IF first = NIL THEN first := fld END ;
-						IF last = NIL THEN typ^.link := fld ELSE last^.link := fld END ;
+						CheckMark(fld);
+						IF first = NIL THEN first := fld END;
+						IF last = NIL THEN typ^.link := fld ELSE last^.link := fld END;
 						last := fld
 					ELSE err(ident)
-					END ;
+					END;
 					IF sym = comma THEN OPS.Get(sym)
 					ELSIF sym = ident THEN err(comma)
 					ELSE EXIT
 					END
-				END ;
-				CheckSym(colon); Type(ftyp, banned);
-				ftyp^.pvused := TRUE;
-				IF ftyp^.comp = DynArr THEN ftyp := OPT.undftyp; err(88) END ;
+				END;
+				CheckSym(colon); Type(ftyp, name);
+				CheckAlloc(ftyp, FALSE, OPM.errpos);
 				WHILE first # NIL DO
-					first^.typ := ftyp; first := first^.link
+					SetType(typ, first, ftyp, name); first := first^.link
 				END
-			END ;
+			END;
 			IF sym = semicolon THEN OPS.Get(sym)
 			ELSIF sym = ident THEN err(semicolon)
 			ELSE EXIT
 			END
-		END ;
-		OPT.CloseScope
+		END;
+		OPT.CloseScope;
+		OPB.Inittd(TDinit, lastTDinit, typ); CheckSym(end)
 	END RecordType;
 
-	PROCEDURE ArrayType(VAR typ, banned: OPT.Struct);
-		VAR x: OPT.Node; n: LONGINT; sysflag: SHORTINT;
+	PROCEDURE ArrayType(VAR typ: OPT.Struct);
+		VAR x: OPT.Node; n: LONGINT; sysflag: SHORTINT; name: OPS.String;
 	BEGIN CheckSysFlag(sysflag, 0);
 		IF sym = of THEN	(*dynamic array*)
 			typ := OPT.NewStr(Comp, DynArr); typ^.mno := 0; typ^.sysflag := sysflag;
-			OPS.Get(sym); Type(typ^.BaseTyp, banned);
-			typ^.BaseTyp^.pvused := TRUE;
+			OPS.Get(sym); Type(typ^.BaseTyp, name); SetType(typ, NIL, typ^.BaseTyp, name);
+			CheckAlloc(typ^.BaseTyp, TRUE, OPM.errpos);
 			IF typ^.BaseTyp^.comp = DynArr THEN typ^.n := typ^.BaseTyp^.n + 1
 			ELSE typ^.n := 0
 			END
@@ -248,48 +544,31 @@
 			IF x^.typ^.form IN intSet THEN n := x^.conval^.intval;
 				IF (n <= 0) OR (n > OPM.MaxIndex) THEN err(63); n := 1 END
 			ELSE err(51); n := 1
-			END ;
+			END;
 			typ^.n := SHORT(n);
 			IF sym = of THEN
-				OPS.Get(sym); Type(typ^.BaseTyp, banned);
-				typ^.BaseTyp^.pvused := TRUE
+				OPS.Get(sym); Type(typ^.BaseTyp, name); SetType(typ, NIL, typ^.BaseTyp, name);
+				CheckAlloc(typ^.BaseTyp, FALSE, OPM.errpos)
 			ELSIF sym = comma THEN
-				OPS.Get(sym); IF sym # of THEN ArrayType(typ^.BaseTyp, banned) END
+				OPS.Get(sym); IF sym # of THEN ArrayType(typ^.BaseTyp) END
 			ELSE err(35)
-			END ;
+			END;
 			IF typ^.BaseTyp^.comp = DynArr THEN typ^.BaseTyp := OPT.undftyp; err(88) END
 		END
 	END ArrayType;
 
 	PROCEDURE PointerType(VAR typ: OPT.Struct);
-		VAR id: OPT.Object;
+		VAR name: OPS.String;
 	BEGIN typ := OPT.NewStr(Pointer, Basic); CheckSysFlag(typ^.sysflag, 0);
 		CheckSym(to);
-		IF sym = ident THEN OPT.Find(OPS.name, id);
-			IF id = NIL THEN
-				IF nofFwdPtr < LEN(FwdPtr) THEN FwdPtr[nofFwdPtr] := typ; INC(nofFwdPtr)
-				ELSE err(224)
-				END ;
-				typ^.link := OPT.NewObj(); typ^.link^.name := OPT.NewName(OPS.name);
-				typ^.BaseTyp := OPT.undftyp; OPS.Get(sym) (*forward ref*)
-			ELSE qualident(id);
-				IF id^.mode = Typ THEN
-					IF id^.typ^.comp IN {Array, DynArr, Record} THEN
-						typ^.BaseTyp := id^.typ
-					ELSE typ^.BaseTyp := OPT.undftyp; err(57)
-					END
-				ELSE typ^.BaseTyp := OPT.undftyp; err(52)
-				END
-			END
-		ELSE Type(typ^.BaseTyp, OPT.notyp);
-			IF ~(typ^.BaseTyp^.comp IN {Array, DynArr, Record}) THEN
-				typ^.BaseTyp := OPT.undftyp; err(57)
-			END
+		Type(typ^.BaseTyp, name); SetType(typ, NIL, typ^.BaseTyp, name);
+		IF (typ^.BaseTyp # OPT.undftyp) & (typ^.BaseTyp^.comp = Basic) THEN
+			typ^.BaseTyp := OPT.undftyp; err(57)
 		END
 	END PointerType;
 
-	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct);
-		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last, res: OPT.Object; typ: OPT.Struct;
+	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct; VAR name: OPS.String);
+		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
 		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Lang = "C")) THEN
 			LOOP
@@ -298,7 +577,7 @@
 				ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
 				ELSIF (sym = out) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
 				ELSE mode := Var
-				END;
+				END ;
 				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
 				LOOP
 					IF sym = ident THEN
@@ -315,8 +594,9 @@
 					ELSE EXIT
 					END
 				END;
-				CheckSym(colon); Type(typ, OPT.notyp);
-				IF mode = Var THEN typ^.pvused := TRUE END;
+				CheckSym(colon); Type(typ, name);
+				IF mode # VarPar THEN CheckAlloc(typ, TRUE, OPM.errpos) END;
+				(* IN only allowed for records and arrays *)
 				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
 				END;
@@ -328,70 +608,96 @@
 					END
 				END;
 				(* typ^.pbused is set when parameter type name is parsed *)
-				WHILE first # NIL DO first^.typ := typ; first := first^.link END ;
+				WHILE first # NIL DO SetType(NIL, first, typ, name); first := first^.link END;
 				IF sym = semicolon THEN OPS.Get(sym)
 				ELSIF sym = ident THEN err(semicolon)
 				ELSE EXIT
 				END
 			END
-		END ;
+		END;
 		CheckSym(rparen);
+		name := NIL;
 		IF sym = colon THEN
-			OPS.Get(sym); resTyp := OPT.undftyp;
-			IF sym = ident THEN qualident(res);
-				IF res^.mode = Typ THEN
-					IF res^.typ^.form < Comp THEN resTyp := res^.typ
-					ELSE err(54)
-					END
-				ELSE err(52)
-				END
-			ELSE err(ident)
-			END
+			OPS.Get(sym);
+			Type(resTyp, name);
+			IF resTyp^.form = Comp THEN resTyp := OPT.undftyp; err(54) END
 		ELSE resTyp := OPT.notyp
 		END
 	END FormalParameters;
 
-	PROCEDURE TypeDecl(VAR typ, banned: OPT.Struct);
-		VAR id: OPT.Object;
-	BEGIN typ := OPT.undftyp;
+	PROCEDURE Type (VAR typ: OPT.Struct; VAR name: OPS.String);	(* name # NIL => forward reference *)
+		VAR id: OPT.Object; tname: OPS.String;
+	BEGIN typ := OPT.undftyp; name := NIL;
 		IF sym < lparen THEN err(12);
 			REPEAT OPS.Get(sym) UNTIL sym >= lparen
 		END ;
-		IF sym = ident THEN qualident(id);
-			IF id^.mode = Typ THEN
-				IF id^.typ # banned THEN typ := id^.typ ELSE err(58) END
-			ELSE err(52)
+		IF sym = ident THEN
+			OPT.Find(OPS.name, id);
+			IF (id = NIL) OR (id.mode = -1) OR (id.mode = Typ) & IncompleteType(id.typ) THEN	(* forward type definition *)
+				name := OPT.NewName(OPS.name); OPS.Get(sym);
+				IF (id = NIL) & (sym = period) THEN	(* missing module *)
+					err(0); OPS.Get(sym); name := NIL;
+					IF sym = ident THEN OPS.Get(sym) END
+				ELSIF sym = record THEN	(* wrong attribute *)
+					err(178); OPS.Get(sym); name := NIL; RecordType(typ, NIL)
+				END
+			ELSE
+				qualident(id);
+				IF id^.mode = Typ THEN
+					typ := id^.typ
+				ELSIF id^.mode = Attr THEN
+					IF sym = record THEN
+						OPS.Get(sym); RecordType(typ, id)
+					ELSE err(12)
+					END
+				ELSE err(52)
+				END
 			END
 		ELSIF sym = array THEN
-			OPS.Get(sym); ArrayType(typ, banned)
+			OPS.Get(sym); ArrayType(typ)
 		ELSIF sym = record THEN
-			OPS.Get(sym); RecordType(typ, banned);
-			OPB.Inittd(TDinit, lastTDinit, typ); CheckSym(end)
+			OPS.Get(sym); RecordType(typ, NIL)
 		ELSIF sym = pointer THEN
 			OPS.Get(sym); PointerType(typ)
 		ELSIF sym = procedure THEN
 			OPS.Get(sym); typ := OPT.NewStr(ProcTyp, Basic); CheckSysFlagProc(typ^.sysflag);
 			IF sym = lparen THEN
 				OPS.Get(sym); OPT.OpenScope(level, NIL);
-				FormalParameters(typ^.link, typ^.BaseTyp); OPT.CloseScope
+				FormalParameters(typ^.link, typ^.BaseTyp, tname); SetType(typ, NIL, typ^.BaseTyp, tname); OPT.CloseScope
 			ELSE typ^.BaseTyp := OPT.notyp; typ^.link := NIL
 			END
 		ELSE err(12)
 		END ;
 		LOOP
-			IF (sym >= semicolon) & (sym <= else) OR (sym = rparen) OR (sym = eof) THEN EXIT END;
+			IF (sym >= semicolon) & (sym <= else) OR (sym = rparen) OR (sym = eof)
+				OR (sym = number) OR (sym = comma) OR (sym = string) THEN EXIT END;
 			err(15); IF sym = ident THEN EXIT END;
 			OPS.Get(sym)
 		END
-	END TypeDecl;
-
-	PROCEDURE Type(VAR typ, banned: OPT.Struct);
-	BEGIN TypeDecl(typ, banned);
-		IF (typ^.form = Pointer) & (typ^.BaseTyp = OPT.undftyp) & (typ^.strobj = NIL) THEN err(0) END
 	END Type;
 
+	PROCEDURE ActualParameters(VAR aparlist: OPT.Node; fpar: OPT.Object);
+		VAR apar, last: OPT.Node;
+	BEGIN aparlist := NIL; last := NIL;
+		IF sym # rparen THEN
+			LOOP Expression(apar);
+				IF fpar # NIL THEN
+					IF (OPM.Lang = "C") & (apar.typ.form = Pointer) & (fpar.typ.form = Comp) THEN OPB.DeRef(apar) END;
+					OPB.Param(apar, fpar); OPB.Link(aparlist, last, apar);
+					fpar := fpar^.link;
+				ELSE err(64)
+				END;
+				IF sym = comma THEN OPS.Get(sym)
+				ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
+				ELSE EXIT
+				END
+			END
+		END ;
+		IF fpar # NIL THEN err(65) END
+	END ActualParameters;
+
 	PROCEDURE selector(VAR x: OPT.Node);
-		VAR obj, proc: OPT.Object; y: OPT.Node; typ: OPT.Struct; name: OPS.Name;
+		VAR obj, proc, p, fpar: OPT.Object; y, apar: OPT.Node; typ: OPT.Struct; name: OPS.Name;
 	BEGIN
 		LOOP
 			IF sym = lbrak THEN OPS.Get(sym);
@@ -417,11 +723,23 @@
 										IF (proc^.link = NIL) OR (proc^.link^.link # y^.obj) THEN err(75) END ;
 										typ := y^.obj^.typ;
 										IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-										OPT.FindField(x^.obj^.name^, typ^.BaseTyp, proc);
-										IF proc # NIL THEN x^.subcl := super ELSE err(74) END
+										OPT.FindField(x^.obj^.name^, typ^.BaseTyp, p);
+										IF p # NIL THEN
+											x^.subcl := super; x.typ := p.typ;	(* correct result type *)
+											IF p.conval.setval * {absAttr, empAttr} # {} THEN err(194) END;
+											IF (p.vis = externalR) & (p.mnolev < 0) & (proc.link.name^ # name) THEN err(196) END
+										ELSE err(74)
+										END
 									ELSE err(75)
 									END
-								ELSIF (x^.left^.readonly) & (obj^.link^.mode = VarPar) & (obj^.link^.vis = 0) THEN err(76)
+								ELSE
+									proc := obj;
+									IF (x.left.readonly) & (proc.link.mode = VarPar) & (proc.link.vis = 0)  THEN err(76) END;
+									WHILE (proc.mnolev >= 0) & ~(newAttr IN proc.conval.setval) & (typ.BaseTyp # NIL) DO
+										(* find base method *)
+										typ := typ.BaseTyp; OPT.FindField(name, typ, proc);
+									END;
+									IF (proc.vis = externalR) & (proc.mnolev < 0) THEN err(196) END;
 								END;
 								IF (obj^.typ # OPT.notyp) & (sym # lparen) THEN err(lparen) END
 							END
@@ -444,32 +762,12 @@
 					ELSE err(52)
 					END
 				ELSE err(ident)
-				END ;
+				END;
 				CheckSym(rparen)
 			ELSE EXIT
 			END
 		END
 	END selector;
-
-	PROCEDURE ActualParameters(VAR aparlist: OPT.Node; fpar: OPT.Object);
-		VAR apar, last: OPT.Node;
-	BEGIN aparlist := NIL; last := NIL;
-		IF sym # rparen THEN
-			LOOP Expression(apar);
-				IF fpar # NIL THEN
-					IF (OPM.Lang = "C") & (apar.typ.form = Pointer) & (fpar.typ.form = Comp) THEN OPB.DeRef(apar) END;
-					OPB.Param(apar, fpar); OPB.Link(aparlist, last, apar);
-					fpar := fpar^.link;
-				ELSE err(64)
-				END ;
-				IF sym = comma THEN OPS.Get(sym)
-				ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
-				ELSE EXIT
-				END
-			END
-		END ;
-		IF fpar # NIL THEN err(65) END
-	END ActualParameters;
 
 	PROCEDURE StandProcCall(VAR x: OPT.Node);
 		VAR y: OPT.Node; m: BYTE; n: SHORTINT;
@@ -521,12 +819,12 @@
 		CheckSym(rbrace)
 	END Sets;
 
-	PROCEDURE Factor(VAR x: OPT.Node);
+PROCEDURE Factor(VAR x: OPT.Node);
 		VAR fpar, id: OPT.Object; apar: OPT.Node;
 	BEGIN
 		IF sym < lparen THEN err(13);
 			REPEAT OPS.Get(sym) UNTIL sym >= lparen
-		END ;
+		END;
 		IF sym = ident THEN
 			qualident(id); x := OPB.NewLeaf(id); selector(x);
 			IF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN StandProcCall(x)	(* x may be NIL *)
@@ -604,40 +902,29 @@
 	END Expression;
 
 	PROCEDURE Receiver(VAR mode, vis: BYTE; VAR name: OPS.Name; VAR typ, rec: OPT.Struct);
-		VAR obj: OPT.Object;
+		VAR tname: OPS.String;
 	BEGIN typ := OPT.undftyp; rec := NIL; vis := 0;
 		IF sym = var THEN OPS.Get(sym); mode := VarPar
-		ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
+		ELSIF (OPM.Lang = "C") & (sym = in) THEN OPS.Get(sym); mode := VarPar; vis := inPar
 		ELSE mode := Var END;
 		name := OPS.name; CheckSym(ident); CheckSym(colon);
-		IF sym = ident THEN OPT.Find(OPS.name, obj); OPS.Get(sym);
-			IF obj = NIL THEN err(0)
-			ELSIF obj^.mode # Typ THEN err(72)
-			ELSE typ := obj^.typ; rec := typ;
-				IF rec^.form = Pointer THEN rec := rec^.BaseTyp END ;
-				IF ~((mode = Var) & (typ^.form = Pointer) & (rec^.comp = Record) OR
-					(mode = VarPar) & (typ^.comp = Record)) THEN err(70); rec := NIL END ;
-				IF (rec # NIL) & (rec^.mno # level) THEN err(72); rec := NIL END
-			END
-		ELSE err(ident)
-		END ;
+		IF sym # ident THEN err(ident) END;
+		Type(typ, tname);
+		IF tname = NIL THEN
+			IF typ^.form = Pointer THEN rec := typ^.BaseTyp ELSE rec := typ END;
+			IF ~((mode = Var) & (typ^.form = Pointer) & (rec^.comp = Record) OR
+				(mode = VarPar) & (typ^.comp = Record)) THEN err(70); rec := NIL END;
+			IF (rec # NIL) & (rec^.mno # level) THEN err(72); rec := NIL END
+		ELSE err(0)
+		END;
 		CheckSym(rparen);
 		IF rec = NIL THEN rec := OPT.NewStr(Comp, Record); rec^.BaseTyp := NIL END
 	END Receiver;
 
-	PROCEDURE Extends(x, b: OPT.Struct): BOOLEAN;
-	BEGIN
-		IF (b^.form = Pointer) & (x^.form = Pointer) THEN b := b^.BaseTyp; x := x^.BaseTyp END ;
-		IF (b^.comp = Record) & (x^.comp = Record) THEN
-			REPEAT x := x^.BaseTyp UNTIL (x = NIL) OR (x = b)
-		END ;
-		RETURN x = b
-	END Extends;
-
 	PROCEDURE ProcedureDeclaration(VAR x: OPT.Node);
 		VAR proc, fwd: OPT.Object;
 			name: OPS.Name;
-			mode, vis: BYTE;
+			mode: BYTE;
 			forward: BOOLEAN;
 			sys: SHORTINT;
 
@@ -680,13 +967,16 @@
 		END GetCode;
 
 		PROCEDURE GetParams;
+			VAR name: OPS.String;
 		BEGIN
-			proc^.vis := vis; proc^.mode := mode; proc^.typ := OPT.notyp;
+			proc^.mode := mode; proc^.typ := OPT.notyp;
 			proc^.sysflag := SHORT(sys);
 			proc^.conval := OPT.NewConst(); proc^.conval^.setval := {};
 			IF sym = lparen THEN
-				OPS.Get(sym); FormalParameters(proc^.link, proc^.typ)
-			END ;
+				OPS.Get(sym); FormalParameters(proc^.link, proc^.typ, name);
+				IF name # NIL THEN err(0) END
+			END;
+			CheckForwardTypes; userList := NIL;
 			IF fwd # NIL THEN
 				OPB.CheckParameters(proc^.link, fwd^.link, TRUE);
 				IF proc^.typ # fwd^.typ THEN err(117) END ;
@@ -704,50 +994,74 @@
 			OPB.Enter(procdec, statseq, proc); x := procdec;
 			x^.conval := OPT.NewConst(); x^.conval^.intval := c;
 			IF sym = ident THEN
-				IF OPS.name # proc^.name^ THEN err(4) END ;
+				IF OPS.name # proc^.name^ THEN err(4) END;
 				OPS.Get(sym)
 			ELSE err(ident)
 			END
 		END Body;
 
 		PROCEDURE TProcDecl;
-			VAR baseProc: OPT.Object;
+			VAR baseProc, o: OPT.Object;
 				objTyp, recTyp: OPT.Struct;
 				objMode, objVis: BYTE;
 				objName: OPS.Name;
+				pnode: OPT.Node;
+				fwdAttr: SET;
 		BEGIN
 			OPS.Get(sym); mode := TProc;
 			IF level > 0 THEN err(73) END ;
 			Receiver(objMode, objVis, objName, objTyp, recTyp);
 			IF sym = ident THEN
-				name := OPS.name; CheckMark(vis);
+				name := OPS.name;
 				OPT.FindField(name, recTyp, fwd);
 				OPT.FindField(name, recTyp^.BaseTyp, baseProc);
 				IF (baseProc # NIL) & (baseProc^.mode # TProc) THEN baseProc := NIL END ;
 				IF fwd = baseProc THEN fwd := NIL END ;
 				IF (fwd # NIL) & (fwd^.mnolev # level) THEN fwd := NIL END ;
-				IF (fwd # NIL) & (fwd^.mode = TProc) & ~(hasBody IN fwd^.conval^.setval) THEN
+				IF (fwd # NIL) & (fwd^.mode = TProc) & (fwd^.conval^.setval * {hasBody, absAttr, empAttr} = {}) THEN
 					(* there exists a corresponding forward declaration *)
 					proc := OPT.NewObj(); proc^.leaf := TRUE;
-					IF fwd^.vis # vis THEN err(118) END
+					proc^.mode := TProc; proc^.conval := OPT.NewConst();
+					CheckMark(proc);
+					IF fwd^.vis # proc^.vis THEN err(118) END;
+					fwdAttr := fwd^.conval^.setval
 				ELSE
 					IF fwd # NIL THEN err(1); fwd := NIL END ;
 					OPT.OpenScope(0, NIL); OPT.topScope^.right := recTyp^.link; OPT.Insert(name, proc);
 					recTyp^.link := OPT.topScope^.right; OPT.CloseScope;
-				END ;
+					proc^.mode := TProc; proc^.conval := OPT.NewConst();
+					CheckMark(proc);
+					IF recTyp^.strobj # NIL THEN	(* preserve declaration order *)
+						o := recTyp^.strobj^.link;
+						IF o = NIL THEN recTyp^.strobj^.link := proc
+						ELSE
+							WHILE o^.nlink # NIL DO o := o^.nlink END;
+							o^.nlink := proc
+						END
+					END
+				END;
 				INC(level); OPT.OpenScope(level, proc);
 				OPT.Insert(objName, proc^.link); proc^.link^.mode := objMode; proc^.link^.vis := objVis; proc^.link^.typ := objTyp;
-				GetParams;
-				IF baseProc # NIL THEN
-					IF (objMode # baseProc^.link^.mode) OR ~Extends(objTyp, baseProc^.link^.typ) THEN err(115) END ;
-					OPB.CheckParameters(proc^.link^.link, baseProc^.link^.link, FALSE);
-					IF proc^.typ # baseProc^.typ THEN err(117) END ;
-					IF (baseProc^.vis = external) & (proc^.vis = internal) &
-						(recTyp^.strobj # NIL) & (recTyp^.strobj^.vis = external) THEN err(109)
-					END ;
-					INCL(proc^.conval^.setval, isRedef)
-				END ;
-				IF ~forward THEN Body END ;
+				ASSERT(OPT.topScope # NIL);
+				GetParams;	(* may change proc := fwd !!! *)
+				ASSERT(OPT.topScope # NIL);
+				GetAttributes(proc, baseProc, recTyp);
+				IF (fwd # NIL) & (fwdAttr / proc.conval.setval * {absAttr, empAttr, extAttr} # {}) THEN err(184) END;
+				CheckOverwrite(proc, baseProc, recTyp);
+				IF ~forward THEN
+					IF empAttr IN proc^.conval^.setval THEN	(* insert empty procedure *)
+						pnode := NIL; OPB.Enter(pnode, NIL, proc);
+						pnode^.conval := OPT.NewConst();
+						pnode^.conval^.intval := OPM.errpos;
+						pnode^.conval^.intval2 := OPM.errpos;
+						x := pnode;
+					ELSIF ~(absAttr IN proc^.conval^.setval) THEN Body
+					END;
+					proc^.adr := 0
+				ELSE
+					proc^.adr := OPM.errpos;
+					IF proc^.conval^.setval * {empAttr, absAttr} # {} THEN err(184) END
+				END;
 				DEC(level); OPT.CloseScope
 			ELSE err(ident)
 			END
@@ -767,21 +1081,25 @@
 		END;
 		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Lang # "1") & (OPM.Lang # "7") THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(OPS.name, fwd);
-			name := OPS.name; CheckMark(vis);
-			IF (vis # internal) & (mode = LProc) THEN mode := XProc END ;
+			name := OPS.name;
 			IF (fwd # NIL) & ((fwd^.mnolev # level) OR (fwd^.mode = SProc)) THEN fwd := NIL END ;
 			IF (fwd # NIL) & (fwd^.mode IN {LProc, XProc}) & ~(hasBody IN fwd^.conval^.setval) THEN
 				(* there exists a corresponding forward declaration *)
 				proc := OPT.NewObj(); proc^.leaf := TRUE;
 				IF (mode IN {IProc, CProc}) OR (fwd^.sysflag # sys) THEN err(133) END;
-				IF fwd^.vis # vis THEN err(118) END
+				proc^.mode := mode; proc^.conval := OPT.NewConst();
+				CheckMark(proc);
+				IF fwd^.vis # proc^.vis THEN err(118) END
 			ELSE
 				IF fwd # NIL THEN err(1); fwd := NIL END ;
-				OPT.Insert(name, proc)
-			END ;
-			IF (mode # LProc) & (level > 0) THEN err(73) END ;
+				OPT.Insert(name, proc);
+				proc^.mode := mode; proc^.conval := OPT.NewConst();
+				CheckMark(proc)
+			END;
+			IF (proc^.vis # internal) & (mode = LProc) THEN mode := XProc END;
+			IF (mode # LProc) & (level > 0) THEN err(73) END;
 			INC(level); OPT.OpenScope(level, proc);
-			proc^.link := NIL; GetParams;
+			proc^.link := NIL; GetParams;	(* may change proc := fwd !!! *)
 			IF mode = CProc THEN GetCode
 			ELSIF ~forward THEN Body
 			END ;
@@ -1005,7 +1323,7 @@
 			где cond задается как apar^.subcl *)
 		END FindCond;
 
-		PROCEDURE ForImproved; (* Concept and implementation by Oleg Komlev *)
+		PROCEDURE ForImproved;	(* Concept and implementation by Oleg Komlev *)
 			PROCEDURE varFor(id: OPT.Object): BOOLEAN;
 			BEGIN
 				RETURN (id^.mode = Var) & (id^.vis = 0) & (id^.mnolev = level)
@@ -1203,7 +1521,7 @@
 			ELSE err(ident)
 			END
 		END ForImproved;
-	
+
 	BEGIN stat := NIL; last := NIL; INC(ReturnLevel);
 		LOOP x := NIL;
 			IF sym < ident THEN err(14);
@@ -1312,16 +1630,21 @@
 
 	PROCEDURE Block(VAR procdec, statseq: OPT.Node);
 		VAR typ: OPT.Struct;
-			obj, first, last: OPT.Object;
+			obj, first, last, o: OPT.Object;
 			x, lastdec: OPT.Node;
 			i: SHORTINT;
+			rname: OPS.Name;
+			name: OPS.String;
+			rec: Elem;
 
-	BEGIN first := NIL; last := NIL; nofFwdPtr := 0;
+	BEGIN
+		IF ((sym < begin) OR (sym > var)) & (sym # procedure) & (sym # end) THEN err(33) END;
+		first := NIL; last := NIL; userList := NIL; recList := NIL;
 		LOOP
 			IF sym = const THEN
 				OPS.Get(sym);
 				WHILE sym = ident DO
-					OPT.Insert(OPS.name, obj); CheckMark(obj^.vis);
+					OPT.Insert(OPS.name, obj); obj^.mode := Con; CheckMark(obj);
 					obj^.typ := OPT.sinttyp; obj^.mode := Var;	(* Var to avoid recursive definition *)
 					IF sym = eql THEN
 						OPS.Get(sym); ConstExpression(x)
@@ -1332,35 +1655,49 @@
 					obj^.mode := Con; obj^.typ := x^.typ; obj^.conval := x^.conval; (* ConstDesc ist not copied *)
 					CheckSym(semicolon)
 				END
-			END ;
+			END;
 			IF sym = type THEN
 				OPS.Get(sym);
 				WHILE sym = ident DO
 					OPT.Insert(OPS.name, obj); obj^.mode := Typ; obj^.typ := OPT.undftyp;
-					CheckMark(obj^.vis);
-					IF sym = eql THEN
-						OPS.Get(sym); TypeDecl(obj^.typ, obj^.typ)
-					ELSIF (sym = becomes) OR (sym = colon) THEN
-						err(eql); OPS.Get(sym); TypeDecl(obj^.typ, obj^.typ)
-					ELSE err(eql)
-					END ;
-					IF obj^.typ^.strobj = NIL THEN obj^.typ^.strobj := obj END ;
-					IF obj^.typ^.comp IN {Record, Array, DynArr} THEN
-						i := 0;
-						WHILE i < nofFwdPtr DO typ := FwdPtr[i]; INC(i);
-							IF typ^.link^.name^ = obj^.name^ THEN typ^.BaseTyp := obj^.typ; typ^.link^.name := OPT.null END
+					CheckMark(obj); obj.mode := -1;
+					IF sym # eql THEN err(eql) END;
+					IF (sym = eql) OR (sym = becomes) OR (sym = colon) THEN
+						OPS.Get(sym); Type(obj^.typ, name); SetType(NIL, obj, obj^.typ, name)
+					END;
+					obj.mode := Typ;
+					IF obj.typ.form IN {Byte..Set, LInt} THEN	(* make alias structure *)
+						typ := OPT.NewStr(obj.typ.form, Basic); i := typ.ref;
+						typ^ := obj.typ^; typ.ref := i; typ.strobj := NIL; typ.mno := 0; typ.txtpos := OPM.errpos;
+						typ.BaseTyp := obj.typ; obj.typ := typ;
+					END;
+					IF obj^.typ^.strobj = NIL THEN obj^.typ^.strobj := obj END;
+					IF obj^.typ^.form = Pointer THEN	(* !!! *)
+						typ := obj^.typ^.BaseTyp;
+						IF (typ # NIL) & (typ^.comp = Record) & (typ^.strobj = NIL) THEN
+							(* pointer to unnamed record: name record as "pointerName^" *)
+							rname := obj^.name$; i := 0;
+							WHILE rname[i] # 0X DO INC(i) END;
+							rname[i] := "^"; rname[i+1] := 0X;
+							OPT.Insert(rname, o); o^.mode := Typ; o^.typ := typ; typ^.strobj := o
 						END
-					END ;
+					END;
+					IF obj.vis # internal THEN
+						typ := obj^.typ;
+						IF typ^.form = Pointer THEN typ := typ^.BaseTyp END;
+						IF typ^.comp = Record THEN typ^.exp := TRUE END
+					END;
 					CheckSym(semicolon)
 				END
-			END ;
+			END;
 			IF sym = var THEN
 				OPS.Get(sym);
 				WHILE sym = ident DO
 					LOOP
 						IF sym = ident THEN
-							OPT.Insert(OPS.name, obj); CheckMark(obj^.vis);
+							OPT.Insert(OPS.name, obj);
 							obj^.mode := Var; obj^.link := NIL; obj^.leaf := obj^.vis = internal; obj^.typ := OPT.undftyp;
+							CheckMark(obj);
 							IF first = NIL THEN first := obj END ;
 							IF last = NIL THEN OPT.topScope^.scope := obj ELSE last^.link := obj END ;
 							last := obj
@@ -1371,23 +1708,19 @@
 						ELSE EXIT
 						END
 					END ;
-					CheckSym(colon); Type(typ, OPT.notyp);
-					typ^.pvused := TRUE;
-					IF typ^.comp = DynArr THEN typ := OPT.undftyp; err(88) END ;
-					WHILE first # NIL DO first^.typ := typ; first := first^.link END ;
+					CheckSym(colon); Type(typ, name);
+					CheckAlloc(typ, FALSE, OPM.errpos);
+					WHILE first # NIL DO SetType(NIL, first, typ, name); first := first^.link END;
 					CheckSym(semicolon)
 				END
-			END ;
+			END;
 			IF (sym < const) OR (sym > var) THEN EXIT END ;
-		END ;
-		i := 0;
-		WHILE i < nofFwdPtr DO
-			IF FwdPtr[i]^.link^.name # OPT.null THEN err(128) END ;
-			FwdPtr[i] := NIL;	(* garbage collection *)
-			INC(i)
-		END ;
+		END;
+		CheckForwardTypes;
+		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
 		procdec := NIL; lastdec := NIL;
+		IF (sym # procedure) & (sym # begin) & (sym # end) THEN err(34) END;
 		WHILE sym = procedure DO
 			OPS.Get(sym); ProcedureDeclaration(x);
 			IF x # NIL THEN
@@ -1396,6 +1729,7 @@
 			END;
 			CheckSym(semicolon)
 		END;
+		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
 		IF sym = begin THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
