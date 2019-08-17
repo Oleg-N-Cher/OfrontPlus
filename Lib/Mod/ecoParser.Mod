@@ -29,7 +29,7 @@ TYPE
 	Comparer* = PROCEDURE (VAR prs: Parser): BOOLEAN;
 	Method* = PROCEDURE (VAR prs: Parser);
 
-	Node* = (*EXTENSIBLE*) RECORD
+	Node* = EXTENSIBLE RECORD
 		nextNode*: NodePtr;
 		comparer*: Comparer;
 		nameLen* : INTEGER;
@@ -49,12 +49,12 @@ TYPE
 		setCtx : CtxPtr;
 	END;
 
-PROCEDURE (VAR prs: Parser) SetContextByPtr* (ctx: CtxPtr) (*NEW*);
+PROCEDURE (VAR prs: Parser) SetContextByPtr* (ctx: CtxPtr), NEW;
 BEGIN
 	prs.ctxNow := ctx;
 END SetContextByPtr;
 
-PROCEDURE (VAR prs: Parser) PushContext* (ctx: CtxPtr) (*NEW*);
+PROCEDURE (VAR prs: Parser) PushContext* (ctx: CtxPtr), NEW;
 BEGIN
 	ASSERT(prs.ctxIdx < LEN(prs.ctxStk^) (* Is stack full? *) );
 	prs.ctxStk[prs.ctxIdx] := prs.ctxNow;
@@ -62,7 +62,7 @@ BEGIN
 	prs.ctxNow := ctx;
 END PushContext;
 
-PROCEDURE (VAR prs: Parser) PopContext* (*NEW*);
+PROCEDURE (VAR prs: Parser) PopContext*, NEW;
 BEGIN
 	ASSERT(prs.ctxIdx # 0 (* Is stack empty? *) );
 	DEC(prs.ctxIdx);
@@ -129,19 +129,19 @@ BEGIN
 	prs.ctxNow := prs.nodFnd(CtxPtr);
 END Push;
 
-PROCEDURE (VAR tree: Tree) Init* (*NEW*);
+PROCEDURE (VAR tree: Tree) Init*, NEW;
 	(* Initialize the context tree *)
 BEGIN
 	tree.root := NIL; tree.this := NIL; tree.addTo := NIL;
 END Init;
 
-PROCEDURE (VAR tree: Tree) To* (ctx : CtxPtr) (*NEW*);
+PROCEDURE (VAR tree: Tree) To* (ctx : CtxPtr), NEW;
 BEGIN
 	tree.addTo := ctx;
 END To;
 
 PROCEDURE (VAR tree: Tree) AddContext* (
-		cmp: Comparer; IN name: String; notfound: Method) (*NEW*);
+		cmp: Comparer; IN name: String; notfound: Method), NEW;
 VAR
 	newCtx: CtxPtr;
 BEGIN
@@ -166,7 +166,7 @@ BEGIN
 END AddContext;
 
 PROCEDURE (VAR ctx: CtxNode) AddContext* (
-		cmp: Comparer; IN name: String; notfound: Method) (*NEW*);
+		cmp: Comparer; IN name: String; notfound: Method), NEW;
 VAR
 	newCtx: CtxPtr;
 BEGIN
@@ -199,14 +199,14 @@ BEGIN
 END NewContext;
 
 PROCEDURE (VAR tree: Tree) AddPushContext* (
-		cmp: Comparer; IN name: String; notfound: Method) (*NEW*);
+		cmp: Comparer; IN name: String; notfound: Method), NEW;
 BEGIN
 	tree.AddContext(cmp, name, notfound);
 	tree.this.method := Push;
 END AddPushContext;
 
 PROCEDURE (VAR tree: Tree) AddMethod* (
-		cmp: Comparer; IN name: String; meth: Method) (*NEW*);
+		cmp: Comparer; IN name: String; meth: Method), NEW;
 VAR
 	newMeth: POINTER TO MethodNode;
 BEGIN
@@ -221,7 +221,7 @@ BEGIN
 END AddMethod;
 
 PROCEDURE (VAR tree: Tree) AddSetContext* (
-		cmp: Comparer; IN name: String; setContext: CtxPtr) (*NEW*);
+		cmp: Comparer; IN name: String; setContext: CtxPtr), NEW;
 VAR
 	newSetCtx: POINTER TO SetCtxNode;
 BEGIN
@@ -312,7 +312,7 @@ BEGIN
 END EquCap;
 
 PROCEDURE (VAR prs: Parser) Init*
-	(buf: StrPtr; bufLen, ctxDeep: INTEGER) (*NEW*) (*EXTENSIBLE*);
+	(buf: StrPtr; bufLen, ctxDeep: INTEGER), NEW, EXTENSIBLE;
 	(* Set input buffer for parsing *)
 BEGIN
 	prs.inpBuf := buf;
@@ -330,7 +330,7 @@ BEGIN
 	END;
 END Init;
 
-PROCEDURE (VAR prs: Parser) Exec* () (*NEW*);
+PROCEDURE (VAR prs: Parser) Exec*, NEW;
 	(* Execute one-token parsing event method *)
 BEGIN
 	prs.nodFnd := prs.ctxNow.chldNode;

@@ -3,7 +3,7 @@ MODULE ecoVector;
 
 TYPE
      OBJECT    = POINTER TO ObjectRec;
-     ObjectRec = RECORD END;
+     ObjectRec = EXTENSIBLE RECORD END;
 
      Node      = POINTER TO NodeRec;
      NodeRec   = RECORD
@@ -27,12 +27,12 @@ BEGIN
     RETURN vec;
 END Vector;
 
-PROCEDURE (vec: VECTOR) Length*() : INTEGER;
+PROCEDURE (vec: VECTOR) Length*() : INTEGER, NEW;
 BEGIN
     RETURN vec.len;
 END Length;
 
-PROCEDURE (vec: VECTOR) PushBack*(e: OBJECT);
+PROCEDURE (vec: VECTOR) PushBack*(e: OBJECT), NEW;
 VAR node : Node;
 BEGIN
     NEW(node);
@@ -47,7 +47,7 @@ BEGIN
     INC(vec.len);
 END PushBack;
 
-PROCEDURE (vec: VECTOR) PopBack*() : OBJECT;
+PROCEDURE (vec: VECTOR) PopBack*() : OBJECT, NEW;
 VAR prev, node : Node;
 BEGIN
     IF vec.tail = NIL THEN
@@ -74,7 +74,7 @@ BEGIN
     END
 END PopBack;
 
-PROCEDURE (vec: VECTOR) Head*() : OBJECT;
+PROCEDURE (vec: VECTOR) Head*() : OBJECT, NEW;
 BEGIN
     IF vec.head = NIL THEN
         RETURN NIL
@@ -83,7 +83,7 @@ BEGIN
     END
 END Head;
 
-PROCEDURE (vec: VECTOR) Tail*() : OBJECT;
+PROCEDURE (vec: VECTOR) Tail*() : OBJECT, NEW;
 BEGIN
     IF vec.tail = NIL THEN
         RETURN NIL
@@ -92,7 +92,7 @@ BEGIN
     END
 END Tail;
 
-PROCEDURE (vec: VECTOR) At*(pos : INTEGER) : OBJECT;
+PROCEDURE (vec: VECTOR) At*(pos : INTEGER) : OBJECT, NEW;
 VAR i    : INTEGER;
     node : Node;
 BEGIN
@@ -107,7 +107,7 @@ BEGIN
     END
 END At;
 
-PROCEDURE (vec: VECTOR) Delete*(pos: INTEGER);
+PROCEDURE (vec: VECTOR) Delete*(pos: INTEGER), NEW;
 VAR i    : INTEGER;
     node : Node;
 BEGIN
@@ -128,7 +128,7 @@ BEGIN
     END
 END Delete;
 
-PROCEDURE (vec: VECTOR) Insert*(pos: INTEGER; e: OBJECT);
+PROCEDURE (vec: VECTOR) Insert*(pos: INTEGER; e: OBJECT), NEW;
 VAR i    : INTEGER;
     node : Node;
     prev : Node;
@@ -158,14 +158,14 @@ BEGIN
     INC(vec.len);
 END Insert;
 
-PROCEDURE (vec: VECTOR) Clear*();
+PROCEDURE (vec: VECTOR) Clear*(), NEW;
 BEGIN
     vec.head := NIL;
     vec.tail := NIL;
     vec.len  := 0;
 END Clear;
 
-PROCEDURE (vec: VECTOR) Swap*(p1, p2: INTEGER);
+PROCEDURE (vec: VECTOR) Swap*(p1, p2: INTEGER), NEW;
 VAR i      : INTEGER;
     o1, o2 : OBJECT;
 BEGIN

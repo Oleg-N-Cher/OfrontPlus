@@ -597,7 +597,7 @@ END FloodFill;
 
 (* Bitmap *)
 
-PROCEDURE (bmp: Bitmap) Finalize*;
+PROCEDURE (bmp: Bitmap) Finalize*, NEW;
 BEGIN
 END Finalize;
 

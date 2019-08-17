@@ -42,15 +42,15 @@ MODULE Heap;
     AddressZero = S.VAL(ADDRESS, 0);
 
   TYPE
-    ModuleName- = ARRAY ModNameLen OF SHORTCHAR;
-    CmdName-    = ARRAY CmdNameLen OF SHORTCHAR;
+    ModuleName* = ARRAY ModNameLen OF SHORTCHAR;
+    CmdName*    = ARRAY CmdNameLen OF SHORTCHAR;
 
-    Module- = POINTER TO ModuleDesc;
-    Cmd-    = POINTER TO CmdDesc;
+    Module* = POINTER TO ModuleDesc;
+    Cmd*    = POINTER TO CmdDesc;
 
-    EnumProc-   = PROCEDURE(P: PROCEDURE(p: S.PTR));
+    EnumProc*   = PROCEDURE(P: PROCEDURE(p: S.PTR));
 
-    ModuleDesc- = RECORD
+    ModuleDesc* = RECORD
       next-:     Module;
       name-:     ModuleName;
       refcnt-:   INTEGER;
@@ -61,9 +61,9 @@ MODULE Heap;
       reserved2: INTEGER
     END;
 
-    Command- = PROCEDURE;
+    Command* = PROCEDURE;
 
-    CmdDesc- = RECORD
+    CmdDesc* = RECORD
       next-: Cmd;
       name-: CmdName;
       cmd-:  Command

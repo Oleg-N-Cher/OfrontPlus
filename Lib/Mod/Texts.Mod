@@ -29,7 +29,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     END ;
 
     Run = POINTER TO RunDesc;
-    RunDesc = RECORD
+    RunDesc = EXTENSIBLE RECORD
       prev, next: Run;
       len: LONGINT;
       fnt: FontsFont;
@@ -47,10 +47,10 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     Buffer* = POINTER TO BufDesc;
     Text* = POINTER TO TextDesc;
 
-    ElemMsg* = RECORD END;
+    ElemMsg* = EXTENSIBLE RECORD END;
     Handler* = PROCEDURE (e: Elem; VAR msg: ElemMsg);
 
-    ElemDesc* = RECORD (RunDesc)
+    ElemDesc* = EXTENSIBLE RECORD (RunDesc)
       W*, H*: LONGINT;
       handle*: Handler;
       base: Text
@@ -84,7 +84,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       corg: LONGINT
     END;
 
-    Reader* = RECORD
+    Reader* = EXTENSIBLE RECORD
       eot*: BOOLEAN;
       fnt*: FontsFont;
       col*, voff*: SHORTINT;

@@ -59,7 +59,7 @@ BEGIN
   RETURN cur_size
 END write_callback;
 
-PROCEDURE (VAR self: Socket) Get* (url: ARRAY [1] OF SHORTCHAR);
+PROCEDURE (VAR self: Socket) Get* (url: ARRAY [1] OF SHORTCHAR), NEW;
 VAR
   msglen: INTEGER; ch: SHORTCHAR; res: c.CURLcode; syserr: Types.ADRINT;
 BEGIN
