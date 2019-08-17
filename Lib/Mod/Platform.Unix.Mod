@@ -9,9 +9,9 @@ CONST
   Unix*    = TRUE;
   Windows* = FALSE;
   
-  StdIn-  = 0;
-  StdOut- = 1;
-  StdErr- = 2;
+  StdIn*  = 0;
+  StdOut* = 1;
+  StdErr* = 2;
 
 
 TYPE
