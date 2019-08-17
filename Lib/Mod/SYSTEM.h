@@ -118,10 +118,10 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 // Assertions and Halts
 
-#if defined(__GNUC__) && ___GNUC__ <= 2 && __GNUC_MINOR__ <= 4
-#  define __NORETURN
-#else
+#if defined(__GNUC__) && ___GNUC__ >= 2 && __GNUC_MINOR__ >= 5
 #  define __NORETURN __attribute__((noreturn))
+#else
+#  define __NORETURN
 #endif
 
 extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) __NORETURN;
