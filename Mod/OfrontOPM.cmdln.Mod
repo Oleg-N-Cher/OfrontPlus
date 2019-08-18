@@ -263,7 +263,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('       "a": check assertions                                         (on)'); Console.Ln;
 			Console.String('       "p": pointer initialization                                   (on)'); Console.Ln;
 			Console.String('       "t": check type guards                                        (on)'); Console.Ln;
-			Console.String('       "f": allow "correct" FOR (concept by Oleg Komlev)            (off)'); Console.Ln;
+			Console.String('       "f": allow "correct FOR" (concept by Oleg Komlev)            (off)'); Console.Ln;
 			Console.String('       "d": translate a module into dynamic library (.dll/.so)      (off)'); Console.Ln;
 			Console.String('  "1": Oberon "2": Oberon-2 "C": Component Pascal "7": Oberon-07 "3": Oberon-3'); Console.Ln;
 			Console.String('  "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
