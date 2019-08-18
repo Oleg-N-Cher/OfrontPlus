@@ -10,7 +10,7 @@ CONST
   eql = 11; period = 20; comma = 21; colon = 22; rparen = 24;
   rbrak = 25; rbrace = 26; of = 27; then = 28; do = 29;
   to = 30; lparen = 32; becomes = 36; ident = 40; semicolon = 41;
-  end = 43; until = 46;
+  at = 42; end = 43; until = 46;
 
 PROCEDURE LogErrMsg*(n: SHORTINT);
 BEGIN
@@ -52,6 +52,7 @@ BEGIN
   |   becomes: Log.String('":=" missing')
   |     ident: Log.String("identifier expected")
   | semicolon: Log.String('";" missing')
+  |        at: Log.String('"@" missing')
   |       end: Log.String("END missing")
   |     until: Log.String("UNTIL missing")
 

@@ -25,7 +25,7 @@
 		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
-		module = 65; out = 66; dollar = 67; eof = 68;
+		module = 65; out = 66; dollar = 67; at = 68; eof = 69;
 		unsgn = 40; (* псевдооперация unsigned для div *)
 
 		(* object modes *)
@@ -680,7 +680,11 @@
 		VAR apar, last: OPT.Node;
 	BEGIN aparlist := NIL; last := NIL;
 		IF sym # rparen THEN
-			LOOP Expression(apar);
+			LOOP
+				IF (OPM.Lang = "3") & (fpar # NIL) & (fpar^.mode = VarPar) & (fpar^.vis # inPar) THEN
+					IF sym = at THEN OPS.Get(sym) ELSE err(42) END
+				END;
+				Expression(apar);
 				IF fpar # NIL THEN
 					IF (OPM.Lang = "C") & (apar.typ.form = Pointer) & (fpar.typ.form = Comp) THEN OPB.DeRef(apar) END;
 					OPB.Param(apar, fpar); OPB.Link(aparlist, last, apar);
@@ -692,7 +696,7 @@
 				ELSE EXIT
 				END
 			END
-		END ;
+		END;
 		IF fpar # NIL THEN err(65) END
 	END ActualParameters;
 

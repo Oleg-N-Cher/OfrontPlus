@@ -38,7 +38,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	 50 |  REPEAT     FOR        LOOP       WITH       EXIT
 	 55 |  RETURN     ARRAY      RECORD     POINTER    BEGIN
 	 60 |  CONST      TYPE       VAR        PROCEDURE  IMPORT
-	 65 |  MODULE     OUT        $          eof    *)
+	 65 |  MODULE     OUT        $          @          eof    *)
 
 	CONST
 		(* numtyp values *)
@@ -58,7 +58,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
-		module = 65; out = 66; dollar = 67; eof = 68;
+		module = 65; out = 66; dollar = 67; at = 68; eof = 69;
 
 	VAR
 		ch: SHORTCHAR;     (*current character*)
@@ -264,6 +264,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "="  : s :=  eql; OPM.Get(ch)
 			| ">"  : OPM.Get(ch);
 							 IF ch = "=" THEN OPM.Get(ch); s := geq ELSE s := gtr END
+			| "@": s := at; OPM.Get(ch)
 			| "A": Identifier(s); IF name = "ARRAY" THEN s := array END
 			| "B": Identifier(s);
 						IF name = "BEGIN" THEN s := begin

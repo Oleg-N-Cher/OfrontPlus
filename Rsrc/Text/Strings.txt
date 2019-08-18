@@ -33,6 +33,7 @@ insertMarkers	Insert Markers
 36	":=" missing
 40	identifier expected
 41	";" missing
+42	"@" missing
 43	END missing
 46	UNTIL missing
 47	EXIT not within loop statement
