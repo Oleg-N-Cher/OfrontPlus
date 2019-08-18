@@ -756,6 +756,7 @@
 			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
 					((x^.obj = NIL) OR (x^.obj^.mode # TProc)) THEN
 				OPS.Get(sym);
+				IF OPM.Lang = "3" THEN CheckSym(colon) END;
 				IF sym = ident THEN
 					qualident(obj);
 					IF obj^.mode = Typ THEN OPB.TypTest(x, obj, TRUE)
