@@ -16,23 +16,12 @@
 		Node* = POINTER TO NodeDesc;
 		ConstExt* = OPS.String;
 
-		ConstArr* = POINTER TO EXTENSIBLE RECORD END;
-
-		ConstArrOfByte* = POINTER TO RECORD(ConstArr)
-			val*: POINTER TO ARRAY OF BYTE;
-		END;
-
-		ConstArrOfSInt*= POINTER TO RECORD(ConstArr)
-			val*: POINTER TO ARRAY OF SHORTINT;
-		END;
-
-		ConstArrOfInt* = POINTER TO RECORD(ConstArr)
-			val*: POINTER TO ARRAY OF INTEGER;
-		END;
-
-		ConstArrOfLInt* = POINTER TO RECORD(ConstArr)
-			val*: POINTER TO ARRAY OF LONGINT;
-		END;
+        ConstArr* = POINTER TO RECORD
+           val1*: POINTER TO ARRAY OF BYTE;
+           val2*: POINTER TO ARRAY OF SHORTINT;
+           val4*: POINTER TO ARRAY OF INTEGER;
+           val8*: POINTER TO ARRAY OF LONGINT
+        END;
 
 		ConstDesc* = RECORD
 			ext*: ConstExt;	(* string or code for code proc *)

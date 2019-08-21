@@ -204,21 +204,14 @@
 		x^.conval^.intval := intval; SetIntType(x, FALSE); RETURN x
 	END NewIntConst;
 
-	PROCEDURE NewArrConst*(VAR x:OPT.Node);
-	(* подготовить узел для константного массива *)
-	VAR	n: INTEGER; typ: OPT.Struct;y: OPT.ConstArr;
-				fp: OPT.Object;
-				arrByte: OPT.ConstArrOfByte; arrSInt: OPT.ConstArrOfSInt;
-				arrInt: OPT.ConstArrOfInt; arrLInt: OPT.ConstArrOfLInt;
+	PROCEDURE NewArrConst*(VAR x:OPT.Node);	(* подготовить узел для константного массива *)
+		VAR n: INTEGER; typ: OPT.Struct;y: OPT.ConstArr; fp: OPT.Object;
 	BEGIN
 		n := 1;
 		typ := x^.typ;
 		WHILE (typ^.form =15) & (typ^.comp = 2) DO
 			n := n * typ^.n; (* перемножение размеров по всем измерениям *)
 			typ := typ^.BaseTyp;
-		END;
-		IF typ^.form = Char THEN (* строка *)
-
 		END;
 		(* n - общее кол-во элементов массива, typ - тип элемента *)
 		IF  typ^.form IN intSet+{Bool,Char} THEN (* массив из целых (в т.ч. BYTE)  *)
@@ -228,13 +221,13 @@
 			(* тут нужно выделить кусок  памяти для n элементов массива *)
 			CASE typ^.size OF (* Размер элементов массива в байтах (для BlackBox). *)
 			| 1:	(* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
-						NEW(arrByte); NEW(arrByte.val, n); y := arrByte;
+						NEW(y.val1, n)
 			| 2:	(* типы с размером в 2 байта *)
-						NEW(arrSInt); NEW(arrSInt.val, n); y := arrSInt;
+						NEW(y.val2, n)
 			| 4:	(* типы с размером в 4 байта *)
-						NEW(arrInt); NEW(arrInt.val, n); y := arrInt;
+						NEW(y.val4, n)
 			| 8:	(* типы с размером в 8 байт *)
-						NEW(arrLInt); NEW(arrLInt.val, n); y := arrLInt
+						NEW(y.val8, n)
 			END;
 			fp := x^.obj; (* запомним тип "массив"*)
 			x := Nil(); (* как будто это NIL *)

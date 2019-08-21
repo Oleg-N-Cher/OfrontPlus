@@ -820,13 +820,11 @@
 		CheckSym(rbrace)
 	END Sets;
 
-
-	PROCEDURE String2Chars ( a :OPT.Node; VAR x: OPT.Node);
-	(* переводит строку в массив символов *)
-	VAR i:INTEGER;
+	PROCEDURE String2Chars (a: OPT.Node; VAR x: OPT.Node);	(* переводит строку в массив символов *)
+		VAR i: INTEGER;
 	BEGIN
-		FOR i := 0 TO a^.conval^.intval2-1 DO
-			x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval+i] := SHORT(ORD(a^.conval^.ext^[i]));
+		FOR i := 0 TO a^.conval^.intval2 - 1 DO
+			x^.conval^.arr.val1[x^.conval^.intval+i] := SHORT(ORD(a^.conval^.ext^[i]))
 		END;
 	END String2Chars;
 
@@ -842,7 +840,7 @@
 				INC(x^.conval^.intval,  typ^.n);
 			ELSIF  (apar^.typ^.comp=1)&(apar^.typ^.form  IN {Char,Byte}) THEN
 				(* прочитался символ *)
-					x^.conval^.arr(OPT.ConstArrOfByte).val[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
+					x^.conval^.arr.val1[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
 					INC(x^.conval^.intval,  typ^.n);
 			ELSE
 				err(63);
@@ -865,33 +863,33 @@
 						ELSE
 							OPB.Param(apar, fp); (* проверим на совместимость*)
 							(* тут нужно положить элемент в кусок памяти *)
-							WITH
-							| y: OPT.ConstArrOfByte DO (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
-									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
-									ELSE err(64) END;
-							| y: OPT.ConstArrOfSInt DO (* типы с размером в 2 байта *)
-									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval));
-									ELSE err(64) END;
-							| y: OPT.ConstArrOfInt DO (* типы с размером в 4 байта *)
-									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := SHORT(apar^.conval^.intval);
-									ELSE err(64) END;
-							| y: OPT.ConstArrOfLInt DO (* типы с размером в 8 байт *)
-									IF x^.conval^.intval+i < LEN(y.val^) THEN
-										y.val[x^.conval^.intval+i] := apar^.conval^.intval
+							CASE fp^.typ^.size OF
+							| 1:  (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
+									IF x^.conval^.intval+i < LEN(y.val1^) THEN
+										y.val1[x^.conval^.intval+i] := SHORT(SHORT(SHORT(apar^.conval^.intval)))
 									ELSE err(64) END
-							END;
+							| 2:  (* типы с размером в 2 байта *)
+									IF x^.conval^.intval+i < LEN(y.val2^) THEN
+										y.val2[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval))
+									ELSE err(64) END
+							| 4:  (* типы с размером в 4 байта *)
+									IF x^.conval^.intval+i < LEN(y.val4^) THEN
+										y.val4[x^.conval^.intval+i] := SHORT(apar^.conval^.intval)
+									ELSE err(64) END
+							| 8:  (* типы с размером в 8 байт *)
+									IF x^.conval^.intval+i < LEN(y.val8^) THEN
+										y.val8[x^.conval^.intval+i] := apar^.conval^.intval
+									ELSE err(64) END
+							END
 						END;
-						INC(i);
+						INC(i)
 					ELSE err(64)
-					END ;
+					END;
 					IF sym = comma THEN OPS.Get(sym)
 					ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
 					ELSE EXIT
 					END
-				END;
+				END
 			END;
 			IF i # n THEN
 				IF (i=1) & (typ^.BaseTyp^.form IN {Char,Byte} ) THEN
@@ -903,24 +901,24 @@
 			INC(x^.conval^.intval, n); (* учли прочитанные элементы, даже если они не  прочитаны *)
 		ELSIF  (typ^.BaseTyp^.form =15) & (typ^.BaseTyp^.comp = 2) THEN (* массив из массивов *)
 			IF sym # rparen THEN
-				LOOP ConstArray (x, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)
+				LOOP
+					ConstArray (x, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)
 					IF i < n THEN
 						(*	??? проверим на совместимость *)
-						INC(i);
-					ELSE err(64)
-					END ;
+						INC(i)
+					ELSE err(64); EXIT
+					END;
 					IF sym = comma THEN OPS.Get(sym)
-					ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
+					ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma); EXIT
 					ELSE EXIT
 					END
-				END;
+				END
 			END;
-			IF i # n THEN  err(65)
-			END;
-		ELSE  err(51)
+			IF i # n THEN err(65) END
+		ELSE err(51)
 		END;
 		CheckSym(rparen); (* скобка ) *)
-		END;
+		END
 	END ConstArray;
 
 PROCEDURE Factor(VAR x: OPT.Node);

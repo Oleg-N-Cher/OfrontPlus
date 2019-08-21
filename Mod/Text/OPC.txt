@@ -756,15 +756,14 @@ IF starsLevel > 10 THEN HALT(99) END ;
 	(* генерация конструкция "константный массив". typ - текущий уровень массива *)
 	VAR apar: OPT.Node; i: INTEGER;
 
-		PROCEDURE WriteElem (arr: OPT.ConstArr; i: INTEGER; form: BYTE);
+	PROCEDURE WriteElem (arr: OPT.ConstArr; i: INTEGER; bt: OPT.Struct);
 		(* выводит в листинг i-й элемент константного массива arr *)
 		BEGIN
-			WITH
-			| arr: OPT.ConstArrOfByte DO
-				IF form = Char THEN OPM.WriteInt(arr.val[i] MOD 100H) ELSE OPM.WriteInt(arr.val[i]) END;
-			| arr: OPT.ConstArrOfSInt DO OPM.WriteInt(arr.val[i]);
-			| arr: OPT.ConstArrOfInt DO OPM.WriteInt(arr.val[i]);
-			| arr: OPT.ConstArrOfLInt DO OPM.WriteInt(arr.val[i])
+			CASE bt^.size OF
+				| 1: IF bt^.form = Char THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
+				| 2:  OPM.WriteInt(arr.val2[i])
+				| 4:  OPM.WriteInt(arr.val4[i])
+				| 8:  OPM.WriteInt(arr.val8[i])
 			END
 		END WriteElem;
 
@@ -773,10 +772,10 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		i := 0;
 		IF  typ^.BaseTyp^.form # 15  THEN (* массив из простых элементов *)
 			FOR i := 0 TO typ^.n-2 DO
-						WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); OPM.WriteString(",");
-						IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END;
+				WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp); OPM.WriteString(",");
+				IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END
 			END;
-			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp^.form); (* последний элемент *)
+			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp); (* последний элемент *)
 			INC(obj^.conval^.intval, typ^.n); (* учли выведенные элементы *)
 		ELSE (* массив из массивов *)
 			FOR i := 0 TO typ^.n-2 DO
@@ -786,7 +785,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			END;
 			WriteConstArr (obj, typ^.BaseTyp); (* последний элемент *)
 		END;
-		OPM.WriteString("}");
+		OPM.WriteString("}")
 	END WriteConstArr;
 
 	PROCEDURE IdentList (obj: OPT.Object; vis: SHORTINT);
