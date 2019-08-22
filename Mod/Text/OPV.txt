@@ -789,10 +789,13 @@
 								typ := l^.typ;
 								IF (typ^.form = Pointer) & (r^.typ.form # NilTyp) & (r^.typ # typ) & (r^.typ # OPT.sysptrtyp) THEN
 									OPM.WriteString("(void *) ")
-								END ;
+								END;
 								expr(r, exprPrec)
 							END
 					ELSE
+						IF (subclass = and) OR ((form = Set) & ((subclass = times) OR (subclass = minus))) THEN
+							OPM.Write(OpenParen)	(* to silence Clang warnings -- noch *)
+						END;
 						expr(l, exprPrec);
 						CASE subclass OF
 							times:
@@ -823,7 +826,10 @@
 						|	or:
 									OPM.WriteString(" || ")
 						END;
-						expr(r, exprPrec)
+						expr(r, exprPrec);
+						IF (subclass = and) OR ((form = Set) & ((subclass = times) OR (subclass = minus))) THEN
+							OPM.Write(CloseParen)	(* to silence Clang warnings -- noch *)
+						END
 					END
 		|	Ncall:
 					IF (l^.obj # NIL) & (l^.obj^.mode = TProc) THEN
