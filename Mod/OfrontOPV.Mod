@@ -623,6 +623,12 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 	PROCEDURE^ compStat (n: OPT.Node; exp: BOOLEAN);
 
+	PROCEDURE OpParentheses (ePrec, prec: SHORTINT): BOOLEAN;	(* to silence Clang warnings *)
+		CONST Clang = TRUE;
+	BEGIN
+		RETURN (ePrec = 4) & (prec = 2) OR (ePrec = 1) & (prec = 0)
+	END OpParentheses;
+
 	PROCEDURE expr_val (n: OPT.Node; prec: SHORTINT; lvalue: BOOLEAN);
 		VAR
 			class: SHORTINT;
@@ -636,8 +642,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		class := n^.class; subclass := n^.subcl; form := n^.typ^.form;
 		l := n^.left; r := n^.right;
 		exprPrec := Precedence (class, subclass, form, n^.typ^.comp);
-		IF (exprPrec <= prec) & (class IN {Nconst, Nupto, Nmop, Ndop, Ncall, Nguard, Neguard}) THEN
-			OPM.Write(OpenParen);
+		IF ((exprPrec <= prec) OR OpParentheses(exprPrec, prec)) & (class IN {Nconst, Nupto, Nmop, Ndop, Ncall, Nguard, Neguard}) THEN
+			OPM.Write(OpenParen)
 		END;
 		CASE class OF
 			Nconst:
@@ -790,9 +796,6 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								expr(r, exprPrec)
 							END
 					ELSE
-						IF (subclass = and) OR ((form = Set) & ((subclass = times) OR (subclass = minus))) THEN
-							OPM.Write(OpenParen)	(* to silence Clang warnings -- noch *)
-						END;
 						expr(l, exprPrec);
 						CASE subclass OF
 							times:
@@ -823,10 +826,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						|	or:
 									OPM.WriteString(" || ")
 						END;
-						expr(r, exprPrec);
-						IF (subclass = and) OR ((form = Set) & ((subclass = times) OR (subclass = minus))) THEN
-							OPM.Write(CloseParen)	(* to silence Clang warnings -- noch *)
-						END
+						expr(r, exprPrec)
 					END
 		|	Ncall:
 					IF (l^.obj # NIL) & (l^.obj^.mode = TProc) THEN
@@ -843,8 +843,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					OPM.Write("("); compStat(l, TRUE); expr(r, MinPrec); OPM.Write(")")
 		ELSE
 					design(n, prec); (* not exprPrec! *)
-		END ;
-		IF (exprPrec <= prec) & (class IN {Nconst, Nupto, Nmop, Ndop, Ncall, Nguard}) THEN
+		END;
+		IF ((exprPrec <= prec) OR OpParentheses(exprPrec, prec)) & (class IN {Nconst, Nupto, Nmop, Ndop, Ncall, Nguard}) THEN
 			OPM.Write(CloseParen)
 		END
 	END expr_val;
