@@ -1508,8 +1508,7 @@ avoid unnecessary intermediate variables in OFront
 		  incfn, decfn: (*INC DEC*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126); p^.typ := OPT.notyp
 				ELSE
-					IF (x^.class = Nconst) & (f IN intSet) & (x^.conval^.intval = 0) THEN err(63)
-					ELSIF x^.typ # p^.typ THEN
+					IF x^.typ # p^.typ THEN
 						IF (x^.class = Nconst) & (f IN intSet) THEN Convert(x, p^.typ)
 						ELSIF ~(f IN intSet) THEN err(111)
 						ELSIF x^.typ^.size > p^.typ^.size THEN err(-301)
