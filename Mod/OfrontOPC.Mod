@@ -14,7 +14,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
-		Pointer = 13; ProcTyp = 14; Comp = 15;
+		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
 
 		(* composite structure forms *)
 		Array = 2; DynArr = 3; Record = 4;
@@ -178,11 +178,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF hashtab[h] >= 0 THEN
 				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
 			END
-		ELSIF (mode = Typ) & (obj^.typ^.form IN {Byte..Set}) THEN
+		ELSIF (mode = Typ) & (obj^.typ^.form IN {Byte..Set, UByte}) THEN
 			CASE obj^.typ^.form OF
 				| Byte: OPM.WriteString("BYTE")
 				| Bool: OPM.WriteString("BOOLEAN")
-				| Char: OPM.WriteString("CHAR")
+				| Char, UByte: OPM.WriteString("CHAR")
 				| SInt: OPM.WriteString("SHORTINT")
 				| Int: OPM.WriteString("INTEGER")
 				| LInt: OPM.WriteString("LONGINT")
@@ -523,7 +523,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE DefineType(str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
-		IF str^.form IN {Byte..Set} THEN RETURN END;
+		IF str^.form IN {Byte..Set, UByte} THEN RETURN END;
 		IF (OPM.currFile = OPM.BodyFile) OR (str^.ref < OPM.MaxStruct (*for hidden exports*) ) THEN
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
@@ -730,11 +730,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
 				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, FALSE);
 				off := fld.adr + fld.typ.size; base := fld.typ; fld := fld.link;
-				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set}) THEN base := fld.typ END;
+				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte}) THEN base := fld.typ END;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.typ = base) & (fld.adr = off)
 (* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)) DO
 					OPM.WriteString(", "); DeclareObj(fld, FALSE); off := fld.adr + fld.typ.size; fld := fld.link;
-					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set}) THEN base := fld.typ END
+					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte}) THEN base := fld.typ END
 				END;
 				EndStat
 			END
@@ -753,7 +753,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		base := NIL; first := TRUE;
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
-				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set}) THEN base := obj^.typ END;
+				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte}) THEN base := obj^.typ END;
 				IF (obj^.typ # base) OR (obj^.vis # lastvis) THEN	(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;
@@ -1361,7 +1361,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR i: SHORTINT; s: SET; hex: INTEGER; skipLeading: BOOLEAN;
 	BEGIN
 		CASE form OF
-		|	Bool, Byte, SInt, Int, LInt:
+		|	Bool, Byte, UByte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
 		|	Char:
 					WriteCharLiteral(CHR(con^.intval))

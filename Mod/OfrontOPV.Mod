@@ -25,7 +25,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; Pointer = 13; ProcTyp = 14; Comp = 15;
+		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; Pointer = 13; ProcTyp = 15; Comp = 16;
 
 		(* composite structure forms *)
 		Array = 2; DynArr = 3; Record = 4;
@@ -241,6 +241,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		OPT.sinttyp^.strobj^.linkadr := PredefinedType;
 		OPT.booltyp^.strobj^.linkadr := PredefinedType;
 		OPT.bytetyp^.strobj^.linkadr := PredefinedType;
+		OPT.ubytetyp^.strobj^.linkadr := PredefinedType;
 		OPT.sysptrtyp^.strobj^.linkadr := PredefinedType;
 	END AdrAndSize;
 

@@ -70,8 +70,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		typSize*: PROCEDURE(typ: Struct);
 		topScope*: Object;
 		undftyp*, bytetyp*, booltyp*, chartyp*, sinttyp*, inttyp*, linttyp*,
-		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*: Struct;
-		int8, int16, int32, int64, adrint, byte: Object;
+		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*, ubytetyp*: Struct;
+		int8, int16, int32, int64, adrint, byte, ubyte: Object;
 		nofGmod*: BYTE;	(*nof imports*)
 		GlbMod*: ARRAY maxImps OF Object;	(* ^.right = first object, ^.name = module import name (not alias) *)
 		SelfName*: OPS.Name;	(* name of module being compiled *)
@@ -86,7 +86,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		(* structure forms *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
-		Pointer = 13; ProcTyp = 14; Comp = 15;
+		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -98,10 +98,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
 		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
 		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
-		assertfn = 37;
+		ushortfn = 25; assertfn = 37;
 
 		(*SYSTEM function number*)
-		adrfn = 25; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
+		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
 		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
 
 		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval) *)
@@ -1189,7 +1189,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		ELSE EnterTypeAlias("ADRINT", adrint, linttyp)
 		END;
 		IF (lang = "1") OR (lang = "2") THEN
-			EnterTypeAlias("BYTE", byte, bytetyp)
+			EnterTypeAlias("BYTE", byte, bytetyp);
+			EnterTyp("UBYTE", UByte, 1, ubytetyp)
 		END;
 		EnterProc("ADR", adrfn);
 		EnterProc("LSH", lshfn);
@@ -1213,6 +1214,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("LONGINT", int64, linttyp);
 			EnterTyp("SHORTREAL", Real, 4, realtyp);
 			EnterTyp("REAL", LReal, 8, lrltyp);
+			EnterTyp("UBYTE", UByte, 1, ubytetyp)
 		ELSIF (lang = "1") OR (lang = "2") THEN
 			EnterTyp("CHAR", Char, 1, chartyp);
 			EnterTypeAlias("SHORTINT", int8, bytetyp);
@@ -1222,6 +1224,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTyp("REAL", Real, 4, realtyp);
 			EnterTyp("LONGREAL", LReal, 8, lrltyp)
 		ELSE (* "7" *)
+			EnterTyp("BYTE", UByte, 1, ubytetyp);
 			EnterTyp("CHAR", Char, 1, chartyp);
 			IF OPM.AdrSize # 2 THEN
 				EnterTypeAlias("INTEGER", int32, inttyp)
@@ -1269,7 +1272,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END;
 		EnterProc("ASSERT", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN
-			EnterProc("BITS", bitsfn)	(* Component Pascal BITS() *)
+			EnterProc("BITS", bitsfn);	(* Component Pascal BITS() *)
+			EnterProc("USHORT", ushortfn)
 		END;
 		EnterAttr("ABSTRACT", absAttr);
 		EnterAttr("LIMITED", limAttr);
@@ -1281,7 +1285,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		impCtxt.ref[LInt] := linttyp;  impCtxt.ref[Real] := realtyp;
 		impCtxt.ref[LReal] := lrltyp;  impCtxt.ref[Set] := settyp;
 		impCtxt.ref[String] := stringtyp; impCtxt.ref[NilTyp] := niltyp;
-		impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp
+		impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp;
+		impCtxt.ref[UByte] := ubytetyp
 	END InitScope;
 
 BEGIN

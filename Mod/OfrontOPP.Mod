@@ -35,8 +35,8 @@
 		(* Structure forms *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
-		Pointer = 13; ProcTyp = 14; Comp = 15;
-		intSet = {Byte, SInt..LInt};
+		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		intSet = {Byte, UByte, SInt..LInt};
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -1199,7 +1199,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		BEGIN
 			OPS.Get(sym);
 			IF sym = ident THEN qualident(id);
-				IF ~(id^.typ^.form IN intSet) THEN err(68) END ;
+				IF ~(id^.typ^.form IN intSet) THEN err(68) END;
 				CheckSym(becomes); Expression(y); pos := OPM.errpos;
 				x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
 				CheckSym(to); Expression(y); pos := OPM.errpos;

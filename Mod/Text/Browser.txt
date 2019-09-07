@@ -272,6 +272,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				ELSIF obj = OPT.linttyp^.strobj THEN Ws("LONGINT")
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SHORTREAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL")
+				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("UBYTE")
 				ELSE
 					Ws(obj^.name^)
 				END
@@ -283,11 +284,13 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				ELSIF obj = OPT.linttyp^.strobj THEN Ws("HUGEINT")
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("LONGREAL")
+				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("SYSTEM.UBYTE")
 				ELSE
 					Ws(obj^.name^)
 				END
 			ELSE (* "7" *)
 				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("BYTE")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("SYSTEM.INT8")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SYSTEM.INT16")
 				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INTEGER")
