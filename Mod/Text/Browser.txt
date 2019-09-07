@@ -386,7 +386,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			Append(vname, ".Def");
 			T := TextModels.dir.New();
 			W.ConnectTo(T); W.SetPos(0);
-			lang := "C"; OPT.InitScope(lang); OPT.Init(name, {}); OPT.SelfName := "AvoidErr154";
+			lang := "C"; OPT.Init(name, lang, {}); OPT.SelfName := "AvoidErr154";
 			WModule(name, T, done);
 			OPT.Close;
 			IF done THEN Views.OpenAux(TextViews.dir.New(T), vname) END

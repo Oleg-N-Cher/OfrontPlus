@@ -170,6 +170,7 @@ insertMarkers	Insert Markers
 209	case range too large
 210	overflow in logical shift
 213	too many cases in case statement
+214	name collision
 218	illegal value of parameter  (0 <= p < 256)
 220	illegal value of parameter
 221	too many pointers in a record

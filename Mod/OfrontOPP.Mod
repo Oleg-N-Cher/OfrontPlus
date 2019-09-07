@@ -1751,10 +1751,10 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				c: INTEGER; done: BOOLEAN;
 	BEGIN
 		OPS.Init; LoopLevel := 0; ReturnLevel := 0; level := 0; OPS.Get(sym);
-		IF sym = module THEN OPS.Get(sym) ELSE err(16) END ;
+		IF sym = module THEN OPS.Get(sym) ELSE err(16) END;
 		IF sym = ident THEN
 			OPM.LogW(" "); OPM.LogWStr(OPS.name);
-			OPT.Init(OPS.name, opt); OPS.Get(sym); CheckSym(semicolon);
+			OPT.Init(OPS.name, OPM.Lang, opt); OPS.Get(sym); CheckSym(semicolon);
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
 					IF sym = ident THEN

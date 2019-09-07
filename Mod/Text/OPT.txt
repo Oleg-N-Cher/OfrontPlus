@@ -204,16 +204,6 @@
 	BEGIN IF topScope # NIL THEN topScope := topScope^.left END
 	END CloseScope;
 
-	PROCEDURE Init*(IN name: ARRAY OF SHORTCHAR; opt: SET);
-		CONST nsf = 4; fpc = 8; esf = 9;
-	BEGIN
-		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
-		SelfName := name$; topScope^.name := NewName(name);
-		GlbMod[0] := topScope; nofGmod := 1;
-		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE;
-		depth := 0
-	END Init;
-
 	PROCEDURE Close*;
 		VAR i: SHORTINT;
 	BEGIN	(* garbage collection *)
@@ -268,7 +258,7 @@
 		res := obj
 	END FindImport;
 
-	PROCEDURE Find*(IN name: OPS.Name; VAR res: Object);
+	PROCEDURE Find*(IN name: ARRAY OF SHORTCHAR; VAR res: Object);
 		VAR obj, head: Object;
 	BEGIN head := topScope;
 		LOOP obj := head^.right;
@@ -301,7 +291,7 @@
 		res := NIL
 	END FindField;
 
-	PROCEDURE Insert*(IN name: OPS.Name; VAR obj: Object);
+	PROCEDURE Insert*(IN name: ARRAY OF SHORTCHAR; VAR obj: Object);
 		VAR ob0, ob1: Object; left: BOOLEAN; mnolev: BYTE;
 	BEGIN ob0 := topScope; ob1 := ob0^.right; left := FALSE;
 		LOOP
@@ -319,6 +309,11 @@
 		END ;
 		obj := ob1
 	END Insert;
+
+	PROCEDURE Insert2(IN name, lowcase: ARRAY OF SHORTCHAR; VAR obj: Object);
+	BEGIN
+		IF OPS.lowcase THEN Insert(lowcase, obj) ELSE Insert(name, obj) END
+	END Insert2;
 
 (*-------------------------- Fingerprinting --------------------------*)
 
@@ -872,7 +867,7 @@
 		RETURN obj
 	END InObj;
 
-	PROCEDURE Import*(IN aliasName, name: OPS.Name; VAR done: BOOLEAN);
+	PROCEDURE Import*(IN aliasName, name: ARRAY OF SHORTCHAR; VAR done: BOOLEAN);
 		VAR obj: Object; mno: BYTE;	(* done used in Browser *)
 	BEGIN
 		IF name = "SYSTEM" THEN SYSimported := TRUE;
@@ -1142,43 +1137,43 @@
 		typ^.idfp := form; typ^.idfpdone := TRUE
 	END InitStruct;
 
-	PROCEDURE EnterBoolConst(IN name: OPS.Name; value: INTEGER);
+	PROCEDURE EnterBoolConst(IN name, lowcase: ARRAY OF SHORTCHAR; value: INTEGER);
 		VAR obj: Object;
 	BEGIN
-		Insert(name, obj); obj^.conval := NewConst();
+		Insert2(name, lowcase, obj); obj^.conval := NewConst();
 		obj^.mode := Con; obj^.typ := booltyp; obj^.conval^.intval := value
 	END EnterBoolConst;
 
-	PROCEDURE EnterTyp(IN name: OPS.Name; form: BYTE; size: SHORTINT; VAR res: Struct);
+	PROCEDURE EnterTyp(IN name, lowcase: ARRAY OF SHORTCHAR; form: BYTE; size: SHORTINT; VAR res: Struct);
 		VAR obj: Object; typ: Struct;
 	BEGIN
-		Insert(name, obj);
+		Insert2(name, lowcase, obj);
 		typ := NewStr(form, Basic); obj^.mode := Typ; obj^.typ := typ; obj^.vis := external;
 		typ^.strobj := obj; typ^.size := size; typ^.ref := form; typ^.allocated := TRUE;
 		typ^.pbfp := form; typ^.pvfp := form; typ^.fpdone := TRUE;
 		typ^.idfp := form; typ^.idfpdone := TRUE; res := typ
 	END EnterTyp;
 
-	PROCEDURE EnterTypeAlias(IN name: OPS.Name; VAR res: Object; typ: Struct);
+	PROCEDURE EnterTypeAlias(IN name, lowcase: ARRAY OF SHORTCHAR; VAR res: Object; typ: Struct);
 		VAR obj: Object;
 	BEGIN
-		Insert(name, obj); obj^.mode := Typ; obj^.typ := typ; obj^.vis := external;
+		Insert2(name, lowcase, obj); obj^.mode := Typ; obj^.typ := typ; obj^.vis := external;
 		res := obj
 	END EnterTypeAlias;
 
-	PROCEDURE EnterProc(IN name: OPS.Name; num: SHORTINT);
+	PROCEDURE EnterProc(IN name, lowcase: ARRAY OF SHORTCHAR; num: SHORTINT);
 		VAR obj: Object;
-	BEGIN Insert(name, obj);
+	BEGIN Insert2(name, lowcase, obj);
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
-	PROCEDURE EnterAttr(IN name: OPS.Name; num: SHORTINT);
+	PROCEDURE EnterAttr(IN name, lowcase: ARRAY OF SHORTCHAR; num: SHORTINT);
 		VAR obj: Object;
-	BEGIN Insert(name, obj);
+	BEGIN Insert2(name, lowcase, obj);
 		obj^.mode := Attr; obj^.adr := num
 	END EnterAttr;
 
-	PROCEDURE InitScope*(lang: SHORTCHAR);
+	PROCEDURE InitScope(lang: SHORTCHAR);
 	BEGIN
 		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 		InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
@@ -1186,107 +1181,107 @@
 		undftyp^.BaseTyp := undftyp;
 
 		(*initialization of module SYSTEM*)
-		EnterTyp("PTR", Pointer, OPM.AdrSize, sysptrtyp);
-		EnterTyp("INT8", Byte, 1, bytetyp);
-		EnterTyp("INT16", SInt, 2, sinttyp);
-		EnterTyp("INT32", Int, 4, inttyp);
-		EnterTyp("INT64", LInt, 8, linttyp);
+		EnterTyp("PTR", "ptr", Pointer, OPM.AdrSize, sysptrtyp);
+		EnterTyp("INT8", "int8", Byte, 1, bytetyp);
+		EnterTyp("INT16", "int16", SInt, 2, sinttyp);
+		EnterTyp("INT32", "int32", Int, 4, inttyp);
+		EnterTyp("INT64", "int64", LInt, 8, linttyp);
 		CASE OPM.AdrSize OF
-		| 2: EnterTypeAlias("ADRINT", adrint, sinttyp);
-		| 4: EnterTypeAlias("ADRINT", adrint, inttyp);
-		ELSE EnterTypeAlias("ADRINT", adrint, linttyp)
+		| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
+		| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
+		ELSE EnterTypeAlias("ADRINT", "adrint", adrint, linttyp)
 		END;
 		IF (lang = "1") OR (lang = "2") THEN
-			EnterTypeAlias("BYTE", byte, bytetyp);
-			EnterTyp("UBYTE", UByte, 1, ubytetyp)
+			EnterTypeAlias("BYTE", "byte", byte, bytetyp);
+			EnterTyp("UBYTE", "ubyte", UByte, 1, ubytetyp)
 		END;
-		EnterProc("ADR", adrfn);
-		EnterProc("LSH", lshfn);
-		EnterProc("ROT", rotfn);
-		EnterProc("GET", getfn);
-		EnterProc("PUT", putfn);
-		EnterProc("BIT", bitfn);
-		EnterProc("VAL", valfn);
-		EnterProc("NEW", sysnewfn);
-		EnterProc("MOVE", movefn);
+		EnterProc("ADR", "adr", adrfn);
+		EnterProc("LSH", "lsh", lshfn);
+		EnterProc("ROT", "rot", rotfn);
+		EnterProc("GET", "get", getfn);
+		EnterProc("PUT", "put", putfn);
+		EnterProc("BIT", "bit", bitfn);
+		EnterProc("VAL", "val", valfn);
+		EnterProc("NEW", "new", sysnewfn);
+		EnterProc("MOVE", "move", movefn);
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
 
-		EnterTyp("BOOLEAN", Bool, 1, booltyp);
-		EnterTyp("SET", Set, OPM.SetSize, settyp);
+		EnterTyp("BOOLEAN", "boolean", Bool, 1, booltyp);
+		EnterTyp("SET", "set", Set, OPM.SetSize, settyp);
 		IF (lang = "C") OR (lang = "3") THEN
-			EnterTyp("SHORTCHAR", Char, 1, chartyp);
-			EnterTypeAlias("BYTE", int8, bytetyp);
-			EnterTypeAlias("SHORTINT", int16, sinttyp);
-			EnterTypeAlias("INTEGER", int32, inttyp);
-			EnterTypeAlias("LONGINT", int64, linttyp);
-			EnterTyp("SHORTREAL", Real, 4, realtyp);
-			EnterTyp("REAL", LReal, 8, lrltyp);
-			EnterTyp("UBYTE", UByte, 1, ubytetyp)
+			EnterTyp("SHORTCHAR", "shortchar", Char, 1, chartyp);
+			EnterTypeAlias("BYTE", "byte", int8, bytetyp);
+			EnterTypeAlias("SHORTINT", "shortint", int16, sinttyp);
+			EnterTypeAlias("INTEGER", "integer", int32, inttyp);
+			EnterTypeAlias("LONGINT", "longint", int64, linttyp);
+			EnterTyp("SHORTREAL", "shortreal", Real, 4, realtyp);
+			EnterTyp("REAL", "real", LReal, 8, lrltyp);
+			EnterTyp("UBYTE", "ubyte", UByte, 1, ubytetyp)
 		ELSIF (lang = "1") OR (lang = "2") THEN
-			EnterTyp("CHAR", Char, 1, chartyp);
-			EnterTypeAlias("SHORTINT", int8, bytetyp);
-			EnterTypeAlias("INTEGER", int16, sinttyp);
-			EnterTypeAlias("LONGINT", int32, inttyp);
-			EnterTypeAlias("HUGEINT", int64, linttyp);
-			EnterTyp("REAL", Real, 4, realtyp);
-			EnterTyp("LONGREAL", LReal, 8, lrltyp)
+			EnterTyp("CHAR", "char", Char, 1, chartyp);
+			EnterTypeAlias("SHORTINT", "shortint", int8, bytetyp);
+			EnterTypeAlias("INTEGER", "integer", int16, sinttyp);
+			EnterTypeAlias("LONGINT", "longint", int32, inttyp);
+			EnterTypeAlias("HUGEINT", "hugeint", int64, linttyp);
+			EnterTyp("REAL", "real", Real, 4, realtyp);
+			EnterTyp("LONGREAL", "longreal", LReal, 8, lrltyp)
 		ELSE (* "7" *)
-			EnterTyp("BYTE", UByte, 1, ubytetyp);
-			EnterTyp("CHAR", Char, 1, chartyp);
+			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp);
+			EnterTyp("CHAR", "char", Char, 1, chartyp);
 			IF OPM.AdrSize # 2 THEN
-				EnterTypeAlias("INTEGER", int32, inttyp)
+				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
 			ELSE
-				EnterTypeAlias("INTEGER", int16, sinttyp)
+				EnterTypeAlias("INTEGER", "integer", int16, sinttyp)
 			END;
-			EnterTyp("REAL", Real, 4, realtyp)
+			EnterTyp("REAL", "real", Real, 4, realtyp)
 		END;
-		EnterBoolConst("FALSE", 0);	(* 0 and 1 are compiler internal representation only *)
-		EnterBoolConst("TRUE",  1);
-		EnterProc("HALT", haltfn);
-		EnterProc("NEW", newfn);
-		EnterProc("ABS", absfn);
-		EnterProc("CAP", capfn);
-		EnterProc("ORD", ordfn);
+		EnterBoolConst("FALSE", "false", 0);	(* 0 and 1 are compiler internal representation only *)
+		EnterBoolConst("TRUE", "true",  1);
+		EnterProc("HALT", "halt", haltfn);
+		EnterProc("NEW", "new", newfn);
+		EnterProc("ABS", "abs", absfn);
+		EnterProc("CAP", "cap", capfn);
+		EnterProc("ORD", "ord", ordfn);
 		IF (lang # "7") THEN
-			EnterProc("ENTIER", entierfn)
+			EnterProc("ENTIER", "entier", entierfn)
 		ELSE
-			EnterProc("FLOOR", entierfn);
-			EnterProc("FLT", fltfn)
+			EnterProc("FLOOR", "floor", entierfn);
+			EnterProc("FLT", "flt", fltfn)
 		END;
-		EnterProc("ODD", oddfn);
-		EnterProc("MIN", minfn);
-		EnterProc("MAX", maxfn);
-		EnterProc("CHR", chrfn);
+		EnterProc("ODD", "odd", oddfn);
+		EnterProc("MIN", "min", minfn);
+		EnterProc("MAX", "max", maxfn);
+		EnterProc("CHR", "chr", chrfn);
 		IF (lang # "7") THEN
-			EnterProc("SHORT", shortfn);
-			EnterProc("LONG", longfn)
+			EnterProc("SHORT", "short", shortfn);
+			EnterProc("LONG", "long", longfn)
 		END;
-		EnterProc("SIZE", sizefn);
-		EnterProc("INC", incfn);
-		EnterProc("DEC", decfn);
-		EnterProc("INCL", inclfn);
-		EnterProc("EXCL", exclfn);
-		EnterProc("LEN", lenfn);
+		EnterProc("SIZE", "size", sizefn);
+		EnterProc("INC", "inc", incfn);
+		EnterProc("DEC", "dec", decfn);
+		EnterProc("INCL", "incl", inclfn);
+		EnterProc("EXCL", "excl", exclfn);
+		EnterProc("LEN", "len", lenfn);
 		IF (lang = "1") OR (lang = "2") THEN
-			EnterProc("COPY", copyfn)
+			EnterProc("COPY", "copy", copyfn)
 		END;
 		IF lang = "7" THEN
-			EnterProc("ASR", asrfn);
-			EnterProc("LSL", lslfn);
-			EnterProc("ROR", rorfn)
+			EnterProc("ASR", "asr", asrfn);
+			EnterProc("LSL", "lsl", lslfn);
+			EnterProc("ROR", "ror", rorfn)
 		ELSE
-			EnterProc("ASH", ashfn)
+			EnterProc("ASH", "ash", ashfn)
 		END;
-		EnterProc("ASSERT", assertfn);
+		EnterProc("ASSERT", "assert", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN
-			EnterProc("BITS", bitsfn);	(* Component Pascal BITS() *)
-			EnterProc("USHORT", ushortfn)
+			EnterProc("BITS", "bits", bitsfn);	(* Component Pascal BITS() *)
+			EnterProc("USHORT", "ushort", ushortfn)
 		END;
-		EnterAttr("ABSTRACT", absAttr);
-		EnterAttr("LIMITED", limAttr);
-		EnterAttr("EMPTY", empAttr);
-		EnterAttr("EXTENSIBLE", extAttr);
+		EnterAttr("ABSTRACT", "abstract", absAttr);
+		EnterAttr("LIMITED", "limited", limAttr);
+		EnterAttr("EMPTY", "empty", empAttr);
+		EnterAttr("EXTENSIBLE", "extensible", extAttr);
 		impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
 		impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
 		impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;
@@ -1297,8 +1292,19 @@
 		impCtxt.ref[UByte] := ubytetyp
 	END InitScope;
 
+	PROCEDURE Init*(IN name: ARRAY OF SHORTCHAR; lang: SHORTCHAR; opt: SET);
+		CONST nsf = 4; fpc = 8; esf = 9;
+	BEGIN
+		InitScope(lang);
+		topScope := universe; OpenScope(0, NIL); SYSimported := FALSE;
+		SelfName := name$; topScope^.name := NewName(name);
+		GlbMod[0] := topScope; nofGmod := 1;
+		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE;
+		depth := 0
+	END Init;
+
 BEGIN
-	NEW(null, 1); null^ := ""; InitScope("C")	(* default input language: Component Pascal *)
+	NEW(null, 1); null^ := ""
 END OfrontOPT.
 
 Objects:

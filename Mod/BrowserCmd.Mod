@@ -365,11 +365,11 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			ELSE Args.Get(2, vname); option := vname[1]
 			END
 		END;
-		CASE option OF "1".."3", "7": lang := option; ELSE lang := "C" END; OPT.InitScope(lang);
+		CASE option OF "1".."3", "7": lang := option; ELSE lang := "C" END;
 		IF Args.argc >= 2 THEN
 			Ident(S, name);
 			NEW(T); Texts.Open(T, "");
-			OPT.Init(name, {}); OPT.SelfName := "AvoidErr154"; WModule(name, T); OPT.Close;
+			OPT.Init(name, lang, {}); OPT.SelfName := "AvoidErr154"; WModule(name, T); OPT.Close;
 			Texts.OpenReader(R, T, 0); Texts.Read(R, ch); i := 0;
 			WHILE ~R.eot DO
 				IF ch = 0DX THEN s[i] := 0X; i := 0; Console.String(s); Console.Ln

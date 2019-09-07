@@ -21,6 +21,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		intval-: LONGINT;	(* integer value or string length (incl. 0X) *)
 		realval-: SHORTREAL;
 		lrlval-: REAL;
+		lowcase-: BOOLEAN;
 
 	(*symbols:
 	    |  0          1          2          3          4
@@ -62,6 +63,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 
 	VAR
 		ch: SHORTCHAR;     (*current character*)
+		checkKeyword: PROCEDURE (VAR sym: BYTE);
 
 	PROCEDURE err(n: SHORTINT);
 	BEGIN OPM.err(n)
@@ -92,14 +94,178 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		OPM.Get(ch)
 	END Str;
 
+	PROCEDURE StdKeywords(VAR sym: BYTE);
+	BEGIN
+		CASE name[0] OF
+		| "A":
+				IF name = "ARRAY" THEN sym := array END
+		| "B":
+				IF name = "BEGIN" THEN sym := begin
+				ELSIF name = "BY" THEN sym := by
+				END
+		| "C":
+				IF name = "CASE" THEN sym := case
+				ELSIF name = "CONST" THEN sym := const
+				END
+		| "D":
+				IF name = "DO" THEN sym := do
+				ELSIF name = "DIV" THEN sym := div
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "DIV0") THEN sym := div0
+				END
+		| "E":
+				IF name = "END" THEN sym := end
+				ELSIF name = "ELSE" THEN sym := else
+				ELSIF name = "ELSIF" THEN sym := elsif
+				ELSIF (OPM.Lang # "7") & (name = "EXIT") THEN sym := exit
+				END
+		| "F":
+				IF (OPM.Lang # "1") & (name = "FOR") THEN sym := for END
+		| "I":
+				IF name = "IF" THEN sym := if
+				ELSIF name = "IN" THEN sym := in
+				ELSIF name = "IS" THEN sym := is
+				ELSIF name = "IMPORT" THEN sym := import
+				END
+		| "L":
+				IF (OPM.Lang # "7") & (name = "LOOP") THEN sym := loop END
+		| "M":
+				IF name = "MOD" THEN sym := mod
+				ELSIF name = "MODULE" THEN sym := module
+				END
+		| "N":
+				IF name = "NIL" THEN sym := nil END
+		| "O":
+				IF name = "OR" THEN sym := or
+				ELSIF name = "OF" THEN sym := of
+				ELSIF (OPM.Lang = "C") & (name = "OUT") THEN sym := out
+				END
+		| "P":
+				IF name = "PROCEDURE" THEN sym := procedure
+				ELSIF name = "POINTER" THEN sym := pointer
+				END
+		| "R":
+				IF name = "RECORD" THEN sym := record
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "REM0") THEN sym := rem0
+				ELSIF name = "REPEAT" THEN sym := repeat
+				ELSIF name = "RETURN" THEN sym := return
+				END
+		| "T":
+				IF name = "THEN" THEN sym := then
+				ELSIF name = "TO" THEN sym := to
+				ELSIF name = "TYPE" THEN sym := type
+				END
+		| "U":
+				IF name = "UNTIL" THEN sym := until END
+		| "V":
+				IF name = "VAR" THEN sym := var END
+		| "W":
+				IF name = "WHILE" THEN sym := while
+				ELSIF name = "WITH" THEN sym := with
+				END
+		ELSE
+		END
+	END StdKeywords;
+
+	PROCEDURE Cmp(IN std, low: ARRAY OF SHORTCHAR): BOOLEAN;
+	BEGIN
+		IF name = std THEN OPM.Mark(214, OPM.curpos - 1) END;
+		RETURN name = low
+	END Cmp;
+
+	PROCEDURE LowKeywords(VAR sym: BYTE);
+	BEGIN
+		CASE name[0] OF
+		| "a", "A":
+				IF Cmp("ARRAY", "array") THEN sym := array END
+		| "b", "B":
+				IF Cmp("BEGIN", "begin") THEN sym := begin
+				ELSIF Cmp("BY", "by") THEN sym := by
+				END
+		| "c", "C":
+				IF Cmp("CASE", "case") THEN sym := case
+				ELSIF Cmp("CONST", "const") THEN sym := const
+				END
+		| "d", "D":
+				IF Cmp("DO", "do") THEN sym := do
+				ELSIF Cmp("DIV", "div") THEN sym := div
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & Cmp("DIV0", "div0") THEN sym := div0
+				END
+		| "e", "E":
+				IF Cmp("END", "end") THEN sym := end
+				ELSIF Cmp("ELSE", "else") THEN sym := else
+				ELSIF Cmp("ELSIF", "elsif") THEN sym := elsif
+				ELSIF (OPM.Lang # "7") & Cmp("EXIT", "exit") THEN sym := exit
+				END
+		| "f", "F":
+				IF (OPM.Lang # "1") & Cmp("FOR", "for") THEN sym := for END
+		| "i", "I":
+				IF Cmp("IF", "if") THEN sym := if
+				ELSIF Cmp("IN", "in") THEN sym := in
+				ELSIF Cmp("IS", "is") THEN sym := is
+				ELSIF Cmp("IMPORT", "import") THEN sym := import
+				END
+		| "l", "L":
+				IF (OPM.Lang # "7") & Cmp("LOOP", "loop") THEN sym := loop END
+		| "m", "M":
+				IF Cmp("MOD", "mod") THEN sym := mod
+				ELSIF Cmp("MODULE", "module") THEN sym := module
+				END
+		| "n", "N":
+				IF Cmp("NIL", "nil") THEN sym := nil END
+		| "o", "O":
+				IF Cmp("OR", "or") THEN sym := or
+				ELSIF Cmp("OF", "of") THEN sym := of
+				ELSIF (OPM.Lang = "C") & Cmp("OUT", "out") THEN sym := out
+				END
+		| "p", "P":
+				IF Cmp("PROCEDURE", "procedure") THEN sym := procedure
+				ELSIF Cmp("POINTER", "pointer") THEN sym := pointer
+				END
+		| "r", "R":
+				IF Cmp("RECORD", "record") THEN sym := record
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & Cmp("REM0", "rem0") THEN sym := rem0
+				ELSIF Cmp("REPEAT", "repeat") THEN sym := repeat
+				ELSIF Cmp("RETURN", "return") THEN sym := return
+				END
+		| "t", "T":
+				IF Cmp("THEN", "then") THEN sym := then
+				ELSIF Cmp("TO", "to") THEN sym := to
+				ELSIF Cmp("TYPE", "type") THEN sym := type
+				END
+		| "u", "U":
+				IF Cmp("UNTIL", "until") THEN sym := until END
+		| "v", "V":
+				IF Cmp("VAR", "var") THEN sym := var END
+		| "w", "W":
+				IF Cmp("WHILE", "while") THEN sym := while
+				ELSIF Cmp("WITH", "with") THEN sym := with
+				END
+		ELSE
+		END
+	END LowKeywords;
+
+	PROCEDURE AutoKeywords(VAR sym: BYTE);
+	BEGIN
+		IF name = "MODULE" THEN
+			sym := module;
+			checkKeyword := StdKeywords;
+			lowcase := FALSE
+		ELSIF (OPM.Lang = "3") & (name = "module") THEN
+			sym := module;
+			checkKeyword := LowKeywords;
+			lowcase := TRUE
+		END
+	END AutoKeywords;
+
 	PROCEDURE Identifier(VAR sym: BYTE);
 		VAR i: SHORTINT;
 	BEGIN i := 0;
 		REPEAT
 			name[i] := ch; INC(i); OPM.Get(ch)
 		UNTIL (ch < "0") OR ("9" < ch) & (CAP(ch) < "A") OR ("Z" < CAP(ch)) & (ch # "_") OR (i = MaxIdLen);
-		IF i = MaxIdLen THEN err(240); DEC(i) END ;
-		name[i] := 0X; sym := ident
+		IF i = MaxIdLen THEN err(240); DEC(i) END;
+		name[i] := 0X; sym := ident;
+		checkKeyword(sym)
 	END Identifier;
 
 	PROCEDURE Number;
@@ -265,71 +431,11 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| ">"  : OPM.Get(ch);
 							 IF ch = "=" THEN OPM.Get(ch); s := geq ELSE s := gtr END
 			| "@": s := at; OPM.Get(ch)
-			| "A": Identifier(s); IF name = "ARRAY" THEN s := array END
-			| "B": Identifier(s);
-						IF name = "BEGIN" THEN s := begin
-						ELSIF name = "BY" THEN s := by
-						END
-			| "C": Identifier(s);
-						IF name = "CASE" THEN s := case
-						ELSIF name = "CONST" THEN s := const
-						END
-			| "D": Identifier(s);
-						IF name = "DO" THEN s := do
-						ELSIF name = "DIV" THEN s := div
-						ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "DIV0") THEN s := div0
-						END
-			| "E": Identifier(s);
-						IF name = "END" THEN s := end
-						ELSIF name = "ELSE" THEN s := else
-						ELSIF name = "ELSIF" THEN s := elsif
-						ELSIF (OPM.Lang # "7") & (name = "EXIT") THEN s := exit
-						END
-			| "F": Identifier(s); IF (OPM.Lang # "1") & (name = "FOR") THEN s := for END
-			| "I": Identifier(s);
-						IF name = "IF" THEN s := if
-						ELSIF name = "IN" THEN s := in
-						ELSIF name = "IS" THEN s := is
-						ELSIF name = "IMPORT" THEN s := import
-						END
-			| "L": Identifier(s); IF (OPM.Lang # "7") & (name = "LOOP") THEN s := loop END
-			| "M": Identifier(s);
-						IF name = "MOD" THEN s := mod
-						ELSIF name = "MODULE" THEN s := module
-						END
-			| "N": Identifier(s); IF name = "NIL" THEN s := nil END
-			| "O": Identifier(s);
-						IF name = "OR" THEN s := or
-						ELSIF name = "OF" THEN s := of
-						ELSIF (OPM.Lang = "C") & (name = "OUT") THEN s := out
-						END
-			| "P": Identifier(s);
-						IF name = "PROCEDURE" THEN s := procedure
-						ELSIF name = "POINTER" THEN s := pointer
-						END
-			| "R": Identifier(s);
-						IF name = "RECORD" THEN s := record
-						ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "REM0") THEN s := rem0
-						ELSIF name = "REPEAT" THEN s := repeat
-						ELSIF name = "RETURN" THEN s := return
-						END
-			| "T": Identifier(s);
-						IF name = "THEN" THEN s := then
-						ELSIF name = "TO" THEN s := to
-						ELSIF name = "TYPE" THEN s := type
-						END
-			| "U": Identifier(s); IF name = "UNTIL" THEN s := until END
-			| "V": Identifier(s); IF name = "VAR" THEN s := var END
-			| "W": Identifier(s);
-						IF name = "WHILE" THEN s := while
-						ELSIF name = "WITH" THEN s := with
-						END
-			| "G".."H", "J", "K", "Q", "S", "X".."Z", "_": Identifier(s)
+			| "A".."Z", "a".."z", "_": Identifier(s)
 			| "["  : s := lbrak; OPM.Get(ch)
 			| "]"  : s := rbrak; OPM.Get(ch)
 			| "^"  : s := arrow; OPM.Get(ch)
 			| "$"  : s := dollar; OPM.Get(ch)
-			| "a".."z": Identifier(s)
 			| "{"  : s := lbrace; OPM.Get(ch)
 			| "|"  : s := bar; OPM.Get(ch)
 			| "}"  : s := rbrace; OPM.Get(ch)
@@ -341,7 +447,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END Get;
 
 	PROCEDURE Init*;
-	BEGIN ch := " "
+	BEGIN
+		checkKeyword := AutoKeywords;
+		lowcase := FALSE;
+		ch := " "
 	END Init;
 
 END OfrontOPS.

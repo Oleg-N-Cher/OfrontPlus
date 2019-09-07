@@ -196,6 +196,7 @@ BEGIN
   | 209: Log.String("case range too large")
   | 210: Log.String("overflow in logical shift")
   | 213: Log.String("too many cases in case statement")
+  | 214: Log.String("name collision")
   | 218: Log.String("illegal value of parameter  (0 <= p < 256)")
   | 220: Log.String("illegal value of parameter")
   | 221: Log.String("too many pointers in a record")
