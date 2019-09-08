@@ -934,9 +934,6 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF (OPM.Lang = "3") & (x^.obj^.mode = Typ) & (x^.obj^.typ^.form = Comp) & (x^.obj^.typ^.comp = Array) THEN
 				(* константный массив верхнего уровня*)
 					OPB.NewArrConst(x);
-					IF x^.obj^.typ^.BaseTyp^.form IN {Char,Byte} THEN (* ARRAY OF CHAR *)
-
-					END;
 					ConstArray(x, x^.obj^.typ);
 					IF sym # semicolon THEN err (semicolon) END; (* на всякий случай проверим, что в конце ; *)
 				ELSE

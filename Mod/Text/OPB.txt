@@ -209,9 +209,9 @@
 	BEGIN
 		n := 1;
 		typ := x^.typ;
-		WHILE (typ^.form =15) & (typ^.comp = 2) DO
+		WHILE (typ^.form = Comp) & (typ^.comp = Array) DO
 			n := n * typ^.n; (* перемножение размеров по всем измерениям *)
-			typ := typ^.BaseTyp;
+			typ := typ^.BaseTyp
 		END;
 		(* n - общее кол-во элементов массива, typ - тип элемента *)
 		IF  typ^.form IN intSet+{Bool,Char} THEN (* массив из целых (в т.ч. BYTE)  *)
