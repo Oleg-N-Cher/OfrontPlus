@@ -1643,7 +1643,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			rec: Elem;
 
 	BEGIN
-		IF ((sym < begin) OR (sym > var)) & (sym # procedure) & (sym # end) THEN err(33) END;
+		IF ((sym < begin) OR (sym > var)) & (sym # procedure) & (sym # end) & (sym # return) THEN err(33) END;
 		first := NIL; last := NIL; userList := NIL; recList := NIL;
 		LOOP
 			IF sym = const THEN
@@ -1725,7 +1725,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
 		procdec := NIL; lastdec := NIL;
-		IF (sym # procedure) & (sym # begin) & (sym # end) THEN err(34) END;
+		IF (sym # procedure) & (sym # begin) & (sym # end) & (sym # return) THEN err(34) END;
 		WHILE sym = procedure DO
 			OPS.Get(sym); ProcedureDeclaration(x);
 			IF x # NIL THEN
