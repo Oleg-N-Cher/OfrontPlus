@@ -551,14 +551,10 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
 			END;
 			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
-				IF mode = VarPar THEN
+				IF (mode = VarPar) & ~((comp IN {Array, DynArr}) & (n^.class = Nconst)) THEN
 					IF n^.typ^.form # NilTyp THEN
-						IF (n^.typ^.form = String) & (n^.class = Nconst) THEN
-							OPM.WriteString("(CHAR*)")	(* String as IN parameter *)
-						ELSE
-							IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
-							OPM.Write("&")
-						END
+						IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
+						OPM.Write("&")
 					END; prec := 9
 				ELSIF ansi THEN
 					IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN
