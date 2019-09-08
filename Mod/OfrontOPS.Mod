@@ -174,69 +174,69 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 
 	PROCEDURE LowKeywords(VAR sym: BYTE);
 	BEGIN
-		CASE name[0] OF
-		| "a", "A":
+		CASE CAP(name[0]) OF
+		| "A":
 				IF Cmp("ARRAY", "array") THEN sym := array END
-		| "b", "B":
+		| "B":
 				IF Cmp("BEGIN", "begin") THEN sym := begin
 				ELSIF Cmp("BY", "by") THEN sym := by
 				END
-		| "c", "C":
+		| "C":
 				IF Cmp("CASE", "case") THEN sym := case
 				ELSIF Cmp("CONST", "const") THEN sym := const
 				END
-		| "d", "D":
+		| "D":
 				IF Cmp("DO", "do") THEN sym := do
 				ELSIF Cmp("DIV", "div") THEN sym := div
 				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & Cmp("DIV0", "div0") THEN sym := div0
 				END
-		| "e", "E":
+		| "E":
 				IF Cmp("END", "end") THEN sym := end
 				ELSIF Cmp("ELSE", "else") THEN sym := else
 				ELSIF Cmp("ELSIF", "elsif") THEN sym := elsif
 				ELSIF (OPM.Lang # "7") & Cmp("EXIT", "exit") THEN sym := exit
 				END
-		| "f", "F":
+		| "F":
 				IF (OPM.Lang # "1") & Cmp("FOR", "for") THEN sym := for END
-		| "i", "I":
+		| "I":
 				IF Cmp("IF", "if") THEN sym := if
 				ELSIF Cmp("IN", "in") THEN sym := in
 				ELSIF Cmp("IS", "is") THEN sym := is
 				ELSIF Cmp("IMPORT", "import") THEN sym := import
 				END
-		| "l", "L":
+		| "L":
 				IF (OPM.Lang # "7") & Cmp("LOOP", "loop") THEN sym := loop END
-		| "m", "M":
+		| "M":
 				IF Cmp("MOD", "mod") THEN sym := mod
 				ELSIF Cmp("MODULE", "module") THEN sym := module
 				END
-		| "n", "N":
+		| "N":
 				IF Cmp("NIL", "nil") THEN sym := nil END
-		| "o", "O":
+		| "O":
 				IF Cmp("OR", "or") THEN sym := or
 				ELSIF Cmp("OF", "of") THEN sym := of
 				ELSIF (OPM.Lang = "C") & Cmp("OUT", "out") THEN sym := out
 				END
-		| "p", "P":
+		| "P":
 				IF Cmp("PROCEDURE", "procedure") THEN sym := procedure
 				ELSIF Cmp("POINTER", "pointer") THEN sym := pointer
 				END
-		| "r", "R":
+		| "R":
 				IF Cmp("RECORD", "record") THEN sym := record
 				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & Cmp("REM0", "rem0") THEN sym := rem0
 				ELSIF Cmp("REPEAT", "repeat") THEN sym := repeat
 				ELSIF Cmp("RETURN", "return") THEN sym := return
 				END
-		| "t", "T":
+		| "T":
 				IF Cmp("THEN", "then") THEN sym := then
 				ELSIF Cmp("TO", "to") THEN sym := to
 				ELSIF Cmp("TYPE", "type") THEN sym := type
 				END
-		| "u", "U":
+		| "U":
 				IF Cmp("UNTIL", "until") THEN sym := until END
-		| "v", "V":
+		| "V":
 				IF Cmp("VAR", "var") THEN sym := var END
-		| "w", "W":
+		| "W":
 				IF Cmp("WHILE", "while") THEN sym := while
 				ELSIF Cmp("WITH", "with") THEN sym := with
 				END
