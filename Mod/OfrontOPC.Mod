@@ -579,7 +579,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END Prefixed;
 
 	PROCEDURE CProcDefs(obj: OPT.Object; vis: SHORTINT);
-		VAR i: INTEGER; ext: OPT.ConstExt;
+		VAR i: INTEGER; ext: OPT.ConstExt; oc: BOOLEAN;
 	BEGIN
 		IF obj # NIL THEN
 			CProcDefs(obj^.left, vis);
@@ -594,7 +594,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
 					OPM.WriteString(EXTERN);
-					IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END;
+					DeclareBase(obj); IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, oc) END;
 					OPM.Write(Blank); IF obj^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 					OPM.WriteString(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 					OPM.WriteLn;
