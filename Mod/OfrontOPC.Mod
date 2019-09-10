@@ -89,7 +89,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	VAR
 		indentLevel: SHORTINT;
-		ptrinit, mainprog, ansi: BOOLEAN;
+		ptrinit, mainprog, ansi, oldc: BOOLEAN;
 		hashtab: ARRAY 105 OF BYTE;
 		keytab: ARRAY 36, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
@@ -101,6 +101,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		ptrinit := OPM.ptrinit IN OPM.opt;
 		mainprog := OPM.mainprog IN OPM.opt;
 		ansi := OPM.ansi IN OPM.opt;
+		oldc := OPM.oldc IN OPM.opt;
 		IF ansi THEN BodyNameExt := "__init(void)" ELSE BodyNameExt := "__init()" END
 	END Init;
 
@@ -173,7 +174,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		mode := obj^.mode; level := obj^.mnolev;
 		IF (mode IN {Var, Typ, LProc}) & (level > 0) OR (mode IN {Fld, VarPar}) THEN
-			OPM.WriteString(obj^.name^);
+			IF ~oldc THEN OPM.WriteString(obj^.name^) ELSE OPM.Write(obj^.name^[0]) END;
 			h := PerfectHash(obj^.name^);
 			IF hashtab[h] >= 0 THEN
 				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
@@ -194,11 +195,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
 				IF mode = TProc THEN Ident(obj^.link^.typ^.strobj)
 				ELSIF level < 0 THEN (* use unaliased module name *)
-					OPM.WriteString(OPT.GlbMod[-level].name^);
-					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END ;
-				ELSE OPM.WriteString(OPM.modName)
+					IF ~oldc THEN OPM.WriteString(OPT.GlbMod[-level].name^)
+					ELSE OPM.Write(OPT.GlbMod[-level].name^[0])
+					END;
+					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END
+				ELSIF ~oldc THEN OPM.WriteString(OPM.modName)
 				END;
-				OPM.Write(Underscore)
+				IF ~oldc THEN OPM.Write(Underscore) END
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END;
@@ -987,7 +990,10 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			InitImports(obj^.left);
 			IF (obj^.mode = Mod) & (obj^.mnolev # 0) THEN
 				BegStat; OPM.WriteString("__IMPORT(");
-				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init");
+				IF ~oldc THEN OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^)
+				ELSE OPM.Write(OPT.GlbMod[-obj^.mnolev].name^[0])
+				END;
+				OPM.WriteString("__init");
 				OPM.Write(CloseParen); EndStat
 			END ;
 			InitImports(obj^.right)

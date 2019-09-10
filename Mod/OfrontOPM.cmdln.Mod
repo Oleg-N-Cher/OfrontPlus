@@ -22,7 +22,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		dynlib* = 11;	(* translate module to be a dynamic library *)
-		rightfor* = 12;	(* "right" FOR by Oleg Komlev *)
+		corfor* = 12;	(* "correct FOR" by Oleg Komlev *)
+		oldc* = 13;	(* old C compilers restrictions support *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -205,7 +206,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "d": opt := opt / {dynlib}
-			| "f": opt := opt / {rightfor}
+			| "f": opt := opt / {corfor}
+			| "o": opt := opt / {oldc}
 			| "1", "3"(*undocumented*), "C", "7": Lang := s[i]
 
 			(* target machine address size and alignment
