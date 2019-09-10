@@ -18,7 +18,7 @@ MODULE Watson0;	(** portable *)	(** PS	/	 	/	OP2-Version *)
 		(* structure forms *)
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
-		Pointer = 13; ProcTyp = 14; Comp = 15;
+		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
 
 		(* composite structure forms *)
 		Basic = 1; StaticArr = 2; SDynArr = 3; DynArr = 4; OpenArr = 5; Record = 6;
