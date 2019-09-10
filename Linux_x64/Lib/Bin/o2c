@@ -5,7 +5,7 @@ export OBERON=.:../Sym:../../../Lib/Mod
 
 ## Ofront+
 
-ofront+ -sC -88 Heap.Mod -apx Types.Mod Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
+ofront+ -sC -88 Heap.Mod -apx Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## Eco
