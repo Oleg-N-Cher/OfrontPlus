@@ -1,5 +1,5 @@
 MODULE Platform; (** Windows *)
-IMPORT SYSTEM, Types;
+IMPORT SYSTEM;
 
 (* TODO:
    Use Unicode APIs with manual UTF8 conversion and prepend "\\?\" to
@@ -18,12 +18,9 @@ CONST
 
 
 TYPE
-  INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
-  CHAR = Types.CHAR8;
-  ADRINT* = Types.ADRINT; (* 32 or 64 bits *)
-
-  BOOL = INT32; DWORD = INT32;
-  LARGE_INTEGER = RECORD [notag] low, high: INT32 END;
+  CHAR = SHORTCHAR; BOOL = INTEGER; DWORD = INTEGER;
+  ADRINT = SYSTEM.ADRINT; (* 32 or 64 bits *)
+  LARGE_INTEGER = RECORD [notag] low, high: INTEGER END;
 
   ErrorCode*  = INTEGER;
   FileHandle* = ADRINT; (* 32 or 64 bits *)
@@ -567,10 +564,10 @@ PROCEDURE ExitOS*(code: INTEGER);
 BEGIN exit(code) END ExitOS;
 
 
-PROCEDURE -getConsoleMode(h: FileHandle; VAR m: INT32): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
+PROCEDURE -getConsoleMode(h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
 
 PROCEDURE IsConsole*(h: FileHandle): BOOLEAN;
-VAR mode: INT32;
+VAR mode: INTEGER;
 BEGIN RETURN getConsoleMode(StdOut, mode)
 END IsConsole;
 

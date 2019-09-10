@@ -156,7 +156,7 @@ MODULE SDL2mixer;
 (******************************************************************************)
 
 IMPORT
-  SYSTEM, Sdl := SDL2, Types;
+  s := SYSTEM, Sdl := SDL2;
 
 CONST
 
@@ -221,9 +221,9 @@ TYPE
   Char = SHORTCHAR;
   Double = REAL;
   Integer = INTEGER;
-  PChar = Types.ADRINT;
-  PRWops = Types.ADRINT;
-  PUInt8 = Types.ADRINT;
+  PChar = s.ADRINT;
+  PRWops = s.ADRINT;
+  PUInt8 = s.ADRINT;
   SInt16 = SHORTINT;
   UInt8 = BYTE;
   UInt16 = SHORTINT;

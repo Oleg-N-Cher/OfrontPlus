@@ -2,7 +2,7 @@ MODULE Kernel;
 IMPORT SYSTEM, Heap, Platform, Out := Console;
 
 TYPE
-  CString = Platform.ADRINT;
+  CString = SYSTEM.ADRINT;
   HaltProcedure = PROCEDURE(code: INTEGER; mod: CString; pos: INTEGER);
   SignalHandler = PROCEDURE(signal: INTEGER);
 

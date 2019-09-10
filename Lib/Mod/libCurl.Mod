@@ -1,5 +1,5 @@
 MODULE libCurl;
-IMPORT SYSTEM, Types;
+IMPORT s := SYSTEM;
 
 CONST
   (*CURLcode *)
@@ -17,7 +17,7 @@ TYPE
   CURLcode   * = INTEGER;
   CURLoption * = INTEGER;
 
-  Callback   * = PROCEDURE (ptr, size, nmemb, userdata: Types.ADRINT): Types.ADRINT;
+  Callback   * = PROCEDURE (ptr, size, nmemb, userdata: s.ADRINT): s.ADRINT;
 
 PROCEDURE -AAIncludeCurlh0 '#include "libCurl.h0"';
 
@@ -28,12 +28,12 @@ PROCEDURE -curl_easy_setopt_I* (
   handle: PCURL; option: CURLoption; parameter: INTEGER): CURLcode
   "curl_easy_setopt(handle, option, parameter)";
 PROCEDURE -curl_easy_setopt_A* (
-  handle: PCURL; option: CURLoption; parameter: Types.ADRINT): CURLcode
+  handle: PCURL; option: CURLoption; parameter: s.ADRINT): CURLcode
   "curl_easy_setopt(handle, option, (CHAR*)(parameter))";
 PROCEDURE -curl_easy_setopt_C* (
   handle: PCURL; option: CURLoption; callback: Callback): CURLcode
   "curl_easy_setopt(handle, option, callback)";
-PROCEDURE -curl_easy_strerror* (code: CURLcode): Types.ADRINT;
+PROCEDURE -curl_easy_strerror* (code: CURLcode): s.ADRINT;
 
 
 END libCurl.

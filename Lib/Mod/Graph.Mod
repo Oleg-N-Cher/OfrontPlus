@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 *)
 IMPORT SDL := SDL2, (* Mix := SDL2mixer, Net := SDL2net,*)
-       SYSTEM, Platform, Out, Types;
+       SYSTEM, Platform, Out;
 
 CONST
   (* Flip Flags *)
@@ -191,7 +191,7 @@ CONST
   mGui*   = {mLGui, mRGui};
 
 TYPE
-  ADDRESS = Types.ADRINT;
+  ADDRESS = SYSTEM.ADRINT;
   CHAR = SHORTCHAR;
   SET32 = SET;
 

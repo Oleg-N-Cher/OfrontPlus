@@ -1,10 +1,10 @@
 MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**)  (* << RC, MB, JT *)
   IMPORT
-    Files, Modules, Reals, T := Types;
+    s := SYSTEM, Files, Modules, Reals;
 
   TYPE
-    SHORTINT = T.INT8; INTEGER = T.INT16; LONGINT = T.INT32; HUGEINT = T.INT64;
-    CHAR = T.CHAR8; REAL = T.REAL32; LONGREAL = T.REAL64;
+    SHORTINT = s.INT8; INTEGER = s.INT16; LONGINT = s.INT32; HUGEINT = s.INT64;
+    CHAR = s.CHAR8; REAL = s.REAL32; LONGREAL = s.REAL64;
 
   (*--- insert field e: Elem into Texts.Scanner and change Texts.Scan to set it in case of class=6 *)
 

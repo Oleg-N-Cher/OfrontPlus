@@ -4,14 +4,14 @@ http://www.cyberforum.ru/blogs/131347/blog1151.html#a_6
 https://stackoverflow.com/questions/2329571/c-libcurl-get-output-into-a-string
  *)
 MODULE NetHttp;
-IMPORT SYSTEM, Types, c := libCurl (*, io := Console*);
+IMPORT SYSTEM, c := libCurl (*, io := Console*);
 
 CONST
   DEFAULT_BUFFER_SIZE = 32768;
 
 TYPE
   Buffer = POINTER TO ARRAY OF SHORTCHAR;
-  CString = Types.ADRINT;
+  CString = SYSTEM.ADRINT;
 
 TYPE
   Socket* = RECORD
@@ -35,7 +35,7 @@ BEGIN
 END Length;
 
 PROCEDURE write_callback (
-  ptr, size, nmemb, userdata: Types.ADRINT): Types.ADRINT;
+  ptr, size, nmemb, userdata: SYSTEM.ADRINT): SYSTEM.ADRINT;
 TYPE
   Self = POINTER [1] TO Socket;
 VAR
@@ -61,7 +61,7 @@ END write_callback;
 
 PROCEDURE (VAR self: Socket) Get* (url: ARRAY [1] OF SHORTCHAR), NEW;
 VAR
-  msglen: INTEGER; ch: SHORTCHAR; res: c.CURLcode; syserr: Types.ADRINT;
+  msglen: INTEGER; ch: SHORTCHAR; res: c.CURLcode; syserr: SYSTEM.ADRINT;
 BEGIN
   self.hCurl := c.curl_easy_init();
   self.ok := (self.hCurl # NIL);

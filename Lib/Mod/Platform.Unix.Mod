@@ -1,5 +1,5 @@
 MODULE Platform; (** Unix *)
-IMPORT SYSTEM, Types;
+IMPORT SYSTEM;
 
 
 CONST
@@ -15,14 +15,13 @@ CONST
 
 
 TYPE
-  INT8* = BYTE; INT16* = SHORTINT; INT32* = INTEGER; INT64* = LONGINT;
-  CHAR = Types.CHAR8;
-  ADRINT* = Types.ADRINT;  (* 32 or 64 bits *)
+  CHAR = SHORTCHAR;
+  ADRINT* = SYSTEM.ADRINT;  (* 32 or 64 bits *)
   
   TIME_T = ADRINT;  (* time_t type is used
     instead of long, but which is also a 32-bit representation on some systems
     while there are even 64-bit representations on other systems. *)
-  DEV_T = INT64;  (* 64 bit in Linux 2.2 *)
+  DEV_T = LONGINT;  (* 64 bit in Linux 2.2 *)
   INO_T = ADRINT;  (* 32 or 64 bits *)
 
   ErrorCode*  = INTEGER;
