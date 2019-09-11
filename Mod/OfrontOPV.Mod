@@ -90,7 +90,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 
 	VAR
-		assert, inxchk, mainprog, ansi: BOOLEAN;
+		assert, inxchk, mainprog, ansi, oldc: BOOLEAN;
 		stamp: SHORTINT;	(* unique number for nested objects *)
 		recno: SHORTINT;	(* number of anonymous record types *)
 
@@ -152,7 +152,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		assert := OPM.assert IN OPM.opt;
 		inxchk := OPM.inxchk IN OPM.opt;
 		mainprog := OPM.mainprog IN OPM.opt;
-		ansi := OPM.ansi IN OPM.opt
+		ansi := OPM.ansi IN OPM.opt;
+		oldc := OPM.oldc IN OPM.opt
 	END Init;
 
 	PROCEDURE ^Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
@@ -684,7 +685,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 					|	odd:
 								OPM.WriteString("__ODD("); expr(l, MinPrec); OPM.Write(CloseParen)
 					|	adr: (*SYSTEM*)
-								OPM.WriteString("(SYSTEM_ADRINT)");
+								IF ~oldc THEN OPM.WriteString("(SYSTEM_ADRINT)") END;
 								IF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
 									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END ;

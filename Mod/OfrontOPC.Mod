@@ -933,6 +933,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF OPM.ranchk IN OPM.opt THEN OPM.Write("r") END;
 		IF ~(OPM.typchk IN OPM.opt) THEN OPM.Write("t") END;
 		IF ~(OPM.assert IN OPM.opt) THEN OPM.Write("a") END;
+		IF ~(OPM.oldc IN OPM.opt) THEN OPM.Write("o") END;
 		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
