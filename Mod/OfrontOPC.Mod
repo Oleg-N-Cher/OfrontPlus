@@ -201,7 +201,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					IF OPM.currFile = OPM.HeaderFile THEN OPT.GlbMod[-level].vis := 1 (*include in header file*) END
 				ELSIF ~oldc THEN OPM.WriteString(OPM.modName)
 				END;
-				IF ~oldc THEN OPM.Write(Underscore) END
+				OPM.Write(Underscore)
 			ELSIF obj = OPT.sysptrtyp^.strobj THEN
 				OPM.WriteString("SYSTEM_")
 			END;
@@ -990,12 +990,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			InitImports(obj^.left);
 			IF (obj^.mode = Mod) & (obj^.mnolev # 0) THEN
 				BegStat; OPM.WriteString("__IMPORT(");
-				IF ~oldc THEN OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^)
-				ELSE OPM.Write(OPT.GlbMod[-obj^.mnolev].name^[0])
-				END;
-				OPM.WriteString("__init");
+				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init");
 				OPM.Write(CloseParen); EndStat
-			END ;
+			END;
 			InitImports(obj^.right)
 		END
 	END InitImports;
