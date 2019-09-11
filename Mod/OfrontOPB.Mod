@@ -574,8 +574,8 @@
 			END
 		END;
 		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp, Char, String}) THEN
-			IF g # new^.form THEN Convert(right, new) END;
-			IF f # new^.form THEN Convert(left, new) END
+			IF g # new^.form THEN right^.typ := new END;
+			IF f # new^.form THEN left^.typ := new END
 		END
 	END Promote;
 
