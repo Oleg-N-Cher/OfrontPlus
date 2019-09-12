@@ -933,12 +933,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF OPM.ranchk IN OPM.opt THEN OPM.Write("r") END;
 		IF ~(OPM.typchk IN OPM.opt) THEN OPM.Write("t") END;
 		IF ~(OPM.assert IN OPM.opt) THEN OPM.Write("a") END;
-		IF ~(OPM.oldc IN OPM.opt) THEN OPM.Write("o") END;
+		IF OPM.oldc IN OPM.opt THEN OPM.Write("o") END;
 		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
 		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
-		OPM.Write(OPM.Lang); OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
+		OPM.Write(OPM.Lang); IF OPM.corfor IN OPM.opt THEN OPM.Write("f") END;
+		OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
 		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn
 	END GenHeaderMsg;
