@@ -1359,6 +1359,7 @@ avoid unnecessary intermediate variables in OFront
 					  Bool:  x := NewBoolConst(FALSE)
 					| Char:  x := NewIntConst(0); x^.typ := OPT.chartyp
 					| Byte:  x := NewIntConst(MIN(BYTE))
+					| UByte: x := NewIntConst(0)
 					| SInt:  x := NewIntConst(MIN(SHORTINT))
 					| Int:   x := NewIntConst(MIN(INTEGER))
 					| LInt:  x := NewIntConst(MIN(LONGINT))
@@ -1375,6 +1376,7 @@ avoid unnecessary intermediate variables in OFront
 					  Bool:  x := NewBoolConst(TRUE)
 					| Char:  x := NewIntConst(0FFH); x^.typ := OPT.chartyp
 					| Byte:  x := NewIntConst(MAX(BYTE))
+					| UByte: x := NewIntConst(255)
 					| SInt:  x := NewIntConst(MAX(SHORTINT))
 					| Int:   x := NewIntConst(MAX(INTEGER))
 					| LInt:  x := NewIntConst(MAX(LONGINT))
