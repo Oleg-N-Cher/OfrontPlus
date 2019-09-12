@@ -2,7 +2,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
-		Texts, Console, Args, Strings;
+		Texts, Console, Args;
 
 	CONST
 		OptionChar = "-";
@@ -35,11 +35,39 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	VAR
 		W: Texts.Writer;
 		lang, option: SHORTCHAR;
+		hex: ARRAY 17 OF SHORTCHAR;
 
 	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN Texts.WriteString(W, s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN Texts.Write(W, ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLongInt(W, i, 0) END Wi;
 	PROCEDURE Wln; BEGIN Texts.WriteLn(W) END Wln;
+
+	PROCEDURE StringConst (IN s: ARRAY OF SHORTCHAR);
+		VAR ch: SHORTCHAR; i: INTEGER; quoted, first: BOOLEAN;
+	BEGIN
+		ch := s[0]; i := 1; quoted := FALSE; first := TRUE;
+		WHILE ch # 0X DO
+			IF (ch < " ") OR (ch = 22X) OR (ch >= 7FX) THEN
+				IF quoted THEN Wch('"') END;
+				IF ~first THEN Ws(" + ") END;
+				IF ch > 9FX THEN Wch("0") END;
+				Wch(hex[ORD(ch) DIV 10H]);
+				Wch(hex[ORD(ch) MOD 10H]);
+				Wch("X");
+				quoted := FALSE
+			ELSE
+				IF ~quoted THEN
+					IF ~first THEN Ws(" + ") END;
+					Wch('"')
+				END;
+				Wch(ch);
+				quoted := TRUE
+			END;
+			ch := s[i]; INC(i);
+			first := FALSE
+		END;
+		IF quoted THEN Wch('"') END
+	END StringConst;
 
 	PROCEDURE Indent(i: SHORTINT);
 	BEGIN WHILE i > 0 DO Wch(" "); Wch(" "); DEC(i) END
@@ -115,11 +143,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						| LReal:
 								Texts.WriteLongReal(W, obj^.conval^.realval, 23)
 						| String:
-								IF Strings.Pos(22X, obj^.conval^.ext^, 0) = -1 THEN
-									Wch(22X); Ws(obj^.conval^.ext^); Wch(22X)
-								ELSE
-									Wch("'"); Ws(obj^.conval^.ext^); Wch("'")
-								END
+								StringConst(obj^.conval^.ext^)
 						| NilTyp:
 								Ws("NIL")
 						END ;
@@ -382,5 +406,6 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	END ShowDef;
 
 BEGIN
+	hex := "0123456789ABCDEF";
 	OPT.typSize := OPV.TypSize; Texts.OpenWriter(W); ShowDef
 END BrowserCmd.

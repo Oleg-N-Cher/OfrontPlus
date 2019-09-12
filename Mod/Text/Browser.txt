@@ -2,7 +2,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
-		TextModels, TextMappers, TextViews, TextControllers, Views, Files, Dialog, Strings;
+		TextModels, TextMappers, TextViews, TextControllers, Views, Files, Dialog;
 
 	CONST
 		(* object modes *)
@@ -36,11 +36,39 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	VAR
 		lang, option: SHORTCHAR;
 		W: TextMappers.Formatter;
+		hex: ARRAY 17 OF SHORTCHAR;
 
 	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN W.WriteSString(s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN W.WriteChar(ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN W.WriteInt(i) END Wi;
 	PROCEDURE Wln; BEGIN W.WriteLn() END Wln;
+
+	PROCEDURE StringConst (IN s: ARRAY OF SHORTCHAR);
+		VAR ch: SHORTCHAR; i: INTEGER; quoted, first: BOOLEAN;
+	BEGIN
+		ch := s[0]; i := 1; quoted := FALSE; first := TRUE;
+		WHILE ch # 0X DO
+			IF (ch < " ") OR (ch = 22X) OR (ch >= 7FX) THEN
+				IF quoted THEN Wch('"') END;
+				IF ~first THEN Ws(" + ") END;
+				IF ch > 9FX THEN Wch("0") END;
+				Wch(hex[ORD(ch) DIV 10H]);
+				Wch(hex[ORD(ch) MOD 10H]);
+				Wch("X");
+				quoted := FALSE
+			ELSE
+				IF ~quoted THEN
+					IF ~first THEN Ws(" + ") END;
+					Wch('"')
+				END;
+				Wch(ch);
+				quoted := TRUE
+			END;
+			ch := s[i]; INC(i);
+			first := FALSE
+		END;
+		IF quoted THEN Wch('"') END
+	END StringConst;
 
 	PROCEDURE Indent(i: SHORTINT);
 	BEGIN WHILE i > 0 DO Wch(" "); Wch(" "); DEC(i) END
@@ -116,12 +144,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						| LReal:
 								W.WriteReal(obj^.conval^.realval)
 						| String:
-								Strings.Find (obj^.conval^.ext^$, 22X, 0, i);
-								IF i = -1 THEN
-									Wch(22X); Ws(obj^.conval^.ext^); Wch(22X)
-								ELSE
-									Wch("'"); Ws(obj^.conval^.ext^); Wch("'")
-								END
+								StringConst(obj^.conval^.ext^)
 						| NilTyp:
 								Ws("NIL")
 						END ;
@@ -394,6 +417,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	END ShowDef;
 
 BEGIN
+	hex := "0123456789ABCDEF";
 	OPT.typSize := OPV.TypSize
 END OfrontBrowser.
 

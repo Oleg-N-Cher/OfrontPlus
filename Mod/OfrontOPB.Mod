@@ -574,8 +574,8 @@
 			END
 		END;
 		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp, Char, String}) THEN
-			IF g # new^.form THEN right^.typ := new END;
-			IF f # new^.form THEN left^.typ := new END
+			IF g # new^.form THEN Convert(right, new) END;
+			IF f # new^.form THEN Convert(left, new) END
 		END
 	END Promote;
 
@@ -591,8 +591,8 @@
 		ELSE new := OPT.inttyp
 		END;
 		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp, Char, String}) THEN
-			IF g # new^.form THEN Convert(right, new) END;
-			IF f # new^.form THEN Convert(left, new) END
+			IF g # new^.form THEN right^.typ := new END;
+			IF f # new^.form THEN left^.typ := new END
 		END
 	END PromoteUByte;
 
@@ -629,7 +629,7 @@
 	END CheckProc;
 
 	PROCEDURE ConstOp(op: SHORTINT; x, y: OPT.Node);
-		VAR f, g: SHORTINT; xval, yval: OPT.Const; xv, yv: LONGINT;
+		VAR f, g: SHORTINT; i, j: INTEGER; xval, yval: OPT.Const; ext: OPT.ConstExt; xv, yv: LONGINT;
 				temp: BOOLEAN; (* temp avoids err 215 *)
 
 		PROCEDURE ConstCmp(): SHORTINT;
@@ -821,6 +821,11 @@
 					END
 				ELSIF f = Set THEN
 					xval^.setval := xval^.setval + yval^.setval
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (f = String) & (xval^.ext # NIL) & (yval^.ext # NIL) THEN
+					NEW(ext, LEN(xval^.ext^) + LEN(yval^.ext^));
+					i := 0; WHILE xval^.ext^[i] # 0X DO ext^[i] := xval^.ext^[i]; INC(i) END;
+					j := 0; WHILE yval^.ext^[j] # 0X DO ext^[i] := yval^.ext^[j]; INC(i); INC(j) END;
+					ext^[i] := 0X; xval^.ext := ext; INC(xval^.intval2, yval^.intval2 - 1)
 				ELSIF f # Undef THEN err(105)
 				END
 		| minus:
