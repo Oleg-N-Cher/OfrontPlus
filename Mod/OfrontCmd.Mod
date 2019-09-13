@@ -18,19 +18,19 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 	END Trap;
 
 	PROCEDURE Module*(VAR done: BOOLEAN);
-		VAR ext, new: BOOLEAN; p: OPT.Node;
+		VAR ext, new, main: BOOLEAN; p: OPT.Node;
 	BEGIN
 		OPV.Init; OPP.Module(p, OPM.opt);
 		IF OPM.noerr THEN
 			OPV.AdrAndSize(OPT.topScope);
-			OPT.Export(ext, new);
+			main := (OPM.mainprog IN OPM.opt) & (OPM.modName # "SYSTEM");
+			IF ~main THEN OPT.Export(ext, new) END;
 			IF OPM.noerr THEN
 				OPM.OpenFiles(OPT.SelfName);
 				OPC.Init;
 				OPV.Module(p);
 				IF OPM.noerr THEN
-					IF (OPM.mainprog IN OPM.opt) & (OPM.modName # "SYSTEM") THEN
-						OPM.DeleteNewSym; OPM.LogWStr("  main program")
+					IF main THEN OPM.DeleteNewSym; OPM.LogWStr("  main program")
 					ELSE
 						IF new THEN OPM.LogWStr("  new symbol file"); OPM.RegisterNewSym
 						ELSIF ext THEN OPM.LogWStr("  extended symbol file"); OPM.RegisterNewSym
@@ -39,7 +39,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 				ELSE OPM.DeleteNewSym
 				END
 			END
-		END ;
+		END;
 		OPM.CloseFiles; OPT.Close;
 		OPM.LogWLn; done := OPM.noerr;
 		IF OPM.warning156 THEN OPM.Mark(-156, -1) END
