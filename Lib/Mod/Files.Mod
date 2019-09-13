@@ -513,7 +513,22 @@ Especially Length would become fairly complex.
 *)
 
   PROCEDURE Delete*(IN name: ARRAY OF SHORTCHAR; VAR res: INTEGER);
-  BEGIN res := Platform.DeleteFile(name) END Delete;
+    VAR
+      pos: INTEGER; dir, path: ARRAY 256 OF SHORTCHAR;
+  BEGIN
+    IF name # "" THEN
+      IF HasDir(name) THEN dir := ""; path := name$
+      ELSE pos := 0; ScanPath(pos, dir); MakeFileName(dir, name, path); ScanPath(pos, dir)
+      END;
+      LOOP
+        res := Platform.DeleteFile(path);
+        IF (res = 0) OR (dir = "") THEN RETURN
+        ELSE MakeFileName(dir, name, path); ScanPath(pos, dir)
+        END
+      END
+    ELSE res := 1
+    END
+  END Delete;
 
   PROCEDURE Rename* (IN old, new: ARRAY OF SHORTCHAR; VAR res: INTEGER);
     VAR
