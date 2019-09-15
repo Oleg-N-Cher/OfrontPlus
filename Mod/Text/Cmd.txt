@@ -18,7 +18,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 				OPV.Module(p);
 				IF OPM.noerr THEN
 					IF main THEN
-						OPM.LogWStr("  main program")
+						OPM.DeleteNewSym; OPM.LogWStr("  main program")
 					ELSE
 						IF new THEN OPM.LogWStr("  new symbol file"); OPM.RegisterNewSym
 						ELSIF ext THEN OPM.LogWStr("  extended symbol file"); OPM.RegisterNewSym

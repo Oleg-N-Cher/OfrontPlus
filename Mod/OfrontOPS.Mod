@@ -227,6 +227,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 				ELSIF Cmp("REPEAT", "repeat") THEN sym := repeat
 				ELSIF Cmp("RETURN", "return") THEN sym := return
 				END
+		| "S":
+				IF name = "system" THEN name := "SYSTEM"
+				ELSIF name = "SYSTEM" THEN name := "system"
+				END
 		| "T":
 				IF Cmp("THEN", "then") THEN sym := then
 				ELSIF Cmp("TO", "to") THEN sym := to
