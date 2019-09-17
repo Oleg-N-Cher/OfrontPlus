@@ -318,6 +318,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 	PROCEDURE SameExp (n1, n2: OPT.Node): BOOLEAN;
 	BEGIN
+		IF (n2^.class = Nderef) & (n2^.typ^.form = String) THEN n2 := n2^.left END;
 		WHILE (n1^.class = n2^.class) & (n1^.typ = n2^.typ) DO
 			CASE n1^.class OF
 			| Nvar, Nvarpar, Nproc: RETURN n1^.obj = n2^.obj
@@ -811,7 +812,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						|	and:
 									OPM.WriteString(" && ")
 						|	plus:
-									IF form = Set THEN OPM.WriteString(" | ")
+									IF form = String THEN OPM.err(265)
+									ELSIF form = Set THEN OPM.WriteString(" | ")
 									ELSE OPM.WriteString(" + ")
 									END
 						|	minus:
