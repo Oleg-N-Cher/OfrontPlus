@@ -196,6 +196,7 @@ insertMarkers	Insert Markers
 251	"^0" is redefined (private part only), compile with option s
 252	"^0" is redefined, compile with option s
 253	"^0" is new, compile with option e
+265	unsupported string operation
 301	implicit type cast
 303	GPCP extension used
 306	inappropriate symbol file ignored

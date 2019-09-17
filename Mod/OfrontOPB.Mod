@@ -1101,15 +1101,37 @@
 						ELSIF f # Undef THEN err(94); z^.typ := OPT.undftyp
 						END
 				| plus:
-						IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(105); typ := OPT.undftyp END ;
+						IF ~(f IN {Undef, Byte, UByte, SInt..Set, String}) THEN err(105); typ := OPT.undftyp END;
 						do := TRUE;
 						IF f IN intSet THEN
-							IF (z^.class = Nconst) & (z^.conval^.intval = 0) THEN do := FALSE; z := y END ;
+							IF (z^.class = Nconst) & (z^.conval^.intval = 0) THEN do := FALSE; z := y END;
 							IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN do := FALSE END
-						END ;
+						ELSIF f = String THEN
+							IF (OPM.Lang # "C") & (OPM.Lang # "3") THEN err(105); typ := OPT.undftyp; do := FALSE
+							ELSE
+								IF (z^.class = Nconst) & (z^.conval^.intval2 = 1) THEN do := FALSE; z := y END;
+								IF (y^.class = Nconst) & (y^.conval^.intval2 = 1) THEN do := FALSE END;
+								IF do THEN
+									IF z^.class = Ndop THEN
+										t := z; WHILE t^.right^.class = Ndop DO t := t^.right END;
+										IF (t^.right^.class = Nconst) & (y^.class = Nconst) THEN
+											ConstOp(op, t^.right, y); do := FALSE
+										ELSIF (t^.right^.class = Nconst) & (y^.class = Ndop) & (y^.left^.class = Nconst) THEN
+											ConstOp(op, t^.right, y^.left); y.left := t^.right; t^.right := y; do := FALSE
+										ELSE
+											NewOp(op, typ, t^.right, y); do := FALSE
+										END
+									ELSE
+										IF (z^.class = Nconst) & (y^.class = Ndop) & (y^.left^.class = Nconst) THEN
+											ConstOp(op, z, y^.left); y^.left := z; z := y; do := FALSE
+										END
+									END
+								END
+							END
+						END;
 						IF do THEN NewOp(op, typ, z, y) END
 				| minus:
-						IF ~(f IN {Undef, Byte, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
+						IF ~(f IN {Undef, Byte, UByte, SInt..Set}) THEN err(106); typ := OPT.undftyp END;
 						IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
 				| or:
 						IF f = Bool THEN

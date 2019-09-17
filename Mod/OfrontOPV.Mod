@@ -45,7 +45,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		getfn = 29; putfn = 30; sysnewfn = 35; movefn = 36;
 
 		(*procedure flags*)
-		isRedef = 2;
+		hasBody = 1; isRedef = 2; absAttr = 17; empAttr = 19;
 
 		super = 1;
 
@@ -209,20 +209,21 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			ELSIF mode = Var THEN TypSize(obj^.typ)
 			END ;
 			IF ~exported THEN (* do this only once *)
-				IF (mode IN {LProc, Typ}) & (obj^.mnolev > 0) THEN Stamp(obj^.name) END ;
+				IF (mode IN {LProc, Typ}) & (obj^.mnolev > 0) THEN Stamp(obj^.name) END;
 				IF mode IN {Var, VarPar, Typ} THEN
 					obj^.scope := outerScope
 				ELSIF mode IN {LProc, XProc, TProc, CProc, IProc} THEN
-					IF obj^.conval^.setval = {} THEN OPM.err(129) END ;
+					IF obj^.conval^.setval = {} THEN OPM.err(129) END;
 					scope := obj^.scope;
 					scope^.leaf := TRUE;
 					scope^.name := obj^.name; Stamp(scope^.name);
-					IF mode = CProc THEN obj^.adr := 1 (* c.f. OPC.CProcDefs *) END ;
-					IF scope^.mnolev > 1 THEN outerScope^.leaf := FALSE END ;
-					Traverse (obj^.scope^.right, obj^.scope, FALSE)
+					IF mode = CProc THEN obj^.adr := 1 (* c.f. OPC.CProcDefs *) END;
+					IF scope^.mnolev > 1 THEN outerScope^.leaf := FALSE END;
+					Traverse (obj^.scope^.right, obj^.scope, FALSE);
+					IF obj^.conval^.setval * {hasBody, absAttr, empAttr} = {} THEN OPM.Mark(129, obj^.adr) END
 				END
 			END;
-			Traverse(obj^.right, outerScope, exported);
+			Traverse(obj^.right, outerScope, exported)
 		END
 	END Traverse;
 
@@ -978,6 +979,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		OPM.Write("(");
 		expr(right, MinPrec); OPM.WriteString(Comma); expr(left, MinPrec); OPM.WriteString(Comma);
 		IF left^.typ^.sysflag # 0 THEN OPM.WriteString("-1") ELSE Len(left, 0, FALSE) END;
+		OPM.WriteString(Comma); OPM.WriteModPos;
 		OPM.Write(")")
 	END AddCopy;
 

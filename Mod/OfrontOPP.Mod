@@ -879,10 +879,18 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF sym = minus THEN OPS.Get(sym); Term(x); OPB.MOp(minus, x)
 		ELSIF sym = plus THEN OPS.Get(sym); Term(x); OPB.MOp(plus, x)
 		ELSE Term(x)
-		END ;
+		END;
 		WHILE (plus <= sym) & (sym <= or) DO
-			addop := sym; OPS.Get(sym);
-			Term(y); OPB.Op(addop, x, y)
+			addop := sym; OPS.Get(sym); Term(y);
+			IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN OPB.DeRef(x) END;
+			IF (x^.typ^.comp IN {Array, DynArr}) & (x^.typ^.BaseTyp.form = Char) THEN
+				OPB.StrDeref(x)
+			END;
+			IF (OPM.Lang = "C") & (y^.typ^.form = Pointer) THEN OPB.DeRef(y) END;
+			IF (y^.typ^.comp IN {Array, DynArr}) & (y^.typ^.BaseTyp.form = Char) THEN
+				OPB.StrDeref(y)
+			END;
+			OPB.Op(addop, x, y)
 		END
 	END SimpleExpression;
 

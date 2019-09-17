@@ -48,26 +48,34 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	BEGIN
 		ch := s[0]; i := 1; quoted := FALSE; first := TRUE;
 		WHILE ch # 0X DO
-			IF (ch < " ") OR (ch = 22X) OR (ch >= 7FX) THEN
-				IF quoted THEN Wch('"') END;
-				IF ~first THEN Ws(" + ") END;
-				IF ch > 9FX THEN Wch("0") END;
-				Wch(hex[ORD(ch) DIV 10H]);
-				Wch(hex[ORD(ch) MOD 10H]);
-				Wch("X");
-				quoted := FALSE
-			ELSE
-				IF ~quoted THEN
-					IF ~first THEN Ws(" + ") END;
-					Wch('"')
-				END;
-				Wch(ch);
-				quoted := TRUE
+			IF ch = 22X THEN quoted := TRUE
+			ELSIF (ch < " ") OR (ch = 27X) OR (ch >= 7FX) THEN first := FALSE
 			END;
-			ch := s[i]; INC(i);
-			first := FALSE
+			ch := s[i]; INC(i)
 		END;
-		IF quoted THEN Wch('"') END
+		IF quoted & first THEN Wch(27X); Ws(s); Wch(27X)
+		ELSE
+			ch := s[0]; i := 1; quoted := FALSE; first := TRUE;
+			WHILE ch # 0X DO
+				IF (ch < " ") OR (ch = 22X) OR (ch >= 7FX) THEN
+					IF quoted THEN Wch(22X) END;
+					IF ~first THEN Ws(" + ") END;
+					IF ch > 9FX THEN Wch("0") END;
+					Wch(hex[ORD(ch) DIV 10H]); Wch(hex[ORD(ch) MOD 10H]); Wch("X");
+					quoted := FALSE
+				ELSE
+					IF ~quoted THEN
+						IF ~first THEN Ws(" + ") END;
+						Wch(22X)
+					END;
+					Wch(ch);
+					quoted := TRUE
+				END;
+				ch := s[i]; INC(i);
+				first := FALSE
+			END;
+			IF quoted THEN Wch(22X) END
+		END
 	END StringConst;
 
 	PROCEDURE Indent(i: SHORTINT);
