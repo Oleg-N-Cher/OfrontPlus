@@ -234,7 +234,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END Stars;
 
-	PROCEDURE ^AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
+	PROCEDURE^ AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
+	PROCEDURE^ DeclareReturnType (retTyp: OPT.Struct);
 
 	PROCEDURE DeclareObj(dcl: OPT.Object; scopeDef: BOOLEAN);
 		VAR
@@ -262,7 +263,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF form = ProcTyp THEN
 					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE, TRUE)
 					ELSE OPM.WriteString(")()")
-					END ;
+					END;
+					DeclareReturnType(typ^.BaseTyp);
 					EXIT
 				ELSIF comp = Array THEN
 					OPM.Write(OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket)
@@ -511,14 +513,15 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END ;
 				OPM.WriteString("(*)");
 				IF ansi THEN
-					AnsiParamList(obj^.link, FALSE, TRUE);
+					AnsiParamList(obj^.link, FALSE, TRUE)
 				ELSE
-					OPM.WriteString("()");
-				END ;
+					OPM.WriteString("()")
+				END;
+				DeclareReturnType(obj^.typ);
 				OPM.WriteString(", ");
 				DeclareParams(obj^.link, TRUE, TRUE);
 				OPM.Write(")"); OPM.WriteLn
-			END ;
+			END;
 			DefineTProcMacros(obj^.right, empty)
 		END
 	END DefineTProcMacros;
@@ -596,9 +599,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					END;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
-					OPM.WriteString(EXTERN);
-					DeclareBase(obj); IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, oc) END;
-					OPM.Write(Blank); IF obj^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+					OPM.WriteString(EXTERN); DeclareBase(obj); OPM.Write(Blank);
+					IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, oc) END;
+					IF obj^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 					OPM.WriteString(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 					OPM.WriteLn;
 					OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
@@ -833,17 +836,31 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.Write(")")
 	END AnsiParamList;
 
-	PROCEDURE ProcHeader(proc: OPT.Object; define: BOOLEAN);
+	PROCEDURE DeclareReturnType (retTyp: OPT.Struct);
 	BEGIN
-		IF proc^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(proc^.typ^.strobj) END;
-		OPM.Write(Blank); IF proc^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+		IF (retTyp^.form = ProcTyp) & ((retTyp^.strobj = NIL) OR (retTyp^.strobj^.name^ = "")) THEN
+			IF ansi THEN OPM.Write(")"); AnsiParamList(retTyp^.link, FALSE, TRUE)
+			ELSE OPM.WriteString(")()")
+			END;
+			DeclareReturnType(retTyp^.BaseTyp)
+		END
+	END DeclareReturnType;
+
+	PROCEDURE ProcHeader(proc: OPT.Object; define: BOOLEAN);
+		VAR oc: BOOLEAN;
+	BEGIN
+		DeclareBase(proc); OPM.Write(Blank);
+		IF proc^.typ^.form  # NoTyp THEN Stars(proc^.typ, oc) END;
+		IF proc^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 		Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
 			AnsiParamList(proc^.link, TRUE, TRUE);
+			DeclareReturnType(proc^.typ);
 			IF ~define THEN OPM.Write(";") END;
 			OPM.WriteLn
 		ELSIF define THEN
 			DeclareParams(proc^.link, FALSE, TRUE);
+			DeclareReturnType(proc^.typ);
 			OPM.WriteLn;
 			Indent(1); IdentList(proc^.link, 2(* map REAL to double *)); Indent(-1)
 		ELSE OPM.WriteString("();"); OPM.WriteLn
