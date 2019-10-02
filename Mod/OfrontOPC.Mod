@@ -93,7 +93,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		hashtab: ARRAY 105 OF BYTE;
 		keytab: ARRAY 36, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
-		BodyNameExt: ARRAY 13 OF SHORTCHAR;
+		BodyNameExt: ARRAY 14 OF SHORTCHAR;
 
 	PROCEDURE Init*;
 	BEGIN
@@ -102,7 +102,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		mainprog := OPM.mainprog IN OPM.opt;
 		ansi := OPM.ansi IN OPM.opt;
 		oldc := OPM.oldc IN OPM.opt;
-		IF ansi THEN BodyNameExt := "__init(void)" ELSE BodyNameExt := "__init()" END
+		IF ansi THEN BodyNameExt := "__init (void)" ELSE BodyNameExt := "__init ()" END
 	END Init;
 
 	PROCEDURE Indent* (count: SHORTINT);
