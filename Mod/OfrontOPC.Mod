@@ -93,7 +93,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		hashtab: ARRAY 105 OF BYTE;
 		keytab: ARRAY 36, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
-		BodyNameExt: ARRAY 13 OF SHORTCHAR;
+		BodyNameExt: ARRAY 14 OF SHORTCHAR;
 
 	PROCEDURE Init*;
 	BEGIN
@@ -102,7 +102,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		mainprog := OPM.mainprog IN OPM.opt;
 		ansi := OPM.ansi IN OPM.opt;
 		oldc := OPM.oldc IN OPM.opt;
-		IF ansi THEN BodyNameExt := "__init(void)" ELSE BodyNameExt := "__init()" END
+		IF ansi THEN BodyNameExt := "__init (void)" ELSE BodyNameExt := "__init ()" END
 	END Init;
 
 	PROCEDURE Indent* (count: SHORTINT);
@@ -496,6 +496,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END BaseTProc;
 
 	PROCEDURE DefineTProcMacros(obj: OPT.Object; VAR empty: BOOLEAN);
+		VAR oc: BOOLEAN;
 	BEGIN
 		IF obj # NIL THEN
 			DefineTProcMacros(obj^.left, empty);
@@ -507,10 +508,11 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				IF obj^.link^.typ^.form = Pointer THEN
 					OPM.WriteString("__TYPEOF("); Ident(obj^.link); OPM.Write(")")
 				ELSE Ident(obj^.link); OPM.WriteString(TagExt)
-				END ;
+				END;
 				OPM.WriteString(", "); Ident(obj);
 				Str1(", #, ", obj^.adr DIV 10000H);
-				IF obj^.typ = OPT.notyp THEN OPM.WriteString(VoidType) ELSE Ident(obj^.typ^.strobj) END ;
+				DeclareBase(obj);
+				IF obj^.typ^.form  # NoTyp THEN Stars(obj^.typ, oc) END;
 				OPM.WriteString("(*)");
 				IF ansi THEN
 					AnsiParamList(obj^.link, FALSE, TRUE)
