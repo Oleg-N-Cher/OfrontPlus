@@ -470,7 +470,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 							IF ODD(n^.typ^.sysflag) THEN design(n^.left, designPrec)
 							ELSE design(n^.left, 10); OPM.WriteString("->data")
 							END
-						ELSE OPM.Write(Deref); design(n^.left, designPrec)
+						ELSE OPM.Write(Deref); expr(n^.left, designPrec)
 						END
 					END
 		|	Nindex:

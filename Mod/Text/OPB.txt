@@ -341,13 +341,13 @@
 		VAR strobj, bstrobj: OPT.Object; typ, btyp: OPT.Struct;
 	BEGIN
 		typ := x^.typ;
-		IF x^.class >= Nconst THEN err(78)
+		IF (x^.class = Nconst) OR (x^.class = Ntype) OR (x^.class = Nproc) THEN err(78)
 		ELSIF typ^.form = Pointer THEN
-			IF typ = OPT.sysptrtyp THEN err(57) END ;
+			IF typ = OPT.sysptrtyp THEN err(57) END;
 			btyp := typ^.BaseTyp; strobj := typ^.strobj; bstrobj := btyp^.strobj;
 			IF (strobj # NIL) & (strobj^.name # OPT.null) & (bstrobj # NIL) & (bstrobj^.name # OPT.null) THEN
 				btyp^.pbused := TRUE
-			END ;
+			END;
 			BindNodes(Nderef, btyp, x, NIL)
 		ELSE err(84)
 		END

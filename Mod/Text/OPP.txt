@@ -753,18 +753,32 @@
 			ELSIF (sym = dollar) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN
 				IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN OPB.DeRef(x) END;
 				OPS.Get(sym); OPB.StrDeref(x)
-			ELSIF (sym = lparen) & (x^.class < Nconst) & (x^.typ^.form # ProcTyp) &
-					((x^.obj = NIL) OR (x^.obj^.mode # TProc)) THEN
-				OPS.Get(sym);
-				IF OPM.Lang = "3" THEN CheckSym(colon) END;
-				IF sym = ident THEN
-					qualident(obj);
-					IF obj^.mode = Typ THEN OPB.TypTest(x, obj, TRUE)
-					ELSE err(52)
-					END
-				ELSE err(ident)
+			ELSIF sym = lparen THEN
+				IF (x.obj # NIL) & (x.obj.mode IN {XProc, LProc, CProc, TProc}) THEN typ := x.obj.typ
+				ELSIF x.typ.form = ProcTyp THEN typ := x.typ.BaseTyp
+				ELSIF x.class IN {Ntype, Nproc} THEN EXIT	(* standard procedure or constant array *)
+				ELSE typ := NIL
 				END;
-				CheckSym(rparen)
+				IF typ # OPT.notyp THEN
+					OPS.Get(sym);
+					IF typ = NIL THEN	(* type guard *)
+						IF OPM.Lang = "3" THEN CheckSym(colon) END;
+						IF sym = ident THEN
+							qualident(obj);
+							IF obj.mode = Typ THEN OPB.TypTest(x, obj, TRUE)
+							ELSE err(52)
+							END
+						ELSE err(ident)
+						END
+					ELSE	(* function call *)
+						OPB.PrepCall(x, fpar);
+						ActualParameters(apar, fpar);
+						OPB.Call(x, apar, fpar);
+						IF level > 0 THEN OPT.topScope.link.leaf := FALSE END
+					END;
+					CheckSym(rparen)
+				ELSE EXIT
+				END
 			ELSE EXIT
 			END
 		END
