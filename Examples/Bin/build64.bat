@@ -12,7 +12,7 @@ IF errorlevel 1 PAUSE
 SET StripExe=-nostartfiles ..\..\Lib\Mod\crt1.c -Wl,-e_WinMain@16 -D_WINMAIN
 SET StripDll=-nostartfiles ..\..\Lib\Mod\crt1dll.c
 SET LIB=-I..\..\Lib\Obj64 -I..\..\Lib\Mod ..\..\Lib\Ofront64.a
-SET CC=gcc.exe -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections -Wl,--file-alignment,512
+SET CC=gcc.exe -m64 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections
 
 %CC% %StripExe% HelloWorld.c -o..\x64\HelloWorld.exe %LIB%
 IF errorlevel 1 PAUSE

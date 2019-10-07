@@ -10,7 +10,7 @@ EXIT
 SET PATH=%XDev%\WinDev\Bin\MinGW\bin
 SET lib=-I..\Lib\Obj -I..\Lib\Mod ..\Lib\Ofront.a
 SET StripExe=-nostartfiles ..\Lib\Mod\crt1.c -Wl,-e__WinMain -D_WINMAIN
-SET CC=gcc.exe %StripExe% -m32 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections -Wl,--file-alignment,512
+SET CC=gcc.exe %StripExe% -m32 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections
 
 :Browser
 IF NOT "%1"=="BrowserCmd" GOTO ImportGraph
