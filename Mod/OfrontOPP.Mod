@@ -714,13 +714,13 @@
 			ELSIF sym = period THEN OPS.Get(sym);
 				IF sym = ident THEN name := OPS.name; OPS.Get(sym);
 					IF x^.typ # NIL THEN
-						IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END ;
+						IF x^.typ^.form = Pointer THEN OPB.DeRef(x) END;
 						IF x^.typ^.comp = Record THEN
-							OPT.FindField(name, x^.typ, obj); OPB.Field(x, obj);
+							typ := x.typ; OPT.FindField(name, x^.typ, obj); OPB.Field(x, obj);
 							IF (obj # NIL) & (obj^.mode = TProc) THEN
 								IF sym = arrow THEN  (* super call *) OPS.Get(sym);
 									y := x^.left;
-									IF y^.class = Nderef THEN y := y^.left END ;	(* y = record variable *)
+									IF y^.class = Nderef THEN y := y^.left END;	(* y = record variable *)
 									IF y^.obj # NIL THEN
 										proc := OPT.topScope;	(* find innermost scope which owner is a TProc *)
 										WHILE (proc^.link # NIL) & (proc^.link^.mode # TProc) DO proc := proc^.left END ;
@@ -847,12 +847,6 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF sym = ident THEN
 			qualident(id); x := OPB.NewLeaf(id); selector(x);
 			IF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN StandProcCall(x)	(* x may be NIL *)
-			ELSIF sym = lparen THEN
-				OPS.Get(sym); OPB.PrepCall(x, fpar);
-				ActualParameters(apar, fpar);
-				OPB.Call(x, apar, fpar);
-				CheckSym(rparen);
-				IF level > 0 THEN OPT.topScope^.link^.leaf := FALSE END
 			END
 		ELSIF sym = number THEN
 			CASE OPS.numtyp OF
