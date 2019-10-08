@@ -1794,7 +1794,7 @@ avoid unnecessary intermediate variables in OFront
 						Construct(Nif, p, x); p^.conval := OPT.NewConst(); p^.conval^.intval := OPM.errpos;
 						Construct(Nifelse, p, NIL); OptIf(p);
 						IF p = NIL THEN	(* ASSERT(TRUE) *)
-						ELSIF p^.class = Ntrap THEN err(99)
+						ELSIF (p^.class = Ntrap) & (OPM.Lang # "7") THEN err(99)
 						ELSE p^.subcl := assertfn
 						END
 					ELSE err(218)
@@ -1802,7 +1802,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSE err(69)
 				END
 		ELSE err(64)
-		END ;
+		END;
 		par0 := p
 	END StPar1;
 
@@ -1884,7 +1884,7 @@ avoid unnecessary intermediate variables in OFront
 				Construct(Nif, p, x); p^.conval := OPT.NewConst(); p^.conval^.intval := OPM.errpos;
 				Construct(Nifelse, p, NIL); OptIf(p);
 				IF p = NIL THEN	(* ASSERT(TRUE) *)
-				ELSIF p^.class = Ntrap THEN err(99)
+				ELSIF (p^.class = Ntrap) & (OPM.Lang # "7") THEN err(99)
 				ELSE p^.subcl := assertfn
 				END
 			ELSIF parno < 1 THEN err(65)
