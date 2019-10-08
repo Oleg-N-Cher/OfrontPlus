@@ -70,7 +70,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     SearchPath: POINTER TO ARRAY OF SHORTCHAR;
 
 
-  PROCEDURE -IdxTrap "__HALT(-1)";
+  PROCEDURE -IdxTrap (pos: INTEGER) '__HALT(-1, "Files.Mod", pos)';
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 
@@ -418,7 +418,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
-    IF n > LEN(x) THEN IdxTrap END;
+    IF n > LEN(x) THEN IdxTrap(421) END;
     xpos := 0; buf := r.buf; offset := r.offset;
     WHILE n > 0 DO
       IF (r.org # buf.org) OR (offset >= bufsize) THEN
@@ -462,7 +462,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   PROCEDURE WriteBytes* (VAR r: Rider; IN x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
-    IF n > LEN(x) THEN IdxTrap END;
+    IF n > LEN(x) THEN IdxTrap(465) END;
     xpos := 0; buf := r.buf; offset := r.offset;
     WHILE n > 0 DO
       IF (r.org # buf.org) OR (offset >= bufsize) THEN

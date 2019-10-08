@@ -113,13 +113,13 @@ MODULE Heap;
     INC(lockdepth);
   END Lock;
 
-  PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
+  PROCEDURE -SystemHalt(code: INTEGER; mod: ARRAY OF SHORTCHAR; pos: INTEGER) "__HALT(code, mod, pos)";
 
   PROCEDURE Unlock*;
   BEGIN
     DEC(lockdepth);
     IF interrupted & (lockdepth = 0) THEN
-      SystemHalt(-9);
+      SystemHalt(-9, "Heap.Mod", 122);
     END
   END Unlock;
 

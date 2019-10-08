@@ -47,7 +47,7 @@ INTEGER SYSTEM_DIV(INTEGER x, INTEGER y)
     if (x > 0) return -1 + (x - 1) / y;
     else       return x / y;
   }
-  __HALT(-12);
+  __HALT(-12, "SYSTEM.c", 50);
 }
 
 LONGINT SYSTEM_DIVL(LONGINT x, LONGINT y)
@@ -60,7 +60,7 @@ LONGINT SYSTEM_DIVL(LONGINT x, LONGINT y)
     if (x > 0) return -1 + (x - 1) / y;
     else       return x / y;
   }
-  __HALT(-12);
+  __HALT(-12, "SYSTEM.c", 63);
 }
 
 INTEGER SYSTEM_MOD(INTEGER x, INTEGER y)
@@ -73,7 +73,7 @@ INTEGER SYSTEM_MOD(INTEGER x, INTEGER y)
     if (x > 0) return y + 1 + (x - 1) % y;
     else       return x % y;
   }
-  __HALT(-12);
+  __HALT(-12, "SYSTEM.c", 76);
 }
 
 LONGINT SYSTEM_MODL(LONGINT x, LONGINT y)
@@ -86,7 +86,7 @@ LONGINT SYSTEM_MODL(LONGINT x, LONGINT y)
     if (x > 0) return y + 1 + (x - 1) % y;
     else       return x % y;
   }
-  __HALT(-12);
+  __HALT(-12, "SYSTEM.c", 89);
 }
 
 INTEGER SYSTEM_ENTIER(REAL x)
@@ -168,7 +168,7 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
     nofelems = 1;
     while (nofdim > 0) {
         nofelems = nofelems * va_arg(ap, SYSTEM_ARRLEN); nofdim--;
-        if (nofelems <= 0) __HALT(-20);
+        if (nofelems <= 0) __HALT(-20, "SYSTEM.c", 171);
     }
     va_end(ap);
     dataoff = nofdyn * sizeof(SYSTEM_ARRLEN);

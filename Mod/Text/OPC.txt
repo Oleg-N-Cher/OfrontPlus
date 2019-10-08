@@ -1420,7 +1420,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 
 	PROCEDURE Halt* (n: INTEGER);
 	BEGIN
-		Str1("__HALT(#)", n)
+		Str1("__HALT(#, ", n); OPM.WriteModPos; OPM.Write(")")
 	END Halt;
 
 	PROCEDURE Len* (obj: OPT.Object; array: OPT.Struct; dim: INTEGER);

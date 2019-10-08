@@ -123,14 +123,14 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 PROCEDURE -allocate(size: ADRINT): ADRINT "((SYSTEM_ADRINT)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
 
-PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
+PROCEDURE -SystemHalt(code: INTEGER; mod: ARRAY OF SHORTCHAR; pos: INTEGER) "__HALT(code, mod, pos)";
 
 PROCEDURE OSAllocate*(size: ADRINT): ADRINT;
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* If the function HeapAlloc fails and you have not specified HEAP_GENERATE_EXCEPTIONS, the return value is NULL. *)
   END;
-  SystemHalt(-25); RETURN 0 (* To remove __RETCHK *)
+  SystemHalt(-25, "Platform.Mod", 133); RETURN 0 (* To remove __RETCHK *)
 END OSAllocate;
 
 PROCEDURE -free(address: ADRINT) "HeapFree(GetProcessHeap(), 0, (void*)address)";

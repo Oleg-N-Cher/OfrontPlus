@@ -118,14 +118,14 @@ BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
 
 PROCEDURE -allocate(size: ADRINT): ADRINT "((SYSTEM_ADRINT)malloc((size_t)(size)))";
 
-PROCEDURE -SystemHalt(code: INTEGER) "__HALT(code)";
+PROCEDURE -SystemHalt(code: INTEGER; mod: ARRAY OF SHORTCHAR; pos: INTEGER) "__HALT(code, mod, pos)";
 
 PROCEDURE OSAllocate*(size: ADRINT): ADRINT;
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* malloc will return the null pointer when it fails. *)
   END;
-  SystemHalt(-25); RETURN 0 (* To remove __RETCHK *)
+  SystemHalt(-25, "Platform.Mod", 128); RETURN 0 (* To remove __RETCHK *)
 END OSAllocate;
 
 PROCEDURE -free(address: ADRINT) "free((void*)(address))";

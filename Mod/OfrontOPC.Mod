@@ -1366,7 +1366,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	PROCEDURE Halt* (n: INTEGER);
 	BEGIN
-		Str1("__HALT(#)", n)
+		Str1("__HALT(#, ", n); OPM.WriteModPos; OPM.Write(")")
 	END Halt;
 
 	PROCEDURE Len* (obj: OPT.Object; array: OPT.Struct; dim: INTEGER);
