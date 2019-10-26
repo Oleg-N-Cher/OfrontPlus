@@ -127,7 +127,7 @@ MODULE Heap;
   PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <  (SYSTEM_ADR)y)";
   PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <= (SYSTEM_ADR)y)";
 
-  PROCEDURE REGMOD*(VAR name: ModuleName; enumPtrs: EnumProc): S.PTR;
+  PROCEDURE REGMOD*(IN name: ModuleName; enumPtrs: EnumProc): S.PTR;
     VAR m: Module;
   BEGIN
     (* REGMOD is called at the start of module initialisation code before that modules
@@ -140,7 +140,8 @@ MODULE Heap;
       NEW(m)
     END;
     m.types := 0; m.cmds := NIL;
-    m.name := name$; m.refcnt := 0; m.enumPtrs := enumPtrs; m.next := S.VAL(Module, modules);
+    S.COPY(name, m.name); (* safe for non-0X-terminated strings, then will be truncated. *)
+    m.refcnt := 0; m.enumPtrs := enumPtrs; m.next := S.VAL(Module, modules);
     modules := m;
     RETURN m
   END REGMOD;

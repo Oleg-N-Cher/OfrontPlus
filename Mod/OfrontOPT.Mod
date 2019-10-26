@@ -1187,7 +1187,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
 		ELSE EnterTypeAlias("ADRINT", "adrint", adrint, linttyp)
 		END;
-		IF (lang = "1") OR (lang = "2") THEN
+		IF lang <= "2" THEN
 			EnterTypeAlias("BYTE", "byte", byte, bytetyp)
 		END;
 		EnterProc("ADR", "adr", adrfn);
@@ -1199,6 +1199,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("VAL", "val", valfn);
 		EnterProc("NEW", "new", sysnewfn);
 		EnterProc("MOVE", "move", movefn);
+		IF lang > "2" THEN
+			EnterProc("COPY", "copy", copyfn)
+		END;
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
 
@@ -1213,7 +1216,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("SHORTREAL", "shortreal", real32, realtyp);
 			EnterTypeAlias("REAL", "real", real64, lrltyp);
 			EnterTypeAlias("UBYTE", "ubyte", ubyte, ubytetyp)
-		ELSIF (lang = "1") OR (lang = "2") THEN
+		ELSIF lang <= "2" THEN
 			EnterTypeAlias("CHAR", "char", char8, chartyp);
 			EnterTypeAlias("SHORTINT", "shortint", int8, bytetyp);
 			EnterTypeAlias("INTEGER", "integer", int16, sinttyp);
@@ -1258,7 +1261,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("INCL", "incl", inclfn);
 		EnterProc("EXCL", "excl", exclfn);
 		EnterProc("LEN", "len", lenfn);
-		IF (lang = "1") OR (lang = "2") THEN
+		IF lang <= "2" THEN
 			EnterProc("COPY", "copy", copyfn)
 		END;
 		IF lang = "7" THEN
