@@ -576,11 +576,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				END
 			ELSIF ansi THEN
 				(* casting of params should be simplified eventually *)
-				IF (mode = VarPar) & (typ # n^.typ) & (prec = MinPrec) THEN OPM.WriteString("(void*)") END
-			END ;
+				IF ((mode = VarPar) OR (comp IN {Array, DynArr})) & (typ # n^.typ) & (prec = MinPrec) THEN
+					OPM.WriteString("(void*)")
+				END
+			END;
 			IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN expr(n^.left, prec)	(* avoid cast in lvalue *)
 			ELSE expr(n, prec)
-			END ;
+			END;
 			IF (form = LInt) & (n^.class = Nconst)
 			& (n^.conval^.intval <= MAX(INTEGER)) & (n^.conval^.intval >= MIN(INTEGER)) THEN
 				OPM.PromoteIntConstToLInt()
