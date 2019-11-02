@@ -1371,8 +1371,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 
 	PROCEDURE Len* (obj: OPT.Object; array: OPT.Struct; dim: INTEGER);
 		VAR d: INTEGER;
-	BEGIN
-		d := dim;
+	BEGIN d := dim;
 		WHILE d > 0 DO array := array^.BaseTyp; DEC(d) END;
 		IF array^.comp = DynArr THEN
 			IF ODD(array^.sysflag) THEN OPM.err(136) END;
