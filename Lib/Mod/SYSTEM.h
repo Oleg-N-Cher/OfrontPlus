@@ -14,18 +14,18 @@
 
 #if (__SIZEOF_POINTER__ == 8) || defined (_LP64) || defined(__LP64__) || defined(_WIN64)
 #  ifdef _WIN64
-     typedef unsigned long long SYSTEM_ADR;
+     typedef unsigned long long __U_ADRINT;
      typedef          long long SYSTEM_ADRINT;
 #  else
-     typedef unsigned long      SYSTEM_ADR;
+     typedef unsigned long      __U_ADRINT;
      typedef          long      SYSTEM_ADRINT;
 #  endif
 #else
 #  ifdef __OpenBSD__
-     typedef unsigned long      SYSTEM_ADR;
+     typedef unsigned long      __U_ADRINT;
      typedef          long      SYSTEM_ADRINT;
 #  else
-     typedef unsigned int       SYSTEM_ADR;
+     typedef unsigned int       __U_ADRINT;
      typedef          int       SYSTEM_ADRINT;
 #  endif
 #endif
@@ -36,11 +36,11 @@ typedef int SYSTEM_ARRLEN; // 32 or 64 bits, see also OPM.IndexSize and MaxIndex
 // Declare memcpy in a way compatible with C compilers intrinsic
 // built in implementations.
 
-void *memcpy(void *dest, const void *source, SYSTEM_ADR size);
+void *memcpy(void *dest, const void *source, __U_ADRINT size);
 #ifdef _MSC_VER
 #  define alloca _alloca
 #endif
-void *alloca(SYSTEM_ADR size);
+void *alloca(__U_ADRINT size);
 
 
 
@@ -148,6 +148,7 @@ static inline INTEGER __STRLEN (CHAR *str) { // LEN(str$)
 #define __DUP(x, l)     x=(void*)memcpy(alloca(l*sizeof(*x)),x,l*sizeof(*x))
 #define __DUPARR(v)     v=(void*)memcpy(v##__copy,v,sizeof(v##__copy))
 #define __DEL(x)        /* DUP with alloca frees storage automatically */
+#define __CONSTARR      const
 
 
 /* SYSTEM ops */
@@ -172,7 +173,7 @@ static inline INTEGER __STRLEN (CHAR *str) { // LEN(str$)
 #define __ROTR(x, n, t) ((t)((__U_##t)(x)>>(n)|(__U_##t)(x)<<(8*sizeof(t)-(n))))
 #define __ROT(x, n, t)  ((n)>=0? __ROTL(x, n, t): __ROTR(x, -(n), t))
 
-#define __BIT(x, n)     (*(__U_LONGINT*)(x)>>(n)&1)
+#define __BIT(x, n)     (*(__U_ADRINT*)(x)>>(n)&1)
 #define __MOVE(s, d, n) memcpy((char*)(d),(char*)(s),n)
 #define __SHORT(x, y, mod, pos)   ((int)((__U_LONGINT)(x)+(y)<(y)+(y)?(x):(__HALT(-8,mod,pos),0)))
 #define __SHORTF(x, y, mod, pos)  ((int)(__RF((x)+(y),(y)+(y),mod,pos) - (y)))
@@ -196,7 +197,6 @@ static inline INTEGER __STRLEN (CHAR *str) { // LEN(str$)
 #define __SETOF(x)      ((SET)1<<(x))
 #define __SETRNG(l, h)  ((~(SET)0<<(l))&~(SET)0>>(8*sizeof(SET)-1-(h)))
 #define __MASK(x, m)    ((x)&~(m))
-
 
 
 // Runtime checks

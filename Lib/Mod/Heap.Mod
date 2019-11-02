@@ -124,8 +124,8 @@ MODULE Heap;
   END Unlock;
 
 
-  PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <  (SYSTEM_ADR)y)";
-  PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((SYSTEM_ADR)x <= (SYSTEM_ADR)y)";
+  PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((__U_ADRINT)x <  (__U_ADRINT)y)";
+  PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((__U_ADRINT)x <= (__U_ADRINT)y)";
 
   PROCEDURE REGMOD*(IN name: ModuleName; enumPtrs: EnumProc): S.PTR;
     VAR m: Module;
