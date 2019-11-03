@@ -491,18 +491,18 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						WHILE x # d DO	(* apply Horner schema *)
 							IF x^.left # d THEN Index(x, d, 7, i); OPM.WriteString(" + "); Len(d, i, FALSE);  OPM.WriteString(" * ("); DEC(i)
 							ELSE Index(x, d, MinPrec, i)
-							END ;
+							END;
 							x := x^.left
-						END ;
-						FOR i := 1 TO dims DO OPM.Write(")") END ;
+						END;
+						FOR i := 1 TO dims DO OPM.Write(")") END;
 						IF n^.typ^.comp = DynArr THEN
 							(*  element type is DynArr; finish Horner schema with virtual indices = 0*)
 							OPM.Write(")");
-							WHILE i < (d^.typ^.size - 4) DIV 4 DO
+							WHILE i <= d^.typ^.n DO
 								OPM.WriteString(" * "); Len(d, i, FALSE);
 								INC(i)
 							END
-						END ;
+						END;
 						OPM.Write(CloseBracket)
 					ELSE
 						design(n^.left, designPrec);
