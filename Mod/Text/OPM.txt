@@ -6,7 +6,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 2002-08-21  jt: CloseFiles: inC tested for NIL
 *)
 
-	IMPORT SYSTEM, Strings, Files, Models, Out, Stores, TextControllers, TextModels, TextMappers,
+	IMPORT SYSTEM, Math, Strings, Files, Models, Out, Stores, TextControllers, TextModels, TextMappers,
 		TextViews, Views, Dialog, Fonts, Ports, Controllers, Properties, DevMarkers, Windows;
 
 	CONST
@@ -30,8 +30,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
-
-		MaxRExp* = 38;	MaxLExp* = 308;
 
 		MinHaltNr* = 0;
 		MaxHaltNr* = 255;
@@ -222,6 +220,11 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		ASSERT((0 <= n) & (n <= 63));
 		RETURN ror(x, n)
 	END Ror;
+
+	PROCEDURE IntPower* (x: REAL; n: INTEGER): REAL;
+	BEGIN
+		RETURN Math.IntPower(x, n)
+	END IntPower;
 
 	(* -------------------------  lookup with search path ------------------------- *)
 

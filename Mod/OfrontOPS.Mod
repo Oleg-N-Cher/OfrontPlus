@@ -273,18 +273,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END Identifier;
 
 	PROCEDURE Number;
-		VAR i, m, n, d, e: SHORTINT; dig: ARRAY 24 OF SHORTCHAR; f: REAL; expCh: SHORTCHAR; neg: BOOLEAN;
-
-		PROCEDURE Ten(e: SHORTINT): REAL;
-			VAR x, p: REAL;
-		BEGIN x := 1; p := 10;
-			WHILE e > 0 DO
-				IF ODD(e) THEN x := x*p END;
-				e := SHORT(e DIV 2);
-				IF e > 0 THEN p := p*p END (* prevent overflow *)
-			END;
-			RETURN x
-		END Ten;
+		VAR i, j, m, n, d, e: INTEGER; f, g: REAL; expCh: SHORTCHAR; neg: BOOLEAN;
+			dig: ARRAY 24 OF SHORTCHAR;
 
 		PROCEDURE Ord(ch: SHORTCHAR; hex: BOOLEAN): SHORTINT;
 		BEGIN (* ("0" <= ch) & (ch <= "9") OR ("A" <= ch) & (ch <= "F") *)
@@ -348,8 +338,9 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			ELSE err(203)
 			END
 		ELSE (* fraction *)
-			f := 0; e := 0; expCh := "E";
-			WHILE n > 0 DO (* 0 <= f < 1 *) DEC(n); f := (Ord(dig[n], FALSE) + f)/10 END;
+			f := 0; g := 0; e := 0; j := 0; expCh := "E";
+			WHILE (j < 15) & (j < n) DO g := g * 10 + Ord(dig[j], FALSE); INC(j) END;	(* !!! *)
+			WHILE n > j DO (* 0 <= f < 1 *) DEC(n); f := (Ord(dig[n], FALSE) + f)/10 END;
 			IF (ch = "E") OR (ch = "D") & (OPM.Lang <= "3") THEN expCh := ch; OPM.Get(ch); neg := FALSE;
 				IF ch = "-" THEN neg := TRUE; OPM.Get(ch)
 				ELSIF ch = "+" THEN OPM.Get(ch)
@@ -360,22 +351,31 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 						ELSE err(203)
 						END
 					UNTIL (ch < "0") OR ("9" < ch);
-					IF neg THEN e := SHORT(-e) END
+					IF neg THEN e := -e END
 				ELSE err(2)
 				END
 			END;
-			DEC(e, SHORT(i-d-m)); (* decimal point shift *)
+			DEC(e, i-d-m); (* decimal point shift *)
 			IF (expCh = "E") & (OPM.Lang # "C") THEN numtyp := real;
-				IF (1-OPM.MaxRExp < e) & (e <= OPM.MaxRExp) THEN
-					IF e < 0 THEN realval := SHORT(f / Ten(SHORT(-e)))
-					ELSE realval := SHORT(f * Ten(e))
+				IF (1-38 < e) & (e <= 38) THEN
+					IF e < 0 THEN realval := SHORT(f / OPM.IntPower(10, -e))
+					ELSE realval := SHORT(f * OPM.IntPower(10, e))
 					END
 				ELSE err(203)
 				END
 			ELSE numtyp := longreal;
-				IF (1-OPM.MaxLExp < e) & (e <= OPM.MaxLExp) THEN
-					IF e < 0 THEN lrlval := f / Ten(SHORT(-e))
-					ELSE lrlval := f * Ten(e)
+				IF e < -308 - 16 THEN
+					lrlval := 0.0
+				ELSIF e < -308 + 14 THEN
+					lrlval := (f + g) / OPM.IntPower(10, j-e-30) / 1.0E15 / 1.0E15
+				ELSIF e < j THEN
+					lrlval := (f + g) / OPM.IntPower(10, j-e)	(* Ten(j-e) *)
+				ELSIF e <= 308 THEN
+					lrlval := (f + g) * OPM.IntPower(10, e-j)	(* Ten(e-j) *)
+				ELSIF e = 308 + 1 THEN
+					lrlval := (f + g) * (OPM.IntPower(10, e-j) / 16);
+					IF lrlval <= MAX(REAL) / 16 THEN lrlval := lrlval * 16
+					ELSE err(203)
 					END
 				ELSE err(203)
 				END

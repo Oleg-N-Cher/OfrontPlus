@@ -28,8 +28,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		nilval* = 0;
 
-		MaxRExp* = 38;	MaxLExp* = 308;
-
 		MinHaltNr* = 0;
 		MaxHaltNr* = 255;
 		MaxSysFlag* = 1;
@@ -146,6 +144,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		ASSERT((0 <= n) & (n <= 63));
 		RETURN SYSTEM.ROT(x, -n)
 	END Ror;
+
+	PROCEDURE IntPower* (x: REAL; n: INTEGER): REAL;
+		VAR y: REAL;
+	BEGIN
+		IF n = MIN(INTEGER) THEN RETURN IntPower(x, n + 1) / x END;
+		y := 1.;
+		IF n < 0 THEN x := 1. / x; n := -n END;
+		WHILE n > 0 DO
+			IF ODD(n) THEN y := y * x; DEC(n)
+			ELSE x := x * x; n := n DIV 2
+			END
+		END;
+		RETURN y
+	END IntPower;
 
 	(* ------------------------- Log Output ------------------------- *)
 
