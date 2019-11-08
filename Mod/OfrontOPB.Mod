@@ -1587,20 +1587,20 @@ avoid unnecessary intermediate variables in OFront
 		| ashfn: (*ASH*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF p^.typ = OPT.linttyp THEN maxInt := MAX(LONGINT) ELSE maxInt := MAX(INTEGER) END;
+					IF p^.typ^.form = LInt THEN maxInt := MAX(LONGINT) ELSE maxInt := MAX(INTEGER) END;
 					maxExp := SHORT(log(maxInt DIV 2 + 1)); maxExp := exp;
 					IF (x^.class = Nconst) & ((-maxExp - 1 > x^.conval^.intval) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						IF x^.conval^.intval >= 0 THEN
-							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(1), SHORT(x^.conval^.intval)) THEN
-								p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))
+							IF ABS(p^.conval^.intval) <= maxInt DIV ASH(LONG(1), x^.conval^.intval) THEN
+								p^.conval^.intval := ASH(p^.conval^.intval, x^.conval^.intval)
 							ELSE err(208); p^.conval^.intval := 1
 							END
-						ELSE p^.conval^.intval := ASH(p^.conval^.intval, SHORT(x^.conval^.intval))
+						ELSE p^.conval^.intval := ASH(p^.conval^.intval, x^.conval^.intval)
 						END;
 						p^.obj := NIL
 					ELSE
-						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
+						IF f = LInt THEN Convert(x, OPT.inttyp) END;
 						typ := p^.typ; p := NewOp(Ndop, ash, p, x); p^.typ := typ
 					END
 				ELSE err(111)
@@ -1608,10 +1608,10 @@ avoid unnecessary intermediate variables in OFront
 		| asrfn: (*ASR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
+					IF p^.typ^.form = LInt THEN maxExp := 63 ELSE maxExp := 31 END;
 					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(208)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
-						p^.conval^.intval := ASH(p^.conval^.intval, -SHORT(x^.conval^.intval));
+						p^.conval^.intval := ASH(p^.conval^.intval, -x^.conval^.intval);
 						p^.obj := NIL
 					ELSE
 						IF f = LInt THEN err(113); Convert(x, OPT.inttyp) END;
@@ -1622,10 +1622,10 @@ avoid unnecessary intermediate variables in OFront
 		| lslfn: (*LSL*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
+					IF p^.typ^.form = LInt THEN maxExp := 63 ELSE maxExp := 31 END;
 					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(210)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
-						IF p^.typ = OPT.linttyp THEN maxInt := p^.conval^.intval;
+						IF p^.typ^.form = LInt THEN maxInt := p^.conval^.intval;
 							p^.conval^.intval := OPM.Lsl(maxInt, SHORT(x^.conval^.intval));
 							IF OPM.Lsr(SHORT(p^.conval^.intval), SHORT(x^.conval^.intval)) # maxInt THEN err(-210)
 							END
@@ -1644,11 +1644,11 @@ avoid unnecessary intermediate variables in OFront
 		| rorfn: (*ROR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
-					IF p^.typ = OPT.linttyp THEN maxExp := 63 ELSE maxExp := 31 END;
+					IF p^.typ^.form = LInt THEN maxExp := 63 ELSE maxExp := 31 END;
 					IF (x^.class = Nconst) & ((x^.conval^.intval < 0) OR (x^.conval^.intval > maxExp)) THEN err(210)
 					ELSIF (p^.class = Nconst) & (x^.class = Nconst) THEN
 						maxExp := SHORT(x^.conval^.intval);
-						IF p^.typ = OPT.linttyp THEN p^.conval^.intval := OPM.Ror(p^.conval^.intval, maxExp)
+						IF p^.typ^.form = LInt THEN p^.conval^.intval := OPM.Ror(p^.conval^.intval, maxExp)
 						ELSE p^.conval^.intval := SYSTEM.ROT(SHORT(p^.conval^.intval), -maxExp) END;
 						p^.obj := NIL
 					ELSE
