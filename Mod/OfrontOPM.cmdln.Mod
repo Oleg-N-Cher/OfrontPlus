@@ -71,11 +71,20 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		BodyFile* = 1;
 		HeaderInclude* = 2;
 
+		MinReal32Pat = 0FF7FFFFFH;	(* most positive, 32-bit pattern *)
+		MinReal64PatL = 0FFFFFFFFH;	(* most  negative, lower 32-bit pattern *)
+		MinReal64PatH = 0FFEFFFFFH;	(* most  negative, higher 32-bit pattern *)
+		MaxReal32Pat = 07F7FFFFFH;	(* most positive, 32-bit pattern *)
+		MaxReal64PatL = 0FFFFFFFFH;	(* most positive, lower 32-bit pattern *)
+		MaxReal64PatH = 07FEFFFFFH;	(* most positive, higher 32-bit pattern *)
+
 	TYPE
 		CHAR = SHORTCHAR;
 		FileName = ARRAY 32 OF CHAR;
 
 	VAR
+		LEHost: BOOLEAN;	(* little or big endian host *)
+		MinReal32-, MaxReal32-, MinReal64-, MaxReal64-: REAL;
 		SetSize-, IndexSize-, MaxSet-: SHORTINT; MaxIndex-: LONGINT;
 
 		noerr-, warning156-: BOOLEAN;
@@ -572,33 +581,32 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Write("("); WriteInt(i+1); WriteString("-1)")	(* requires special bootstrap for 64 bit *)
 		ELSE i1 := ABS(i);
 			s[0] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; k := 1;
-			WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END ;
-			IF i < 0 THEN s[k] := "-"; INC(k) END ;
+			WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END;
+			IF i < 0 THEN s[k] := "-"; INC(k) END;
 			WHILE k > 0 DO  DEC(k); Write(s[k]) END;
 			IF (ansi IN opt) & ((i < MIN(INTEGER)) OR (i > MAX(INTEGER))) THEN WriteString("LL") END
-		END ;
+		END
 	END WriteInt;
 
 	PROCEDURE WriteReal* (r: REAL; suffx: CHAR);
 		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
 	BEGIN
-		IF ABS(r) > MAX(REAL)/2 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
-(*should be improved *)
+		IF ABS(r) > 1.0E+308 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
 		IF (r < MAX(LONGINT)) & (r > MIN(LONGINT)) & (r = ENTIER(r)) THEN
 			IF suffx = "f" THEN WriteString("(SHORTREAL)") ELSE WriteString("(REAL)") END;
 			WriteInt(ENTIER(r))
 		ELSE
 			Texts.OpenWriter(W);
-			IF suffx = "f" THEN Texts.WriteLongReal(W, r, 16) ELSE Texts.WriteLongReal(W, r, 23) END ;
+			IF suffx = "f" THEN Texts.WriteLongReal(W, r, 16) ELSE Texts.WriteLongReal(W, r, 24) END;
 			NEW(T); Texts.Open(T, ""); Texts.Append(T, W.buf);
 			Texts.OpenReader(R, T, 0); i := 0; Texts.Read(R, ch);
-			WHILE ch # 0X DO s[i] := ch; INC(i); Texts.Read(R, ch) END ;
+			WHILE ch # 0X DO s[i] := ch; INC(i); Texts.Read(R, ch) END;
 	(* s[i] := suffx; s[i+1] := 0X;
 	suffix does not work in K&R *)
 			s[i] := 0X;
 			i := 0; ch := s[0];
-			WHILE (ch # "D") & (ch # 0X) DO INC(i); ch := s[i] END ;
-			IF ch = "D" THEN s[i] := "e" END ;
+			WHILE (ch # "E") & (ch # 0X) DO INC(i); ch := s[i] END;
+			IF ch = "E" THEN s[i] := "e" END;
 			WriteString(s)
 		END
 	END WriteReal;
@@ -674,7 +682,28 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
 
-BEGIN InitCrcTab; Texts.OpenWriter(W);
+	PROCEDURE Compound (lo, hi: INTEGER): REAL;
+		VAR r: REAL;
+	BEGIN
+		IF LEHost THEN
+			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
+		ELSE
+			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
+		END;
+		RETURN r
+	END Compound;
+
+	PROCEDURE InitHost;
+		VAR test: SHORTINT; lo: SHORTCHAR;
+	BEGIN
+		test := 1; SYSTEM.GET(SYSTEM.ADR(test), lo); LEHost := lo = 1X;
+		MinReal32 := SYSTEM.VAL(SHORTREAL, MinReal32Pat);
+		MaxReal32 := SYSTEM.VAL(SHORTREAL, MaxReal32Pat);
+		MinReal64 := Compound(MinReal64PatL, MinReal64PatH);
+		MaxReal64 := Compound(MaxReal64PatL, MaxReal64PatH)
+	END InitHost;
+
+BEGIN InitCrcTab; InitHost; Texts.OpenWriter(W);
   OBERON := "."; Platform.GetEnv("OBERON", OBERON);
   Files.SetSearchPath(OBERON);
 END OfrontOPM.

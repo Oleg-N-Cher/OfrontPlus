@@ -423,8 +423,8 @@
 	PROCEDURE CheckRealType(f, nr: SHORTINT; x: OPT.Const);
 		VAR min, max, r: REAL;
 	BEGIN
-		IF f = Real THEN min := MIN(SHORTREAL); max := MAX(SHORTREAL)
-		ELSE min := MIN(REAL); max := MAX(REAL)
+		IF f = Real THEN min := OPM.MinReal32; max := OPM.MaxReal32
+		ELSE min := OPM.MinReal64; max := OPM.MaxReal64
 		END;
 		r := ABS(x^.realval);
 		IF (r > max) OR (r < min) THEN
@@ -740,7 +740,7 @@
 					END
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) <= 1.0;
-					IF temp OR (ABS(xval^.realval) <= MAX(REAL) / ABS(yval^.realval)) THEN
+					IF temp OR (ABS(xval^.realval) <= OPM.MaxReal64 / ABS(yval^.realval)) THEN
 						xval^.realval := xval^.realval * yval^.realval; GetRealConstType(f, 204, xval, x^.typ)
 					ELSE err(204)
 					END
@@ -757,7 +757,7 @@
 					x^.typ := OPT.realtyp
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) >= 1.0;
-					IF temp OR (ABS(xval^.realval) <= MAX(REAL) * ABS(yval^.realval)) THEN
+					IF temp OR (ABS(xval^.realval) <= OPM.MaxReal64 * ABS(yval^.realval)) THEN
 						xval^.realval := xval^.realval / yval^.realval; GetRealConstType(f, 205, xval, x^.typ)
 					ELSE err(205)
 					END
@@ -814,8 +814,8 @@
 					ELSE err(206)
 					END
 				ELSIF f IN realSet THEN
-					temp := (yval^.realval >= 0.0) & (xval^.realval <= MAX(REAL) - yval^.realval);
-					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= MIN(REAL) - yval^.realval) THEN
+					temp := (yval^.realval >= 0.0) & (xval^.realval <= OPM.MaxReal64 - yval^.realval);
+					IF temp OR (yval^.realval < 0.0) & (xval^.realval >= OPM.MinReal64 - yval^.realval) THEN
 							xval^.realval := xval^.realval + yval^.realval; GetRealConstType(f, 206, xval, x^.typ)
 					ELSE err(206)
 					END
@@ -836,8 +836,8 @@
 					ELSE err(207)
 					END
 				ELSIF f IN realSet THEN
-					temp := (yval^.realval >= 0.0) & (xval^.realval >= MIN(REAL) + yval^.realval);
-					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= MAX(REAL) + yval^.realval) THEN
+					temp := (yval^.realval >= 0.0) & (xval^.realval >= OPM.MinReal64 + yval^.realval);
+					IF temp OR (yval^.realval < 0.0) & (xval^.realval <= OPM.MaxReal64 + yval^.realval) THEN
 							xval^.realval := xval^.realval - yval^.realval; GetRealConstType(f, 207, xval, x^.typ)
 					ELSE err(207)
 					END
@@ -1231,7 +1231,7 @@
 				IF ~(g IN intSet) THEN err(113) END
 		| Real:
 				IF (ynode^.class = Nconst) & (g = LReal) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN
-					IF ABS(ynode^.conval^.realval) > MAX(SHORTREAL) THEN err(203); ynode^.conval^.realval := 0 END
+					IF ABS(ynode^.conval^.realval) > OPM.MaxReal32 THEN err(203); ynode^.conval^.realval := 0 END
 				ELSIF ~(g IN {Byte, UByte, SInt..Real}) THEN err(113) END
 		| LReal:
 				IF ~(g IN {Byte, UByte, SInt..LReal}) THEN err(113) END
@@ -1386,8 +1386,8 @@ avoid unnecessary intermediate variables in OFront
 					| Int:   x := NewIntConst(MIN(INTEGER))
 					| LInt:  x := NewIntConst(MIN(LONGINT))
 					| Set:   x := NewIntConst(0); x^.typ := OPT.inttyp
-					| Real:  x := NewRealConst(MIN(SHORTREAL), OPT.realtyp)
-					| LReal: x := NewRealConst(MIN(REAL), OPT.lrltyp)
+					| Real:  x := NewRealConst(OPM.MinReal32, OPT.realtyp)
+					| LReal: x := NewRealConst(OPM.MinReal64, OPT.lrltyp)
 					ELSE err(111)
 					END
 				ELSE err(110)
@@ -1403,8 +1403,8 @@ avoid unnecessary intermediate variables in OFront
 					| Int:   x := NewIntConst(MAX(INTEGER))
 					| LInt:  x := NewIntConst(MAX(LONGINT))
 					| Set:   x := NewIntConst(OPM.MaxSet); x^.typ := OPT.inttyp
-					| Real:  x := NewRealConst(MAX(SHORTREAL), OPT.realtyp)
-					| LReal: x := NewRealConst(MAX(REAL), OPT.lrltyp)
+					| Real:  x := NewRealConst(OPM.MaxReal32, OPT.realtyp)
+					| LReal: x := NewRealConst(OPM.MaxReal64, OPT.lrltyp)
 					ELSE err(111)
 					END
 				ELSE err(110)
