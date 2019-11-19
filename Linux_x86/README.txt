@@ -8,3 +8,8 @@ Linux_x86/
     /Examples of programs written in Oberon (to build, use /Bin/build)
     /Obj      The working directory for Ofront+ object files
     /Sym      Ofront+ symbol files
+
+To build Ofront+ for 32 bits under 64-bit Linux, use:
+
+    sudo apt-get install g++-7-multilib
+
