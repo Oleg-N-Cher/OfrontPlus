@@ -32,9 +32,9 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-%CC% SDL2.c SDL2mixer.c SQLite.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
+%CC% SDL2.c SDL2mixer.c SQLite.c In.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
 IF errorlevel 1 PAUSE
-%AR% SDL2.o SDL2mixer.o SQLite.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
+%AR% SDL2.o SDL2mixer.o SQLite.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
 
 :: libCurl
 

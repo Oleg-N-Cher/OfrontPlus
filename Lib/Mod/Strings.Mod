@@ -30,7 +30,13 @@ Strings.Cap(s)
 
 MODULE Strings;	(*HM 94-06-22 /  *)
 
-TYPE CHAR = SHORTCHAR;
+IMPORT Reals, SYSTEM;
+
+TYPE CHAR = SYSTEM.CHAR8;
+  INT16 = SYSTEM.INT16;
+  INT32 = SYSTEM.INT32;
+  REAL32 = SYSTEM.REAL32;
+  LONGREAL = SYSTEM.REAL64;
 
 
 PROCEDURE Length* (IN s: ARRAY OF CHAR): INTEGER;
@@ -161,5 +167,75 @@ PROCEDURE Match* (IN string, pattern: ARRAY OF CHAR): BOOLEAN;
 BEGIN
 	RETURN M(string, pattern, Length(string)-1, Length(pattern)-1)
 END Match;
+
+PROCEDURE StrToReal*(s: ARRAY OF CHAR; VAR r: REAL32);
+VAR p, e: INT16; y, g: REAL32; neg, negE: BOOLEAN;
+BEGIN
+	p := 0;
+	WHILE (s[p] = " ") OR (s[p] = "0") DO INC(p) END;
+	IF s[p] = "-" THEN neg := TRUE; INC(p) ELSE neg := FALSE END;
+	WHILE (s[p] = " ") OR (s[p] = "0") DO INC(p) END;
+	
+	y := 0;
+	WHILE ("0" <= s[p]) & (s[p] <= "9") DO
+		y := y * 10 + (ORD(s[p]) - 30H);
+		INC(p);
+	END;
+	IF s[p] = "." THEN
+		INC(p); g := 1; 
+		WHILE ("0" <= s[p]) & (s[p] <= "9") DO
+			g := g / 10; y := y + g * (ORD(s[p]) - 30H);
+			INC(p);
+		END;
+	END;
+	IF (s[p] = "D") OR (s[p] = "E") THEN
+		INC(p); e := 0;
+		IF s[p] = "-" THEN negE := TRUE; INC(p) ELSE negE := FALSE END;
+		WHILE (s[p] = "0") DO INC(p) END;
+		WHILE ("0" <= s[p]) & (s[p] <= "9") DO
+			e := SHORT(e * 10 + (ORD(s[p]) - 30H));
+			INC(p);
+		END;
+		IF negE THEN y := y / Reals.Ten(e)
+		ELSE y := y * Reals.Ten(e) END;
+	END;
+	IF neg THEN y := -y END;
+	r := y;
+END StrToReal;
+
+PROCEDURE StrToLongReal*(s: ARRAY OF CHAR; VAR r: LONGREAL);
+VAR p, e: INTEGER; y, g: LONGREAL; neg, negE: BOOLEAN;
+BEGIN
+	p := 0;
+	WHILE (s[p] = " ") OR (s[p] = "0") DO INC(p) END;
+	IF s[p] = "-" THEN neg := TRUE; INC(p) ELSE neg := FALSE END;
+	WHILE (s[p] = " ") OR (s[p] = "0") DO INC(p) END;
+	
+	y := 0;
+	WHILE ("0" <= s[p]) & (s[p] <= "9") DO
+		y := y * 10 + (ORD(s[p]) - 30H);
+		INC(p);
+	END;
+	IF s[p] = "." THEN
+		INC(p); g := 1; 
+		WHILE ("0" <= s[p]) & (s[p] <= "9") DO
+			g := g / 10; y := y + g * (ORD(s[p]) - 30H);
+			INC(p);
+		END;
+	END;
+	IF (s[p] = "D") OR (s[p] = "E") THEN
+		INC(p); e := 0;
+		IF s[p] = "-" THEN negE := TRUE; INC(p) ELSE negE := FALSE END;
+		WHILE (s[p] = "0") DO INC(p) END;
+		WHILE ("0" <= s[p]) & (s[p] <= "9") DO
+			e := e * 10 + (ORD(s[p]) - 30H);
+			INC(p);
+		END;
+		IF negE THEN y := y / LONG(Reals.Ten(SHORT(e)))
+		ELSE y := y * LONG(Reals.Ten(SHORT(e))) END;
+	END;
+	IF neg THEN y := -y END;
+	r := y;
+END StrToLongReal;
 
 END Strings.

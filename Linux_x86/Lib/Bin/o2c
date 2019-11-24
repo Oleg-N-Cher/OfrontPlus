@@ -25,7 +25,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## Free Oberon
 
-ofront+ -sC -44 SDL2.Mod SDL2mixer.Mod SQLite.Mod Out.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod
+ofront+ -sC -44 SDL2.Mod SDL2mixer.Mod SQLite.Mod In.Mod Out.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## libCurl
