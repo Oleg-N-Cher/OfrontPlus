@@ -30,19 +30,19 @@ IF errorlevel 1 PAUSE
 
 %CC% %StripExe% TestHttp.c -o..\x64\TestHttp.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libcurldll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% BlitBmp.c -o..\x64\BlitBmp.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% BlitBmp.c -o..\x64\BlitBmp.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% BlitBmp2.c -o..\x64\BlitBmp2.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% BlitBmp2.c -o..\x64\BlitBmp2.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Book.c -o..\x64\Book.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% Book.c -o..\x64\Book.exe %LIB% -mwindows %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Cnezinka.c -o..\x64\Cnezinka.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% Cnezinka.c -o..\x64\Cnezinka.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Elo4ka.c -o..\x64\Elo4ka.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% Elo4ka.c -o..\x64\Elo4ka.exe %LIB% -mwindows %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Gradient24.c -o..\x64\Gradient24.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% Gradient24.c -o..\x64\Gradient24.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Mandelbrot.c -o..\x64\Mandelbrot.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% Mandelbrot.c -o..\x64\Mandelbrot.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Mandelbrot2.c -o..\x64\Mandelbrot2.exe %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
+%CC% %StripExe% Mandelbrot2.c -o..\x64\Mandelbrot2.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW64\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW64\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE

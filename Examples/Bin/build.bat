@@ -30,19 +30,19 @@ IF errorlevel 1 PAUSE
 
 %CC% %StripExe% TestHttp.c -o..\TestHttp.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libcurldll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% BlitBmp.c -o..\BlitBmp.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% BlitBmp.c -o..\BlitBmp.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% BlitBmp2.c -o..\BlitBmp2.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% BlitBmp2.c -o..\BlitBmp2.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Book.c -o..\Book.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% Book.c -o..\Book.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Cnezinka.c -o..\Cnezinka.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% Cnezinka.c -o..\Cnezinka.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Elo4ka.c -o..\Elo4ka.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% Elo4ka.c -o..\Elo4ka.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Gradient24.c -o..\Gradient24.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% Gradient24.c -o..\Gradient24.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Mandelbrot.c -o..\Mandelbrot.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% Mandelbrot.c -o..\Mandelbrot.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE
-%CC% %StripExe% Mandelbrot2.c -o..\Mandelbrot2.exe %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
+%CC% %StripExe% Mandelbrot2.c -o..\Mandelbrot2.exe -mwindows %LIB% %XDev%\WinDev\Bin\MinGW\lib\libSDL2.dll.a %XDev%\WinDev\Bin\MinGW\lib\libSDL2_image.dll.a
 IF errorlevel 1 PAUSE

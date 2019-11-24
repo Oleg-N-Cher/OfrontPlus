@@ -149,13 +149,13 @@ CONST
   getEvent*  = 2;
 
 TYPE
-  INT8* = BYTE;
-  INT16* = SHORTINT;
-  CHAR = SHORTCHAR;
+  INT8* = SYSTEM.INT8;
+  INT16* = SYSTEM.INT16;
+  CHAR = SYSTEM.CHAR8;
 
-  Window* = SYSTEM.PTR;
+  Window* = SYSTEM.ADRINT;
 
-  Renderer* = SYSTEM.PTR;
+  Renderer* = SYSTEM.ADRINT;
 
   WindowEvent* = POINTER [1] TO WindowEventDesc;
   WindowEventDesc* = RECORD
@@ -252,7 +252,7 @@ TYPE
   Palette* = POINTER [1] TO PaletteDesc;
   PaletteDesc* = RECORD
     nColors: INTEGER;
-    colors: SYSTEM.PTR;
+    colors: SYSTEM.ADRINT;
     version: INTEGER;
     refCount: INTEGER
   END;
@@ -261,7 +261,7 @@ TYPE
     format*: INTEGER;
     w*, h*: INTEGER;
     refreshRate*: INTEGER;
-    driverData: SYSTEM.PTR
+    driverData: SYSTEM.ADRINT
   END;
 
   PixelFormat* = POINTER [1] TO PixelFormatDesc;
@@ -281,16 +281,16 @@ TYPE
     flags: INTEGER;
     format*: PixelFormat;
     w*, h*, pitch*: INTEGER;
-    pixels*: SYSTEM.PTR;
-    userData*: SYSTEM.PTR;
+    pixels*: SYSTEM.ADRINT;
+    userData*: SYSTEM.ADRINT;
     locked: INTEGER;
-    lockData: SYSTEM.PTR;
+    lockData: SYSTEM.ADRINT;
     clipRect*: Rect;
-    map: SYSTEM.PTR;
+    map: SYSTEM.ADRINT;
     refCount*: INTEGER
   END;
 
-  Texture* = SYSTEM.PTR;
+  Texture* = SYSTEM.ADRINT;
 
   KeyArray* = POINTER [1] TO ARRAY 1024 OF BOOLEAN;
 
@@ -302,12 +302,12 @@ PROCEDURE -Quit* "SDL_Quit()";
 PROCEDURE -QuitSubSystem*(flags: SET) "SDL_QuitSubSystem(flags)";
 
 PROCEDURE -CreateWindow*(title: ARRAY OF CHAR; x, y, w, h: INTEGER;
-    flags: SET): Window "(void *)SDL_CreateWindow(title, x, y, w, h, flags)";
+    flags: SET): Window "(ADRINT)SDL_CreateWindow(title, x, y, w, h, flags)";
 PROCEDURE -GetWindowSize*(window: Window; VAR w, h: INTEGER)
     "SDL_GetWindowSize(window, w, h)";
 PROCEDURE -SetWindowSize*(window: Window; w, h: INTEGER)
     "SDL_SetWindowSize(window, w, h)";
-PROCEDURE -DestroyWindow(win: SYSTEM.PTR) "SDL_DestroyWindow(win)";
+PROCEDURE -DestroyWindow(win: SYSTEM.ADRINT) "SDL_DestroyWindow(win)";
 
 PROCEDURE -PollEvent*(VAR e: Event): INTEGER "SDL_PollEvent(e)";
 PROCEDURE -WaitEvent*(VAR e: Event): INTEGER "SDL_WaitEvent(e)";
@@ -332,9 +332,9 @@ PROCEDURE -SetColorKey*(surface: Surface; flag: INTEGER; key: INTEGER)
 PROCEDURE -MapRGB*(format: PixelFormat; r, g, b: SHORTINT): INTEGER
     "SDL_MapRGB(format, r, g, b)";
 
-PROCEDURE -RWFromFile*(fname, mode: ARRAY OF CHAR): SYSTEM.PTR
+PROCEDURE -RWFromFile*(fname, mode: ARRAY OF CHAR): SYSTEM.ADRINT
     "SDL_RWFromFile(fname, mode)";
-PROCEDURE -LoadBmpRW*(src: SYSTEM.PTR; freeSrc: INTEGER): Surface
+PROCEDURE -LoadBmpRW*(src: SYSTEM.ADRINT; freeSrc: INTEGER): Surface
     "(void *)SDL_LoadBMP_RW(src, freeSrc)";
 
 (* SDL Image Addon *)
@@ -347,7 +347,7 @@ PROCEDURE -ImgLoad*(file: ARRAY OF CHAR): Surface
 (* Renderer *)
 
 PROCEDURE -CreateRenderer*(win: Window; index: INTEGER;
-    flags: SET): Renderer "(void *)SDL_CreateRenderer(win, index, flags)";
+    flags: SET): Renderer "(ADRINT)SDL_CreateRenderer(win, index, flags)";
 PROCEDURE -SetRenderDrawColor*(renderer: Renderer; r, g, b, a: SHORTINT)
     "SDL_SetRenderDrawColor(renderer, r, g, b, a)";
 PROCEDURE -RenderClear*(renderer: Renderer) "SDL_RenderClear(renderer)";
@@ -372,7 +372,7 @@ PROCEDURE -RenderCopyNil*(renderer: Renderer; texture: Texture)
     "SDL_RenderCopyEx(renderer, texture, srcRect, dstRect, angle, center, flip)";*)
 PROCEDURE -SetRenderDrawBlendMode*(renderer: Renderer; blendMode: SET)
     "SDL_SetRenderDrawBlendMode(renderer, blendMode)";
-PROCEDURE -DestroyRenderer(renderer: SYSTEM.PTR) "SDL_DestroyRenderer(renderer)";
+PROCEDURE -DestroyRenderer(renderer: SYSTEM.ADRINT) "SDL_DestroyRenderer(renderer)";
 
 (* Misc *)
 
@@ -380,8 +380,8 @@ PROCEDURE -Delay*(ms: INTEGER) "SDL_Delay(ms)";
 PROCEDURE -SetHint*(name: ARRAY OF CHAR; value: ARRAY OF CHAR)
     "SDL_SetHint(name, value)";
 PROCEDURE -ShowCursor*(toggle: SHORTINT) "SDL_ShowCursor(toggle)";
-PROCEDURE -GetError*(): SYSTEM.PTR "SDL_GetError()";
-PROCEDURE -SDLGetKeyboardState(VAR numKeys: INTEGER): SYSTEM.PTR
+PROCEDURE -GetError*(): SYSTEM.ADRINT "SDL_GetError()";
+PROCEDURE -SDLGetKeyboardState(VAR numKeys: INTEGER): SYSTEM.ADRINT
     "(void *)SDL_GetKeyboardState(numKeys)";
 
 PROCEDURE -GetDesktopDisplayMode*(displayIndex: INTEGER; VAR mode: DisplayMode)
@@ -413,6 +413,10 @@ PROCEDURE -ConvertSurface*(src: Surface; fmt: PixelFormat;
 
 PROCEDURE -SetSurfaceColorMod*(surface: Surface; r, g, b: INTEGER)
     "SDL_SetSurfaceColorMod(surface, r, g, b)";
+PROCEDURE -SetTextureColorMod*(texture: Texture; r, g, b: INTEGER)
+    "SDL_SetTextureColorMod(texture, r, g, b)";
+PROCEDURE -SetTextureAlphaMod*(texture: Texture; alpha: INTEGER)
+    "SDL_SetTextureAlphaMod(texture, alpha)";
 
 PROCEDURE -GetKeyboardState*(VAR numKeys: INTEGER): KeyArray
     "SDL_GetKeyboardState(numKeys)";
@@ -427,7 +431,7 @@ PROCEDURE -SetWindowTitle*(window: Window; title: ARRAY OF CHAR)
     "SDL_SetWindowTitle(window, title)";
 
 PROCEDURE -CreateTextureFromSurface*(renderer: Renderer; surface: Surface): Texture
-    "(void *)SDL_CreateTextureFromSurface(renderer, surface)";
+    "(ADRINT)SDL_CreateTextureFromSurface(renderer, surface)";
 
 PROCEDURE -DestroyTexture*(texture: Texture) "SDL_DestroyTexture(texture)";
 
@@ -435,5 +439,14 @@ PROCEDURE -GetTicks*(): INTEGER "SDL_GetTicks()";
 
 PROCEDURE -SetWindowFullscreen*(win: Window; flags: SET): INTEGER
     "SDL_SetWindowFullscreen(win, flags)";
+
+PROCEDURE -SetSurfaceAlphaMod*(surface: Surface; alpha: CHAR): INTEGER
+    "SDL_SetSurfaceAlphaMod(surface, alpha)";
+
+PROCEDURE -SetClipRect*(surface: Surface; VAR rect: Rect): INTEGER
+    "SDL_SetClipRect(surface, rect)";
+
+PROCEDURE -SetClipRectNil*(surface: Surface): INTEGER
+    "SDL_SetClipRect(surface, (void *)0)";
 
 END SDL2.

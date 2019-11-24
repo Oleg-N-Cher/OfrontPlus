@@ -732,11 +732,10 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       DEC(n); Write(W, d[n]); Write(W, ".");
       REPEAT DEC(n); Write(W, d[n]) UNTIL n = 0;
 
-      Write(W, "D");
-      IF e < 0 THEN Write(W, "-"); e := SHORT(-e) ELSE Write(W, "+") END;
-      Write(W, CHR(e DIV 100 + 30H)); e := SHORT(e MOD 100);
-      Write(W, CHR(e DIV 10 + 30H));
-      Write(W, CHR(e MOD 10 + 30H))
+      IF e # 0 THEN Write(W, "E");
+        IF e >= 0 THEN Write(W, "+") END;
+        WriteInt(W, e, 0);
+      END
     END
   END WriteLongReal;
 
