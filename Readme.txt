@@ -47,43 +47,46 @@ For more details on examples, read the proper /Examples/ReadMe.txt
 Ofront+ differences from Ofront/voc
 ===================================
 
-  1. New experimental dialect Oberon-3 (based on Oberon-07, Component Pascal & other).
+Ofront+ differences from Ofront/voc
+===================================
 
-  2. Outputs a module name and position for any runtime error, HALT and ASSERT.
+  1. New experimental dialect Oberon-3 (based on Oberon-07, Component Pascal and other).
 
-  3. New SYSTEM types: INT8, INT16, INT32, INT64, ADRINT.
+  2. Outputs module name and position on any runtime error, HALT or ASSERT.
 
-  4. Allows arithmetic operations with the type BYTE (Oberon-3 & Component Pascal).
+  3. New SYSTEM types: CHAR8, UINT8, INT8, INT16, INT32, INT64, ADRINT, REAL32, REAL64.
 
-  5. Allows the unlimited length of constant strings (in Ofront/voc the maximum is 255 characters).
+  4. Allows arithmetic operations with type BYTE (Oberon-3 & Component Pascal).
+
+  5. Allows unlimited length of constant strings (in Ofront/voc the maximum is 255).
 
   6. Allows SYSTEM.VAL(INTEGER, {80000000H..0FFFFFFFFH}) as a constant of 32-bit type (otherwise 64-bit).
 
-  7. ASH and SYSTEM.LSH return the INTEGER type result for INTEGER type argument, and LONGINT type result for LONGINT argument. It allows to use shifts without using 64-bit type.
+  7. ASH and SYSTEM.LSH return INTEGER result for INTEGER argument, and LONGINT result for LONGINT argument. This allows shifting without using 64-bit type.
 
   8. Support "_" in identifiers.
 
-  9. Ofront+ for Windows works under Windows 9x. Ofront+ for Linux supports both 32 and 64 bits.
+  9. Ofront+ for Windows also works under Windows 9x. Ofront+ for Linux supports both 32 and 64 bits.
 
-  10. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) & 0DX+0AX (Windows).
+  10. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) and 0DX+0AX (Windows).
 
-  11. "Correct FOR" available in Oberon-3 (concept and implementation by Oleg Komlev).
+  11. "Correct FOR" support in Oberon-3 (concept and implementation by Oleg Komlev).
 
-  12. Constant arrays available in Oberon-3 (yet only in Ofront+ for BlackBox).
+  12. Constant arrays support in Oberon-3 (yet only in Ofront+ for BlackBox).
 
   13. BITS(), ORD(set), LEN(string$), str1 := str2$, IN procedure parameters (in Component Pascal).
 
-  14. ORD(bool), ORD(set) supported in Oberon-3.
+  14. ORD(bool), ORD(set) support in Oberon-3.
 
   15. Arithmetic operations DIV0 and REM0 for integers, as in GPCP.
 
   16. SYSTEM flags: VAR [nil], ARRAY/RECORD [untagged], POINTER [untagged] as in BlackBox.
 
-  17. Advanced features for describing bindings to foreign libraries, system flag [stdcall].
+  17. Advanced features for defining bindings to foreign libraries, system flag [stdcall].
 
-  18. It's possible to use modules written in Oberon, Oberon-2, Component Pascal & Oberon-3 together in one project.
+  18. It is possible to use modules written in Oberon, Oberon-2, Component Pascal and Oberon-3 together in one project.
 
-  19. Tested with GCC/MinGW, Intel C++, SDCC and even Borland Turbo C.
+  19. Tested with GCC/MinGW, Clang, Intel C++, SDCC and Borland Turbo C.
 
 
 Get it!
