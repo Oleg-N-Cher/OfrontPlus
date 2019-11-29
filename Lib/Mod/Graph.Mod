@@ -192,7 +192,7 @@ CONST
 
 TYPE
   ADDRESS = SYSTEM.ADRINT;
-  CHAR = SHORTCHAR;
+  CHAR = SYSTEM.CHAR8;
   SET32 = SET;
 
   Bitmap* = POINTER TO BitmapDesc;
@@ -806,15 +806,18 @@ BEGIN NEW(f);
     NEW(T); Texts.Open(T, s);
     Texts.OpenScanner(S, T, 0);
     Texts.Scan(S);
-    IF S.class = Texts.Int THEN f.h := SHORT(S.i) ELSE f.h := 0 END;
-    Texts.Scan(S); i := 0;
-    WHILE ~S.eot & (S.class = Texts.Int) DO
-      f.geo[i].w := SHORT(S.i); Texts.Scan(S);
-      f.geo[i].x := SHORT(S.i); Texts.Scan(S);
-      f.geo[i].y := SHORT(S.i); Texts.Scan(S);
-      INC(i)
-    END;
-    f.geoCount := i
+    IF S.eot THEN f := NIL
+    ELSE
+      IF S.class = Texts.Int THEN f.h := SHORT(S.i) ELSE f.h := 0 END;
+      Texts.Scan(S); i := 0;
+      WHILE ~S.eot & (S.class = Texts.Int) DO
+        f.geo[i].w := SHORT(S.i); Texts.Scan(S);
+        f.geo[i].x := SHORT(S.i); Texts.Scan(S);
+        f.geo[i].y := SHORT(S.i); Texts.Scan(S);
+        INC(i)
+      END;
+      f.geoCount := i
+    END
   END;
 RETURN f END LoadFont;
 
@@ -824,7 +827,7 @@ BEGIN
   IF (32 <= ch) & (ch <= 127) THEN i := ch - 32
   ELSIF (1040 <= ch) & (ch <= 1103) THEN i := ch - 1040 + 95
   ELSIF ch = 1025 THEN i := 64 + 95
-  ELSIF ch = 1105 THEN i := 65 + 95;
+  ELSIF ch = 1105 THEN i := 65 + 95
   ELSE i := font.geoCount
   END;
   IF i >= font.geoCount THEN i := 31 (*"?"*) END;
@@ -1092,6 +1095,11 @@ BEGIN
   SDL.SetWindowTitle(window, title)
 END SetWindowTitle;
 
+PROCEDURE SetWindowIcon*(icon: Bitmap);
+BEGIN
+  SDL.SetWindowIcon(window, icon.surface)
+END SetWindowIcon;
+
 PROCEDURE SwitchToWindowed*;
 BEGIN
   IF wantFullscreen THEN
@@ -1180,13 +1188,14 @@ BEGIN
     ELSIF e.y >= screen.h THEN e.y := screen.h - 1
     END;
     events.buf[events.last].x := e.x;
-    events.buf[events.last].y := e.y
+    events.buf[events.last].y := e.y;
+    events.buf[events.last].key.mod := SDL.GetModState()
   END
 END PumpMouseButton;
 
 PROCEDURE RepeatFlip*;
 BEGIN
-  IF screenTexture # 0 THEN
+  IF screenTexture # NIL THEN
     SDL.SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL.RenderClear(renderer);
     SDL.RenderCopyNil(renderer, screenTexture);
@@ -1321,9 +1330,9 @@ BEGIN
     (* Blit buffer on screen *)
     SDL.SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL.RenderClear(renderer);
-    IF screenTexture # 0 THEN
+    IF screenTexture # NIL THEN
       SDL.DestroyTexture(screenTexture);
-      screenTexture := 0
+      screenTexture := NIL
     END;
     screenTexture := SDL.CreateTextureFromSurface(renderer, screen.surface);
     SDL.SetTextureAlphaMod(screenTexture, screenAlpha);
@@ -1565,7 +1574,7 @@ BEGIN screen := NIL;
     window := SDL.CreateWindow("",
       SDL.windowPosUndefined, SDL.windowPosUndefined,
       wantW, wantH, flags);
-    IF window # 0 THEN
+    IF window # NIL THEN
       IF wantSoftware THEN flags := {SDL.rendererSoftware}
       ELSE flags := {SDL.rendererAccelerated}
       END;
@@ -1578,7 +1587,7 @@ BEGIN screen := NIL;
       END;
       SDL.RenderSetLogicalSize(renderer, wantW, wantH);
       screen := CreateBitmap(wantW, wantH);
-      screenTexture := 0;
+      screenTexture := NIL;
       UnsetRegion;
       SDL.ShowCursor(0);
       IF wantMouse THEN InitMouseData END;
@@ -1598,9 +1607,9 @@ END Init;
 
 PROCEDURE Close*;
 BEGIN
-  IF screenTexture # 0 THEN
+  IF screenTexture # NIL THEN
     SDL.DestroyTexture(screenTexture);
-    screenTexture := 0
+    screenTexture := NIL
   END;
   (*
   IF wantSound THEN Mix.Quit END;
