@@ -4,20 +4,6 @@
 typedef unsigned char UINT8;
 typedef unsigned short UINT16;
 typedef unsigned int UINT32;
-#if (__SIZEOF_POINTER__ == 8) || defined (_LP64) || defined(__LP64__) || defined(_WIN64)
-#  ifdef _WIN64
-     typedef long long void *;
-#  else
-     typedef long      void *;
-#  endif
-#else
-#  ifdef __OpenBSD__
-     typedef long      void *;
-#  else
-     typedef int       void *;
-#  endif
-#endif
-
 
 typedef enum {
   SDL_FALSE = 0,
