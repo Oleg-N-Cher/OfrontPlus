@@ -35,13 +35,13 @@ Directory structure
 /Sym       - Ofront+ symbol files
 /Sym64     - Ofront+ symbol files (x64)
 
-To (re)build the static library (lib)Ofront that is required for the translator and all examples, go to the corresponding directory /Lib/Bin and run build(.bat)
+To (re)build static library (lib)Ofront that is required for the translator and all examples, go to the corresponding directory /Lib/Bin (it may be /Linux_x64/Lib/Bin or other) and run build(.bat).
 
-To (re)build the translator, go to the corresponding directory /Bin and run build(.bat)
+To (re)build the translator, go to the corresponding directory /Bin (again it may be /Linux_x64/Bin or other) and run build(.bat).
 
-To (re)build examples, go to the corresponding directory /Examples and run build(.bat)
-You'll need to install additional packages (.dll for Windows)
-For more details on examples, please read /Examples/ReadMe.txt
+To (re)build examples, go to the corresponding directory /Examples/Bin (or /Linux_x64/Examples/Bin etc.) and run build(.bat).
+You'll need to install additional packages (.dll for Windows).
+Please read /Examples/ReadMe.txt for more information.
 
 
 Ofront+ differences from Ofront/voc
@@ -91,9 +91,9 @@ Get it!
 
 Here are two versions:
 
-  1. Ofront+ for Windows & Linux command line
+  1. Ofront+ for Windows & Linux command line.
 
-  2. Ofront+ for BlackBox Component Builder (runs as a subsystem)
+  2. Ofront+ for BlackBox Component Builder (runs as a subsystem).
 
 You can download it at https://github.com/Oleg-N-Cher/OfrontPlus
 
@@ -111,5 +111,5 @@ or join the forum:
 Your comments and suggestions are welcome.
 
 
-Ofront+ team,
+The Ofront+ team,
 2013-2019
