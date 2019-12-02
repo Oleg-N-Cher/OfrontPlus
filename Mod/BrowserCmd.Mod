@@ -167,7 +167,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						END
 				| Var:
 						Indent(2); Ws(obj^.name^);
-						IF obj^.vis = externalR THEN Ws("-: ") ELSE Ws(": ") END ;
+						IF (lang # "3") & (obj^.vis = externalR) THEN Ws("-: ") ELSE Ws(": ") END;
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
 						Indent(1); Ws("PROCEDURE");
@@ -263,14 +263,14 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						Wln; fld := typ^.link;
 						WHILE (fld # NIL) & (fld^.mode = Fld) DO
 							IF (option = "x") OR (fld^.name[0] # "@") THEN Indent(3);
-								IF option = "x" THEN Wi(fld^.adr); Wch(" ") END ;
+								IF option = "x" THEN Wi(fld^.adr); Wch(" ") END;
 								Ws(fld^.name^);
-								IF fld^.vis = externalR THEN Wch("-") END ;
+								IF fld^.vis = externalR THEN Wch("-") END;
 								Ws(": "); Wtype(fld^.typ); Wch(";");
 								Wln
-							END ;
+							END;
 							fld := fld^.link
-						END ;
+						END;
 						Wmthd(typ^.link);
 						Indent(2); Ws("END");
 						IF option = "x" THEN Indent(1);
@@ -279,7 +279,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						END
 				END
 		ELSE
-			IF (typ.BaseTyp # OPT.undftyp) THEN Wtype(typ^.BaseTyp) END	(* alias structures *)
+			IF typ^.BaseTyp # OPT.undftyp THEN Wtype(typ^.BaseTyp) END	(* alias structures *)
 		END
 	END Wstruct;
 
@@ -292,7 +292,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			ELSIF typ = OPT.sysptrtyp THEN Ws("SYSTEM.")
 			ELSIF obj^.vis = internal THEN Wch("#")
 			END;
-			IF (lang = "C") OR (lang = "3") THEN
+			IF lang = "C" THEN
 				IF obj = OPT.chartyp^.strobj THEN Ws("SHORTCHAR")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("BYTE")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SHORTINT")
@@ -301,8 +301,18 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SHORTREAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL")
 				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("UBYTE")
-				ELSE
-					Ws(obj^.name^)
+				ELSE Ws(obj^.name^)
+				END
+			ELSIF lang = "3" THEN
+				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("INT8")
+				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("INT16")
+				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INT32")
+				ELSIF obj = OPT.linttyp^.strobj THEN Ws("INT64")
+				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL32")
+				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL64")
+				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("UINT8")
+				ELSE Ws(obj^.name^)
 				END
 			ELSIF (lang = "1") OR (lang = "2") THEN
 				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
@@ -313,8 +323,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("LONGREAL")
 				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("SYSTEM.UBYTE")
-				ELSE
-					Ws(obj^.name^)
+				ELSE Ws(obj^.name^)
 				END
 			ELSE (* "7" *)
 				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
@@ -323,10 +332,9 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SYSTEM.INT16")
 				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INTEGER")
 				ELSIF obj = OPT.linttyp^.strobj THEN Ws("SYSTEM.INT64")
-				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SYSTEM.REAL4")
+				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SYSTEM.REAL64")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL")
-				ELSE
-					Ws(obj^.name^)
+				ELSE Ws(obj^.name^)
 				END
 			END
 		ELSE

@@ -1175,7 +1175,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		(*initialization of module SYSTEM*)
 		EnterTyp("PTR", "ptr", Pointer, OPM.AdrSize, sysptrtyp);
 		IF lang # "3" THEN
-			EnterTyp("CHAR8", "char", Char, 1, chartyp);
+			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
@@ -1216,14 +1216,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("REAL", "real", real64, lrltyp);
 			EnterTypeAlias("UBYTE", "ubyte", ubyte, ubytetyp)
 		ELSIF lang = "3" THEN
-			EnterTypeAlias("CHAR8", "char8", char8, chartyp);
-			EnterTypeAlias("INT8", "int8", int8, bytetyp);
-			EnterTypeAlias("INT16", "int16", int16, sinttyp);
-			EnterTypeAlias("INT32", "int32", int32, inttyp);
-			EnterTypeAlias("INT64", "int64", int64, linttyp);
-			EnterTypeAlias("REAL32", "real32", real32, realtyp);
-			EnterTypeAlias("REAL64", "real64", real64, lrltyp);
-			EnterTypeAlias("UINT8", "uint8", ubyte, ubytetyp);
+			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
+			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
+			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
+			EnterTyp("INT32", "int32", Int, 4, inttyp);
+			EnterTyp("INT64", "int64", LInt, 8, linttyp);
+			EnterTyp("REAL32", "real32", Real, 4, realtyp);
+			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
+			EnterTyp("UINT8", "uint8", UByte, 1, ubytetyp);
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
