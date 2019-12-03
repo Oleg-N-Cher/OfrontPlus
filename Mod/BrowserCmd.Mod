@@ -167,7 +167,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						END
 				| Var:
 						Indent(2); Ws(obj^.name^);
-						IF (lang # "3") & (obj^.vis = externalR) THEN Ws("-: ") ELSE Ws(": ") END;
+						IF (lang # "7") & (obj^.vis = externalR) THEN Ws("-: ") ELSE Ws(": ") END;
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
 						Indent(1); Ws("PROCEDURE");
@@ -314,7 +314,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("UINT8")
 				ELSE Ws(obj^.name^)
 				END
-			ELSIF (lang = "1") OR (lang = "2") THEN
+			ELSIF lang <= "2" THEN
 				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("SHORTINT")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("INTEGER")
@@ -322,7 +322,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.linttyp^.strobj THEN Ws("HUGEINT")
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("LONGREAL")
-				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("SYSTEM.UBYTE")
+				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("SYSTEM.UINT8")
 				ELSE Ws(obj^.name^)
 				END
 			ELSE (* "7" *)
