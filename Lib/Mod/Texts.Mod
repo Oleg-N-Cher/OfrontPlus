@@ -701,25 +701,23 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   END WriteRealHex;
 
   PROCEDURE WriteLongReal* (VAR W: Writer; x: LONGREAL; n: INTEGER);
-    CONST maxD = 16;
-    VAR e: INTEGER; x0: LONGREAL;
-      d: ARRAY maxD OF CHAR;
-  BEGIN e := Reals.ExpoL(x);
-    IF e = 0 THEN
-      WriteString(W, "  0");
-      REPEAT Write(W, " "); DEC(n) UNTIL n <= 3
-    ELSIF e = 2047 THEN
-      WriteString(W, " NaN");
-      WHILE n > 4 DO Write(W, " "); DEC(n) END
+    CONST maxD = 16; nanS = {19..30}; (* Detects non-signalling NaNs *)
+    VAR e, z: LONGINT; x0: LONGREAL; d: ARRAY maxD OF CHAR;
+  BEGIN
+    e := SHORT(ASH(s.VAL(HUGEINT, x), -52)) MOD 800H; (* binary exponent *)
+    IF e = 0 THEN WriteString(W, "0.0")
+    ELSIF nanS - BITS(SHORT(ASH(s.VAL(HUGEINT, x), -32))) = {} THEN
+      WriteString(W, "NaN")
     ELSE
       IF n <= 10 THEN n := 3 ELSE DEC(n, 7) END;
-      REPEAT Write(W, " "); DEC(n) UNTIL n <= maxD;
+      REPEAT DEC(n) UNTIL n <= maxD;
       (*there are 2 <= n <= maxD digits to be written*)
-      IF x < 0 THEN Write(W, "-"); x := -x ELSE Write(W, " ") END;
+      IF x < 0 THEN Write(W, "-"); x := -x END;
 
       (* Scale e to be an exponent of 10 rather than 2 *)
-      e := SHORT(SHORT(LONG(e - 1023) * 77 DIV 256));
-      IF e >= 0 THEN x := x / Reals.TenL(e) ELSE x := Reals.TenL(SHORT(-e)) * x END ;
+      e := Reals.ExpoL(x) * 77 DIV 256; (* decimal exponent *)
+      IF (-308 > e) OR (e > 308) THEN WriteString(W, "inf"); RETURN END;
+      IF e >= 0 THEN x := x / Reals.TenL(SHORT(e)) ELSE x := Reals.TenL(SHORT(-e)) * x END;
       IF x >= 10.0E0 THEN x := 0.1E0 * x; INC(e) END;
 
       (* Scale x to the number of digits requested *)
@@ -730,7 +728,8 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       Reals.ConvertL(x, n, d);
 
       DEC(n); Write(W, d[n]); Write(W, ".");
-      REPEAT DEC(n); Write(W, d[n]) UNTIL n = 0;
+      z := 0; WHILE (z < n-1) & (d[z] = "0") DO INC(z) END;
+      REPEAT DEC(n); Write(W, d[n]) UNTIL n = z;
 
       IF e # 0 THEN Write(W, "E");
         IF e >= 0 THEN Write(W, "+") END;
