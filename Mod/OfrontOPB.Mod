@@ -427,8 +427,7 @@
 		ELSE min := OPM.MinReal64; max := OPM.MaxReal64
 		END;
 		r := ABS(x^.realval);
-		IF (r > max) OR (r < min) THEN
-				err(nr); x^.realval := 1.0
+		IF (r > max) OR (r < min) THEN err(nr); x^.realval := 1.0
 		ELSIF f = Real THEN x^.realval := SHORT(x^.realval)	(* single precision only *)
 		END;
 		x^.intval := OPM.ConstNotAlloc

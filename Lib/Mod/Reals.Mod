@@ -10,12 +10,11 @@ MODULE Reals;
 
   PROCEDURE -Offset(adr: ADRINT; offset: LONGINT): ADRINT
       "((SYSTEM_ADRINT)adr + offset)";
-  PROCEDURE -AAincludeStdlib "#include <stdlib.h>"; (* ecvt() *)
-  PROCEDURE -ecvt (x: LONGREAL; ndigit: LONGINT; VAR decpt, sign: LONGINT): ADRINT
-      "((SYSTEM_ADRINT)ecvt (x, ndigit, (int*)(decpt), (int*)(sign)))";
   PROCEDURE -AAincludeStdio "#include <stdio.h>"; (* sprintf() *)
-  PROCEDURE -sprintf (buf, format: ADRINT; arg: LONGREAL): INTEGER
-      "sprintf ((char*)buf, (char*)format, arg)";
+  PROCEDURE -sprintf (buf, format: ADRINT; x: LONGREAL): LONGINT
+      "sprintf ((char*)buf, (char*)format, x)";
+  PROCEDURE -sprintd (buf, format: ADRINT; x: LONGINT): LONGINT
+      "sprintf ((char*)buf, (char*)format, x)";
 
   PROCEDURE Ten*(e: INTEGER): REAL;
     VAR r, power: LONGREAL;
@@ -28,16 +27,14 @@ MODULE Reals;
     RETURN SHORT(r)
   END Ten;
   
-  PROCEDURE TenL*(e: INTEGER): LONGREAL;
+  PROCEDURE TenL* (n: INTEGER): LONGREAL; (*compute 10^n *)
     VAR r, power: LONGREAL;
-  BEGIN r := 1.0;
-    power := 10.0;
-    LOOP
-      IF ODD(e) THEN r := r * power END ;
-      e := SHORT(e DIV 2);
-      IF e <= 0 THEN RETURN r END ;
-      power := power * power
-    END
+  BEGIN r := 1.0; power := 10.0;
+    WHILE n > 0 DO
+      IF ODD(n) THEN r := r * power END;
+      power := power * power; n := SHORT(n DIV 2)
+    END;
+    RETURN r
   END TenL;
   
   PROCEDURE Expo*(x: REAL): INTEGER;
@@ -45,13 +42,19 @@ MODULE Reals;
     RETURN SHORT(ASH(S.VAL(LONGINT, x), -23) MOD 256)
   END Expo;
   
-  PROCEDURE ExpoL*(x: LONGREAL): INTEGER;
-    VAR h: LONGINT;
+  PROCEDURE ExpoL* (x: LONGREAL): INTEGER;
+    CONST ExpoMax = 1023;
+    VAR exp, offset: LONGINT;
   BEGIN
-    S.GET(S.ADR(x)+4, h);
-    RETURN SHORT(ASH(h, -20) MOD 2048)
+    x := ABS(x);
+    exp := SHORT(ASH(S.VAL(S.INT64, x), -52));
+    offset := ExpoMax;
+    WHILE exp = 0 DO
+      x := x + x; exp := SHORT(ASH(S.VAL(S.INT64, x), -52)); INC(offset)
+    END;
+    RETURN SHORT(exp - offset)
   END ExpoL;
-  
+
   PROCEDURE SetExpo*(e: INTEGER; VAR x: REAL);
     CONST expo = {1..8};
   BEGIN
@@ -76,17 +79,6 @@ MODULE Reals;
     END
   END Convert;
   
-  PROCEDURE ConvertL*(x: LONGREAL; n: INTEGER; VAR d: ARRAY OF CHAR);
-    VAR decpt, sign, i: LONGINT; buf: ADRINT;
-  BEGIN
-    (*x := x - 0.5; already rounded in ecvt*)
-    buf := ecvt(x, n+2, decpt, sign);
-    i := 0;
-    WHILE i < decpt DO S.GET(Offset(buf, i), d[n - i -1]); INC(i) END ;
-    i := n - i - 1;
-    WHILE i >= 0 DO d[i] := "0"; DEC(i) END ;
-  END ConvertL;
-
   PROCEDURE Unpack(VAR b, d: ARRAY OF BYTE);
     VAR i, k: SHORTINT; len: LONGINT;
   BEGIN i := 0; len := LEN(b);
@@ -107,11 +99,14 @@ MODULE Reals;
   BEGIN Unpack(x, d)
   END ConvertHL;
 
-  PROCEDURE LRealToString* (x: LONGREAL; VAR d: ARRAY OF CHAR);
-    VAR buf: ARRAY 32 OF CHAR;
+  PROCEDURE RealToStr* (x: LONGREAL; digits: LONGINT; VAR d: ARRAY OF CHAR);
+    VAR buf: ARRAY 28 OF CHAR; format: ARRAY 8 OF CHAR;
   BEGIN
-    ASSERT(sprintf(S.ADR(buf), S.ADR("%.24g"), x) < LEN(buf));
+    format[0] := "%"; format[1] := ".";
+    ASSERT((0 < digits) & (digits <= 17));
+    ASSERT(sprintd(S.ADR(format)+2, S.ADR("%dG"), digits) < LEN(format)-2);
+    ASSERT(sprintf(S.ADR(buf), S.ADR(format), x) < LEN(buf));
     d := buf$
-  END LRealToString;
+  END RealToStr;
 
 END Reals.

@@ -705,14 +705,23 @@
 									expr(l, exprPrec)
 								END
 					|	val: (*SYSTEM*)
-								IF ~lvalue
-								& (n^.typ^.form IN {Byte..LInt, Pointer, Set, ProcTyp}) & (l^.typ^.form IN {Byte..LInt, Pointer, Set, ProcTyp})
-								& (n^.typ^.size = l^.typ^.size) OR ~(l^.class IN {Nvar, Nvarpar, Nfield, Nindex}) THEN
+								IF ~lvalue & ~(n^.typ^.form IN {Real, LReal, Comp})
+								& ~(l^.typ^.form IN {Real, LReal, Comp}) THEN	(* use cast *)
 									OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.Write(CloseParen);
 									expr(l, exprPrec)
-								ELSE
+								ELSIF l^.class IN {Nvar, Nvarpar, Nfield, Nindex} THEN	(* lvalue *)
 									OPM.WriteString("__VAL("); OPC.Ident(n^.typ^.strobj); OPM.WriteString(Comma);
 									expr(l, MinPrec); OPM.Write(CloseParen)
+								ELSE	(* use real <-> int conversions *)
+									IF n^.typ^.form = Real THEN OPM.WriteString("__VALSR((INTEGER)")
+									ELSIF n^.typ^.form = LReal THEN OPM.WriteString("__VALR((LONGINT)")
+									ELSE OPM.Write("("); OPC.Ident(n^.typ^.strobj); OPM.Write(")");
+									END;
+									IF l^.typ^.form = Real THEN OPM.WriteString("__VALI("); expr(l, MinPrec); OPM.Write(")")
+									ELSIF l.typ.form = LReal THEN OPM.WriteString("__VALL("); expr(l, MinPrec); OPM.Write(")")
+									ELSE expr(l, exprPrec)
+									END;
+									IF n.typ.form IN {Real, LReal} THEN OPM.Write(")") END
 								END
 					|	bit:
 								OPM.WriteString(SetOfFunc); expr(l, MinPrec); OPM.Write(CloseParen)

@@ -147,9 +147,9 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 								END ;
 								Wch("}")
 						| Real:
-								Texts.WriteReal(W, SHORT(obj^.conval^.realval), 16)
+								Texts.WriteLongReal(W, obj^.conval^.realval, 8)
 						| LReal:
-								Texts.WriteLongReal(W, obj^.conval^.realval, 23)
+								Texts.WriteLongReal(W, obj^.conval^.realval, 17)
 						| String:
 								StringConst(obj^.conval^.ext^)
 						| NilTyp:

@@ -155,6 +155,10 @@ static inline INTEGER __STRLEN (CHAR *str) { // LEN(str$)
 
 #define __VAL(t, x)     (*(t*)&(x))
 #define __VALP(t, x)    ((t)(SYSTEM_ADRINT)(x))
+static inline SHORTREAL __VALSR(INTEGER x)   { return *(SHORTREAL*)&x; }
+static inline REAL      __VALR (LONGINT x)   { return *(REAL*)     &x; }
+static inline INTEGER   __VALI (SHORTREAL x) { return *(INTEGER*)  &x; }
+static inline LONGINT   __VALL (REAL x)      { return *(LONGINT*)  &x; }
 
 #define __GET(a, x, t)  x= *(t*)(a)
 #define __PUT(a, x, t)  *(t*)(a)=(t)x

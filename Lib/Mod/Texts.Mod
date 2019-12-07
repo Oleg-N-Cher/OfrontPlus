@@ -626,16 +626,15 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       d: ARRAY maxD OF CHAR;
   BEGIN e := Reals.Expo(x);
     IF e = 0 THEN
-      WriteString(W, "  0");
-      REPEAT Write(W, " "); DEC(n) UNTIL n <= 3
+      WriteString(W, "0.0");
+      REPEAT DEC(n) UNTIL n <= 3
     ELSIF e = 255 THEN
-      WriteString(W, " NaN");
-      WHILE n > 4 DO Write(W, " "); DEC(n) END
+      WriteString(W, "NaN");
     ELSE
       IF n <= 9 THEN n := 3 ELSE DEC(n, 6) END;
-      REPEAT Write(W, " "); DEC(n) UNTIL n <= 8;
+      REPEAT DEC(n) UNTIL n <= 8;
       (*there are 2 < n <= 8 digits to be written*)
-      IF x < 0.0 THEN Write(W, "-"); x := -x ELSE Write(W, " ") END;
+      IF x < 0.0 THEN Write(W, "-"); x := -x END;
       e := SHORT((e - 127) * 77 DIV 256);
       IF e >= 0 THEN x := x / Reals.Ten(e) ELSE x := Reals.Ten(SHORT(-e)) * x END;
       IF x >= 10.0 THEN x := 0.1*x; INC(e) END;
@@ -645,8 +644,8 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       DEC(n); Write(W, d[n]); Write(W, ".");
       REPEAT DEC(n); Write(W, d[n]) UNTIL n = 0;
       Write(W, "E");
-      IF e < 0 THEN Write(W, "-"); e := SHORT(-e) ELSE Write(W, "+") END;
-      Write(W, CHR(e DIV 10 + 30H)); Write(W, CHR(e MOD 10 + 30H))
+      IF e >= 0 THEN Write(W, "+") END;
+      WriteInt(W, e, 0)
     END
   END WriteReal;
 
@@ -701,40 +700,24 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
   END WriteRealHex;
 
   PROCEDURE WriteLongReal* (VAR W: Writer; x: LONGREAL; n: INTEGER);
-    CONST maxD = 16; nanS = {19..30}; (* Detects non-signalling NaNs *)
-    VAR e, z: LONGINT; x0: LONGREAL; d: ARRAY maxD OF CHAR;
+    VAR ch: CHAR; i: INTEGER; dotzero: BOOLEAN;
+      d: ARRAY 28 OF CHAR;
   BEGIN
-    e := SHORT(ASH(s.VAL(HUGEINT, x), -52)) MOD 800H; (* binary exponent *)
-    IF e = 0 THEN WriteString(W, "0.0")
-    ELSIF nanS - BITS(SHORT(ASH(s.VAL(HUGEINT, x), -32))) = {} THEN
-      WriteString(W, "NaN")
-    ELSE
-      IF n <= 10 THEN n := 3 ELSE DEC(n, 7) END;
-      REPEAT DEC(n) UNTIL n <= maxD;
-      (*there are 2 <= n <= maxD digits to be written*)
-      IF x < 0 THEN Write(W, "-"); x := -x END;
-
-      (* Scale e to be an exponent of 10 rather than 2 *)
-      e := Reals.ExpoL(x) * 77 DIV 256; (* decimal exponent *)
-      IF (-308 > e) OR (e > 308) THEN WriteString(W, "inf"); RETURN END;
-      IF e >= 0 THEN x := x / Reals.TenL(SHORT(e)) ELSE x := Reals.TenL(SHORT(-e)) * x END;
-      IF x >= 10.0E0 THEN x := 0.1E0 * x; INC(e) END;
-
-      (* Scale x to the number of digits requested *)
-      x0 := Reals.TenL(SHORT(n-1)); x := x0*x + 0.5E0;
-      IF x >= 10.0E0*x0 THEN x := 0.1E0 * x; INC(e) END;
-
-      (* Generate the mantissa digits of x *)
-      Reals.ConvertL(x, n, d);
-
-      DEC(n); Write(W, d[n]); Write(W, ".");
-      z := 0; WHILE (z < n-1) & (d[z] = "0") DO INC(z) END;
-      REPEAT DEC(n); Write(W, d[n]) UNTIL n = z;
-
-      IF e # 0 THEN Write(W, "E");
-        IF e >= 0 THEN Write(W, "+") END;
-        WriteInt(W, e, 0);
-      END
+    Reals.RealToStr(x, n, d);
+    i := 0; ch := d[0]; dotzero := TRUE;
+    WHILE (ch # 0X) & (ch # "E") DO
+      IF (ch = ".") OR (ch > "9") THEN dotzero := FALSE END; (* NaN, -INF/+INF *)
+      Write(W, ch); INC(i); ch := d[i]
+    END;
+    IF ch = "E" THEN
+      Write(W, "E"); INC(i); ch := d[i];
+      IF (ch = "+") OR (ch = "-") THEN Write(W, ch); INC(i); ch := d[i] END;
+      IF ch = "0" THEN INC(i); ch := d[i];
+        IF ch = "0" THEN INC(i); ch := d[i] END
+      END;
+      WHILE ch # 0X DO Write(W, ch); INC(i); ch := d[i] END
+    ELSIF dotzero THEN
+      Write(W, "."); Write(W, "0")
     END
   END WriteLongReal;
 

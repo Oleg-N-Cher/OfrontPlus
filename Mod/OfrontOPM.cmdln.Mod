@@ -597,7 +597,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			WriteInt(ENTIER(r))
 		ELSE
 			Texts.OpenWriter(W);
-			IF suffx = "f" THEN Texts.WriteLongReal(W, r, 16) ELSE Texts.WriteLongReal(W, r, 24) END;
+			IF suffx = "f" THEN Texts.WriteLongReal(W, r, 8) ELSE Texts.WriteLongReal(W, r, 17) END;
 			NEW(T); Texts.Open(T, ""); Texts.Append(T, W.buf);
 			Texts.OpenReader(R, T, 0); i := 0; Texts.Read(R, ch);
 			WHILE ch # 0X DO s[i] := ch; INC(i); Texts.Read(R, ch) END;

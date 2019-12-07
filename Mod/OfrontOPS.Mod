@@ -374,8 +374,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 					lrlval := (f + g) * OPM.IntPower(10, e-j)	(* Ten(e-j) *)
 				ELSIF e = 308 + 1 THEN
 					lrlval := (f + g) * (OPM.IntPower(10, e-j) / 16);
-					IF lrlval <= OPM.MaxReal64 / 16 THEN lrlval := lrlval * 16;
-					IF lrlval > OPM.MaxReal64 THEN lrlval := OPM.MaxReal64 END	(* 80-bit FPU correction *)
+					IF lrlval <= OPM.MaxReal64 / 16 THEN lrlval := lrlval * 16
 					ELSE err(203)
 					END
 				ELSE err(203)
