@@ -1,8 +1,8 @@
 @ECHO OFF
-IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW\bin
+IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW64\bin
 CD ..\Obj
 
-SET CC=gcc.exe -m32 -fPIC -Os -g0 -I..\..\..\..\Mod\Lib -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c
+SET CC=gcc.exe -m64 -fPIC -Os -g0 -I..\..\..\..\Mod\Lib -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c
 SET AR=ar.exe -rc ..\Ofront.a
 IF EXIST ..\Ofront.a DEL ..\Ofront.a
 
@@ -32,9 +32,9 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-%CC% SDL2.c SDL2mixer.c SQLite.c In.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
+%CC% SDL2.c SDL2mixer.c In.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
 IF errorlevel 1 PAUSE
-%AR% SDL2.o SDL2mixer.o SQLite.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
+%AR% SDL2.o SDL2mixer.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
 
 :: libCurl
 

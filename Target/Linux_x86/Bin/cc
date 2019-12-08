@@ -18,6 +18,7 @@ if [ $? != 0 ]; then exit 1; fi
 ## ImportGraph
 
 $CC ImportGraph.c -lOfront -o../graphviz
+if [ $? != 0 ]; then exit 1; fi
 
 ## OCat
 

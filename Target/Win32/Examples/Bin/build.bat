@@ -1,17 +1,17 @@
 @ECHO OFF
 CD ..\Obj
-SET PATH=..\..\Bin;%PATH%
+SET PATH=..\..;%PATH%
 IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW\bin;%PATH%
-SET OBERON=.;.\..\..\Lib\Sym;.\..\Mod
+SET OBERON=.;..\..\Lib\Sym;..\..\..\..\Examples
 
 ofront+ -sC -48 MyDLL.Mod -d MyDLLuse.Mod -m
 IF errorlevel 1 PAUSE
 ofront+ -mC -48 BlitBmp.Mod BlitBmp2.Mod Book.Mod Cnezinka.Mod Elo4ka.Mod Gradient24.Mod HelloWorld.Mod Mandelbrot.Mod Mandelbrot2.Mod TestHttp.Mod
 IF errorlevel 1 PAUSE
 
-SET StripExe=-nostartfiles ..\..\Lib\Mod\crt1.c -Wl,-e__WinMain -D_WINMAIN
-SET StripDll=-nostartfiles ..\..\Lib\Mod\crt1dll.c -static-libgcc
-SET LIB=-I..\..\Lib\Obj -I..\..\Lib\Mod ..\..\Lib\Ofront.a
+SET StripExe=-nostartfiles ..\..\..\..\Mod\Lib\crt1.c -Wl,-e__WinMain -D_WINMAIN
+SET StripDll=-nostartfiles ..\..\..\..\Mod\Lib\crt1dll.c -static-libgcc
+SET LIB=-I..\..\Lib\Obj -I..\..\..\..\Mod\Lib ..\..\Lib\Ofront.a
 SET CC=gcc.exe -m32 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections
 
 %CC% %StripExe% HelloWorld.c -o..\HelloWorld.exe %LIB%
@@ -24,7 +24,7 @@ IF errorlevel 1 PAUSE
 %CC% %StripExe% MyDLLuse.c -fPIC MyDLLuse.def -o..\MyDLLuse.exe -Wl,--out-implib,MyDLLuse.a %LIB% MyDLL.a
 IF errorlevel 1 PAUSE
 :: ------------ Generate MyDLL.dll -------------
-%CC% %StripDll% MyDLL.c -fPIC -shared MyDLLuse.a -o..\MyDLL.dll -Wl,--out-implib,MyDLL.a -I..\..\Lib\Obj -I..\..\Lib\Mod
+%CC% %StripDll% MyDLL.c -fPIC -shared MyDLLuse.a -o..\MyDLL.dll -Wl,--out-implib,MyDLL.a -I..\..\Lib\Obj -I..\..\..\..\Mod\Lib
 IF errorlevel 1 PAUSE
 :: --------------------------------------------------------------------------------
 
