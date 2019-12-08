@@ -50,6 +50,7 @@ BEGIN
   |  35: Log.String('"," or OF expected')
 
   |   becomes: Log.String('":=" missing')
+  |        39: Log.String("this is not a VAR-parameter")
   |     ident: Log.String("identifier expected")
   | semicolon: Log.String('";" missing')
   |        at: Log.String('"@" missing')

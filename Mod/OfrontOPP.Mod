@@ -681,8 +681,11 @@
 	BEGIN aparlist := NIL; last := NIL;
 		IF sym # rparen THEN
 			LOOP
-				IF (OPM.Lang = "3") & (fpar # NIL) & (fpar^.mode = VarPar) & (fpar^.vis # inPar) THEN
-					IF sym = at THEN OPS.Get(sym) ELSE err(42) END
+				IF (OPM.Lang = "3") & (fpar # NIL) THEN
+					IF (fpar^.mode = VarPar) & (fpar^.vis # inPar) THEN
+						IF sym = at THEN OPS.Get(sym) ELSE err(42) END
+					ELSIF sym = at THEN OPS.Get(sym); err(39)
+					END
 				END;
 				Expression(apar);
 				IF fpar # NIL THEN
