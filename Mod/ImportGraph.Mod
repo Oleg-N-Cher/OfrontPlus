@@ -222,7 +222,7 @@ BEGIN
    RETURN (name = "SYSTEM") OR (name = "COM") OR (sub = "Win")
 END BlackListed;
 
-PROCEDURE OpenFile (path: ARRAY OF CHAR): Files.File;
+PROCEDURE OpenFile (VAR path: ARRAY OF CHAR): Files.File;
 VAR
    i: INTEGER;
 BEGIN
@@ -431,7 +431,7 @@ END OutputData;
 
 PROCEDURE InitScanner ();
 
-   PROCEDURE AddKeyword (sym: INTEGER; id: ARRAY OF CHAR);
+   PROCEDURE AddKeyword (sym: INTEGER; IN id: ARRAY OF CHAR);
    BEGIN
       keyTab [numKW].sym := sym; keyTab [numKW].id := id$;
       INC (numKW)
