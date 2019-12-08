@@ -1,7 +1,7 @@
 #!/bin/sh
 cd ../Obj
-export PATH="$PATH:../.."
-export OBERON=.:../Sym:../../../Lib/Mod
+PATH="$PATH:../.."
+export OBERON=.:../Sym:../../../../Mod/Lib
 
 ## Ofront+
 
@@ -15,12 +15,12 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## OOC2
 
-ofront+ -eC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
+ofront+ -sC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## POW
 
-ofront+ -eC -88 powStrings.Mod
+ofront+ -sC -88 powStrings.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## Free Oberon
