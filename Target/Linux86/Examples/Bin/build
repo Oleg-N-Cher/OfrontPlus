@@ -3,7 +3,7 @@
 # libsdl2-dev libsdl2-image-dev libcurl4-openssl-dev libc6-dev-i386
 
 cd ../Obj
-PATH="../..:$PATH"
+export PATH="../..:$PATH"
 export OBERON=.:../../Lib/Sym:../../../../Examples
 
 ofront+ -sC -44 MyDLL.Mod -d MyDLLuse.Mod -m

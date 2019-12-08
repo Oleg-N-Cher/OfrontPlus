@@ -2,6 +2,4 @@
 if [ ! -f "../Lib/libOfront.a" ]; then
   cd "../Lib/Bin"; ./build; cd "../../Bin"
 fi
-./o2c
-./cc
-rm ../Obj/*.o
+./o2c && ./cc
