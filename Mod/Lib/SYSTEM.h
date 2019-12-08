@@ -36,10 +36,10 @@ typedef int SYSTEM_ARRLEN; // 32 or 64 bits, see also OPM.IndexSize and MaxIndex
    extern void *alloca (unsigned long size);
 #else
    extern void *memcpy (void *dest, const void *source, __U_ADRINT size);
-   extern void *alloca (__U_ADRINT size);
 #  ifdef _MSC_VER
 #    define alloca _alloca
 #  endif
+   extern void *alloca (__U_ADRINT size);
 #endif
 
 
