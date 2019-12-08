@@ -1,12 +1,12 @@
 #!/bin/sh
 cd ../Obj
-export CC="gcc -m32 -I../../../Lib/Mod -Os -g0 -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+export CC="gcc -m32 -I../../../../Mod/Lib -Os -g0 -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 export AR="ar -rc ../libOfront.a"
 if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
 
 ## Ofront+
 
-$CC ../../../Lib/Mod/SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+$CC ../../../../Mod/Lib/SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
 if [ $? != 0 ]; then exit 1; fi
 $AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
 
