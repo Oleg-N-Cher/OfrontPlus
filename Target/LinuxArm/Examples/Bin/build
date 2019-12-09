@@ -3,22 +3,22 @@
 # libsdl2-dev libsdl2-image-dev libcurl4-openssl-dev
 
 cd ../Obj
-PATH="../..:$PATH"
-export OBERON=.:../../Lib/Sym:../../../Examples/Mod
+export PATH="../..:$PATH"
+export OBERON=.:../../Lib/Sym:../../../../Examples
 
 ofront+ -sC -48 MyDLL.Mod -d MyDLLuse.Mod -m
 if [ $? != 0 ]; then exit 1; fi
 ofront+ -mC -48 BlitBmp.Mod BlitBmp2.Mod Book.Mod Cnezinka.Mod Elo4ka.Mod Gradient24.Mod HelloWorld.Mod Mandelbrot.Mod Mandelbrot2.Mod TestHttp.Mod
 if [ $? != 0 ]; then exit 1; fi
 
-LIB="-I../../Lib/Obj -I../../../Lib/Mod -L../../Lib -lOfront"
-CC="gcc -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
+LIB="-I../../Lib/Obj -I../../../../Mod/Lib -L../../Lib -lOfront"
+CC="cc -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
 
 $CC HelloWorld.c -s -o../HelloWorld $LIB
 if [ $? != 0 ]; then exit 1; fi
 
 # ---------- Generate MyDLL.so (WARNING!!! The circular dependency!) ----------
-$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def -I../../Lib/Obj -I../../../Lib/Mod
+$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def -I../../Lib/Obj -I../../../../Mod/Lib
 if [ $? != 0 ]; then exit 1; fi
 #nm -gC MyDLL.so
 # ---------- Generate MyDLLuse (WARNING!!! The circular dependency!) ----------
