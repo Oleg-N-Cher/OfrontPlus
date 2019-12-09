@@ -1,0 +1,43 @@
+#!/bin/sh
+cd ../Obj
+CC="cc -m32 -I../../../../Mod/Lib -Os -g0 -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+AR="ar -rc ../libOfront.a"
+if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
+
+## Ofront+
+
+$CC ../../../../Mod/Lib/SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+if [ $? != 0 ]; then exit 1; fi
+$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+
+## Eco
+
+$CC ecoBigSets.c ecoBuffer.c ecoListen.c ecoLists.c ecoParser.c ecoVector.c
+if [ $? != 0 ]; then exit 1; fi
+$AR ecoBigSets.o ecoBuffer.o ecoListen.o ecoLists.o ecoParser.o ecoVector.o
+
+## OOC2
+
+$CC ooc2Ascii.c ooc2ConvTypes.c ooc2RandomNumbers.c ooc2Strings.c
+if [ $? != 0 ]; then exit 1; fi
+$AR ooc2Ascii.o ooc2ConvTypes.o ooc2RandomNumbers.o ooc2Strings.o
+
+## POW
+
+$CC powStrings.c
+if [ $? != 0 ]; then exit 1; fi
+$AR powStrings.o
+
+## Free Oberon
+
+$CC SDL2.c SDL2mixer.c SQLite.c In.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
+if [ $? != 0 ]; then exit 1; fi
+$AR SDL2.o SDL2mixer.o SQLite.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
+
+## libCurl
+
+$CC libCurl.c NetHttp.c
+if [ $? != 0 ]; then exit 1; fi
+$AR libCurl.o NetHttp.o
+
+rm *.o

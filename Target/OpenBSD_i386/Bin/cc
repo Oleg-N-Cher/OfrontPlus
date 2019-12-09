@@ -1,0 +1,28 @@
+#!/bin/sh
+cd ../Obj
+CC="cc -m32 -I../Lib/Obj -I../../../Mod/Lib -L../Lib -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections"
+
+$CC -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c
+if [ $? != 0 ]; then exit 1; fi
+
+## Ofront+
+
+$CC OfrontCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -lOfront -o../ofront+
+if [ $? != 0 ]; then exit 1; fi
+
+## Browser
+
+$CC BrowserCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -lOfront -o../showdef
+if [ $? != 0 ]; then exit 1; fi
+
+## ImportGraph
+
+$CC ImportGraph.c -lOfront -o../graphviz
+if [ $? != 0 ]; then exit 1; fi
+
+## OCat
+
+$CC OCatCmd.c -lOfront -o../ocat
+if [ $? != 0 ]; then exit 1; fi
+
+rm *.o
