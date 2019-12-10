@@ -1,11 +1,11 @@
 @ECHO OFF
-SET PATH=%CD%\..\..\..\Bin
+SET PATH=%CD%\..\..\..\Win32
 CD ..\Obj
-SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\Lib\Mod
+SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\..\Mod\Lib
 
 :: Ofront+
 
-ofront+ -sC -44 Heap.Mod -apx Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Strings.Mod Files.Mod Reals.Mod Modules.Mod Texts.Mod Oberon.Mod
+ofront+ -sC -44 Heap.Mod -apx Platform.Unix.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Reals.Mod Strings.Mod Files.Mod Modules.Mod Texts.Mod Oberon.Mod
 IF errorlevel 1 PAUSE
 
 :: Eco
@@ -25,7 +25,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -sC -44 SDL2.Mod SDL2mixer.Mod SQLite.Mod In.Mod Out.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod
+ofront+ -sC -44 SDL2.Mod SDL2mixer.Mod SQLite.Mod Out.Mod In.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod
 IF errorlevel 1 PAUSE
 
 :: libCurl
