@@ -452,7 +452,6 @@ type
   END;
 
 PROCEDURE -AAIncludeSDL2h0* '#include "SDL2.h0"';
-PROCEDURE -AAIncludeSDL2mixerh0* '#include "SDL2mixer.h0"';
 
 (*
   {$IFNDEF __GPC__}
@@ -475,7 +474,7 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_Linked_Version'{$ELSE} SDL_MixerLibNam
 *)
 (* Open the mixer with a certain audio format *)
 PROCEDURE -Mix_OpenAudio* (frequency: Integer; format: UInt16;
-  channels: Integer; chunksize: Integer): Integer "Mix_OpenAudio(frequency, format, channels, chunksize)";
+  channels: Integer; chunksize: Integer): Integer;
 (*
 { Dynamically change the number of channels managed by the mixer.
    If decreasing the number of channels, the upper channels are
