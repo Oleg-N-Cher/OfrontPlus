@@ -582,7 +582,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 				END
 			ELSIF ansi THEN
 				(* casting of params should be simplified eventually *)
-				IF ((mode = VarPar) OR (comp IN {Array, DynArr})) & (typ # n^.typ) & (prec = MinPrec) THEN
+				IF ((mode = VarPar) OR (typ^.BaseTyp^.form = Comp)) & (typ # n^.typ) & (prec = MinPrec) THEN
 					OPM.WriteString("(void*)")
 				END
 			END;
