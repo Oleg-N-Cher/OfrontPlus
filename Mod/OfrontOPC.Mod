@@ -531,7 +531,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE DefineType(str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
-		IF str^.form IN {Byte..Set, UByte} THEN RETURN END;
+		IF (str^.comp = DynArr) OR (str^.form IN {Byte..Set, UByte}) THEN RETURN END;
 		IF (OPM.currFile = OPM.BodyFile) OR (str^.ref < OPM.MaxStruct (*for hidden exports*) ) THEN
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
