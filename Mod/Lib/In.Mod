@@ -26,8 +26,9 @@ END Open;
 
 PROCEDURE ReadChar;
 VAR error: Platform.ErrorCode; n: LONGINT;
+  m: ARRAY 1 OF BYTE;
 BEGIN
-  error := Platform.ReadBuf(Platform.StdIn, SYSTEM.VAL(BYTE, nextch), n);
+  error := Platform.ReadBuf(Platform.StdIn, m, n); nextch := CHR(m[0]);
   IF (error = 0) & (n = 1) THEN readstate := ready ELSE readstate := eof END
 END ReadChar;
 
