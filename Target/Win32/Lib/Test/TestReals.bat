@@ -1,4 +1,4 @@
-@SET PATH=..\Bin;..\..\Bin;%PATH%
+@SET PATH=..\Bin;..\..;%PATH%
 @SET OBERON=%CD%;%CD%\..\Sym
 
 @ofront+ -sC -48 TestReals.Mod

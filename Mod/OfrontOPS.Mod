@@ -358,8 +358,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			DEC(e, i-d-m); (* decimal point shift *)
 			IF (expCh = "E") & (OPM.Lang # "C") THEN numtyp := real;
 				IF (1-38 < e) & (e <= 38) THEN
-					IF e < 0 THEN realval := SHORT(f / OPM.IntPower(10, -e))
-					ELSE realval := SHORT(f * OPM.IntPower(10, e))
+					IF e < j THEN realval := SHORT((f + g) / OPM.IntPower(10, j-e))
+					ELSE realval := SHORT((f + g) * OPM.IntPower(10, e-j))
 					END
 				ELSE err(203)
 				END
