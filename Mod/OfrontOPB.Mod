@@ -680,42 +680,42 @@
 					IF g IN intSet THEN x^.typ := y^.typ
 					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
-					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| SInt:
 					IF g = Byte THEN y^.typ := OPT.sinttyp
 					ELSIF g IN intSet THEN x^.typ := y^.typ
 					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
-					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| Int:
 					IF g IN {Byte, SInt} THEN y^.typ := OPT.inttyp
 					ELSIF g IN intSet THEN x^.typ := y^.typ
 					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
-					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| LInt:
 					IF g IN intSet THEN y^.typ := OPT.linttyp
 					ELSIF g = Real THEN x^.typ := OPT.realtyp; xval^.realval := xval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp; xval^.realval := xval^.intval
-					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| Real:
 					IF g IN intSet THEN y^.typ := x^.typ; yval^.realval := yval^.intval
 					ELSIF g = LReal THEN x^.typ := OPT.lrltyp
-					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| LReal:
 					IF g IN intSet THEN y^.typ := x^.typ; yval^.realval := yval^.intval
 					ELSIF g = Real THEN y^.typ := OPT.lrltyp
-					ELSE  err(100); y^.typ := x^.typ; yval^ := xval^
+					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| String:
 					IF g = Char THEN CharToString(y); g := String
 					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
-					END ;
+					END
 			| NilTyp:
 					IF ~(g IN {Pointer, ProcTyp}) THEN err(100) END
 			| Pointer:
@@ -966,32 +966,32 @@
 								IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
 						| Byte:
 								IF g IN intSet + realSet THEN Convert(z, y^.typ)
-								ELSE  err(100)
+								ELSE err(100)
 								END
 						| SInt:
 								IF g = Byte THEN Convert(y, z^.typ)
 								ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
-								ELSE  err(100)
+								ELSE err(100)
 								END
 						| Int:
 								IF g IN {Byte, SInt} THEN Convert(y, z^.typ)
 								ELSIF g IN intSet + realSet THEN Convert(z, y^.typ)
-								ELSE  err(100)
+								ELSE err(100)
 								END
 						| LInt:
 								IF g IN intSet THEN Convert(y, z^.typ)
 								ELSIF g IN realSet THEN Convert(z, y^.typ)
-								ELSE  err(100)
+								ELSE err(100)
 								END
 						| Real:
 								IF g IN intSet THEN Convert(y, z^.typ)
 								ELSIF g IN realSet THEN Convert(z, y^.typ)
-								ELSE  err(100)
+								ELSE err(100)
 								END
 						| LReal:
 								IF g IN intSet + realSet THEN Convert(y, z^.typ)
 								ELSIF g IN realSet THEN Convert(y, z^.typ)
-								ELSE  err(100)
+								ELSE err(100)
 								END
 						| NilTyp:
 								IF ~(g IN {Pointer, ProcTyp}) THEN err(100) END
@@ -1000,6 +1000,9 @@
 						| ProcTyp:
 								IF g # NilTyp THEN err(100) END
 						| String:
+								IF (g = Char) & (y^.class = Nconst) THEN CharToString(y)
+								ELSE err(100)
+								END
 						| Comp:
 								IF z^.typ^.comp = Record THEN err(100) END
 						ELSE err(100)
