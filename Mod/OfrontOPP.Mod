@@ -1644,7 +1644,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
 			END;
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
-			IF sym = semicolon THEN OPS.Get(sym)
+			IF (OPM.Lang = "7") & (sym = return) THEN (* no semicolon before RETURN *)
+			ELSIF sym = semicolon THEN OPS.Get(sym)
 			ELSIF (sym <= ident) OR (if <= sym) & (sym <= return) THEN err(semicolon)
 			ELSE EXIT
 			END
