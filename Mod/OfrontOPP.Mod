@@ -667,9 +667,9 @@
 			ELSE typ^.BaseTyp := OPT.notyp; typ^.link := NIL
 			END
 		ELSE err(12)
-		END ;
+		END;
 		LOOP
-			IF (sym >= semicolon) & (sym <= else) OR (sym = rparen) OR (sym = eof)
+			IF (sym >= semicolon) & (sym <= procedure) OR (sym = rparen) OR (sym = eof)
 				OR (sym = number) OR (sym = comma) OR (sym = string) THEN EXIT END;
 			err(15); IF sym = ident THEN EXIT END;
 			OPS.Get(sym)

@@ -663,9 +663,9 @@
 			ELSE typ^.BaseTyp := OPT.notyp; typ^.link := NIL
 			END
 		ELSE err(12)
-		END ;
+		END;
 		LOOP
-			IF (sym >= semicolon) & (sym <= else) OR (sym = rparen) OR (sym = eof)
+			IF (sym >= semicolon) & (sym <= procedure) OR (sym = rparen) OR (sym = eof)
 				OR (sym = number) OR (sym = comma) OR (sym = string) THEN EXIT END;
 			err(15); IF sym = ident THEN EXIT END;
 			OPS.Get(sym)
@@ -1745,7 +1745,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
 			END;
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
-			IF sym = semicolon THEN OPS.Get(sym)
+			IF (OPM.Lang = "7") & (sym = return) THEN (* RETURN x END *)
+			ELSIF sym = semicolon THEN OPS.Get(sym)
 			ELSIF (sym <= ident) OR (if <= sym) & (sym <= return) THEN err(semicolon)
 			ELSE EXIT
 			END
