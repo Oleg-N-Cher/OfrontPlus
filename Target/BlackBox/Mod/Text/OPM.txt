@@ -1,4 +1,4 @@
-MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
+﻿MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 (* constants needed for C code generation *)
 (*
 2002-04-11  jt: Number changed for BlackBox 1.4: SHORT(-e)
@@ -7,7 +7,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 *)
 
 	IMPORT SYSTEM, Math, Strings, Files, Models, Out, Stores, TextControllers, TextModels,
-		TextMappers, TextViews, Views, Dialog, Controllers, DevMarkers, Windows;
+		TextMappers, TextViews, Views, Dialog, Controllers, DevMarkers, Windows, HostDialog;
 
 	CONST
 		OptionChar* = "-";
@@ -104,6 +104,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 8.5.95*)
 		crc32tab: ARRAY 256 OF INTEGER;
 		lasterrpos: INTEGER;
 		inR: TextModels.Reader;
+		CP1251: ARRAY 128 + 1 OF CHAR;
 		inC: TextControllers.Controller;
 		script: Stores.Operation; (* for undoing insert error marks *)
 		inS: TextMappers.Scanner;
@@ -569,11 +570,24 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 	(* ------------------------- read source text -------------------------*)
 
+	PROCEDURE WideCharToCP1251 (ch: CHAR): SHORTCHAR;
+	VAR
+		n: INTEGER; msg: ARRAY 2 OF CHAR;
+	BEGIN
+		IF ch <= 7FX THEN RETURN SHORT(ch) END;
+		FOR n := 7FH TO 0 BY -1 DO
+			IF ch = CP1251[n] THEN RETURN SHORT(CHR(n + 80H)) END
+		END;
+		msg[0] := ch; msg[1] := 0X;
+		HostDialog.ShowParamMsg("Can't convert character " + '"' + msg + '"', "", "", "");
+		RETURN "?" (* Replace an unknown character to "?" *)
+	END WideCharToCP1251;
+
 	PROCEDURE Get*(VAR ch: SHORTCHAR);	(* read next character from source text, 0X if eof *)
 	BEGIN
 		inR.Read();
 		IF inR.eot THEN ch := 0X
-		ELSE ch := SHORT(inR.char); INC(curpos)
+		ELSE ch := WideCharToCP1251(inR.char); INC(curpos)
 		END
 	END Get;
 
@@ -998,7 +1012,40 @@ suffix does not work in K&R *)
 BEGIN
 	InitCrcTab; InitHost;
 	subsys := ""; workDir := ""; SFsubdir := ""; CFsubdir := "";
-	locate.num := 0; GetDefaultDirectories
+	locate.num := 0; GetDefaultDirectories;
+	CP1251 := (* http://ru.wikipedia.org/wiki/Windows-1251 *)
+		(* ЂЃ‚ѓ„…†‡ *)
+		 402X +  403X + 201AX +  453X + 201EX + 2026X + 2020X + 2021X +
+		(* €‰Љ‹ЊЌЋЏ *)
+		20ACX + 2030X +  409X + 2039X +  40AX +  40CX +  40BX +  40FX +
+		(* ђ‘’“”•–— *)
+		 452X + 2018X + 2019X + 201CX + 201DX + 2022X + 2013X + 2014X +
+		(* ?™љ›њќћџ *)
+		  "?" + 2122X +  459X + 203AX +  45AX +  45CX +  45BX +  45FX +
+		(*  ЎўЈ¤Ґ¦§ *)
+		 0A0X +  40EX +  45EX +  408X +  0A4X +  490X +  0A6X +  0A7X +
+		(* Ё©Є«¬-­®Ї *)
+		 401X +  0A9X +  404X +  0ABX +  0ACX +  0ADX +  0AEX +  407X +
+		(* °±Ііґµ¶· *)
+		 0B0X +  0B1X +  406X +  456X +  491X +  0B5X +  0B6X +  0B7X +
+		(* ё№є»јЅѕї *)
+		 451X + 2116X +  454X +  0BBX +  458X +  405X +  455X +  457X +
+		(* АБВГДЕЖЗ *)
+		 410X +  411X +  412X +  413X +  414X +  415X +  416X +  417X +
+		(* ИЙКЛМНОП *)
+		 418X +  419X +  41AX +  41BX +  41CX +  41DX +  41EX +  41FX +
+		(* РСТУФХЦЧ *)
+		 420X +  421X +  422X +  423X +  424X +  425X +  426X +  427X +
+		(* ШЩЪЫЬЭЮЯ *)
+		 428X +  429X +  42AX +  42BX +  42CX +  42DX +  42EX +  42FX +
+		(* абвгдежз *)
+		 430X +  431X +  432X +  433X +  434X +  435X +  436X +  437X +
+		(* ийклмноп *)
+		 438X +  439X +  43AX +  43BX +  43CX +  43DX +  43EX +  43FX +
+		(* рстуфхцч *)
+		 440X +  441X +  442X +  443X +  444X +  445X +  446X +  447X +
+		(* шщъыьэюя *)
+		 448X +  449X +  44AX +  44BX +  44CX +  44DX +  44EX +  44FX
 END OfrontOPM.
 
 
