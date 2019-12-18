@@ -619,11 +619,11 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 				IF n < 249 THEN
 					IF inC = NIL THEN RETURN END;
 					IF errors < maxErrors THEN
-						errNo[errors] := n; errPos[errors] := pos
+						errNo[errors] := n; errPos[errors] := pos;
+						INC(errors);
+						T := inR.Base(); DevMarkers.Unmark(T); InsertMarks(T);
+						INC(curpos); inR.SetPos(curpos)
 					END;
-					INC(errors);
-					T := inR.Base(); DevMarkers.Unmark(T); InsertMarks(T);
-					INC(curpos); inR.SetPos(curpos);
 					IF noerr THEN
 						IF translateList THEN Views.Open(inV, inLoc, inName, NIL);
 							inV(TextViews.View).ShowRange(pos, pos, FALSE)
