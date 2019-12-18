@@ -590,6 +590,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	END MakeFileName;
 
 	PROCEDURE InsertMarks (text: TextModels.Model);
+		CONST OpenFirstMark = TRUE;
 		VAR i, j, x, n: INTEGER; y: SHORTINT; E: DevMarkers.View; s: ARRAY 256 OF CHAR;
 	BEGIN
 		n := errors;
@@ -606,6 +607,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			E := DevMarkers.dir.New(DevMarkers.message);
 			Strings.IntToString(errNo[n], s); Dialog.MapString("#ofront:"+s, s);
 			E.InitErr(errNo[n]); E.InitMsg(s);
+			IF OpenFirstMark & (n = 0) THEN E.SetMode(2) END;
 			DevMarkers.Insert(text, errPos[n], E)
 		END
 	END InsertMarks;
