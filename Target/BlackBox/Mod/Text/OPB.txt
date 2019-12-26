@@ -592,7 +592,7 @@
 		VAR f, g: INTEGER; new: OPT.Struct;
 	BEGIN
 		f := left^.typ^.form; g := right^.typ^.form; new := left^.typ;
-		IF f IN intSet + realSet THEN
+		IF (OPM.Lang # "3") & (f IN intSet + realSet) THEN
 			IF g IN intSet + realSet THEN
 				IF (f = Real) & (right^.class = Nconst) & (g IN realSet) & (left^.class # Nconst)
 				OR (g = Real) & (left^.class = Nconst) & (f IN realSet) & (right^.class # Nconst) THEN
@@ -606,9 +606,21 @@
 				ELSE new := OPT.inttyp
 				END
 			ELSE err(100)
-			END
-		END;
-		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp, Char, String}) THEN
+			END;
+			IF g # new^.form THEN Convert(right, new) END;
+			IF f # new^.form THEN Convert(left, new) END
+		ELSIF (OPM.Lang # "7") & (f IN {Char, String}) THEN
+			IF g IN {Char, String} THEN
+				IF ((f = Char) OR (g = Char)) & (op # plus) THEN new := OPT.chartyp
+				ELSE new := OPT.stringtyp
+				END;
+				IF (new^.form = String)
+					& ((f = Char) & (left^.class # Nconst) OR (g = Char) & (right^.class # Nconst))
+				THEN
+					err(100)
+				END
+			ELSE err(100)
+			END;
 			IF g # new^.form THEN Convert(right, new) END;
 			IF f # new^.form THEN Convert(left, new) END
 		END
@@ -934,6 +946,8 @@
 					IF (r < MIN(LONGINT)) OR (r > MAX(LONGINT)) THEN err(203); r := 1 END;
 					x^.conval^.intval := ENTIER(r); SetIntType(x, FALSE)
 				END
+			ELSIF g = String THEN
+				IF f = Char THEN CharToString(x) ELSE typ := OPT.undftyp END
 			ELSE (* (f IN {Char, Byte}) & (g IN {Byte} + intSet) OR (f = Undef) *)
 			END;
 			x^.obj := NIL
@@ -980,7 +994,7 @@
 		IF (z^.class = Ntype) OR (y^.class = Ntype) THEN err(126)
 		ELSE
 			IF (z^.typ^.form = UByte) OR (y^.typ^.form = UByte) THEN PromoteUByte(z, y)
-			ELSIF OPM.Lang > "3" THEN Promote(z, y, op)
+			ELSIF OPM.Lang > "2" THEN Promote(z, y, op)
 			END;
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
