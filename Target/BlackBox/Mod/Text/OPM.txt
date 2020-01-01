@@ -659,7 +659,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		UNTIL ch = 0X
 	END MakeFileName;
 
-	PROCEDURE InsertMarks (text: TextModels.Model);
+	PROCEDURE InsertMarks*;
 		CONST OpenFirstMark = TRUE;
 		VAR i, j, x, n: INTEGER; y: SHORTINT; E: DevMarkers.View; s: ARRAY 256 OF CHAR;
 	BEGIN
@@ -678,12 +678,12 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			Strings.IntToString(errNo[n], s); Dialog.MapString("#ofront:"+s, s);
 			E.InitErr(errNo[n]); E.InitMsg(s);
 			IF OpenFirstMark & (n = 0) THEN E.SetMode(2) END;
-			DevMarkers.Insert(text, errPos[n], E)
+			DevMarkers.Insert(inR.Base(), errPos[n], E)
 		END
 	END InsertMarks;
 
 	PROCEDURE Mark*(n: SHORTINT; pos: INTEGER);
-		VAR T: TextModels.Model; s: ARRAY 256 OF CHAR;
+		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
 		IF n >= 0 THEN
 			IF pos < 0 THEN pos := 0 END;
@@ -692,9 +692,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 					IF inC = NIL THEN RETURN END;
 					IF errors < maxErrors THEN
 						errNo[errors] := n; errPos[errors] := pos;
-						INC(errors);
-						T := inR.Base(); DevMarkers.Unmark(T); InsertMarks(T);
-						INC(curpos); inR.SetPos(curpos)
+						INC(errors)
 					END;
 					IF noerr THEN
 						IF translateList THEN Views.Open(inV, inLoc, inName, NIL);

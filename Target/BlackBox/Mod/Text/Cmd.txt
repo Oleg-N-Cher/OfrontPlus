@@ -31,7 +31,8 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 		OPM.CloseFiles;
 		IF OPT.topScope # NIL THEN OPT.Close END; (* sonst Trap nach Fehler *)
 		OPM.LogWLn; done := OPM.noerr;
-		IF OPM.warning156 THEN OPM.Mark(-156, -1) END
+		IF OPM.warning156 THEN OPM.Mark(-156, -1) END;
+		IF ~done THEN OPM.InsertMarks END
 	END Module;
 
 	PROCEDURE Translate*;
