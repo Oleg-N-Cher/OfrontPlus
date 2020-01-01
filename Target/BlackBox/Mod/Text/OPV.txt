@@ -197,16 +197,16 @@
 	BEGIN
 		IF obj # NIL THEN
 			Traverse(obj^.left, outerScope, exported);
-			IF obj^.name[0] = "@" THEN obj^.name[0] := "_"; Stamp(obj^.name) END ;	(* translate and make unique @for, ... *)
+			IF obj^.name[0] = "@" THEN obj^.name[0] := "_"; Stamp(obj^.name) END;	(* translate and make unique @for, ... *)
 			obj^.linkadr := UndefinedType;
 			mode := obj^.mode;
 			IF (mode = Typ) & ((obj^.vis # internal) = exported) THEN
 				typ := obj^.typ; TypSize(obj^.typ);
-				IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
+				IF typ^.form = Pointer THEN typ := typ^.BaseTyp END;
 				IF typ^.comp = Record THEN TraverseRecord(typ) END
 			ELSIF mode = TProc THEN GetTProcNum(obj)
-			ELSIF mode = Var THEN TypSize(obj^.typ)
-			END ;
+			ELSIF mode IN {Var, VarPar} THEN TypSize(obj^.typ)
+			END;
 			IF ~exported THEN (* do this only once *)
 				IF (mode IN {LProc, Typ}) & (obj^.mnolev > 0) THEN Stamp(obj^.name) END;
 				IF mode IN {Var, VarPar, Typ} THEN
