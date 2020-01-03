@@ -754,6 +754,24 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END FieldList;
 
+	PROCEDURE HasPtrs (typ: OPT.Struct): BOOLEAN;
+		VAR fld: OPT.Object;
+	BEGIN
+		IF typ.form IN {Pointer, ProcTyp} THEN
+			RETURN TRUE
+		ELSIF typ.comp = Record THEN
+			fld := typ.link;
+			WHILE (fld # NIL) & (fld.mode = Fld) DO
+				IF (fld.name^ = OPM.HdPtrName) OR (fld.name^ = OPM.HdProcName) OR HasPtrs(fld.typ) THEN RETURN TRUE END;
+				fld := fld.link
+			END;
+			IF typ.BaseTyp # NIL THEN RETURN HasPtrs(typ.BaseTyp) END
+		ELSIF typ.comp = Array THEN
+			RETURN HasPtrs(typ.BaseTyp)
+		END;
+		RETURN FALSE
+	END HasPtrs;
+
 	PROCEDURE IdentList (obj: OPT.Object; vis: SHORTINT);
 	(* generate var and param lists; vis: 0 all global vars, local var, 1 exported(R) var, 2 par list, 3 scope var *)
 		VAR base: OPT.Struct; first: BOOLEAN; lastvis: SHORTINT;
@@ -795,12 +813,14 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					EndStat; BegStat;
 					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
-				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) & (obj^.typ^.form = Pointer) THEN
-					OPM.WriteString(" = NIL")
+				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) THEN
+					IF obj^.typ^.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL"); base := NIL
+					ELSIF (obj^.typ^.form = Comp) & HasPtrs(obj^.typ) THEN OPM.WriteString(" = {0}")
+					END
 				END
-			END ;
+			END;
 			obj := obj^.link
-		END ;
+		END;
 		IF ~first THEN EndStat END
 	END IdentList;
 
