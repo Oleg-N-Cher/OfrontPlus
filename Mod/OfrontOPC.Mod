@@ -33,7 +33,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		Ninittd = 14;
 
 		(* module visibility of objects *)
-		internal = 0; external = 1;
+		internal = 0; external = 1; outPar = 4;
 
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
@@ -1187,6 +1187,13 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					END
 				END;
 				OPM.Write(CloseParen); EndStat
+			ELSIF ptrinit & (var.mode = VarPar) & (var.vis = outPar) & (var.typ.form IN {Pointer, ProcTyp}) THEN
+				BegStat;
+				OPM.Write("*"); Ident(var);
+				IF var.typ.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL")
+				ELSE OPM.WriteString(" = {0}")
+				END;
+				EndStat
 			END;
 			var := var^.link
 		END;

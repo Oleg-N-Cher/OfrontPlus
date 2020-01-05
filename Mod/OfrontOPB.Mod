@@ -381,10 +381,10 @@
 			ELSIF obj^.typ^.form = Pointer THEN GTT(x^.typ^.BaseTyp, obj^.typ^.BaseTyp)
 			ELSE err(86)
 			END
-		ELSIF (x^.typ^.comp = Record) & (x^.class = Nvarpar) & (obj^.typ^.comp = Record) THEN
+		ELSIF (x^.typ^.comp = Record) & (x^.class = Nvarpar) & (x^.obj^.vis # outPar) & (obj^.typ^.comp = Record) THEN
 			GTT(x^.typ, obj^.typ)
 		ELSE err(87)
-		END ;
+		END;
 		IF guard THEN x^.typ := obj^.typ ELSE x^.typ := OPT.booltyp END
 	END TypTest;
 

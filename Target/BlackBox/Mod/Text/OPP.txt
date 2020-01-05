@@ -557,14 +557,14 @@
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct; VAR name: OPS.String);
 		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last: OPT.Object; typ: OPT.Struct;
 	BEGIN first := NIL; last := firstPar;
-		IF (sym = ident) OR (sym = var) OR ((sym = in) & (OPM.Lang = "C")) THEN
+		IF (sym = ident) OR (sym = var) OR (OPM.Lang = "C") & ((sym = in) OR (sym = out)) THEN
 			LOOP
 				sys := 0; vis := 0;
 				IF sym = var THEN OPS.Get(sym); mode := VarPar
 				ELSIF (sym = in) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := inPar
 				ELSIF (sym = out) & (OPM.Lang = "C") THEN OPS.Get(sym); mode := VarPar; vis := outPar
 				ELSE mode := Var
-				END ;
+				END;
 				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
 				LOOP
 					IF sym = ident THEN
