@@ -371,22 +371,13 @@
 		END
 	END CheckSysFlagProc;
 
-	PROCEDURE Extends(x, b: OPT.Struct): BOOLEAN;
-	BEGIN
-		IF (b^.form = Pointer) & (x^.form = Pointer) THEN b := b^.BaseTyp; x := x^.BaseTyp END;
-		IF (b^.comp = Record) & (x^.comp = Record) THEN
-			REPEAT x := x^.BaseTyp UNTIL (x = NIL) OR (x = b)
-		END;
-		RETURN x = b
-	END Extends;
-
 	PROCEDURE CheckOverwrite (proc, base: OPT.Object; rec: OPT.Struct);
 		VAR o, bo: OPT.Object;
 	BEGIN
 		IF base # NIL THEN
 			IF base.conval.setval * {absAttr, empAttr, extAttr} = {} THEN err(182) END;
 			IF (proc.link.mode # base.link.mode) OR (proc.link.vis # base.link.vis)
-				OR ~Extends(proc.link.typ, base.link.typ) THEN err(115) END;
+				OR ~OPT.Extends(proc.link.typ, base.link.typ) THEN err(115) END;
 			o := proc.link; bo := base.link;
 			WHILE (o # NIL) & (bo # NIL) DO
 				IF (bo.sysflag # 0) & (o.sysflag = 0) THEN	(* propagate sysflags *)
@@ -395,7 +386,7 @@
 				o := o.link; bo := bo.link
 			END;
 			OPB.CheckParameters(proc.link.link, base.link.link, FALSE);
-			IF ~Extends(proc.typ, base.typ) THEN err(117) END;
+			IF ~OPT.Extends(proc.typ, base.typ) THEN err(117) END;
 			IF (base.vis # proc.vis) & ((proc.vis # internal) OR rec.exp) THEN err(183) END;
 			INCL(proc.conval.setval, isRedef)
 		END

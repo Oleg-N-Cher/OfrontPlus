@@ -204,7 +204,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		i := FirstRef; WHILE i < maxStruct DO impCtxt.ref[i] := NIL; impCtxt.old[i] := NIL; INC(i) END
 	END Close;
 
-	PROCEDURE SameType (x, y: Struct): BOOLEAN;
+	PROCEDURE SameType* (x, y: Struct): BOOLEAN;
 	BEGIN
 		RETURN (x = y) OR (x.form = y.form) & ~(x.form IN {Pointer, ProcTyp, Comp}) OR (x = undftyp) OR (y = undftyp)
 	END SameType;
@@ -232,6 +232,16 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END;
 		RETURN SameType(x, y)
 	END EqualType;
+
+	PROCEDURE Extends* (x, y: Struct): BOOLEAN;
+	BEGIN
+		IF (x.form = Pointer) & (y.form = Pointer) THEN x := x.BaseTyp; y := y.BaseTyp END;
+		IF (x.comp = Record) & (y.comp = Record) THEN
+			(* IF (y = anytyp) & ~x.untagged THEN RETURN TRUE END; *)
+			WHILE (x # NIL) & (x # undftyp) & (x # y) DO x := x.BaseTyp END
+		END;
+		RETURN (x # NIL) & EqualType(x, y)
+	END Extends;
 
 	PROCEDURE FindImport*(mod: Object; VAR res: Object);
 		VAR obj: Object;
