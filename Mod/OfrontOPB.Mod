@@ -1268,7 +1268,7 @@
 		| Comp:
 				x^.pvused := TRUE;	(* idfp of y guarantees assignment compatibility with x *)
 				IF x^.comp = Record THEN
-					IF (x = y) & ((x^.attribute = 0) OR (x^.attribute = extAttr)) THEN (* ok *)
+					IF (x = y) & (x^.attribute = extAttr) THEN (* ok *)
 					ELSIF ~OPT.EqualType(x, y) OR (x^.attribute # 0) THEN err(113)
 					END
 				ELSIF g IN {Char, String} THEN
