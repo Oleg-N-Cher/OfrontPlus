@@ -11,19 +11,19 @@ English text below
    в них хранится информация об интерфейсах импортируемых модулей.
    Поэтому задайте переменную OBERON, содержащую пути для поиска:
 
-   UNIX / Linux 32:
+   UNIX / Linux 32 бит:
 
    export OBERON=.:../Lib/Sym:../Sym
 
-   UNIX / Linux 64:
+   UNIX / Linux 64 бит:
 
    export OBERON=.:../Lib/Sym64:../Sym64
 
-   Windows 32:
+   Windows 32 бит:
 
    SET OBERON=%CD%;%CD%\..\Lib\Sym;%CD%\..\Sym
 
-   Windows 64:
+   Windows 64 бит:
 
    SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64
 
@@ -37,23 +37,23 @@ English text below
    -88: адрес 64 бита, выравнивание 64 бита (64-битные платформы)
 
 
-3. При вызове компилятора Си включайте в поиск каталоги Lib/Mod (там хранится SYSTEM.h) и Lib/Obj* нужной разрядности, а также библиотеку Ofront:
+3. При вызове компилятора Си включайте в поиск каталоги Mod/Lib (там хранится SYSTEM.h) и Lib/Obj* нужной разрядности, а также библиотеку Ofront:
 
-   UNIX / Linux 32:
+   UNIX / Linux 32 bit:
 
-   gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
+   gcc modName.c -s -Os -fno-exceptions -I../../Mod/Lib -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
 
-   UNIX / Linux 64:
+   UNIX / Linux 64 bit:
 
-   gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
+   gcc modName.c -s -Os -fno-exceptions -I../../Mod/Lib -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
 
-   Windows 32:
+   Windows 32 bit:
 
-   gcc modName.c -s -Os -fno-exceptions -I ..\Lib\Mod -I ..\Lib\Obj -o modName.exe ..\Lib\Ofront.a
+   gcc modName.c -s -Os -fno-exceptions -I ..\Mod\Lib -I ..\Lib\Obj -o modName.exe ..\Lib\Ofront.a
 
-   Windows 64:
+   Windows 64 bit:
 
-   gcc modName.c -s -Os -fno-exceptions -I ..\Lib\Mod -I ..\Lib\Obj64 -o modName.exe ..\Lib\Ofront64.a
+   gcc modName.c -s -Os -fno-exceptions -I ..\Mod\Lib -I ..\Lib\Obj64 -o modName.exe ..\Lib\Ofront64.a
 
 
 ------------------------------------------------------------------------------
@@ -66,19 +66,19 @@ To start the translator from the command line you need three things:
    as they stored information on the interfaces of imported modules.
    So specify variable OBERON, containing the path to search for:
 
-   UNIX / Linux 32:
+   UNIX / Linux 32 bit:
 
    export OBERON=.:../Lib/Sym:../Sym
 
-   UNIX / Linux 64:
+   UNIX / Linux 64 bit:
 
    export OBERON=.:../Lib/Sym64:../Sym64
 
-   Windows 32:
+   Windows 32 bit:
 
    SET OBERON=%CD%;%CD%\..\Lib\Sym;%CD%\..\Sym
 
-   Windows 64:
+   Windows 64 bit:
 
    SET OBERON=%CD%;%CD%\..\Lib\Sym64;%CD%\..\Sym64
 
@@ -94,18 +94,18 @@ To start the translator from the command line you need three things:
 
 3. When invoke C compiler, include the directories Lib/Mod (SYSTEM.h lives there) and Lib/Obj* of wanted bit depth, and the library Ofront:
 
-   UNIX / Linux 32:
+   UNIX / Linux 32 bit:
 
    gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj -L../Lib -o../modName -lOfront -ldl
 
-   UNIX / Linux 64:
+   UNIX / Linux 64 bit:
 
    gcc modName.c -s -Os -fno-exceptions -I../../Lib/Mod -I../Lib/Obj64 -L../Lib -o../modName -lOfront64 -ldl
 
-   Windows 32:
+   Windows 32 bit:
 
    gcc modName.c -s -Os -fno-exceptions -I ..\Lib\Mod -I ..\Lib\Obj -o modName.exe ..\Lib\Ofront.a
 
-   Windows 64:
+   Windows 64 bit:
 
    gcc modName.c -s -Os -fno-exceptions -I ..\Lib\Mod -I ..\Lib\Obj64 -o modName.exe ..\Lib\Ofront64.a
