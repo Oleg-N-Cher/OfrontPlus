@@ -45,7 +45,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		getfn = 29; putfn = 30; sysnewfn = 35; movefn = 36;
 
 		(*procedure flags*)
-		hasBody = 1; isRedef = 2; absAttr = 17; empAttr = 19;
+		hasBody = 1; isRedef = 2; absAttr = 17; empAttr = 19; extAttr = 20;
 
 		super = 1;
 
@@ -98,6 +98,17 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		nofExitLabels: SHORTINT;
 
 
+	PROCEDURE Init*;
+	BEGIN
+		OPC.Init;
+		stamp := 0; recno := 0; nofExitLabels := 0;
+		assert := OPM.assert IN OPM.opt;
+		inxchk := OPM.inxchk IN OPM.opt;
+		mainprog := OPM.mainprog IN OPM.opt;
+		ansi := OPM.ansi IN OPM.opt;
+		oldc := OPM.oldc IN OPM.opt
+	END Init;
+
 	PROCEDURE TypSize*(typ: OPT.Struct);
 		VAR f, c: SHORTINT; offset, size, base, fbase, off0: INTEGER;
 			fld: OPT.Object; btyp: OPT.Struct;
@@ -146,39 +157,66 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		END
 	END TypSize;
 
-	PROCEDURE Init*;
+	PROCEDURE CountTProcs(rec: OPT.Struct);
+		VAR btyp: OPT.Struct;
+
+		PROCEDURE TProcs(obj: OPT.Object);	(* obj.mnolev = 0, TProcs of base type already counted *)
+			VAR redef: OPT.Object;
+		BEGIN
+			IF obj # NIL THEN
+				TProcs(obj.left);
+				IF obj.mode = TProc THEN
+					OPT.FindField(obj.name^, rec^.BaseTyp, redef);
+					IF redef # NIL THEN
+						obj.num := redef.num (*mthno*);
+						IF ~(isRedef IN obj.conval.setval) OR (redef.conval.setval * {extAttr, absAttr, empAttr} = {}) THEN
+							OPM.Mark(119, rec.txtpos)
+						END
+					ELSE obj.num := rec.n; INC(rec.n)
+					END ;
+					IF obj.conval.setval * {hasBody, absAttr, empAttr} = {} THEN OPM.Mark(129, obj.adr) END
+				END ;
+				TProcs(obj.right)
+			END
+		END TProcs;
+
 	BEGIN
-		stamp := 0; recno := 0; nofExitLabels := 0;
-		assert := OPM.assert IN OPM.opt;
-		inxchk := OPM.inxchk IN OPM.opt;
-		mainprog := OPM.mainprog IN OPM.opt;
-		ansi := OPM.ansi IN OPM.opt;
-		oldc := OPM.oldc IN OPM.opt
-	END Init;
+		IF rec.n = -1 THEN
+			IF rec.sysflag > 0 THEN rec.n := 0 ELSE rec.n := 1(*OPT.anytyp.n*) END;
+			btyp := rec.BaseTyp;
+			IF btyp # NIL THEN CountTProcs(btyp); rec.n := btyp.n END;
+			TProcs(rec.link)
+		END
+	END CountTProcs;
 
 	PROCEDURE ^Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
 
-	PROCEDURE GetTProcNum(obj: OPT.Object);
-		VAR oldPos: INTEGER; typ: OPT.Struct; redef: OPT.Object;
-	BEGIN
-		oldPos := OPM.errpos; OPM.errpos := obj^.scope^.adr;
-		typ := obj^.link^.typ;
-		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-		OPT.FindField(obj^.name^, typ^.BaseTyp, redef);
-		IF redef # NIL THEN obj^.adr := 10000H*(redef^.adr DIV 10000H) (*mthno*);
-			IF ~(isRedef IN obj^.conval^.setval) THEN OPM.err(119) END
-		ELSE INC(obj^.adr, 10000H*typ^.n); INC(typ^.n)
-		END ;
-		OPM.errpos := oldPos
-	END GetTProcNum;
-
-	PROCEDURE TraverseRecord(typ: OPT.Struct);
+	PROCEDURE TraverseType (typ: OPT.Struct);
+		VAR p: OPT.Object;
 	BEGIN
 		IF ~typ^.allocated THEN
-			IF typ^.BaseTyp # NIL THEN TraverseRecord(typ^.BaseTyp); typ^.n := typ^.BaseTyp^.n END ;
-			 typ^.allocated := TRUE; Traverse(typ^.link, typ^.strobj, FALSE)
+			typ^.allocated := TRUE;
+			TypSize(typ);
+			IF typ^.comp = Record THEN
+				CountTProcs(typ);
+				IF typ.extlev > 14 THEN OPM.Mark(233, typ.txtpos) END;
+				IF typ^.BaseTyp # NIL THEN TraverseType(typ^.BaseTyp) END;
+				Traverse(typ^.link, typ^.strobj, FALSE)
+			ELSIF typ^.form = Pointer THEN
+				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ.txtpos) END;
+				TraverseType(typ^.BaseTyp);
+				IF (typ.sysflag <= 0) & (typ.BaseTyp.comp IN {Array, DynArr}) THEN
+					OPC.InsertArrayType(typ.BaseTyp)
+				END
+			ELSIF typ^.form = ProcTyp THEN
+				TraverseType(typ^.BaseTyp);
+				p := typ^.link;
+				WHILE p # NIL DO TraverseType(p.typ); p := p.link END
+			ELSE (* typ^.comp IN {Array, DynArr} *)
+				 TraverseType(typ^.BaseTyp)
+			END
 		END
-	END TraverseRecord;
+	END TraverseType;
 
 	PROCEDURE Stamp(VAR s: OPS.String);
 		VAR i, j, k: SHORTINT; n: ARRAY 10 OF SHORTCHAR; res: OPS.Name;
@@ -194,33 +232,33 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END Stamp;
 
 	PROCEDURE Traverse (obj, outerScope: OPT.Object; exported: BOOLEAN);
-		VAR mode: SHORTINT; scope: OPT.Object; typ: OPT.Struct;
+		VAR mode: SHORTINT; scope, p: OPT.Object;
 	BEGIN
 		IF obj # NIL THEN
 			Traverse(obj^.left, outerScope, exported);
 			IF obj^.name[0] = "@" THEN obj^.name[0] := "_"; Stamp(obj^.name) END;	(* translate and make unique @for, ... *)
 			obj^.linkadr := UndefinedType;
 			mode := obj^.mode;
-			IF (mode = Typ) & ((obj^.vis # internal) = exported) THEN
-				typ := obj^.typ; TypSize(obj^.typ);
-				IF typ^.form = Pointer THEN typ := typ^.BaseTyp END;
-				IF typ^.comp = Record THEN TraverseRecord(typ) END
-			ELSIF mode = TProc THEN GetTProcNum(obj)
-			ELSIF mode IN {Var, VarPar} THEN TypSize(obj^.typ)
+			IF (mode = Typ) & ((obj^.vis # internal) = exported) THEN TraverseType(obj^.typ);
+			ELSIF mode IN {Var, VarPar, Fld} THEN TraverseType(obj^.typ)
 			END;
 			IF ~exported THEN (* do this only once *)
-				IF (mode IN {LProc, Typ}) & (obj^.mnolev > 0) THEN Stamp(obj^.name) END;
+				IF (mode IN {LProc, Typ}) & (obj^.mnolev > 0) THEN
+					(*obj.entry := obj.name;*) NEW(obj.name, LEN(obj.name$) + 12); Stamp(obj^.name)
+				END;
 				IF mode IN {Var, VarPar, Typ} THEN
 					obj^.scope := outerScope
 				ELSIF mode IN {LProc, XProc, TProc, CProc, IProc} THEN
-					IF obj^.conval^.setval = {} THEN OPM.err(129) END;
+					TraverseType(obj^.typ);
+					p := obj^.link;
+					WHILE p # NIL DO TraverseType(p.typ); p := p.link END;
 					scope := obj^.scope;
 					scope^.leaf := TRUE;
-					scope^.name := obj^.name; Stamp(scope^.name);
+					NEW(scope.name, LEN(obj.name$) + 12); scope.name^ := obj.name$; Stamp(scope^.name);
 					IF mode = CProc THEN obj^.adr := 1 (* c.f. OPC.CProcDefs *) END;
 					IF scope^.mnolev > 1 THEN outerScope^.leaf := FALSE END;
 					Traverse (obj^.scope^.right, obj^.scope, FALSE);
-					IF obj^.conval^.setval * {hasBody, absAttr, empAttr} = {} THEN OPM.Mark(129, obj^.adr) END
+					IF obj.conval.setval * {hasBody, absAttr, empAttr} = {} THEN OPM.Mark(129, obj.adr) END
 				END
 			END;
 			Traverse(obj^.right, outerScope, exported)
@@ -473,7 +511,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						expr(n^.left, designPrec)
 					ELSE
 						IF n^.typ^.comp = DynArr THEN
-							IF ODD(n^.typ^.sysflag) THEN design(n^.left, designPrec)
+							IF n^.typ^.sysflag > 0 THEN design(n^.left, designPrec)
 							ELSE design(n^.left, 10); OPM.WriteString("->data")
 							END
 						ELSE OPM.Write(Deref); expr(n^.left, designPrec)
@@ -1249,7 +1287,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	PROCEDURE Module*(prog: OPT.Node);
 	BEGIN
 		IF ~mainprog THEN OPC.GenHdr(prog^.right); OPC.GenHdrIncludes END ;
-		OPC.GenBdy(prog^.right); stat(prog, NIL)
+		OPC.GenBdy(prog^.right); stat(prog, NIL);
+		OPC.CleanupArrays
 	END Module;
 
 END OfrontOPV.

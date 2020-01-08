@@ -14,7 +14,6 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 			IF ~main THEN OPT.Export(ext, new) END;
 			IF OPM.noerr THEN
 				OPM.OpenFiles(OPT.SelfName);
-				OPC.Init;
 				OPV.Module(p);
 				IF OPM.noerr THEN
 					IF main THEN

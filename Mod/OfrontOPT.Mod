@@ -37,7 +37,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			typ*: Struct;
 			conval*: Const;
 			nlink*: Object;	(* link for name list, declaration order for methods, library link for imp obj *)
-			adr*, linkadr*: INTEGER;
+			adr*, num*, linkadr*: INTEGER;	(* mthno *)
 			x*: SHORTINT	(* linkadr and x can be freely used by the backend *)
 		END ;
 

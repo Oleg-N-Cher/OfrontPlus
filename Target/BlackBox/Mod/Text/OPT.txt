@@ -45,7 +45,7 @@
 			typ*: Struct;
 			conval*: Const;
 			nlink*: Object;	(* link for name list, declaration order for methods, library link for imp obj *)
-			adr*, linkadr*: INTEGER;
+			adr*, num*, linkadr*: INTEGER;	(* mthno *)
 			x*: SHORTINT	(* linkadr and x can be freely used by the backend *)
 		END ;
 

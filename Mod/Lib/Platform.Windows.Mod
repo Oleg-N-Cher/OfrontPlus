@@ -39,8 +39,8 @@ TYPE
     mtimelow:  DWORD;  (* File modification time, value is system dependent *)
   END;
 
-  ArgPtr  = POINTER [notag] TO ARRAY [notag] 1024 OF CHAR;
-  ArgVec* = POINTER [notag] TO ARRAY [notag] 1024 OF ArgPtr;
+  ArgPtr  = POINTER [notag] TO ARRAY 1024 OF CHAR;
+  ArgVec* = POINTER [notag] TO ARRAY 1024 OF ArgPtr;
 
 
 VAR

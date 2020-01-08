@@ -17,7 +17,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
 
 		(* composite structure forms *)
-		Array = 2; DynArr = 3; Record = 4;
+		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
 		(* object history *)
 		removed = 4;
@@ -95,6 +95,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		GlbPtrs: BOOLEAN;
 		BodyNameExt: ARRAY 14 OF SHORTCHAR;
 
+		arrayTypes: ARRAY 1024 OF OPT.Struct;	(* table of all unnamed heap allocated array types *)
+		arrayIndex: INTEGER;
+
 	PROCEDURE Init*;
 	BEGIN
 		indentLevel := 0;
@@ -102,7 +105,8 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		mainprog := OPM.mainprog IN OPM.opt;
 		ansi := OPM.ansi IN OPM.opt;
 		oldc := OPM.oldc IN OPM.opt;
-		IF ansi THEN BodyNameExt := "__init (void)" ELSE BodyNameExt := "__init ()" END
+		IF ansi THEN BodyNameExt := "__init (void)" ELSE BodyNameExt := "__init ()" END;
+		arrayIndex := 0
 	END Init;
 
 	PROCEDURE Indent* (count: SHORTINT);
@@ -237,20 +241,23 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	PROCEDURE^ AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
 	PROCEDURE^ DeclareReturnType (retTyp: OPT.Struct);
 
-	PROCEDURE DeclareObj(dcl: OPT.Object; scopeDef: BOOLEAN);
+	PROCEDURE DeclareObj(dcl: OPT.Object; vis: INTEGER);
 		VAR
 			typ: OPT.Struct;
 			varPar, openClause: BOOLEAN; form, comp: SHORTINT;
 	BEGIN
 		typ := dcl^.typ;
-		varPar := ((dcl^.mode = VarPar) & (typ^.comp # Array)) OR (typ^.comp = DynArr) OR scopeDef;
+		varPar := ((dcl^.mode = VarPar) & (typ^.comp # Array)) OR (typ^.comp = DynArr) OR (vis = 3);
 		Stars(typ, openClause);
 		IF varPar THEN
-			IF openClause THEN OPM.Write(OpenParen) END ;
+			IF openClause THEN OPM.Write(OpenParen) END;
 			OPM.Write(Star)
-		END ;
-		IF dcl.name # OPT.null THEN Ident(dcl) END ;
-		IF varPar & openClause THEN OPM.Write(CloseParen) END ;
+		END;
+		IF dcl.name # OPT.null THEN
+			Ident(dcl);
+			IF vis = 4 THEN OPM.WriteString("__copy") END
+		END;
+		IF varPar & openClause THEN OPM.Write(CloseParen) END;
 		openClause := FALSE;
 		LOOP
 			form := typ^.form;
@@ -259,7 +266,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
 				openClause := TRUE
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
-				IF openClause THEN OPM.Write(CloseParen); openClause := FALSE END ;
+				IF openClause THEN OPM.Write(CloseParen); openClause := FALSE END;
 				IF form = ProcTyp THEN
 					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE, TRUE)
 					ELSE OPM.WriteString(")()")
@@ -271,7 +278,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				END
 			ELSE
 				EXIT
-			END ;
+			END;
 			typ := typ^.BaseTyp
 		END
 	END DeclareObj;
@@ -290,7 +297,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # 3+OPM.currFile ) & (obj^.linkadr # PredefinedType) OR (obj^.name = OPT.null)
 	END Undefined;
 
-	PROCEDURE ^FieldList (typ: OPT.Struct; last: BOOLEAN; VAR off, n, curAlign: INTEGER);
+	PROCEDURE^ FieldList (typ: OPT.Struct; last: BOOLEAN; VAR off, n, curAlign: INTEGER);
+	PROCEDURE^ Universal (typ: OPT.Struct): BOOLEAN;
+	PROCEDURE^ UniversalArrayName (typ: OPT.Struct);
 
 	PROCEDURE DeclareBase(dcl: OPT.Object); (* declare the specifier of object dcl*)
 		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
@@ -316,21 +325,14 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
-		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & ~ODD(typ^.BaseTyp^.sysflag) THEN
-			typ := typ^.BaseTyp^.BaseTyp; nofdims := 1;
-			WHILE typ^.comp = DynArr DO INC(nofdims); typ := typ^.BaseTyp END ;
-			OPM.WriteString(Struct); BegBlk;
-			BegStat;
-			CASE OPM.IndexSize OF
-			| 2: Str1("SHORTINT len[#]", nofdims)
-			| 4: Str1("INTEGER len[#]", nofdims)
-			ELSE Str1("LONGINT len[#]", nofdims)
-			END;
-			EndStat;
-			BegStat; NEW(obj); NEW(obj.typ);	(* aux. object for easy declaration *)
-			obj.typ.form := Comp; obj.typ.comp := Array; obj.typ.n := 1; obj.typ.BaseTyp := typ; obj.mode := Fld; obj.name := OPT.NewName("data");
-			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank);  DeclareObj(obj, FALSE);
-			EndStat; EndBlk0
+		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.sysflag <= 0) THEN
+			typ := typ^.BaseTyp;
+			OPM.WriteString(Struct);
+			IF Universal(typ) THEN
+				UniversalArrayName(typ)
+			ELSE
+				Andent(typ)
+			END
 		END
 	END DeclareBase;
 
@@ -567,7 +569,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				obj^.linkadr := ProcessingType;
 				DeclareBase(obj); OPM.Write(Blank);
 				obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
-				DeclareObj(obj, FALSE);
+				DeclareObj(obj, 0);
 				obj^.typ^.strobj := obj; (* SG: revert trick *)
 				obj^.linkadr := 3+OPM.currFile;
 				EndStat; Indent(-1); OPM.WriteLn;
@@ -640,6 +642,124 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			n := n^.link
 		END
 	END DefAnonRecs;
+
+	PROCEDURE Universal (typ: OPT.Struct): BOOLEAN;
+		VAR p: OPT.Object;
+	BEGIN
+		IF typ.comp IN {Array, Record} THEN
+			RETURN (typ.strobj # NIL) & (typ.strobj.name^ # "")
+		ELSIF typ.form IN {Comp, Pointer} THEN
+			RETURN Universal(typ.BaseTyp)
+		ELSIF typ.form = ProcTyp THEN
+			p := typ.link;
+			WHILE p # NIL DO
+				IF ~Universal(p.typ) THEN RETURN FALSE END;
+				p := p.link
+			END;
+			RETURN Universal(typ.BaseTyp)
+		END;
+		RETURN TRUE
+	END Universal;
+
+	PROCEDURE UniversalArrayName (typ: OPT.Struct);
+		VAR p: OPT.Object;
+	BEGIN
+		IF typ.form IN {Bool, Char, Byte, SInt, Int, LInt, UByte, Set, Real, LReal} THEN
+			IF typ.BaseTyp # OPT.undftyp THEN typ := typ.BaseTyp END;	(* basic type alias *)
+			OPM.WriteString(typ.strobj.name^)
+		ELSE
+			IF typ.comp = Record THEN
+				ASSERT((typ.strobj # NIL) & (typ.strobj.name^ # ""), 100);
+				Ident(typ.strobj)
+			ELSIF typ.comp = Array THEN
+				ASSERT((typ.strobj # NIL) & (typ.strobj.name^ # ""), 100);
+				Ident(typ.strobj); OPM.WriteString("_OBJ")
+			ELSIF typ.comp = DynArr THEN
+				UniversalArrayName(typ.BaseTyp); OPM.WriteString("_ARRAY")
+			ELSIF typ.form = Pointer THEN
+				UniversalArrayName(typ.BaseTyp); OPM.WriteString("_PTR")
+			ELSIF typ.form = ProcTyp THEN
+				OPM.WriteString("X__"); p := typ.link;
+				WHILE p # NIL DO
+					UniversalArrayName(p.typ); OPM.WriteString("__");
+					p := p.link
+				END;
+				OPM.Write("X");
+				IF typ.BaseTyp # OPT.notyp THEN
+					OPM.Write("R");
+					OPM.WriteString("__"); UniversalArrayName(typ.BaseTyp)
+				END
+			ELSE
+				HALT(100)
+			END
+		END
+	END UniversalArrayName;
+
+	PROCEDURE DefAnonArrays;
+		VAR i: INTEGER; atyp, typ, t: OPT.Struct; obj: OPT.Object;
+	BEGIN
+		i := 0;
+		WHILE i < arrayIndex DO
+			atyp := arrayTypes[i]; typ := atyp;
+			IF Universal(atyp) THEN
+				OPM.WriteString("#ifndef "); UniversalArrayName(atyp); OPM.WriteString("_DEF"); OPM.WriteLn;
+				OPM.WriteString("#define "); UniversalArrayName(atyp); OPM.WriteString("_DEF"); OPM.WriteLn
+			END;
+			OPM.WriteString("typedef struct ");
+			IF Universal(atyp) THEN UniversalArrayName(atyp) ELSE Andent(atyp) END;
+			OPM.Write(" "); BegBlk;
+			IF atyp.comp = DynArr THEN
+				BegStat;
+				CASE OPM.IndexSize OF
+				| 2: Str1("SHORTINT len[#]", atyp.n + 1)
+				| 4: Str1("INTEGER len[#]", atyp.n + 1)
+				ELSE Str1("LONGINT len[#]", atyp.n + 1)
+				END;
+				WHILE typ^.comp = DynArr DO typ := typ^.BaseTyp END;	(* remove open levels *)
+				IF typ.form = Pointer THEN	(* replace by anonymous pointer *)
+					NEW(t); t.BaseTyp := typ.BaseTyp;
+					t.sysflag := typ.sysflag; typ := t;
+					typ.form := Pointer; typ.comp := Basic
+				END;
+				NEW(t); t.BaseTyp := typ; typ := t;	(* replace by one level with one element *)
+				typ.form := Comp; typ.comp := Array; typ.n := 1;
+				EndStat
+			END;
+			BegStat; NEW(obj);	(* aux. object for easy declaration *)
+			obj.typ := typ; obj.mode := Fld;
+			obj.name := OPT.NewName("data");
+			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank);  DeclareObj(obj, 0);
+			EndStat; EndBlk0; OPM.Write(" ");
+			IF Universal(atyp) THEN
+				UniversalArrayName(atyp); OPM.Write(";"); OPM.WriteLn;
+				OPM.WriteString("#endif "); OPM.WriteLn
+			ELSE
+				Andent(atyp); OPM.Write(";"); OPM.WriteLn
+			END;
+			OPM.WriteLn;
+			INC(i)
+		END
+	END DefAnonArrays;
+
+	PROCEDURE InsertArrayType* (typ: OPT.Struct);
+		VAR i: INTEGER;
+	BEGIN
+		ASSERT(typ.comp IN {Array, DynArr});
+		i := 0;
+		WHILE i < arrayIndex DO
+			IF OPT.EqualType(typ, arrayTypes[i]) THEN RETURN END;
+			INC(i)
+		END;
+		arrayTypes[arrayIndex] := typ;
+		INC(arrayIndex)
+	END InsertArrayType;
+
+	PROCEDURE CleanupArrays*;
+		VAR i: INTEGER;
+	BEGIN
+		i := 0;
+		WHILE i < arrayIndex DO arrayTypes[i] := NIL; INC(i) END
+	END CleanupArrays;
 
 	PROCEDURE TDescDecl* (typ: OPT.Struct);
 		VAR nofptrs: INTEGER;
@@ -736,12 +856,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				gap := fld.adr - adr;
 				IF fldAlign > curAlign THEN curAlign := fldAlign END ;
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
-				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, FALSE);
+				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, 0);
 				off := fld.adr + fld.typ.size; base := fld.typ; fld := fld.link;
 				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte}) THEN base := fld.typ END;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.typ = base) & (fld.adr = off)
 (* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)) DO
-					OPM.WriteString(", "); DeclareObj(fld, FALSE); off := fld.adr + fld.typ.size; fld := fld.link;
+					OPM.WriteString(", "); DeclareObj(fld, 0); off := fld.adr + fld.typ.size; fld := fld.link;
 					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte}) THEN base := fld.typ END
 				END;
 				EndStat
@@ -799,7 +919,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				END ;
 				OPM.Write(Blank);
 				IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.Write("_") END ;
-				DeclareObj(obj, vis = 3);
+				DeclareObj(obj, vis);
 				IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN (* declare len parameter(s) *)
 					EndStat; BegStat;
 					base := OPT.linttyp;
@@ -833,9 +953,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			LOOP
 				DeclareBase(obj);
 				IF showParamNames THEN
-					OPM.Write(Blank); DeclareObj(obj, FALSE)
+					OPM.Write(Blank); DeclareObj(obj, 0)
 				ELSE
-					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, FALSE); obj^.name := name
+					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, 0); obj^.name := name
 				END ;
 				IF showOberonParams THEN
 					IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN
@@ -949,6 +1069,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.currFile := OPM.HeaderFile;
 		DefAnonRecs(n);
 		TypeDefs(OPT.topScope^.right, 1); OPM.WriteLn;
+		DefAnonArrays;
 		IdentList(OPT.topScope^.scope, 1); OPM.WriteLn;
 		GenDynTypes(n, external); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 1);
@@ -1003,6 +1124,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IncludeImports(OPT.topScope^.right, 0); OPM.WriteLn;
 		DefAnonRecs(n);
 		TypeDefs(OPT.topScope^.right, 0); OPM.WriteLn;
+		DefAnonArrays;
 		IdentList(OPT.topScope^.scope, 0); OPM.WriteLn;
 		GenDynTypes(n, internal); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 0); OPM.WriteLn;
