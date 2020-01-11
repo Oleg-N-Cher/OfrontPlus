@@ -325,7 +325,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
-		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.sysflag <= 0) THEN
+		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & (typ^.BaseTyp^.sysflag <= 0) THEN
 			typ := typ^.BaseTyp;
 			OPM.WriteString(Struct);
 			IF Universal(typ) THEN

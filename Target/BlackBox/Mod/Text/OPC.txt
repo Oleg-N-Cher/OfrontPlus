@@ -331,7 +331,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
-		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.sysflag <= 0) THEN
+		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & (typ^.BaseTyp^.sysflag <= 0) THEN
 			typ := typ^.BaseTyp;
 			OPM.WriteString(Struct);
 			IF Universal(typ) THEN
