@@ -205,9 +205,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			ELSIF typ^.form = Pointer THEN
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ.txtpos) END;
 				TraverseType(typ^.BaseTyp);
-				IF (typ.sysflag <= 0) & (typ.BaseTyp.comp = DynArr) THEN
-					OPC.InsertArrayType(typ.BaseTyp)
-				END
+				IF typ^.BaseTyp.comp = DynArr THEN OPC.InsertArrayType(typ^.BaseTyp) END
 			ELSIF typ^.form = ProcTyp THEN
 				TraverseType(typ^.BaseTyp);
 				p := typ^.link;

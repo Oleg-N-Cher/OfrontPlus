@@ -217,7 +217,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR pointers: SHORTINT;
 	BEGIN
 		openClause := FALSE;
-		IF ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) & (typ^.comp # Record) THEN
+		IF (typ^.comp # Record) & ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) THEN
 			IF typ^.comp IN {Array, DynArr} THEN
 				Stars(typ^.BaseTyp, forProc, openClause);
 				openClause := (typ^.comp = Array)
