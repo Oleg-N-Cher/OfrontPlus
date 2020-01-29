@@ -213,26 +213,28 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		END
 	END Ident;
 
-	PROCEDURE Stars (typ: OPT.Struct; VAR openClause: BOOLEAN);
+	PROCEDURE Stars (typ: OPT.Struct; forProc: BOOLEAN; VAR openClause: BOOLEAN);
 		VAR pointers: SHORTINT;
 	BEGIN
 		openClause := FALSE;
 		IF ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) & (typ^.comp # Record) THEN
 			IF typ^.comp IN {Array, DynArr} THEN
-				Stars (typ^.BaseTyp, openClause);
+				Stars(typ^.BaseTyp, forProc, openClause);
 				openClause := (typ^.comp = Array)
 			ELSIF typ^.form = ProcTyp THEN
 				OPM.Write(OpenParen);
-				IF typ^.sysflag # 0 THEN OPM.WriteString(STDCALL) END; OPM.Write(Star)
+				IF typ^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+				OPM.Write(Star)
 			ELSE
 				pointers := 0;
-				WHILE ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) & (typ^.form = Pointer) DO
-					INC (pointers); typ := typ^.BaseTyp
-				END ;
+				WHILE (typ^.form = Pointer) & ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) DO
+					INC(pointers); typ := typ^.BaseTyp
+				END;
+				IF typ^.comp # DynArr THEN Stars(typ, forProc, openClause) END;
 				IF pointers > 0 THEN
-					IF typ^.comp # DynArr THEN Stars (typ, openClause) END ;
-					IF openClause THEN OPM.Write(OpenParen); openClause := FALSE END ;
-					WHILE pointers > 0 DO OPM.Write(Star); DEC (pointers) END
+					IF openClause & ~forProc THEN OPM.Write(OpenParen) END;
+					openClause := FALSE;
+					WHILE pointers > 0 DO OPM.Write(Star); DEC(pointers) END
 				END
 			END
 		END
@@ -248,7 +250,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		typ := dcl^.typ;
 		varPar := ((dcl^.mode = VarPar) & (typ^.comp # Array)) OR (typ^.comp = DynArr) OR (vis = 3);
-		Stars(typ, openClause);
+		Stars(typ, FALSE, openClause);
 		IF varPar THEN
 			IF openClause THEN OPM.Write(OpenParen) END;
 			OPM.Write(Star)
@@ -514,7 +516,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.WriteString(", "); Ident(obj);
 				Str1(", #, ", obj^.adr DIV 10000H);
 				DeclareBase(obj);
-				IF obj^.typ^.form  # NoTyp THEN Stars(obj^.typ, oc) END;
+				IF obj^.typ^.form  # NoTyp THEN Stars(obj^.typ, TRUE, oc) END;
 				OPM.WriteString("(*)");
 				IF ansi THEN
 					AnsiParamList(obj^.link, FALSE, TRUE)
@@ -604,7 +606,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
 					OPM.WriteString(EXTERN); DeclareBase(obj); OPM.Write(Blank);
-					IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, oc) END;
+					IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, TRUE, oc) END;
 					IF obj^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 					OPM.WriteString(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 					OPM.WriteLn;
@@ -992,7 +994,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR oc: BOOLEAN;
 	BEGIN
 		DeclareBase(proc); OPM.Write(Blank);
-		IF proc^.typ^.form  # NoTyp THEN Stars(proc^.typ, oc) END;
+		IF proc^.typ^.form  # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
 		IF proc^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 		Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
