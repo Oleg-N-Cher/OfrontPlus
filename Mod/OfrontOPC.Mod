@@ -214,23 +214,24 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	END Ident;
 
 	PROCEDURE Stars (typ: OPT.Struct; forProc: BOOLEAN; VAR openClause: BOOLEAN);
-		VAR pointers: SHORTINT;
+		VAR pointers: SHORTINT; t0: OPT.Struct;
 	BEGIN
 		openClause := FALSE;
-		IF (typ^.comp # Record) & ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) THEN
+		IF (typ^.comp # Record) & ((typ^.strobj = NIL) OR (typ^.strobj^.name^ = "")) THEN
 			IF typ^.comp IN {Array, DynArr} THEN
 				Stars(typ^.BaseTyp, forProc, openClause);
 				openClause := (typ^.comp = Array)
 			ELSIF typ^.form = ProcTyp THEN
+				Stars(typ^.BaseTyp, forProc, openClause);
 				OPM.Write(OpenParen);
 				IF typ^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
 				OPM.Write(Star)
-			ELSE
-				pointers := 0;
-				WHILE (typ^.form = Pointer) & ((typ^.strobj = NIL) OR (typ^.strobj^.name = OPT.null)) DO
+			ELSIF typ^.form = Pointer THEN
+				pointers := 0; t0 := typ;
+				WHILE (typ^.form = Pointer) & ((typ^.strobj = NIL) OR (typ^.strobj^.name^ = "")) DO
 					INC(pointers); typ := typ^.BaseTyp
 				END;
-				IF typ^.comp # DynArr THEN Stars(typ, forProc, openClause) END;
+				IF typ^.comp # DynArr THEN ASSERT(t0 # typ); Stars(typ, forProc, openClause) END;
 				IF pointers > 0 THEN
 					IF openClause & ~forProc THEN OPM.Write(OpenParen) END;
 					openClause := FALSE;
