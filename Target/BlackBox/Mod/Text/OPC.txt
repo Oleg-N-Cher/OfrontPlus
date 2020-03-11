@@ -545,10 +545,10 @@ starsLevel: INTEGER;
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
 					IF obj^.linkadr = ProcessingType THEN
-						IF str^.form # Pointer THEN OPM.Mark(244, str^.txtpos); obj^.linkadr := PredefinedType END
+						IF str^.form # Pointer THEN obj^.linkadr := PredefinedType END
 					ELSE obj^.linkadr := ProcessingType
 					END
-				END ;
+				END;
 				IF str^.comp = Record THEN
 					(* the following exports the base type of an exported type even if the former is non-exported *)
 					IF str^.BaseTyp # NIL THEN DefineType(str^.BaseTyp) END ;
@@ -649,28 +649,36 @@ starsLevel: INTEGER;
 		END
 	END DefAnonRecs;
 
-	PROCEDURE Universal (typ: OPT.Struct): BOOLEAN;
+	PROCEDURE UniversalEx (typ, initial: OPT.Struct; check: BOOLEAN): BOOLEAN;
 		VAR p: OPT.Object;
 	BEGIN
-		IF typ.comp IN {Array, Record} THEN
+		IF check & (typ = initial) THEN
+			RETURN TRUE
+		ELSIF typ.comp IN {Array, Record} THEN
 			RETURN (typ.strobj # NIL) & (typ.strobj.name^ # "")
 		ELSIF typ.form IN {Comp, Pointer} THEN
-			RETURN Universal(typ.BaseTyp)
+			RETURN UniversalEx(typ.BaseTyp, initial, TRUE)
 		ELSIF typ.form = ProcTyp THEN
 			p := typ.link;
 			WHILE p # NIL DO
-				IF ~Universal(p.typ) THEN RETURN FALSE END;
+				IF ~UniversalEx(p.typ, initial, TRUE) THEN RETURN FALSE END;
 				p := p.link
 			END;
-			RETURN Universal(typ.BaseTyp)
+			RETURN UniversalEx(typ.BaseTyp, initial, TRUE)
 		END;
 		RETURN TRUE
+	END UniversalEx;
+
+	PROCEDURE Universal (typ: OPT.Struct): BOOLEAN;
+	BEGIN
+		RETURN UniversalEx(typ, typ, FALSE)
 	END Universal;
 
-	PROCEDURE UniversalArrayName (typ: OPT.Struct);
+	PROCEDURE UniversalArrayNameEx (typ, initial: OPT.Struct; check: BOOLEAN);
 		VAR p: OPT.Object;
 	BEGIN
-		IF typ.form IN {Bool, Char, Byte, SInt, Int, LInt, UByte, Set, Real, LReal} THEN
+		IF check & (typ = initial) THEN
+		ELSIF typ.form IN {Bool, Char, Byte, SInt, Int, LInt, UByte, Set, Real, LReal} THEN
 			IF typ.BaseTyp # OPT.undftyp THEN typ := typ.BaseTyp END;	(* basic type alias *)
 			OPM.WriteString(typ.strobj.name^)
 		ELSE
@@ -681,24 +689,29 @@ starsLevel: INTEGER;
 				ASSERT((typ.strobj # NIL) & (typ.strobj.name^ # ""), 100);
 				Ident(typ.strobj); OPM.WriteString("_OBJ")
 			ELSIF typ.comp = DynArr THEN
-				UniversalArrayName(typ.BaseTyp); OPM.WriteString("_ARRAY")
+				UniversalArrayNameEx(typ.BaseTyp, initial, TRUE); OPM.WriteString("_ARRAY")
 			ELSIF typ.form = Pointer THEN
-				UniversalArrayName(typ.BaseTyp); OPM.WriteString("_PTR")
+				UniversalArrayNameEx(typ.BaseTyp, initial, TRUE); OPM.WriteString("_PTR")
 			ELSIF typ.form = ProcTyp THEN
 				OPM.WriteString("X__"); p := typ.link;
 				WHILE p # NIL DO
-					UniversalArrayName(p.typ); OPM.WriteString("__");
+					UniversalArrayNameEx(p.typ, initial, TRUE); OPM.WriteString("__");
 					p := p.link
 				END;
 				OPM.Write("X");
 				IF typ.BaseTyp # OPT.notyp THEN
 					OPM.Write("R");
-					OPM.WriteString("__"); UniversalArrayName(typ.BaseTyp)
+					OPM.WriteString("__"); UniversalArrayNameEx(typ.BaseTyp, initial, TRUE)
 				END
 			ELSE
 				HALT(100)
 			END
 		END
+	END UniversalArrayNameEx;
+
+	PROCEDURE UniversalArrayName (typ: OPT.Struct);
+	BEGIN
+		UniversalArrayNameEx(typ, typ, FALSE)
 	END UniversalArrayName;
 
 	PROCEDURE DefAnonArrays;
