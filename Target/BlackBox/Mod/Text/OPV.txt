@@ -34,7 +34,7 @@
 		Nconst = 7; Ntype = 8; Nproc = 9; Nupto = 10; Nmop = 11; Ndop = 12; Ncall = 13;
 		Ninittd = 14; Nenter = 18; Nassign = 19;
 		Nifelse =20; Ncase = 21; Nwhile = 22; Nrepeat = 23; Nloop = 24; Nexit = 25;
-		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30;
+		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30; Nraw = 31;
 
 		(*function number*)
 		assign = 0; newfn = 1; incfn = 18; decfn = 19;
@@ -1117,7 +1117,7 @@
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
 			OPM.errpos := SHORT(n^.conval^.intval);
-			IF ~(n^.class IN {Ninittd, Ncomp}) THEN OPC.BegStat END;
+			IF ~(n^.class IN {Ninittd, Ncomp, Nraw}) THEN OPC.BegStat END;
 			CASE n^.class OF
 				Nenter:
 						IF n^.obj = NIL THEN (* enter module *)
@@ -1275,8 +1275,12 @@
 						OPC.Halt(SHORT(n^.right^.conval^.intval))
 			|	Ncomp:
 						compStat(n^.left, FALSE); stat(n^.right, outerProc)
+			|	Nraw:
+						OPM.WriteString(n^.left^.conval^.ext)
 			END;
-			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp}) THEN OPC.EndStat END;
+			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp, Nraw}) THEN
+				OPC.EndStat
+			END;
 			n := n^.link
 		END
 	END stat;

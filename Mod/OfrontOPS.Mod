@@ -59,7 +59,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
-		module = 65; out = 66; dollar = 67; at = 68; eof = 69;
+		module = 65; out = 66; dollar = 67; at = 68; raw = 69; eof = 70;
 
 	VAR
 		ch: SHORTCHAR;     (*current character*)
@@ -386,19 +386,46 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	PROCEDURE Get*(VAR sym: BYTE);
 		VAR s: BYTE;
 
-		PROCEDURE Comment;	(* do not read after end of file *)
-		BEGIN OPM.Get(ch);
-			LOOP
+		PROCEDURE Comment (): BOOLEAN;	(* do not read after end of file *)
+
+			VAR n: INTEGER;
+
+			PROCEDURE EnsureLen (len: INTEGER);
+				VAR j: INTEGER; s2: String;
+			BEGIN
+				IF len > LEN(str^) THEN	(* if overflow then increase size of array s *)
+					NEW(s2, LEN(str^) * 2); FOR j := 0 TO n - 1 DO s2^[j] := str^[j] END; str := s2
+				END
+			END EnsureLen;
+
+		BEGIN str := NIL; OPM.Get(ch);
+			IF ch # "@" THEN
 				LOOP
-					WHILE ch = "(" DO OPM.Get(ch);
-						IF ch = "*" THEN Comment END
-					END ;
-					IF ch = "*" THEN OPM.Get(ch); EXIT END ;
-					IF ch = OPM.Eot THEN EXIT END ;
-					OPM.Get(ch)
-				END ;
-				IF ch = ")" THEN OPM.Get(ch); EXIT END ;
-				IF ch = OPM.Eot THEN err(5); EXIT END
+					LOOP
+						WHILE ch = "(" DO OPM.Get(ch);
+							IF ch = "*" THEN
+								IF Comment() THEN END
+							END
+						END;
+						IF ch = "*" THEN OPM.Get(ch); EXIT END;
+						IF ch = OPM.Eot THEN EXIT END;
+						OPM.Get(ch)
+					END;
+					IF ch = ")" THEN OPM.Get(ch); EXIT END;
+					IF ch = OPM.Eot THEN err(5); EXIT END
+				END;
+				RETURN TRUE
+			ELSE n := 0; NEW(str, 1024);
+				LOOP
+					OPM.Get(ch);
+					IF ch = "*" THEN OPM.Get(ch);
+						IF ch = ")" THEN OPM.Get(ch); str[n] := 0X; EXIT END;
+						EnsureLen(n + 1); str[n] := "*"; INC(n)
+					END;
+					IF ch = OPM.Eot THEN err(5); str[n] := 0X; EXIT END;
+					EnsureLen(n + 1); str[n] := ch; INC(n)
+				END;
+				RETURN FALSE
 			END
 		END Comment;
 
@@ -414,9 +441,11 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "#"  : s := neq; OPM.Get(ch)
 			| "&"  : s :=  and; OPM.Get(ch)
 			| "("  : OPM.Get(ch);
-							 IF ch = "*" THEN Comment; Get(s)
-								 ELSE s := lparen
-							 END
+							IF ch = "*" THEN
+								IF ~Comment() THEN sym := raw; RETURN END;
+								Get(s)
+							ELSE s := lparen
+							END
 			| ")"  : s := rparen; OPM.Get(ch)
 			| "*"  : s :=  times; OPM.Get(ch)
 			| "+"  : s :=  plus; OPM.Get(ch)

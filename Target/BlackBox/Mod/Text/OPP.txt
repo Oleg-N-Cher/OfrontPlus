@@ -21,7 +21,7 @@
 		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
-		module = 65; out = 66; dollar = 67; at = 68; eof = 69;
+		module = 65; out = 66; dollar = 67; at = 68; raw = 69; eof = 70;
 		unsgn = 40; (* псевдооперация unsigned для div *)
 
 		(* object modes *)
@@ -45,7 +45,7 @@
 		Nconst = 7; Ntype = 8; Nproc = 9; Nupto = 10; Nmop = 11; Ndop = 12; Ncall = 13;
 		Ninittd = 14; Nif = 15; Ncaselse = 16; Ncasedo = 17; Nenter = 18; Nassign = 19;
 		Nifelse = 20; Ncase = 21; Nwhile = 22; Nrepeat = 23; Nloop = 24; Nexit = 25;
-		Nreturn = 26; Nwith = 27; Ntrap = 28;
+		Nreturn = 26; Nwith = 27; Ntrap = 28; Nraw = 31;
 
 		(* node subclasses *)
 		super = 1;
@@ -1734,6 +1734,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END;
 				pos := OPM.errpos;
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
+			ELSIF sym = raw THEN OPS.Get(sym);
+				NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL)
 			END;
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
 			IF (OPM.Lang = "7") & (sym = return) THEN (* no semicolon before RETURN *)
