@@ -1703,9 +1703,9 @@ avoid unnecessary intermediate variables in OFront
 		| valfn: (*SYSTEM.VAL*)	(* type is changed without considering the byte ordering on the target machine *)
 				(* p (1st param): desired type *)
 				(* x (2nd param): constant or value to be converted to p *)
-				IF (x^.class = Ntype) OR (x^.class = Nproc) OR
-					(f IN {Undef, String, NoTyp}) OR (x^.typ^.comp = DynArr) THEN err(126)
-				END ;
+				IF (x^.class = Ntype) OR (x^.class = Nproc) OR (f IN {Undef, String, NoTyp}) OR
+					(x^.typ^.comp = DynArr) & (x^.typ^.sysflag = 0) THEN err(126)
+				END;
 				(* Warn if the result type includes memory past the end of the source variable *)
 				OPT.typSize(x^.typ); OPT.typSize(p^.typ);
 				IF (x^.class # Nconst) & (x^.typ^.size < p^.typ^.size) THEN err(-308) END;
