@@ -175,7 +175,10 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						IF obj^.mode = IProc THEN Wch("+")
 						ELSIF obj^.mode = CProc THEN Wch("-")
 						END;
-						Wch(" "); IF obj^.sysflag # 0 THEN Ws("[stdcall] ") END;
+						Wch(" ");
+						IF obj^.sysflag = 1 THEN Ws("[stdcall] ")
+						ELSIF obj^.sysflag = 2 THEN Ws("[fastcall] ")
+						END;
 						Ws(obj^.name^);
 						Wsign(obj^.typ, obj^.link);
 						IF obj^.mode = CProc THEN ext := obj^.conval^.ext;
@@ -247,7 +250,11 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		| Pointer:
 				Ws("POINTER"); SysFlag; Ws(" TO "); Wtype(typ^.BaseTyp)
 		| ProcTyp:
-				Ws("PROCEDURE"); IF typ^.sysflag # 0 THEN Ws(" [stdcall]") END; Wsign(typ^.BaseTyp, typ^.link)
+				Ws("PROCEDURE");
+				IF typ^.sysflag = 1 THEN Ws(" [stdcall]")
+				ELSIF typ^.sysflag = 2 THEN Ws(" [fastcall]")
+				END;
+				Wsign(typ^.BaseTyp, typ^.link)
 		| Comp:
 				CASE typ^.comp OF
 				| Array:

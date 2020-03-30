@@ -49,6 +49,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		Extern = "import ";	(* particularily introduced for VC++ declspec() *)
 		EXPORT = "__EXPORT ";	(* export into a dynamic library *)
 		EXTERN = "__EXTERN ";	(* import from a dynamic library *)
+		FASTCALL = "__FASTCALL ";	(* fastcall calling convention *)
 		STDCALL = "__STDCALL ";	(* stdcall calling convention *)
 		Struct = "struct ";
 		LocalScope = "_s"; (* name of a local intermediate scope (variable name) *)
@@ -224,7 +225,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			ELSIF typ^.form = ProcTyp THEN
 				Stars(typ^.BaseTyp, forProc, openClause);
 				OPM.Write(OpenParen);
-				IF typ^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+				IF typ^.sysflag = 1 THEN OPM.WriteString(STDCALL)
+				ELSIF typ^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
+				END;
 				OPM.Write(Star)
 			ELSIF typ^.form = Pointer THEN
 				pointers := 0; t0 := typ;
@@ -608,7 +611,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				ELSE
 					OPM.WriteString(EXTERN); DeclareBase(obj); OPM.Write(Blank);
 					IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, TRUE, oc) END;
-					IF obj^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+					IF obj^.sysflag = 1 THEN OPM.WriteString(STDCALL)
+					ELSIF obj^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
+					END;
 					OPM.WriteString(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
 					OPM.WriteLn;
 					OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
@@ -1009,7 +1014,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		DeclareBase(proc); OPM.Write(Blank);
 		IF proc^.typ^.form  # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
-		IF proc^.sysflag # 0 THEN OPM.WriteString(STDCALL) END;
+		IF proc^.sysflag = 1 THEN OPM.WriteString(STDCALL)
+		ELSIF proc^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
+		END;
 		Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
 			AnsiParamList(proc^.link, TRUE, TRUE);

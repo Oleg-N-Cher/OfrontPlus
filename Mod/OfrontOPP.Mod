@@ -364,6 +364,7 @@
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
 			IF (sym = ident) & (OPS.name = "stdcall") THEN OPS.Get(sym); sysflag := 1
+			ELSIF (sym = ident) & (OPS.name = "fastcall") THEN OPS.Get(sym); sysflag := 2
 			ELSE OPS.Get(sym); err(220); sysflag := 0
 			END;
 			CheckSym(rbrak)
