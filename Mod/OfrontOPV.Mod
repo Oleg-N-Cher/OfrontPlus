@@ -1089,7 +1089,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 	END compStat;
 
 	PROCEDURE stat(n: OPT.Node; outerProc: OPT.Object);
-		VAR proc: OPT.Object; saved: ExitInfo; l, r: OPT.Node;
+		VAR proc: OPT.Object; saved: ExitInfo; l, r: OPT.Node; i: INTEGER; ch: SHORTCHAR;
 
 		(* строит условие цикла do...while() для оператора FOR *)
 		PROCEDURE ForUntil (id: OPT.Node; cond: SHORTINT; z: OPT.Node);
@@ -1277,7 +1277,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			|	Ncomp:
 						compStat(n^.left, FALSE); stat(n^.right, outerProc)
 			|	Nraw:
-						OPM.WriteString(n^.left^.conval^.ext)
+						IF OPT.SYSimported THEN
+							i := 0; ch := n^.left^.conval^.ext[0];
+							WHILE ch # 0X DO
+								IF ch = 0DX THEN OPM.WriteLn ELSE OPM.Write(ch) END;
+								INC(i); ch := n^.left^.conval^.ext[i]
+							END
+						END
 			END;
 			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp, Nraw}) THEN
 				OPC.EndStat
