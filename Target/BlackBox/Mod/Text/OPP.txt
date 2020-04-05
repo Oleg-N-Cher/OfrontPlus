@@ -841,13 +841,13 @@
 	(* конструкция "константный массив". typ - текущий уровень массива *)
 	VAR apar:  OPT.Node; n, i: INTEGER; fp: OPT.Object;  y: OPT.ConstArr;
 	BEGIN
-		IF (sym # lparen) & (typ^.BaseTyp^.form IN {Char,Byte} )  THEN (* это должна быть строка*)
+		IF (sym # lparen) & (typ^.BaseTyp^.form IN {Char, Byte}) THEN (* это должна быть строка*)
 			ConstExpression(apar); (* попытаемся взять эту строку *)
-			IF  (apar^.typ^.comp=1)&(apar^.typ^.form= String) &
+			IF (apar^.typ^.comp = Basic) & (apar^.typ^.form = String) &
 				(apar^.conval^.intval2 <= typ^.n) THEN (* взяли строку допустимой длины *)
 				String2Chars(apar, x);
 				INC(x^.conval^.intval,  typ^.n);
-			ELSIF  (apar^.typ^.comp=1)&(apar^.typ^.form  IN {Char,Byte}) THEN
+			ELSIF (apar^.typ^.comp = Basic) & (apar^.typ^.form IN {Char,Byte}) THEN
 				(* прочитался символ *)
 					x^.conval^.arr.val1[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
 					INC(x^.conval^.intval,  typ^.n);
@@ -858,15 +858,15 @@
 		CheckSym(lparen);
 		n:=typ^.n; (* количество элементов массива *)
 		i := 0;
-		IF  typ^.BaseTyp^.form IN intSet +{Bool,Char} THEN (* массив из целых (в т.ч. BYTE)  *)
+		IF typ^.BaseTyp^.form IN intSet + {Bool, Char} THEN (* массив из целых (в т.ч. BYTE)  *)
 			y := x^.conval^.arr;
 			fp := OPT.NewObj(); fp^.typ :=  typ^.BaseTyp;
 			fp^.mode := Var;  (*  fp  - переменная, элемент массива *)
 			IF sym # rparen THEN
 				LOOP  ConstExpression(apar); (* берем очередной элемент *)
 					IF i < n THEN
-						IF (i=0) & (typ^.BaseTyp^.form IN {Char,Byte} )   (* 'считывали первый символ *)
-							& (apar^.typ^.comp=1) & (apar^.typ^.form= String)  (* а прочитали строку *)
+						IF (i = 0) & (typ^.BaseTyp^.form IN {Char, Byte})   (* считывали первый символ *)
+							& (apar^.typ^.comp = Basic) & (apar^.typ^.form = String)  (* а прочитали строку *)
 							& (apar^.conval^.intval2 <= typ^.n)  (* допустимой длины *) THEN
 							String2Chars(apar, x);
 						ELSE
@@ -901,14 +901,14 @@
 				END
 			END;
 			IF i # n THEN
-				IF (i=1) & (typ^.BaseTyp^.form IN {Char,Byte} ) THEN
+				IF (i = 1) & (typ^.BaseTyp^.form IN {Char, Byte}) THEN
 				(* один символ (мы его уже считали) может означать целую строку *)
 				ELSE
 			 		err(65)
 				END
 			END;
 			INC(x^.conval^.intval, n); (* учли прочитанные элементы, даже если они не  прочитаны *)
-		ELSIF  (typ^.BaseTyp^.form =15) & (typ^.BaseTyp^.comp = 2) THEN (* массив из массивов *)
+		ELSIF (typ^.BaseTyp^.form = Comp) & (typ^.BaseTyp^.comp = Array) THEN (* массив из массивов *)
 			IF sym # rparen THEN
 				LOOP
 					ConstArray (x, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)
