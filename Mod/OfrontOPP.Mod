@@ -327,6 +327,18 @@
 			END;
 			OPS.Get(sym)
 		ELSE obj^.vis := internal
+		END;
+		IF (obj^.mode IN {LProc, XProc}) & (sym = lbrak) THEN
+			OPS.Get(sym);
+			IF (sym = number) & (OPS.numtyp = char) THEN
+				NEW(obj^.entry, 2); obj^.entry[0] := SHORT(CHR(OPS.intval)); obj^.entry[1] := 0X
+			ELSIF sym = string THEN
+				IF OPS.str^ # "" THEN obj^.entry := OPS.str END;
+				OPS.Get(sym)
+			ELSE err(string)
+			END;
+			CheckSym(rbrak);
+			IF ~OPT.SYSimported THEN err(135) END
 		END
 	END CheckMark;
 
@@ -1117,8 +1129,9 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			INC(level); OPT.OpenScope(level, proc);
 			proc^.link := NIL; GetParams;	(* may change proc := fwd !!! *)
 			IF mode = CProc THEN GetCode
+			ELSIF proc^.entry # NIL THEN INCL(proc^.conval^.setval, hasBody)
 			ELSIF ~forward THEN Body
-			END ;
+			END;
 			DEC(level); OPT.CloseScope
 		ELSE err(ident)
 		END

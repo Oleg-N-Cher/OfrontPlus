@@ -37,6 +37,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			typ*: Struct;
 			conval*: Const;
 			nlink*: Object;	(* link for name list, declaration order for methods, library link for imp obj *)
+			entry*: OPS.String;	(* entry name *)
 			adr*, num*, linkadr*: INTEGER;	(* mthno *)
 			x*: SHORTINT	(* linkadr and x can be freely used by the backend *)
 		END ;
@@ -120,7 +121,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
 		Svalpar = 23; Svarpar = 24; Sfld = 25; Srfld = 26; Shdptr = 27; Shdpro = 28; Stpro = 29; Shdtpro = 30;
 		Sxpro = 31; Sipro = 32; Scpro = 33; Sstruct = 34; Ssys = 35; Sptr = 36; Sarr = 37; Sdarr = 38; Srec = 39; Spro = 40;
-		Sinpar = 25; Soutpar = 26;
+		Sentry = 43; Sinpar = 25; Soutpar = 26;
 		Slimrec = 25; Sabsrec = 26; Sextrec = 27; Slimpro = 31; Sabspro = 32; Semppro = 33; Sextpro = 34; Simpo = 22;
 
 	TYPE
@@ -490,6 +491,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				FPrintStr(obj^.typ); OPM.FPrint(fprint, obj^.typ^.pbfp)
 			END;
 			IF obj^.sysflag # 0 THEN OPM.FPrint(fprint, obj^.sysflag) END;
+			IF (obj^.mode IN {LProc, XProc}) & (obj^.entry # NIL) THEN FPrintName(fprint, obj^.entry) END;
 			obj^.fprint := fprint
 		END
 	END FPrintObj;
@@ -811,6 +813,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF tag = Ssys THEN
 				obj^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt())
 			END;
+			IF tag = Sentry THEN
+				InName(obj^.entry); tag := SHORT(OPM.SymRInt())
+			END;
 			IF tag <= Pointer THEN	(* Constant *)
 				obj^.mode := Con; obj^.typ := impCtxt.ref[tag]; obj^.conval := NewConst(); InConstant(tag, obj^.conval)
 			ELSIF tag >= Sxpro THEN
@@ -1076,6 +1081,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					| pvmodified: FPrintErr(obj, 251)
 					END;
 					IF obj^.sysflag # 0 THEN OPM.SymWInt(Ssys); OPM.SymWInt(obj^.sysflag) END;
+					IF obj^.mode IN {LProc, XProc} THEN	(* name alias for types handled in OutStr *)
+						IF obj^.entry # NIL THEN OPM.SymWInt(Sentry); OutName(obj^.entry) END
+					END;
 					CASE obj^.mode OF
 					| Con:
 						OutConstant(obj); OutName(obj^.name^)

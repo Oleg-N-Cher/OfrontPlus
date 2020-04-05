@@ -181,7 +181,10 @@ starsLevel: INTEGER;
 		VAR mode, level, h: SHORTINT;
 	BEGIN
 		mode := obj^.mode; level := obj^.mnolev;
-		IF (mode IN {Var, Typ, LProc}) & (level > 0)
+		IF (obj^.entry # NIL) & (level <= 0) THEN
+			OPM.WriteString(obj^.entry^);
+			IF (OPM.currFile = OPM.HeaderFile) & (level < 0) THEN OPT.GlbMod[-level].vis := 1 END
+		ELSIF (mode IN {Var, Typ, LProc}) & (level > 0)
 			OR (mode IN {Fld, VarPar}) & ~((obj^.conval # NIL) & (obj^.conval^.arr # NIL))	(* not a constant array *)
 		THEN
 			IF ~oldc THEN OPM.WriteString(obj^.name^) ELSE OPM.Write(obj^.name^[0]) END;

@@ -178,7 +178,10 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR mode, level, h: SHORTINT;
 	BEGIN
 		mode := obj^.mode; level := obj^.mnolev;
-		IF (mode IN {Var, Typ, LProc}) & (level > 0) OR (mode IN {Fld, VarPar}) THEN
+		IF (obj^.entry # NIL) & (level <= 0) THEN
+			OPM.WriteString(obj^.entry^);
+			IF (OPM.currFile = OPM.HeaderFile) & (level < 0) THEN OPT.GlbMod[-level].vis := 1 END
+		ELSIF (mode IN {Var, Typ, LProc}) & (level > 0) OR (mode IN {Fld, VarPar}) THEN
 			IF ~oldc THEN OPM.WriteString(obj^.name^) ELSE OPM.Write(obj^.name^[0]) END;
 			h := PerfectHash(obj^.name^);
 			IF hashtab[h] >= 0 THEN
