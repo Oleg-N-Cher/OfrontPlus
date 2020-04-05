@@ -624,14 +624,14 @@
 		VAR f, g: INTEGER; new: OPT.Struct;
 	BEGIN
 		f := left^.typ^.form; g := right^.typ^.form; new := left^.typ;
-		IF (f = LReal) OR (g = LReal) THEN new := OPT.lrltyp
-		ELSIF (f = Real) OR (g = Real) THEN new := OPT.realtyp
-		ELSIF (f = LInt) OR (g = LInt) THEN new := OPT.linttyp
-		ELSIF (f = Int) OR (g = Int) THEN new := OPT.inttyp
-		ELSIF (OPM.AdrSize = 2) OR (OPM.Lang <= "3") THEN new := OPT.sinttyp
-		ELSE new := OPT.inttyp
-		END;
-		IF ~(f IN {NilTyp, Pointer, ProcTyp, Comp, Char, String}) THEN
+		IF (f IN intSet + realSet) & (g IN intSet + realSet) THEN
+			IF (f = LReal) OR (g = LReal) THEN new := OPT.lrltyp
+			ELSIF (f = Real) OR (g = Real) THEN new := OPT.realtyp
+			ELSIF (f = LInt) OR (g = LInt) THEN new := OPT.linttyp
+			ELSIF (f = Int) OR (g = Int) THEN new := OPT.inttyp
+			ELSIF (OPM.AdrSize = 2) OR (OPM.Lang <= "3") THEN new := OPT.sinttyp
+			ELSE new := OPT.inttyp
+			END;
 			IF g # new^.form THEN right^.typ := new END;
 			IF f # new^.form THEN left^.typ := new END
 		END
