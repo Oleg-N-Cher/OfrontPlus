@@ -326,32 +326,36 @@
 			ELSE obj^.vis := externalR
 			END;
 			OPS.Get(sym)
+		ELSIF OPM.foreign IN OPM.opt THEN obj^.vis := external
 		ELSE obj^.vis := internal
 		END;
-		IF (obj^.mode IN {LProc, XProc}) & (sym = lbrak) THEN
-			OPS.Get(sym);
-			IF (sym = number) & (OPS.numtyp = char) THEN
-				NEW(obj^.entry, 2); obj^.entry[0] := SHORT(CHR(OPS.intval)); obj^.entry[1] := 0X
-			ELSIF sym = string THEN
-				IF OPS.str^ # "" THEN obj^.entry := OPS.str END;
-				OPS.Get(sym)
-			ELSE err(string)
-			END;
-			CheckSym(rbrak);
-			IF ~OPT.SYSimported THEN err(135) END
+		IF (obj^.mode IN {LProc, XProc}) THEN
+			IF sym = lbrak THEN OPS.Get(sym);
+				IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
+				IF (sym = number) & (OPS.numtyp = char) THEN
+					NEW(obj^.entry, 2); obj^.entry[0] := SHORT(CHR(OPS.intval)); obj^.entry[1] := 0X
+				ELSIF sym = string THEN
+					IF OPS.str^ # "" THEN obj^.entry := OPS.str END;
+					OPS.Get(sym)
+				ELSE err(string)
+				END;
+				CheckSym(rbrak)
+			ELSIF OPM.foreign IN OPM.opt THEN obj^.entry := obj^.name
+			END
 		END
 	END CheckMark;
 
 	PROCEDURE CheckSysFlag(VAR sysflag: SHORTINT; default: SHORTINT);
 		VAR x: OPT.Node; sf: LONGINT;
 	BEGIN
-		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
+		IF sym = lbrak THEN OPS.Get(sym);
+			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 			IF (sym = ident) & ((OPS.name = "notag") OR (OPS.name = "untagged")) THEN
 				OPS.Get(sym); sysflag := 1
 			ELSE
 				ConstExpression(x);
 				IF x^.typ^.form IN intSet THEN sf := x^.conval^.intval;
-					IF (sf < 0) OR (sf > OPM.MaxSysFlag) THEN err(220); sf := 0 END
+					IF (sf < 0) OR (sf > OPM.MaxSysFlag) THEN err(178); sf := 0 END
 				ELSE err(51); sf := 0
 				END;
 				sysflag := SHORT(SHORT(sf))
@@ -363,9 +367,10 @@
 
 	PROCEDURE CheckSysFlagVarPar(VAR sysflag: SHORTINT);
 	BEGIN
-		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
+		IF sym = lbrak THEN OPS.Get(sym);
+			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 			IF (sym = ident) & (OPS.name = "nil") THEN OPS.Get(sym); sysflag := nilBit
-			ELSE OPS.Get(sym); err(220); sysflag := 0
+			ELSE OPS.Get(sym); err(178); sysflag := 0
 			END;
 			CheckSym(rbrak)
 		ELSE sysflag := 0
@@ -374,10 +379,11 @@
 
 	PROCEDURE CheckSysFlagProc(VAR sysflag: SHORTINT);
 	BEGIN
-		IF sym = lbrak THEN OPS.Get(sym); IF ~OPT.SYSimported THEN err(135) END;
+		IF sym = lbrak THEN OPS.Get(sym);
+			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 			IF (sym = ident) & (OPS.name = "stdcall") THEN OPS.Get(sym); sysflag := 1
 			ELSIF (sym = ident) & (OPS.name = "fastcall") THEN OPS.Get(sym); sysflag := 2
-			ELSE OPS.Get(sym); err(220); sysflag := 0
+			ELSE OPS.Get(sym); err(178); sysflag := 0
 			END;
 			CheckSym(rbrak)
 		ELSE sysflag := 0
@@ -1119,7 +1125,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				CheckMark(proc);
 				IF fwd^.vis # proc^.vis THEN err(118) END
 			ELSE
-				IF fwd # NIL THEN err(1); fwd := NIL END ;
+				IF fwd # NIL THEN err(1); fwd := NIL END;
 				OPT.Insert(name, proc);
 				proc^.mode := mode; proc^.conval := OPT.NewConst();
 				CheckMark(proc)
@@ -1762,7 +1768,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			CheckSym(semicolon)
 		END;
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
-		IF sym = begin THEN OPS.Get(sym); StatSeq(statseq)
+		IF (sym = begin) & ~(OPM.noinit IN OPM.opt) THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
 		END;
@@ -1781,36 +1787,49 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF sym = module THEN OPS.Get(sym) ELSE err(16) END;
 		IF sym = ident THEN
 			OPM.LogW(" "); OPM.LogWStr(OPS.name);
-			OPT.Init(OPS.name, OPM.Lang, opt); OPS.Get(sym); CheckSym(semicolon);
+			OPT.Init(OPS.name, OPM.Lang, opt); OPS.Get(sym);
+			IF sym = lbrak THEN OPS.Get(sym);
+				IF (sym = ident) & (OPS.name = "foreign") THEN
+					OPM.opt := OPM.opt + {OPM.foreign, OPM.noinit}; OPS.Get(sym)
+				ELSIF (sym = ident) & (OPS.name = "main") THEN
+					INCL(OPM.opt, OPM.mainprog); OPS.Get(sym)
+				ELSIF (sym = ident) & (OPS.name = "noinit") THEN
+					INCL(OPM.opt, OPM.noinit); OPS.Get(sym)
+				ELSE
+					OPS.Get(sym); err(178)
+				END;
+				CheckSym(rbrak)
+			END;
+			CheckSym(semicolon);
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
 					IF sym = ident THEN
 						aliasName := OPS.name$; impName := aliasName$; OPS.Get(sym);
 						IF sym = becomes THEN OPS.Get(sym);
 							IF sym = ident THEN impName := OPS.name$; OPS.Get(sym) ELSE err(ident) END
-						END ;
+						END;
 						OPT.Import(aliasName, impName, done)
 					ELSE err(ident)
-					END ;
+					END;
 					IF sym = comma THEN OPS.Get(sym)
 					ELSIF sym = ident THEN err(comma)
 					ELSE EXIT
 					END
-				END ;
+				END;
 				CheckSym(semicolon)
-			END ;
+			END;
 			IF OPM.noerr THEN TDinit := NIL; lastTDinit := NIL; c := OPM.errpos;
 				Block(procdec, statseq); OPB.Enter(procdec, statseq, NIL); prog := procdec;
 				prog^.conval := OPT.NewConst(); prog^.conval^.intval := c;
 				IF sym = ident THEN
-					IF OPS.name # OPT.SelfName THEN err(4) END ;
+					IF OPS.name # OPT.SelfName THEN err(4) END;
 					OPS.Get(sym)
 				ELSE err(ident)
-				END ;
+				END;
 				IF sym # period THEN err(period) END
 			END
 		ELSE err(ident)
-		END ;
+		END;
 		TDinit := NIL; lastTDinit := NIL
 	END Module;
 

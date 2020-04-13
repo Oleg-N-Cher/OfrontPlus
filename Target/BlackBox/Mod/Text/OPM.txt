@@ -27,6 +27,8 @@
 		dynlib* = 11;	(* translate module to be a dynamic library *)
 		corfor* = 12;	(* "correct FOR" by Oleg Komlev *)
 		oldc* = 13;	(* old C compilers restrictions support *)
+		foreign* = 14;	(* interface on external library *)
+		noinit* = 15;	(* don't generate BEGIN section's body *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -97,7 +99,7 @@
 		modName-: ARRAY 32 OF SHORTCHAR;
 		objname*: ARRAY 64 OF SHORTCHAR;
 
-		opt-, glbopt: SET;
+		opt*, glbopt: SET;
 		GlobalLang, Lang-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAdrSize, AdrSize-, GlobalAlignment, Alignment-: SHORTINT;
 
@@ -976,9 +978,11 @@ suffix does not work in K&R *)
 		modName := moduleName$;
 		HFile := FilesNew(CFsubdir);
 		IF HFile # NIL THEN R[HeaderFile] := HFile.NewWriter(NIL) ELSE err(153) END;
-		MakeFileName(moduleName, FName, BFext);
-		BFile := FilesNew(CFsubdir);
-		IF BFile # NIL THEN R[BodyFile] := BFile.NewWriter(NIL) ELSE err(153) END ;
+		IF ~(foreign IN opt) THEN
+			MakeFileName(moduleName, FName, BFext);
+			BFile := FilesNew(CFsubdir);
+			IF BFile # NIL THEN R[BodyFile] := BFile.NewWriter(NIL) ELSE err(153) END
+		END;
 		MakeFileName(moduleName, FName, HFext);
 		HIFile := FilesNew(CFsubdir);
 		IF HIFile # NIL THEN R[HeaderInclude] := HIFile.NewWriter(NIL) ELSE err(153) END ;
@@ -1005,25 +1009,39 @@ suffix does not work in K&R *)
 	END FileDiff;
 
 	PROCEDURE CloseFiles*;
-		VAR FName: Files.Name; res: INTEGER;
+		VAR FName: Files.Name; res: INTEGER; body: BOOLEAN;
 	BEGIN
-		IF noerr THEN LogWStr("    "); LogWNum(R[BodyFile].Pos(), 0); Dialog.ShowStatus("#ofront:ok")
+		body := ~(foreign IN opt);
+		IF noerr THEN LogWStr("    ");
+			IF body THEN LogWNum(R[BodyFile].Pos(), 0) ELSE LogWNum(R[HeaderFile].Pos(), 0) END;
+			Dialog.ShowStatus("#ofront:ok")
 		ELSE Dialog.ShowStatus("#ofront:error")
 		END;
 		IF noerr THEN
 			IF modName = "SYSTEM" THEN
-				IF ~(mainprog IN opt) THEN MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res) END
+				IF ~(mainprog IN opt) THEN
+					MakeFileName(modName, FName, BFext);
+					IF body THEN BFile.Register(FName, "*", Files.dontAsk, res)
+					ELSE FilesDelete(FName, CFsubdir)
+					END
+				END
 			ELSIF ~(mainprog IN opt) THEN
 				Append(R[HeaderInclude], HFile);
 				MakeFileName(modName, FName, HFext);
-				IF FileDiff(FName, HIFile) THEN HIFile.Register(FName, "*", Files.dontAsk, res) END ;
-				MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res)
+				IF FileDiff(FName, HIFile) THEN HIFile.Register(FName, "*", Files.dontAsk, res) END;
+				MakeFileName(modName, FName, BFext);
+				IF body THEN BFile.Register(FName, "*", Files.dontAsk, res)
+				ELSE FilesDelete(FName, CFsubdir)
+				END
 			ELSE
 				MakeFileName(modName, FName, HFext); FilesDelete(FName, CFsubdir);
 				MakeFileName(modName, FName, SFext); FilesDelete(FName, SFsubdir);
-				MakeFileName(modName, FName, BFext); BFile.Register(FName, "*", Files.dontAsk, res)
+				MakeFileName(modName, FName, BFext);
+				IF body THEN BFile.Register(FName, "*", Files.dontAsk, res)
+				ELSE FilesDelete(FName, CFsubdir)
+				END
 			END
-		END ;
+		END;
 		HFile := NIL; BFile := NIL; HIFile := NIL; newSFile := NIL; oldSFile := NIL;
 		R[0] := NIL; R[1] := NIL; R[2] := NIL; newSF.ConnectTo(NIL); oldSF.ConnectTo(NIL);
 		IF inC # NIL THEN Models.EndScript(inC.text, script); inC := NIL END

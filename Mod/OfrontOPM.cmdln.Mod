@@ -22,8 +22,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		dynlib* = 11;	(* translate module to be a dynamic library *)
-		corfor* = 12;	(* "correct FOR" by Oleg Komlev *)
+		corfor* = 12;	(* "proper FOR" by Oleg Komlev *)
 		oldc* = 13;	(* old C compilers restrictions support *)
+		foreign* = 14;	(* interface on external library *)
+		noinit* = 15;	(* don't generate BEGIN section's body *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -96,7 +98,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		modName-: ARRAY 32 OF CHAR;
 		objname*: ARRAY 64 OF CHAR;
 
-		opt-, glbopt: SET;
+		opt*, glbopt: SET;
 		GlobalLang, Lang-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAdrSize, AdrSize-, GlobalAlignment, Alignment-: SHORTINT;
 
@@ -637,13 +639,15 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		modName := moduleName$;
 		HFile := Files.New("");
-		IF HFile # NIL THEN Files.Set(R[HeaderFile], HFile, 0) ELSE err(153) END ;
-		MakeFileName(moduleName, FName, BFext);
-		BFile := Files.New(FName);
-		IF BFile # NIL THEN Files.Set(R[BodyFile], BFile, 0) ELSE err(153) END ;
+		IF HFile # NIL THEN Files.Set(R[HeaderFile], HFile, 0) ELSE err(153) END;
+		IF ~(foreign IN opt) THEN
+			MakeFileName(moduleName, FName, BFext);
+			BFile := Files.New(FName);
+			IF BFile # NIL THEN Files.Set(R[BodyFile], BFile, 0) ELSE err(153) END
+		END;
 		MakeFileName(moduleName, FName, HFext);
 		HIFile := Files.New(FName);
-		IF HIFile # NIL THEN Files.Set(R[HeaderInclude], HIFile, 0) ELSE err(153) END ;
+		IF HIFile # NIL THEN Files.Set(R[HeaderInclude], HIFile, 0) ELSE err(153) END;
 		IF include0 IN opt THEN
 			MakeFileName(moduleName, FName, ".h0"); Append(R[HeaderInclude], Files.Old(FName));
 			MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], Files.Old(FName))
@@ -651,21 +655,34 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END OpenFiles;
 
 	PROCEDURE CloseFiles*;
-		VAR FName: ARRAY 32 OF CHAR; res: INTEGER;
+		VAR FName: ARRAY 32 OF CHAR; res: INTEGER; body: BOOLEAN;
 	BEGIN
-		IF noerr THEN LogWStr("    "); LogWNum(SHORT( Files.Pos(R[BodyFile]) ), 0) END ;
+		body := ~(foreign IN opt);
+		IF noerr THEN LogWStr("    ");
+			IF body THEN LogWNum(SHORT( Files.Pos(R[BodyFile]) ), 0) ELSE LogWNum(SHORT( Files.Pos(R[HeaderFile]) ), 0) END
+		END;
+		IF noerr THEN LogWStr("    ") END;
 		IF noerr THEN
 			IF modName = "SYSTEM" THEN
-				IF ~(mainprog IN opt) THEN Files.Register(BFile) END
+				IF ~(mainprog IN opt) THEN
+					IF body THEN Files.Register(BFile);
+					ELSE MakeFileName(modName, FName, BFext); Files.Delete(FName, res)
+					END
+				END
 			ELSIF ~(mainprog IN opt) THEN
 				Append(R[HeaderInclude], HFile);
-				Files.Register(HIFile); Files.Register(BFile)
+				Files.Register(HIFile);
+				IF body THEN Files.Register(BFile)
+				ELSE MakeFileName(modName, FName, BFext); Files.Delete(FName, res)
+				END
 			ELSE
 				MakeFileName(modName, FName, HFext); Files.Delete(FName, res);
 				MakeFileName(modName, FName, SFext); Files.Delete(FName, res);
-				Files.Register(BFile)
+				IF body THEN Files.Register(BFile)
+				ELSE MakeFileName(modName, FName, BFext); Files.Delete(FName, res)
+				END
 			END
-		END ;
+		END;
 		HFile := NIL; BFile := NIL; HIFile := NIL; newSFile := NIL; oldSFile := NIL;
 		Files.Set(R[0], NIL, 0); Files.Set(R[1], NIL, 0); Files.Set(R[2], NIL, 0); Files.Set(newSF, NIL, 0); Files.Set(oldSF, NIL, 0)
 	END CloseFiles;

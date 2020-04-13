@@ -612,16 +612,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					END;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
-					OPM.WriteString(EXTERN); DeclareBase(obj); OPM.Write(Blank);
+					OPM.WriteString(Extern); DeclareBase(obj); OPM.Write(Blank);
 					IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, TRUE, oc) END;
 					IF obj^.sysflag = 1 THEN OPM.WriteString(STDCALL)
 					ELSIF obj^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
 					END;
-					OPM.WriteString(obj^.name^); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";");
-					OPM.WriteLn;
-					OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
-					OPM.Write(Tab);
-					OPM.WriteString(obj^.name^); DeclareParams(obj^.link, TRUE, FALSE)
+					Ident(obj); OPM.Write(Blank); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";")
 				END;
 				OPM.WriteLn
 			END;
@@ -1042,15 +1038,17 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			IF (obj^.mode IN {LProc, XProc}) & (obj^.vis >= vis) & ((obj^.history # removed) OR (obj^.mode = LProc)) THEN
 				(* previous XProc may be deleted or become LProc after interface change*)
 				IF vis = external THEN
-					IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END
+					IF (obj^.entry # NIL) OR (OPM.dynlib IN OPM.opt) THEN OPM.WriteString(EXTERN)
+					ELSE OPM.WriteString(Extern)
+					END
 				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
 				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END;
-				ProcHeader(obj, FALSE);
-			END ;
-			ProcPredefs(obj^.right, vis);
-		END;
+				ProcHeader(obj, FALSE)
+			END;
+			ProcPredefs(obj^.right, vis)
+		END
 	END ProcPredefs;
 
 	PROCEDURE Include(IN name: ARRAY OF SHORTCHAR);
@@ -1099,10 +1097,16 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IdentList(OPT.topScope^.scope, 1); OPM.WriteLn;
 		GenDynTypes(n, external); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 1);
-		IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
-		OPM.WriteString("void *");
-		OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
-		EndStat; OPM.WriteLn;
+		IF OPM.noinit IN OPM.opt THEN
+			OPM.WriteString("#define "); OPM.WriteString(OPM.modName); OPM.WriteString("__init()");
+			OPM.WriteLn
+		ELSE
+			IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
+			OPM.WriteString("void *");
+			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
+			EndStat
+		END;
+		OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn;
 		OPM.WriteString("#endif"); OPM.WriteLn
 	END GenHdr;

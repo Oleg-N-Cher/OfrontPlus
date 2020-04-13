@@ -1122,11 +1122,13 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			CASE n^.class OF
 				Nenter:
 						IF n^.obj = NIL THEN (* enter module *)
-							INC(OPM.level); stat(n^.left, outerProc); DEC(OPM.level);
-							OPC.GenEnumPtrs(OPT.topScope^.scope);
-							DefineTDescs(n^.right); OPC.EnterBody; InitTDescs(n^.right);
-							OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
-							stat(n^.right, outerProc); OPC.ExitBody
+							IF ~(OPM.noinit IN OPM.opt) THEN
+								INC(OPM.level); stat(n^.left, outerProc); DEC(OPM.level);
+								OPC.GenEnumPtrs(OPT.topScope^.scope);
+								DefineTDescs(n^.right); OPC.EnterBody; InitTDescs(n^.right);
+								OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
+								stat(n^.right, outerProc); OPC.ExitBody
+							END
 						ELSE (* enter proc *)
 							proc := n^.obj;
 							OPC.TypeDefs(proc^.scope^.right, 0);
@@ -1294,8 +1296,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 
 	PROCEDURE Module*(prog: OPT.Node);
 	BEGIN
-		IF ~mainprog THEN OPC.GenHdr(prog^.right); OPC.GenHdrIncludes END ;
-		OPC.GenBdy(prog^.right); stat(prog, NIL);
+		IF ~mainprog THEN OPC.GenHdr(prog^.right); OPC.GenHdrIncludes END;
+		IF ~(OPM.foreign IN OPM.opt) THEN OPC.GenBdy(prog^.right); stat(prog, NIL) END;
 		OPC.CleanupArrays
 	END Module;
 
