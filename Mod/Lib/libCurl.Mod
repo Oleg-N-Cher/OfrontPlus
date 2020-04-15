@@ -1,4 +1,4 @@
-MODULE libCurl;
+MODULE libCurl [foreign];
 IMPORT s := SYSTEM;
 
 CONST
@@ -21,9 +21,9 @@ TYPE
 
 PROCEDURE -AAIncludeCurlh0 '#include "libCurl.h0"';
 
-PROCEDURE -curl_easy_cleanup* (curl: PCURL);
-PROCEDURE -curl_easy_init* (): PCURL;
-PROCEDURE -curl_easy_perform* (curl: PCURL): CURLcode;
+PROCEDURE curl_easy_cleanup* (curl: PCURL);
+PROCEDURE curl_easy_init* (): PCURL;
+PROCEDURE curl_easy_perform* (curl: PCURL): CURLcode;
 PROCEDURE -curl_easy_setopt_I* (
   handle: PCURL; option: CURLoption; parameter: INTEGER): CURLcode
   "curl_easy_setopt(handle, option, parameter)";
@@ -33,7 +33,7 @@ PROCEDURE -curl_easy_setopt_A* (
 PROCEDURE -curl_easy_setopt_C* (
   handle: PCURL; option: CURLoption; callback: Callback): CURLcode
   "curl_easy_setopt(handle, option, callback)";
-PROCEDURE -curl_easy_strerror* (code: CURLcode): s.ADRINT;
+PROCEDURE curl_easy_strerror* (code: CURLcode): s.ADRINT;
 
 
 END libCurl.

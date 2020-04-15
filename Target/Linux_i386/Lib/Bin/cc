@@ -36,8 +36,8 @@ $AR SDL2.o SDL2mixer.o SQLite.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle
 
 ## libCurl
 
-$CC libCurl.c NetHttp.c
+$CC NetHttp.c
 if [ $? != 0 ]; then exit 1; fi
-$AR libCurl.o NetHttp.o
+$AR NetHttp.o
 
 rm *.o

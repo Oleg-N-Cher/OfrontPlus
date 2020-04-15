@@ -38,8 +38,8 @@ IF errorlevel 1 PAUSE
 
 :: libCurl
 
-%CC% libCurl.c NetHttp.c
+%CC% NetHttp.c
 IF errorlevel 1 PAUSE
-%AR% libCurl.o NetHttp.o
+%AR% NetHttp.o
 
 DEL /Q *.o
