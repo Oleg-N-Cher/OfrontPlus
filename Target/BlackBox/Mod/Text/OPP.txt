@@ -747,7 +747,7 @@
 									END
 								ELSE
 									proc := obj;
-									IF (x.left.readonly) & (proc.link.mode = VarPar) & (proc.link.vis = 0)  THEN err(76) END;
+									IF (x.left.readonly) & (proc.link.mode = VarPar) & (proc.link.vis = 0) THEN err(76) END;
 									WHILE (proc.mnolev >= 0) & ~(newAttr IN proc.conval.setval) & (typ.BaseTyp # NIL) DO
 										(* find base method *)
 										typ := typ.BaseTyp; OPT.FindField(name, typ, proc);
@@ -857,33 +857,36 @@
 
 	PROCEDURE ConstArray (VAR x: OPT.Node; typ: OPT.Struct);
 	(* конструкция "константный массив". typ - текущий уровень массива *)
-		VAR apar:  OPT.Node; n, i: INTEGER; fp: OPT.Object;  y: OPT.ConstArr;
+		VAR apar: OPT.Node; n, i: INTEGER; fp: OPT.Object; y: OPT.ConstArr;
 	BEGIN
-		IF (sym # lparen) & (typ^.BaseTyp^.form IN {Char, Byte}) THEN (* это должна быть строка *)
+		IF (sym # lparen) & (typ^.BaseTyp^.form = Char) THEN (* это должна быть строка *)
 			ConstExpression(apar); (* попытаемся взять эту строку *)
 			IF (apar^.typ^.comp = Basic) & (apar^.typ^.form = String) &
 				(apar^.conval^.intval2 <= typ^.n) THEN (* взяли строку допустимой длины *)
 				String2Chars(apar, x);
 				INC(x^.conval^.intval, typ^.n);
-			ELSIF (apar^.typ^.comp = Basic) & (apar^.typ^.form IN {Char, Byte}) THEN
-				(* прочитался символ *)
+			ELSIF (apar^.typ^.comp = Basic) & (apar^.typ^.form = Char) THEN (* прочитался символ *)
+				IF x^.conval^.intval < LEN(x^.conval^.arr.val1) THEN
 					x^.conval^.arr.val1[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
-					INC(x^.conval^.intval, typ^.n);
+					INC(x^.conval^.intval, typ^.n)
+				ELSE
+					err(64)
+				END
 			ELSE
-				err(63);
-			END;
+				err(63)
+			END
 		ELSE
 		CheckSym(lparen);
-		n:=typ^.n; (* количество элементов массива *)
+		n := typ^.n; (* количество элементов массива *)
 		i := 0;
 		IF typ^.BaseTyp^.form IN intSet + {Bool, Char} THEN (* массив из целых (в т.ч. BYTE)  *)
 			y := x^.conval^.arr;
-			fp := OPT.NewObj(); fp^.typ :=  typ^.BaseTyp;
-			fp^.mode := Var;  (*  fp  - переменная, элемент массива *)
+			fp := OPT.NewObj(); fp^.typ := typ^.BaseTyp;
+			fp^.mode := Var;  (* fp - переменная, элемент массива *)
 			IF sym # rparen THEN
-				LOOP  ConstExpression(apar); (* берем очередной элемент *)
+				LOOP ConstExpression(apar); (* берем очередной элемент *)
 					IF i < n THEN
-						IF (i = 0) & (typ^.BaseTyp^.form IN {Char, Byte})   (* считывали первый символ *)
+						IF (i = 0) & (typ^.BaseTyp^.form IN {Char, Byte})  (* считывали первый символ *)
 							& (apar^.typ^.comp = Basic) & (apar^.typ^.form = String)  (* а прочитали строку *)
 							& (apar^.conval^.intval2 <= typ^.n)  (* допустимой длины *) THEN
 							String2Chars(apar, x);
@@ -891,19 +894,19 @@
 							OPB.Param(apar, fp); (* проверим на совместимость*)
 							(* тут нужно положить элемент в кусок памяти *)
 							CASE fp^.typ^.size OF
-							| 1:  (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
+							| 1: (* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
 									IF x^.conval^.intval+i < LEN(y.val1^) THEN
 										y.val1[x^.conval^.intval+i] := SHORT(SHORT(SHORT(apar^.conval^.intval)))
 									ELSE err(64) END
-							| 2:  (* типы с размером в 2 байта *)
+							| 2: (* типы с размером в 2 байта *)
 									IF x^.conval^.intval+i < LEN(y.val2^) THEN
 										y.val2[x^.conval^.intval+i] := SHORT(SHORT(apar^.conval^.intval))
 									ELSE err(64) END
-							| 4:  (* типы с размером в 4 байта *)
+							| 4: (* типы с размером в 4 байта *)
 									IF x^.conval^.intval+i < LEN(y.val4^) THEN
 										y.val4[x^.conval^.intval+i] := SHORT(apar^.conval^.intval)
 									ELSE err(64) END
-							| 8:  (* типы с размером в 8 байт *)
+							| 8: (* типы с размером в 8 байт *)
 									IF x^.conval^.intval+i < LEN(y.val8^) THEN
 										y.val8[x^.conval^.intval+i] := apar^.conval^.intval
 									ELSE err(64) END
@@ -925,7 +928,7 @@
 			 		err(65)
 				END
 			END;
-			INC(x^.conval^.intval, n); (* учли прочитанные элементы, даже если они не  прочитаны *)
+			INC(x^.conval^.intval, n); (* учли прочитанные элементы, даже если они не прочитаны *)
 		ELSIF (typ^.BaseTyp^.form = Comp) & (typ^.BaseTyp^.comp = Array) THEN (* массив из массивов *)
 			IF sym # rparen THEN
 				LOOP
@@ -1594,7 +1597,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 							x := OPB.NewLeaf(id); OPB.Assign(x, OPB.NewIntConst(0)); SetPos(x);
 						END
 					ELSE x := NIL  (* от цикла не остается ничего *)
-					END; (* id # NIL   *)
+					END; (* id # NIL *)
 
 					CheckSym(do); StatSeq(s); CheckSym(end);
 
@@ -1795,7 +1798,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					IF obj^.conval^.arr # NIL THEN  (* константный массив *)
 						obj^.mode := VarPar; (* преобразуем в переменную-параметр *)
 						obj^.vis := inPar; (* причём входной параметр*)
-						IF x^.obj # NIL THEN obj^.typ :=  x^.obj^.typ END;
+						IF x^.obj # NIL THEN obj^.typ := x^.obj^.typ END;
 						obj^.typ^.pvused := TRUE; (* не знаю, нужно ли это *)
 						IF last = NIL THEN OPT.topScope^.scope := obj ELSE last^.link := obj END ;
 						last := obj;

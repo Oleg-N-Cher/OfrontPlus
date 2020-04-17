@@ -378,7 +378,7 @@ starsLevel: INTEGER;
 	BEGIN
 		IF (typ^.form = Pointer) & (typ^.sysflag = 0) THEN
 			OPM.WriteInt(adr); OPM.WriteString(", "); INC(cnt);
-			IF cnt  MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
+			IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
 		ELSIF (typ^.comp = Record) & (typ^.sysflag MOD 100H = 0) THEN
 			btyp := typ^.BaseTyp;
 			IF btyp # NIL THEN PutPtrOffsets(btyp, adr, cnt) END ;
@@ -528,7 +528,7 @@ starsLevel: INTEGER;
 				OPM.WriteString(", "); Ident(obj);
 				Str1(", #, ", obj^.adr DIV 10000H);
 				DeclareBase(obj);
-				IF obj^.typ^.form  # NoTyp THEN Stars(obj^.typ, TRUE, oc) END;
+				IF obj^.typ^.form # NoTyp THEN Stars(obj^.typ, TRUE, oc) END;
 				OPM.WriteString("(*)");
 				IF ansi THEN
 					AnsiParamList(obj^.link, FALSE, TRUE)
@@ -753,7 +753,7 @@ starsLevel: INTEGER;
 			BegStat; NEW(obj);	(* aux. object for easy declaration *)
 			obj.typ := typ; obj.mode := Fld;
 			obj.name := OPT.NewName("data");
-			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank);  DeclareObj(obj, 0);
+			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank); DeclareObj(obj, 0);
 			EndStat; EndBlk0; OPM.Write(" ");
 			IF Universal(atyp) THEN
 				UniversalArrayName(atyp); OPM.Write(";"); OPM.WriteLn;
@@ -935,7 +935,7 @@ starsLevel: INTEGER;
 	BEGIN
 		OPM.WriteString("{"); (* скобка (  *)
 		i := 0;
-		IF  typ^.BaseTyp^.form # Comp THEN (* массив из простых элементов *)
+		IF typ^.BaseTyp^.form # Comp THEN (* массив из простых элементов *)
 			FOR i := 0 TO typ^.n-2 DO
 				WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp); OPM.WriteString(",");
 				IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END
@@ -976,7 +976,7 @@ starsLevel: INTEGER;
 						ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
-					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL)  THEN  (* конст.массив *)
+					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
 								OPM.WriteString("__CONSTARR ")
 					END;
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
@@ -1004,7 +1004,7 @@ starsLevel: INTEGER;
 					IF obj^.typ^.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL"); base := NIL
 					ELSIF (obj^.typ^.form = Comp) & HasPtrs(obj^.typ) THEN OPM.WriteString(" = {0}")
 					END
-				ELSIF   (obj^.conval # NIL) & (obj^.conval^.arr # NIL) & (vis # 1) THEN (* элементы конст.массива *)
+				ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) & (vis # 1) THEN (* элементы конст.массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
 					BegStat;
 					obj^.conval^.intval := 0;
@@ -1065,7 +1065,7 @@ starsLevel: INTEGER;
 		VAR oc: BOOLEAN;
 	BEGIN
 		DeclareBase(proc); OPM.Write(Blank);
-		IF proc^.typ^.form  # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
+		IF proc^.typ^.form # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
 		IF proc^.sysflag = 1 THEN OPM.WriteString(STDCALL)
 		ELSIF proc^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
 		END;
