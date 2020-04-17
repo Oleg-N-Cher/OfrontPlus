@@ -25,7 +25,7 @@
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		dynlib* = 11;	(* translate module to be a dynamic library *)
-		corfor* = 12;	(* "correct FOR" by Oleg Komlev *)
+		for* = 12;	(* "proper FOR" by Oleg Komlev *)
 		oldc* = 13;	(* old C compilers restrictions support *)
 		foreign* = 14;	(* interface on external library *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
@@ -360,7 +360,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "d": opt := opt / {dynlib}
-			| "f": opt := opt / {corfor}
+			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
 			| "1", "3"(*undocumented*), "C", "7": Lang := SHORT(s[i])
 
@@ -985,7 +985,7 @@ suffix does not work in K&R *)
 		END;
 		MakeFileName(moduleName, FName, HFext);
 		HIFile := FilesNew(CFsubdir);
-		IF HIFile # NIL THEN R[HeaderInclude] := HIFile.NewWriter(NIL) ELSE err(153) END ;
+		IF HIFile # NIL THEN R[HeaderInclude] := HIFile.NewWriter(NIL) ELSE err(153) END;
 		IF include0 IN opt THEN
 			MakeFileName(moduleName, FName, ".h0"); Append(R[HeaderInclude], FilesOld(FName, CFsubdir));
 			MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], FilesOld(FName, CFsubdir))

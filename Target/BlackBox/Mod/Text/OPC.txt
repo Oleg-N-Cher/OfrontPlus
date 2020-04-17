@@ -926,16 +926,16 @@ starsLevel: INTEGER;
 		BEGIN
 			CASE bt^.size OF
 				| 1: IF bt^.form = Char THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
-				| 2:  OPM.WriteInt(arr.val2[i])
-				| 4:  OPM.WriteInt(arr.val4[i])
-				| 8:  OPM.WriteInt(arr.val8[i])
+				| 2: OPM.WriteInt(arr.val2[i])
+				| 4: OPM.WriteInt(arr.val4[i])
+				| 8: OPM.WriteInt(arr.val8[i])
 			END
 		END WriteElem;
 
 	BEGIN
 		OPM.WriteString("{"); (* скобка (  *)
 		i := 0;
-		IF  typ^.BaseTyp^.form # 15  THEN (* массив из простых элементов *)
+		IF  typ^.BaseTyp^.form # Comp THEN (* массив из простых элементов *)
 			FOR i := 0 TO typ^.n-2 DO
 				WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp); OPM.WriteString(",");
 				IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END
@@ -1181,7 +1181,7 @@ starsLevel: INTEGER;
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
 		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
-		OPM.Write(OPM.Lang); IF OPM.corfor IN OPM.opt THEN OPM.Write("f") END;
+		OPM.Write(OPM.Lang); IF OPM.for IN OPM.opt THEN OPM.Write("f") END;
 		OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
 		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn

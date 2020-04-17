@@ -1128,7 +1128,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
 		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
-		OPM.Write(OPM.Lang); IF OPM.corfor IN OPM.opt THEN OPM.Write("f") END;
+		OPM.Write(OPM.Lang); IF OPM.for IN OPM.opt THEN OPM.Write("f") END;
 		OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
 		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
 		OPM.WriteString(" */"); OPM.WriteLn

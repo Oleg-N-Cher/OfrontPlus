@@ -22,7 +22,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		extsf* = 9;	(* extension of old symbol file allowed *)
 		mainprog* = 10;	(* translate module body into C main function *)
 		dynlib* = 11;	(* translate module to be a dynamic library *)
-		corfor* = 12;	(* "proper FOR" by Oleg Komlev *)
+		for* = 12;	(* "proper FOR" by Oleg Komlev *)
 		oldc* = 13;	(* old C compilers restrictions support *)
 		foreign* = 14;	(* interface on external library *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
@@ -229,7 +229,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "p": opt := opt / {ptrinit}
 			| "i": opt := opt / {include0}
 			| "d": opt := opt / {dynlib}
-			| "f": opt := opt / {corfor}
+			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
 			| "1", "3"(*undocumented*), "C", "7": Lang := s[i]
 
