@@ -851,8 +851,12 @@
 		VAR i: INTEGER;
 	BEGIN
 		FOR i := 0 TO a^.conval^.intval2 - 1 DO
-			x^.conval^.arr.val1[x^.conval^.intval+i] := SHORT(ORD(a^.conval^.ext^[i]))
-		END;
+			IF x^.conval^.intval+i < LEN(x^.conval^.arr.val1) THEN
+				x^.conval^.arr.val1[x^.conval^.intval+i] := SHORT(ORD(a^.conval^.ext^[i]))
+			ELSE
+				err(64)
+			END
+		END
 	END String2Chars;
 
 	PROCEDURE ConstArray (VAR x: OPT.Node; typ: OPT.Struct);
