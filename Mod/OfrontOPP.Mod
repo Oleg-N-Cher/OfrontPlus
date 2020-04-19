@@ -1768,7 +1768,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			CheckSym(semicolon)
 		END;
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
-		IF (sym = begin) & ~(OPM.noinit IN OPM.opt) THEN OPS.Get(sym); StatSeq(statseq)
+		IF (sym = begin) & ~((level = 0) & (OPM.noinit IN OPM.opt)) THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
 		END;
