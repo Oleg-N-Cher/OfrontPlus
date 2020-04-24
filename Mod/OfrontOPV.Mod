@@ -1122,8 +1122,8 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 			CASE n^.class OF
 				Nenter:
 						IF n^.obj = NIL THEN (* enter module *)
+							INC(OPM.level); stat(n^.left, outerProc); DEC(OPM.level);
 							IF ~(OPM.noinit IN OPM.opt) THEN
-								INC(OPM.level); stat(n^.left, outerProc); DEC(OPM.level);
 								OPC.GenEnumPtrs(OPT.topScope^.scope);
 								DefineTDescs(n^.right); OPC.EnterBody; InitTDescs(n^.right);
 								OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
