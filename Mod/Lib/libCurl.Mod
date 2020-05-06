@@ -1,4 +1,4 @@
-MODULE libCurl [foreign];
+MODULE [foreign] libCurl;
 IMPORT s := SYSTEM;
 
 CONST
@@ -34,6 +34,5 @@ PROCEDURE -curl_easy_setopt_C* (
   handle: PCURL; option: CURLoption; callback: Callback): CURLcode
   "curl_easy_setopt(handle, option, callback)";
 PROCEDURE curl_easy_strerror* (code: CURLcode): s.ADRINT;
-
 
 END libCurl.

@@ -1785,21 +1785,21 @@ PROCEDURE Factor(VAR x: OPT.Node);
 	BEGIN
 		OPS.Init; LoopLevel := 0; ReturnLevel := 0; level := 0; OPS.Get(sym);
 		IF sym = module THEN OPS.Get(sym) ELSE err(16) END;
+		IF sym = lbrak THEN OPS.Get(sym);
+			IF (sym = ident) & (OPS.name = "foreign") THEN
+				OPM.opt := OPM.opt + {OPM.foreign, OPM.noinit}; OPS.Get(sym)
+			ELSIF (sym = ident) & (OPS.name = "main") THEN
+				INCL(OPM.opt, OPM.mainprog); OPS.Get(sym)
+			ELSIF (sym = ident) & (OPS.name = "noinit") THEN
+				INCL(OPM.opt, OPM.noinit); OPS.Get(sym)
+			ELSE
+				OPS.Get(sym); err(178)
+			END;
+			CheckSym(rbrak)
+		END;
 		IF sym = ident THEN
 			OPM.LogW(" "); OPM.LogWStr(OPS.name);
 			OPT.Init(OPS.name, OPM.Lang, opt); OPS.Get(sym);
-			IF sym = lbrak THEN OPS.Get(sym);
-				IF (sym = ident) & (OPS.name = "foreign") THEN
-					OPM.opt := OPM.opt + {OPM.foreign, OPM.noinit}; OPS.Get(sym)
-				ELSIF (sym = ident) & (OPS.name = "main") THEN
-					INCL(OPM.opt, OPM.mainprog); OPS.Get(sym)
-				ELSIF (sym = ident) & (OPS.name = "noinit") THEN
-					INCL(OPM.opt, OPM.noinit); OPS.Get(sym)
-				ELSE
-					OPS.Get(sym); err(178)
-				END;
-				CheckSym(rbrak)
-			END;
 			CheckSym(semicolon);
 			IF sym = import THEN OPS.Get(sym);
 				LOOP
