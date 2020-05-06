@@ -849,8 +849,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF (curAlign < align) & (gap - (adr - off) >= align) THEN (* preserve alignment of the enclosing struct! *)
 			DEC(gap, (adr - off) + align);
 			BegStat;
-			IF align = 4 THEN OPM.WriteString("INTEGER")
-			ELSIF align = 8 THEN OPM.WriteString("LONGINT")
+			IF align = OPT.sinttyp.size THEN OPM.WriteString("SHORTINT")
+			ELSIF align = OPT.inttyp.size THEN OPM.WriteString("INTEGER")
+			ELSIF align = OPT.linttyp.size THEN OPM.WriteString("LONGINT")
 			END;
 			Str1(" _prvt#", n); INC(n); EndStat;
 			curAlign := align
