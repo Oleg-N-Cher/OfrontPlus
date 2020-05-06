@@ -13,6 +13,11 @@ if [ $? != 0 ]; then exit 1; fi
 ofront+ -sC -44 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.Mod ecoVector.Mod
 if [ $? != 0 ]; then exit 1; fi
 
+## ETH Oberon
+
+ofront+ -s2 -48 Zlib.Mod ZlibBuffers.Mod ZlibDeflate.Mod ZlibInflate.Mod ZlibReaders.Mod ZlibWriters.Mod Zip.Mod
+if [ $? != 0 ]; then exit 1; fi
+
 ## OOC2
 
 ofront+ -sC -44 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod
