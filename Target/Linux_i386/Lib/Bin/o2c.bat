@@ -13,6 +13,11 @@ IF errorlevel 1 PAUSE
 ofront+ -sC -44 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.Mod
 IF errorlevel 1 PAUSE
 
+:: ETH Oberon
+
+ofront+ -s2 -44 Zlib.Mod ZlibBuffers.Mod ZlibDeflate.Mod ZlibInflate.Mod ZlibReaders.Mod ZlibWriters.Mod Zip.Mod
+IF errorlevel 1 PAUSE
+
 :: OOC2
 
 ofront+ -eC -44 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod

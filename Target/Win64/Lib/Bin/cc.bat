@@ -18,6 +18,12 @@ IF errorlevel 1 PAUSE
 IF errorlevel 1 PAUSE
 %AR% ecoBigSets.o ecoBuffer.o ecoListen.o ecoLists.o ecoParser.o ecoVector.o
 
+:: ETH Oberon
+
+%CC% Zlib.c ZlibBuffers.c ZlibDeflate.c ZlibInflate.c ZlibReaders.c ZlibWriters.c Zip.c
+IF errorlevel 1 PAUSE
+%AR% Zlib.o ZlibBuffers.o ZlibDeflate.o ZlibInflate.o ZlibReaders.o ZlibWriters.o Zip.o
+
 :: OOC2
 
 %CC% ooc2Ascii.c ooc2ConvTypes.c ooc2RandomNumbers.c ooc2Strings.c

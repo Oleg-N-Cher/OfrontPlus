@@ -14,7 +14,7 @@ IMPORT
 
 TYPE
 	(** input/output buffer **)
-	Address = LONGINT;
+	Address = SYSTEM.ADRINT;
 	Buffer* = RECORD
 		avail-: LONGINT;	(** number of bytes that can be produced/consumed **)
 		size-: LONGINT;	(** total number of bytes in buffer memory **)
@@ -106,7 +106,7 @@ END Fill;
 
 (** extract bytes from output buffer to make room for new bytes **)
 PROCEDURE Drain* (VAR buf: Buffer; VAR dst: ARRAY OF CHAR; offset, size: LONGINT);
-VAR i, s, d, n: LONGINT; c: CHAR;
+VAR i, n: LONGINT; d, s: Address; c: CHAR;
 BEGIN
 	ASSERT((0 <= offset) & (0 < size) & (offset + size <= LEN(dst)), 100);
 	ASSERT(buf.avail + size <= buf.size, 101);	(* can't consume more than is in buffer *)
