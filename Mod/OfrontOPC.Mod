@@ -1058,15 +1058,15 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.WriteString(".h"); OPM.Write(Quotes); OPM.WriteLn
 	END Include;
 
-	PROCEDURE IncludeImports(obj: OPT.Object; vis: SHORTINT);
+	PROCEDURE IncludeImports(vis: SHORTINT);
+		VAR mod: OPT.Object; i: INTEGER;
 	BEGIN
-		IF obj # NIL THEN
-			IncludeImports(obj^.left, vis);
-			IF (obj^.mode = Mod) & (obj^.mnolev # 0) & (OPT.GlbMod[-obj^.mnolev].vis >= vis) THEN	(* @self and SYSTEM have mnolev = 0 *)
-				Include(OPT.GlbMod[-obj^.mnolev].name^)	(* use unaliased module name *)
-			END;
-			IncludeImports(obj^.right, vis);
-		END;
+		i := 1;
+		WHILE i < OPT.nofGmod DO
+			mod := OPT.GlbMod[i];
+			IF mod^.vis >= vis THEN Include(mod^.name^) END;	(* use unaliased module name *)
+			INC(i)
+		END
 	END IncludeImports;
 
 	PROCEDURE GenDynTypes (n: OPT.Node; vis: SHORTINT);
@@ -1144,7 +1144,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.WriteString("#define "); OPM.WriteString(OPM.modName); OPM.WriteString(FlagExt); OPM.WriteLn;
 		OPM.WriteLn;
 		Include(BasicIncludeFile);
-		IncludeImports(OPT.topScope^.right, 1); OPM.WriteLn
+		IncludeImports(1); OPM.WriteLn
 	END GenHdrIncludes;
 
 	PROCEDURE GenBdy*(n: OPT.Node);
@@ -1152,7 +1152,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.currFile := OPM.BodyFile;
 		GenHeaderMsg;
 		Include(BasicIncludeFile);
-		IncludeImports(OPT.topScope^.right, 0); OPM.WriteLn;
+		IncludeImports(0); OPM.WriteLn;
 		DefAnonRecs(n);
 		TypeDefs(OPT.topScope^.right, 0); OPM.WriteLn;
 		DefAnonArrays;
