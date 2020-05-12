@@ -15,7 +15,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## ETH Oberon
 
-ofront+ -s2 -48 Zlib.Mod ZlibBuffers.Mod ZlibDeflate.Mod ZlibInflate.Mod ZlibReaders.Mod ZlibWriters.Mod Zip.Mod
+ofront+ -s2 -88 Zlib.Mod ZlibBuffers.Mod ZlibDeflate.Mod ZlibInflate.Mod ZlibReaders.Mod ZlibWriters.Mod Zip.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## OOC2
