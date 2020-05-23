@@ -1,4 +1,5 @@
-MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
+﻿MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 16.5.98 *)
+
 (* C source code generator version
 
 	2000-04-30 jt, synchronized with BlackBox version, in particular
@@ -181,7 +182,9 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		IF (obj^.entry # NIL) & (level <= 0) THEN
 			OPM.WriteString(obj^.entry^);
 			IF (OPM.currFile = OPM.HeaderFile) & (level < 0) THEN OPT.GlbMod[-level].vis := 1 END
-		ELSIF (mode IN {Var, Typ, LProc}) & (level > 0) OR (mode IN {Fld, VarPar}) THEN
+		ELSIF (mode IN {Var, Typ, LProc}) & (level > 0)
+			OR (mode IN {Fld, VarPar}) & ~((obj^.conval # NIL) & (obj^.conval^.arr # NIL))	(* not a constant array *)
+		THEN
 			IF ~oldc THEN OPM.WriteString(obj^.name^) ELSE OPM.Write(obj^.name^[0]) END;
 			h := PerfectHash(obj^.name^);
 			IF hashtab[h] >= 0 THEN
@@ -373,7 +376,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 	BEGIN
 		IF (typ^.form = Pointer) & (typ^.sysflag = 0) THEN
 			OPM.WriteInt(adr); OPM.WriteString(", "); INC(cnt);
-			IF cnt  MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
+			IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
 		ELSIF (typ^.comp = Record) & (typ^.sysflag MOD 100H = 0) THEN
 			btyp := typ^.BaseTyp;
 			IF btyp # NIL THEN PutPtrOffsets(btyp, adr, cnt) END ;
@@ -523,7 +526,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				OPM.WriteString(", "); Ident(obj);
 				Str1(", #, ", obj^.adr DIV 10000H);
 				DeclareBase(obj);
-				IF obj^.typ^.form  # NoTyp THEN Stars(obj^.typ, TRUE, oc) END;
+				IF obj^.typ^.form # NoTyp THEN Stars(obj^.typ, TRUE, oc) END;
 				OPM.WriteString("(*)");
 				IF ansi THEN
 					AnsiParamList(obj^.link, FALSE, TRUE)
@@ -748,7 +751,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 			BegStat; NEW(obj);	(* aux. object for easy declaration *)
 			obj.typ := typ; obj.mode := Fld;
 			obj.name := OPT.NewName("data");
-			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank);  DeclareObj(obj, 0);
+			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank); DeclareObj(obj, 0);
 			EndStat; EndBlk0; OPM.Write(" ");
 			IF Universal(atyp) THEN
 				UniversalArrayName(atyp); OPM.Write(";"); OPM.WriteLn;
@@ -887,7 +890,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 				END;
 				EndStat
 			END
-		END ;
+		END;
 		IF last THEN
 			adr := typ.size - typ^.sysflag DIV 100H;
 			IF adr = 0 THEN gap := 1 (* avoid empty struct *) ELSE gap := adr - off END ;
@@ -913,6 +916,42 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		RETURN FALSE
 	END HasPtrs;
 
+	PROCEDURE WriteConstArr (VAR obj: OPT.Object; typ: OPT.Struct);
+	(* генерация конструкция "константный массив". typ - текущий уровень массива *)
+	VAR apar: OPT.Node; i: INTEGER;
+
+	PROCEDURE WriteElem (arr: OPT.ConstArr; i: INTEGER; bt: OPT.Struct);
+		(* выводит в листинг i-й элемент константного массива arr *)
+		BEGIN
+			CASE bt^.size OF
+				| 1: IF bt^.form = Char THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
+				| 2: OPM.WriteInt(arr.val2[i])
+				| 4: OPM.WriteInt(arr.val4[i])
+				| 8: OPM.WriteInt(arr.val8[i])
+			END
+		END WriteElem;
+
+	BEGIN
+		OPM.WriteString("{"); (* скобка (  *)
+		i := 0;
+		IF typ^.BaseTyp^.form # Comp THEN (* массив из простых элементов *)
+			FOR i := 0 TO typ^.n-2 DO
+				WriteElem(obj^.conval^.arr , i+SHORT(obj^.conval^.intval), typ^.BaseTyp); OPM.WriteString(",");
+				IF (i+1) MOD 10 = 0 THEN OPM.WriteLn; BegStat END
+			END;
+			WriteElem(obj^.conval^.arr , typ^.n-1+SHORT(obj^.conval^.intval), typ^.BaseTyp); (* последний элемент *)
+			INC(obj^.conval^.intval, typ^.n); (* учли выведенные элементы *)
+		ELSE (* массив из массивов *)
+			FOR i := 0 TO typ^.n-2 DO
+				WriteConstArr (obj, typ^.BaseTyp);  (* рекурсивная обработка подмассива *)
+				OPM.WriteString(","); OPM.WriteLn;
+				BegStat;
+			END;
+			WriteConstArr (obj, typ^.BaseTyp); (* последний элемент *)
+		END;
+		OPM.WriteString("}")
+	END WriteConstArr;
+
 	PROCEDURE IdentList (obj: OPT.Object; vis: SHORTINT);
 	(* generate var and param lists; vis: 0 all global vars, local var, 1 exported(R) var, 2 par list, 3 scope var *)
 		VAR base: OPT.Struct; first: BOOLEAN; lastvis: SHORTINT;
@@ -921,18 +960,24 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
 				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte}) THEN base := obj^.typ END;
-				IF (obj^.typ # base) OR (obj^.vis # lastvis) THEN	(* new variable base type definition required *)
+				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR
+				((obj^.conval # NIL) & (obj^.conval^.arr # NIL)) THEN	(* каждый конст.массив отдельно*)
+				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;
 					base := obj^.typ; lastvis := obj^.vis;
 					BegStat;
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
-						IF obj^.vis = internal THEN OPM.WriteString(Static)
+						IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
+								OPM.WriteString("__CONSTARR ");
+						ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
 						ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
-					END ;
+					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
+								OPM.WriteString("__CONSTARR ")
+					END;
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
 					ELSE DeclareBase(obj)
 					END
@@ -958,6 +1003,12 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 					IF obj^.typ^.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL"); base := NIL
 					ELSIF (obj^.typ^.form = Comp) & HasPtrs(obj^.typ) THEN OPM.WriteString(" = {0}")
 					END
+				ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) & (vis # 1) THEN (* элементы конст.массива *)
+					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
+					BegStat;
+					obj^.conval^.intval := 0;
+					WriteConstArr (obj, obj^.typ);
+					Indent(-1);
 				END
 			END;
 			obj := obj^.link
@@ -1013,7 +1064,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		VAR oc: BOOLEAN;
 	BEGIN
 		DeclareBase(proc); OPM.Write(Blank);
-		IF proc^.typ^.form  # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
+		IF proc^.typ^.form # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
 		IF proc^.sysflag = 1 THEN OPM.WriteString(STDCALL)
 		ELSIF proc^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
 		END;
@@ -1527,7 +1578,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		OPM.WriteString(CaseStat);
 		CASE form OF
 		|	Char :
-					WriteCharLiteral(CHR(caseVal))
+					WriteCharLiteral(SHORT(CHR(caseVal)))
 		|	Byte, SInt, Int, LInt :
 					OPM.WriteInt(caseVal)
 		END;
@@ -1569,7 +1620,7 @@ MODULE OfrontOPC;	(* copyright (c) J. Templ 12.7.95 / 3.7.96 *)
 		|	Bool, Byte, UByte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
 		|	Char:
-					WriteCharLiteral(CHR(con^.intval))
+					WriteCharLiteral(SHORT(CHR(con^.intval)))
 		|	Real:
 					OPM.WriteReal(con^.realval, "f")
 		|	LReal:

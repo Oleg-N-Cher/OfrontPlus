@@ -1,9 +1,10 @@
-MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
+﻿MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*
-2002-08-20 jt: NewStr: txtpos remains 0 for structs read from symbol file
-2016-10-12 jt: issue #7: FPrintStr improved: constant added to btyp^.pbfp for avoiding a collision pattern
-2018-02-14 olegncher: issue #44: unlimited length of strings (as in BB)
+2002-04-11  jt: SHORT(SHORT(-mno)) used for -mno for BB 1.4
+2002-08-20  jt: NewStr: txtpos remains 0 for structs read from symbol files
+2016-10-12  jt: issue #7: FPrintStr improved: constant added to btyp^.pbfp for avoiding a collision pattern
+2018-02-14  olegncher: issue #44: unlimited length of strings (as in BB)
 *)
 
 	IMPORT
@@ -16,13 +17,21 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Node* = POINTER TO NodeDesc;
 		ConstExt* = OPS.String;
 
+		ConstArr* = POINTER TO RECORD
+			val1*: POINTER TO ARRAY OF BYTE;
+			val2*: POINTER TO ARRAY OF SHORTINT;
+			val4*: POINTER TO ARRAY OF INTEGER;
+			val8*: POINTER TO ARRAY OF LONGINT
+		END;
+
 		ConstDesc* = RECORD
 			ext*: ConstExt;	(* string or code for code proc *)
 			intval*: LONGINT;	(* constant value or adr, proc par size, text position or least case label *)
 			intval2*: INTEGER;	(* string length, proc var size or larger case label *)
 			setval*: SET;	(* constant value, procedure body present or "ELSE" present in case *)
-			realval*: REAL	(* real or longreal constant value *)
-		END ;
+			realval*: REAL;	(* real or longreal constant value *)
+			arr*: ConstArr	(*  для данных константного массива *)
+		END;
 
 		ObjDesc* = RECORD
 			left*, right*, link*, scope*: Object;
@@ -544,7 +553,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END InsertImport;
 
-	PROCEDURE InName(VAR(*OUT*) name: OPS.String);
+	PROCEDURE InName(OUT name: OPS.String);
 		VAR i: SHORTINT; ch: SHORTCHAR; n: OPS.Name;
 	BEGIN i := 0;
 		REPEAT
@@ -1050,7 +1059,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		f := obj^.typ^.form; OPM.SymWInt(f);
 		CASE f OF
 		| Bool, Char:
-			OPM.SymWCh(CHR(obj^.conval^.intval))
+			OPM.SymWCh(SHORT(CHR(obj^.conval^.intval)))
 		| Byte, SInt, Int, LInt:
 			OPM.SymWInt(obj^.conval^.intval)
 		| Set:
@@ -1201,6 +1210,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTyp("REAL32", "real32", Real, 4, realtyp);
 			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
 			EnterTyp("UINT8", "uint8", UByte, 1, ubytetyp);
+			IF lang <= "2" THEN
+				EnterTypeAlias("BYTE", "byte", byte, bytetyp)
+			END;
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);

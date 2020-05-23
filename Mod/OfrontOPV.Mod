@@ -1,9 +1,8 @@
-MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
+﻿MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96 *)
 
-	26.7.2002 jt bug fix in Len: wrong result if called for fixed Array
-	31.1.2007 jt synchronized with BlackBox version, in particular:
-		various promotion rules changed (long) => (LONGINT), xxxL avoided
-*)
+	(* 30.4.2000 jt, various promotion rules changed (long) => (LONGINT), xxxL avoided
+		26.7.2002 jt, bug fix in Len: wrong result if called for fixed Array
+	*)
 
 	IMPORT OPT := OfrontOPT, OPC := OfrontOPC, OPM := OfrontOPM, OPS := OfrontOPS;
 
@@ -224,7 +223,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 		WHILE s[i] # 0X DO res[i] := s[i]; INC(i) END ;
 		IF i > 25 THEN i := 25 END ;
 		res[i] := "_"; res[i+1] := "_"; INC(i, 2); k := 0;
-		REPEAT n[k] := CHR((j MOD 10) + ORD("0")); j := SHORT(j DIV 10); INC(k) UNTIL j = 0;
+		REPEAT n[k] := SHORT(CHR((j MOD 10) + ORD("0"))); j := SHORT(j DIV 10); INC(k) UNTIL j = 0;
 		REPEAT DEC(k); res[i] := n[k]; INC(i) UNTIL k = 0;
 		res[i] := 0X;
 		IF LEN(s^) <= i THEN NEW(s, i+1) END; s^ := res$
@@ -735,7 +734,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								IF ~oldc THEN OPM.WriteString("(SYSTEM_ADRINT)") END;
 								IF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
-									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END ;
+									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END;
 									expr(l, exprPrec)
 								END
 					|	val: (*SYSTEM*)
@@ -846,7 +845,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 								typ := l^.typ;
 								IF (typ^.form = Pointer) & (r^.typ.form # NilTyp) & (r^.typ # typ) & (r^.typ # OPT.sysptrtyp) THEN
 									OPM.WriteString("(void *) ")
-								END ;
+								END;
 								expr(r, exprPrec)
 							END
 					ELSE
@@ -873,7 +872,7 @@ MODULE OfrontOPV;	(* J. Templ 16.2.95 / 3.7.96
 						|	minus:
 									IF form = Set THEN OPM.WriteString(" & ~")
 									ELSE OPM.WriteString(" - ")
-									END;
+									END
 						|	div0:
 									OPM.WriteString(" / ")
 						|	rem0:

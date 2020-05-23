@@ -207,6 +207,42 @@
 		x^.conval^.intval := intval; SetIntType(x, FALSE); RETURN x
 	END NewIntConst;
 
+	PROCEDURE NewArrConst*(VAR x:OPT.Node);	(* подготовить узел для константного массива *)
+		VAR n: INTEGER; typ: OPT.Struct;y: OPT.ConstArr; fp: OPT.Object;
+	BEGIN
+		n := 1;
+		typ := x^.typ;
+		WHILE (typ^.form = Comp) & (typ^.comp = Array) DO
+			n := n * typ^.n; (* перемножение размеров по всем измерениям *)
+			typ := typ^.BaseTyp
+		END;
+		(* n - общее кол-во элементов массива, typ - тип элемента *)
+		IF  typ^.form IN intSet+{Bool,Char} THEN (* массив из целых (в т.ч. BYTE)  *)
+			fp := OPT.NewObj(); fp^.typ :=  x^.obj^.typ^.BaseTyp;
+			fp^.mode := Var;  (*  fp  - переменная, элемент массива *)
+			NEW(y);
+			(* тут нужно выделить кусок  памяти для n элементов массива *)
+			CASE typ^.size OF (* Размер элементов массива в байтах (для BlackBox). *)
+			| 1:	(* BOOLEAN, CHAR, BYTE (для Ofront'а) *)
+						NEW(y.val1, n)
+			| 2:	(* типы с размером в 2 байта *)
+						NEW(y.val2, n)
+			| 4:	(* типы с размером в 4 байта *)
+						NEW(y.val4, n)
+			| 8:	(* типы с размером в 8 байт *)
+						NEW(y.val8, n)
+			END;
+			fp := x^.obj; (* запомним тип "массив"*)
+			x := Nil(); (* как будто это NIL *)
+			x^.typ := OPT.undftyp; (* чтобы никаких операций с конструкцией нельзя было выполнять *)
+			x^.conval^.intval := 0; (* количество элементов массива  уже заполненных*)
+			x^.conval^.intval2 := n; (* сколько всего д б элементов массива *)
+			x^.conval^.arr := y; (* сами элементы *)
+			x^.obj := fp; (* константа с типом "массив" *)
+		ELSE err(51)
+		END;
+	END NewArrConst;
+
 	PROCEDURE Min*(tf: BYTE): LONGINT;
 		VAR m: LONGINT;
 	BEGIN
@@ -275,7 +311,7 @@
 	PROCEDURE CharToString(n: OPT.Node);
 		VAR ch: SHORTCHAR;
 	BEGIN
-		n^.typ := OPT.stringtyp; ch := CHR(n^.conval^.intval); NEW(n^.conval^.ext, 2);
+		n^.typ := OPT.stringtyp; ch := SHORT(CHR(n^.conval^.intval)); NEW(n^.conval^.ext, 2);
 		IF ch = 0X THEN n^.conval^.intval2 := 1 ELSE n^.conval^.intval2 := 2; n^.conval^.ext[1] := 0X END ;
 		n^.conval^.ext[0] := ch; n^.conval^.intval := OPM.ConstNotAlloc; n^.obj := NIL
 	END CharToString;
@@ -499,7 +535,7 @@
 			| cap:
 					IF f = Char THEN
 						IF z^.class = Nconst THEN
-							z^.conval^.intval := ORD(CAP(CHR(z^.conval^.intval))); z^.obj := NIL
+							z^.conval^.intval := ORD(CAP(SHORT(CHR(z^.conval^.intval)))); z^.obj := NIL
 						ELSE z := NewOp(op, typ, z)
 						END
 					ELSE err(111); z^.typ := OPT.chartyp
@@ -584,7 +620,7 @@
 		END
 	END Promote;
 
-	PROCEDURE PromoteUByte(VAR left, right: OPT.Node);	(* convert UBYTE to signed *)
+	PROCEDURE PromoteUByte (VAR left, right: OPT.Node);	(* convert UBYTE to signed *)
 		VAR f, g: INTEGER; new: OPT.Struct;
 	BEGIN
 		f := left^.typ^.form; g := right^.typ^.form; new := left^.typ;
@@ -969,7 +1005,7 @@
 				ELSE
 					f := z^.typ^.form; g := y^.typ^.form;
 					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Byte..Set})) THEN
-						CASE z^.typ^.form OF
+						CASE f OF
 						  Char:
 								IF z^.class = Nconst THEN CharToString(z) ELSE err(100) END
 						| Byte:
@@ -1141,7 +1177,7 @@
 						END;
 						IF do THEN NewOp(op, typ, z, y) END
 				| minus:
-						IF ~(f IN {Undef, Byte, UByte, SInt..Set}) THEN err(106); typ := OPT.undftyp END;
+						IF ~(f IN {Undef, Byte, UByte, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
 						IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
 				| or:
 						IF f = Bool THEN
@@ -1281,6 +1317,11 @@
 					IF x = y THEN (* ok *)
 					ELSIF (g = String) & (x^.BaseTyp = OPT.chartyp) THEN (*check length of string*)
 						IF ynode^.conval^.intval2 > x^.n THEN err(114) END
+					(* массиву из символов присваивается массив из символов *)
+					ELSIF (g = Comp) & (y^.comp = Array) & (y^.BaseTyp = OPT.chartyp)
+						& (x^.BaseTyp = OPT.chartyp) & (ynode^.left # NIL) & (ynode^.left^.obj # NIL)
+						& (ynode^.left^.obj^.conval # NIL) & (ynode^.left^.obj^.conval^.arr # NIL) THEN
+						 	IF y^.n > x^.n THEN err(114) END
 					ELSE err(113)
 					END
 				ELSE (*DynArr*) err(113)
