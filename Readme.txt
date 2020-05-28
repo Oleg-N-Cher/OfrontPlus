@@ -59,7 +59,7 @@ Ofront+ differences from Ofront/voc
 
   11. "Proper FOR" support in Oberon-3 (concept and implementation by Oleg Komlev).
 
-  12. Constant arrays support in Oberon-3 (yet only in Ofront+ for BlackBox).
+  12. Constant arrays support in Oberon-3.
 
   13. BITS(), ORD(set), LEN(string$), str1 := str2$, IN/OUT procedure parameters, attributes NEW, ABSTRACT, LIMITED, EMPTY and EXTENSIBLE for records/methods (in Component Pascal).
 

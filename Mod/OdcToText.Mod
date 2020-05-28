@@ -1,0 +1,349 @@
+﻿MODULE OdcToText; (** .odc to text Converter (c) VEDAsoft Oberon Club *)
+
+(*
+  «Сырой» конвертер формата odc (BlackBox Component Builder) в текст.
+  Поставляется «как есть» без ограничений. Лицензия: freeware.
+  (c) 2018 Oleg N. Cher, VEDAsoft Oberon Club, https://zx.oberon2.ru
+
+  https://github.com/Oleg-N-Cher/XDev/blob/master/Bin/odc2txt.exe
+
+  Проверен как для юникодных документов, так и для старых ANSI (BB 1.5).
+  Известные проблемы:
+    трап при попытке конвертировать не odc, а что-то другое;
+    не умеет включать текст из складок (folds) и селекторов.
+*)
+
+IMPORT Files, Out := Console, CmdLine := Args;
+
+TYPE
+  Text16 = POINTER TO ARRAY OF INT16;
+  CP1251 = ARRAY 128 OF INT16;
+
+CONST
+  TAB = 09H; CR = 0DH; LF = 0AH;
+  LTAB = 0AH; (* left tab *)
+  PARA = 0EH; (* Unicode 2029, PARAGRAPH SEPARATOR *)
+
+  Cp1251 = CP1251( (* http://ru.wikipedia.org/wiki/Windows-1251 *)
+    (* ЂЃ‚ѓ„…†‡ *)
+     402H,  403H, 201AH,  453H, 201EH, 2026H, 2020H, 2021H, 
+    (* €‰Љ‹ЊЌЋЏ *)
+    20ACH, 2030H,  409H, 2039H,  40AH,  40CH,  40BH,  40FH, 
+    (* ђ‘’“”•–— *)
+     452H, 2018H, 2019H, 201CH, 201DH, 2022H, 2013H, 2014H, 
+    (* ?™љ›њќћџ *)
+      3FH, 2122H,  459H, 203AH,  45AH,  45CH,  45BH,  45FH, 
+    (*  ЎўЈ¤Ґ¦§ *)
+     0A0H,  40EH,  45EH,  408H,  0A4H,  490H,  0A6H,  0A7H, 
+    (* Ё©Є«¬-­®Ї *)
+     401H,  0A9H,  404H,  0ABH,  0ACH,  0ADH,  0AEH,  407H, 
+    (* °±Ііґµ¶· *)
+     0B0H,  0B1H,  406H,  456H,  491H,  0B5H,  0B6H,  0B7H, 
+    (* ё№є»јЅѕї *)
+     451H, 2116H,  454H,  0BBH,  458H,  405H,  455H,  457H, 
+    (* АБВГДЕЖЗ *)
+     410H,  411H,  412H,  413H,  414H,  415H,  416H,  417H, 
+    (* ИЙКЛМНОП *)
+     418H,  419H,  41AH,  41BH,  41CH,  41DH,  41EH,  41FH, 
+    (* РСТУФХЦЧ *)
+     420H,  421H,  422H,  423H,  424H,  425H,  426H,  427H, 
+    (* ШЩЪЫЬЭЮЯ *)
+     428H,  429H,  42AH,  42BH,  42CH,  42DH,  42EH,  42FH, 
+    (* абвгдежз *)
+     430H,  431H,  432H,  433H,  434H,  435H,  436H,  437H, 
+    (* ийклмноп *)
+     438H,  439H,  43AH,  43BH,  43CH,  43DH,  43EH,  43FH, 
+    (* рстуфхцч *)
+     440H,  441H,  442H,  443H,  444H,  445H,  446H,  447H, 
+    (* шщъыьэюя *)
+     448H,  449H,  44AH,  44BH,  44CH,  44DH,  44EH,  44FH
+  );
+
+VAR
+  pathname, utf8name: ARRAY 1024 OF CHAR;
+
+PROCEDURE HaltMsg (msg: ARRAY OF CHAR; n: INTEGER);
+  VAR i: INTEGER; ch: CHAR;
+BEGIN
+  i := 0; ch := msg[0];
+  WHILE ch # 0X DO
+    IF ch = "#" THEN Out.Int(n, 0) ELSE Out.Char(ch) END;
+    INC(i);
+    ch := msg[i];
+  END;
+  Out.Ln; HALT(1)
+END HaltMsg;
+
+PROCEDURE HaltStr (msg, str: ARRAY OF CHAR);
+  VAR i: INTEGER; ch: CHAR;
+BEGIN
+  i := 0; ch := msg[0];
+  WHILE ch # 0X DO
+    IF ch = "#" THEN Out.String(str) ELSE Out.Char(ch) END;
+    INC(i);
+    ch := msg[i];
+  END;
+  Out.Ln; HALT(1)
+END HaltStr;
+
+PROCEDURE CP1251ToWideChar (VAR ch: INT16);
+BEGIN
+  IF (ch >= 80H) & (ch <= 0FFH) THEN ch := Cp1251[ch - 80H] END
+END CP1251ToWideChar;
+
+(*
+
+  0EX  SO  Shift Out — LS1 Locking-Shift One
+
+Used to extend the character set. SO may alter the meaning of the following bit combinations until an SI is reached. Between SI and SO, character positions 33-126 (decimal) may represent additional characters that would not otherwise fit in the regular character set. Note: SO (Shift Out) is normal name of this control. LS1 (Locking-Shift One) is used by ECMA-35 and ECMA-48. In those standards, SO is used in 7-bit environments and LS1 in 8-bit environments. The mechanism to select the alternative character set(s) was defined in ANSI X3.41, ISO 2022 and ECMA-35. It includes the use of escape sequences starting with ESC. SO has also been used on printers to select enlarged characters or another color.
+
+*)
+
+PROCEDURE ReadFile (
+  f: Files.File; VAR text: Text16; VAR txtlen: INTEGER; VAR bom: BOOLEAN);
+
+  VAR x, len, next, down, end: INTEGER; in, in1: Files.Rider;
+    ch16: INT16; b: BYTE;
+
+  PROCEDURE ReadInt (VAR x: INTEGER);
+    VAR b: BYTE;
+  BEGIN
+    Files.ReadByte(@in, @b); x := b MOD 256;
+    Files.ReadByte(@in, @b); x := x + (b MOD 256) * 100H;
+    Files.ReadByte(@in, @b); x := x + (b MOD 256) * 10000H;
+    Files.ReadByte(@in, @b); x := x + b * 1000000H
+  END ReadInt;
+
+  PROCEDURE ReadHead (VAR next, down, end: INTEGER);
+    VAR b, t: BYTE; n: INTEGER;
+  BEGIN
+    Files.ReadByte(@in, @b);
+    REPEAT
+      Files.ReadByte(@in, @t);
+      IF t = -14 THEN ReadInt(@n)
+      ELSE
+        REPEAT Files.ReadByte(@in, @b) UNTIL b = 0
+      END
+    UNTIL t # -15;
+    ReadInt(@n);
+    ReadInt(@next); next := next + SHORT(Files.Pos(@in));
+    ReadInt(@down); down := down + SHORT(Files.Pos(@in));
+    ReadInt(@end); end := end + SHORT(Files.Pos(@in))
+  END ReadHead;
+
+BEGIN
+  txtlen := 0; bom := FALSE;
+  IF f # NIL THEN  (* read text file *)
+    Files.Set(@in, f, 0); Files.Set(@in1, f, 0);
+    (*IF (in # NIL) & (in1 # NIL) THEN*)
+      Files.Set(@in, f, 8); ReadHead(@next, @down, @end);  (* document view *)
+      Files.Set(@in, f, down); ReadHead(@next, @down, @end);  (* document model *)
+      Files.Set(@in, f, down); ReadHead(@next, @down, @end);  (* text view *)
+      Files.Set(@in, f, down); ReadHead(@next, @down, @end);  (* text model *)
+      Files.ReadByte(@in, @b); Files.ReadByte(@in, @b); Files.ReadByte(@in, @b);  (* versions *)
+      Files.ReadByte(@in, @b); Files.ReadByte(@in, @b); Files.ReadByte(@in, @b);
+      ReadInt(@x); Files.Set(@in1, f, SHORT(Files.Pos(@in)) + x);  (* text offset *)
+      next := down;
+      NEW(text, Files.Length(f));
+      Files.ReadByte(@in, @b);
+      WHILE b # -1 DO
+        IF next = SHORT(Files.Pos(@in)) THEN ReadHead(@next, @down, @end); Files.Set(@in, f, end) END;  (* skip attributes *)
+        ReadInt(@len);
+        IF len > 0 THEN  (* shortchar run *)
+          WHILE len > 0 DO
+            Files.ReadByte(@in1, @b); ch16 := b MOD 256;
+            IF ch16 > 7FH THEN bom := TRUE; CP1251ToWideChar(@ch16); text^[txtlen] := ch16; INC(txtlen)
+            ELSIF (ch16 = TAB) OR (ch16 = CR) OR (ch16 >= ORD(" ")) THEN text^[txtlen] := ch16; INC(txtlen)
+            ELSIF (ch16 = LTAB) OR (ch16 = PARA) THEN  (* ignore *)
+            ELSE HaltMsg("Unknown SHORTCHAR code: [#]", ch16)
+            END;
+            DEC(len)
+          END
+        ELSIF len < 0 THEN    (* longchar run *)
+          bom := TRUE;
+          WHILE len < 0 DO
+            Files.ReadByte(@in1, @b); x := b MOD 256; Files.ReadByte(@in1, @b); ch16 := SHORT(x + 256*(b + 128));
+            text^[txtlen] := ch16; INC(txtlen); INC(len, 2)
+          END
+        ELSE  (* view *)
+          ReadInt(@x); ReadInt(@x); Files.ReadByte(@in1, @b);  (* ignore *)
+        END;
+        IF next = SHORT(Files.Pos(@in)) THEN ReadHead(@next, @down, @end); Files.Set(@in, f, end) END;  (* skip view data *)
+        Files.ReadByte(@in, @b);
+      END;
+      (*text^[txtlen] := 0*)
+    (*END*)
+  END
+END ReadFile;
+
+(*
+PROCEDURE ReadFile2 (f: Files.File; VAR text: Text16; VAR bom: BOOLEAN);
+  VAR i : INTEGER; in: Files.Rider; b, state: BYTE;
+BEGIN
+  bom := FALSE;
+  IF f # NIL THEN  (* read text file *)
+    Files.Set(@in, f, 0);
+    (*IF in # NIL THEN*)
+      i := 0; NEW(text, Files.Length(f) + 1);
+      state := 0;
+      Files.ReadByte(@in, @b);
+      WHILE ~in.eof DO
+        CASE state OF
+        | 0:
+          IF b = -1 THEN state := 1 END
+        | 1:
+          IF (b = 0) OR (b = 1) THEN state := 0
+          ELSIF b = 2 THEN text^[i] := ORD("("); INC(i); text^[i] := ORD("!"); INC(i); text^[i] := ORD(")"); INC(i)
+          ELSIF b = -1 THEN
+          ELSIF b = 82H-100H THEN state := 2
+          ELSE
+            text^[i] := b MOD 256; INC(i)
+          END
+        | 2:
+        ELSE
+          HaltMsg("Unknown .odc format. Code = ", b)
+        END;
+        Files.ReadByte(@in, @b);
+      END;
+      text^[i] := 0
+    (*END*)
+  END
+END ReadFile2;
+*)
+
+PROCEDURE WideCharToCP1251 (ch: INT16): CHAR;
+VAR
+  n: INTEGER;
+BEGIN
+  IF ch <= 07FH THEN RETURN CHR(ch) END;
+  FOR n := 7FH TO 0 BY -1 DO
+    IF ch = Cp1251[n] THEN RETURN CHR(SHORT(n + 80H)) END;
+  END;
+  Out.String("Can't convert character ["); Out.Int(ch, 0); Out.Char("]"); Out.Ln;
+  RETURN "?" (* Replace an unknown character to "?" *)
+END WideCharToCP1251;
+
+PROCEDURE OdcTo1251 (pathname: ARRAY OF CHAR);
+VAR
+  text16: Text16; f: Files.File; ch16: INT16; textlen, n: INTEGER; bom: BOOLEAN;
+BEGIN
+  f := Files.Old(pathname);
+  IF f # NIL THEN
+    ReadFile(f, @text16, @textlen, @bom);
+    IF text16 # NIL THEN
+      n := 0;
+      WHILE n < textlen DO
+        ch16 := text16^[n];
+        IF ch16 # CR THEN Out.Char(WideCharToCP1251(ch16)) ELSE Out.Ln END;
+        INC(n);
+      END
+    ELSE
+      HaltStr("Couldn't read " + '"#"', pathname)
+    END
+  ELSE
+    HaltStr("Couldn't find " + '"#"', pathname)
+  END;
+  Out.Flush
+END OdcTo1251;
+
+PROCEDURE StringToUtf8* (in: ARRAY OF INT16; VAR out: ARRAY OF CHAR; 
+                    VAR res: INTEGER);
+  VAR i, j, val, max: INTEGER;
+BEGIN
+  i := 0; j := 0; max := LEN(out) - 3;
+  WHILE (in[i] # 0) & (j < max) DO
+    val := in[i]; INC(i);
+    IF val < 128 THEN
+      out[j] := CHR(val); INC(j)
+    ELSIF val < 2048 THEN
+      out[j] := CHR(val DIV 64 + 192); INC(j);
+      out[j] := CHR(val MOD 64 + 128); INC(j)
+    ELSE
+      out[j] := CHR(val DIV 4096 + 224); INC(j); 
+      out[j] := CHR(val DIV 64 MOD 64 + 128); INC(j);
+      out[j] := CHR(val MOD 64 + 128); INC(j)
+    END;
+  END;
+  out[j] := 0X;
+  IF in[i] = 0 THEN res := 0 (*ok*) ELSE res :=  1 (*truncated*) END
+END StringToUtf8;
+
+PROCEDURE OdcToUtf8 (pathname, utf8name: ARRAY OF CHAR; crlf: BOOLEAN);
+VAR
+  text: Text16; textlen, res: INTEGER; bom, emit: BOOLEAN; byte: CHAR;
+  f, utf8file: Files.File; src, wr: Files.Rider;
+  utf8text: POINTER TO ARRAY OF CHAR; tempname: ARRAY 1000 OF CHAR;
+
+  PROCEDURE Emit (ch: CHAR);
+  VAR in: CHAR;
+  BEGIN
+    IF ~emit THEN
+      IF src.eof THEN emit := TRUE
+      ELSE
+        Files.ReadChar(@src, @in);
+        IF in # ch THEN emit := TRUE END;
+      END;
+    END;
+    Files.WriteChar(@wr, ch);
+  END Emit;
+
+BEGIN
+  f := Files.Old(pathname);
+  IF f # NIL THEN
+    ReadFile(f, @text, @textlen, @bom);
+    IF text # NIL THEN
+      NEW(utf8text, 4 * textlen + 1); StringToUtf8(text^, @utf8text^, @res);
+      IF res = 0 THEN
+        tempname := utf8name + ".tmp";
+        utf8file := Files.New(tempname);
+        IF utf8file # NIL THEN
+          f := Files.Old(utf8name); emit := (f = NIL);
+          IF ~emit THEN Files.Set(@src, f, 0) END;
+          Files.Set(@wr, utf8file, 0);
+          IF bom THEN Emit(0EFX); Emit(0BBX); Emit(0BFX) END;
+          res := 0; byte:= utf8text^[0];
+          WHILE byte # 0X DO
+            IF byte # CHR(CR) THEN Emit(byte);
+            ELSE
+              IF crlf THEN Emit(CHR(CR)) END;
+              Emit(CHR(LF));
+            END;
+            INC(res); byte:= utf8text^[res];
+          END;
+          IF ~emit THEN
+            Files.ReadChar(@src, @byte); emit := ~src.eof OR (byte # 0X);
+          END;
+          IF f # NIL THEN Files.Close(f) END;
+          IF emit THEN
+            Files.Register(utf8file); Files.Rename(tempname, utf8name, @res);
+            IF res # 0 THEN
+              HaltStr("Couldn't save " + '"#"', utf8name)
+            END;
+          END;
+        ELSE
+          HaltStr("Couldn't create " + '"#"', utf8name)
+        END
+      ELSE
+        HaltMsg("StringToUtf8 fault: code [#]", res)
+      END
+    ELSE
+      HaltStr("Couldn't read " + '"#"', pathname)
+    END
+  ELSE
+    HaltStr("Couldn't find " + '"#"', pathname)
+  END
+END OdcToUtf8;
+
+BEGIN
+  Files.SetSearchPath(".");
+  CASE CmdLine.argc OF
+  | 2:
+    CmdLine.Get(1, @pathname); OdcTo1251(pathname);
+  | 3:
+    CmdLine.Get(1, @pathname); CmdLine.Get(2, @utf8name); OdcToUtf8(pathname, utf8name, TRUE)
+  ELSE
+    Out.String(".odc to text Converter v1.0 (c) VEDAsoft Oberon Club"); Out.Ln; Out.Ln; 
+    Out.String("  to UTF-8 (BOM, CRLF): odc2txt file.odc file.txt"); Out.Ln;
+    Out.String("  to 1251 (Windows): odc2txt file.odc > file.txt"); Out.Ln;
+  END;
+END OdcToText.

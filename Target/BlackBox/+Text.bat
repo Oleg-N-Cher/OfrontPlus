@@ -5,16 +5,16 @@ PAUSE
 EXIT
 
 :XDev
-SET txt=%XDev%\Bin\odc2txt.exe
-%txt% Mod\Browser.odc Mod\Text\Browser.txt
+SET txt=..\Win32\odc2txt.exe
+%txt% Mod\Browser.odc Mod\Text\Browser.Mod
 IF errorlevel 1 PAUSE
-%txt% Mod\Cmd.odc Mod\Text\Cmd.txt
+%txt% Mod\Cmd.odc Mod\Text\Cmd.Mod
 IF errorlevel 1 PAUSE
 %txt% Mod\OPB.odc ..\..\Mod\OfrontOPB.Mod
 IF errorlevel 1 PAUSE
 %txt% Mod\OPC.odc ..\..\Mod\OfrontOPC.Mod
 IF errorlevel 1 PAUSE
-%txt% Mod\OPM.odc Mod\Text\OPM.txt
+%txt% Mod\OPM.odc Mod\Text\OPM.Mod
 IF errorlevel 1 PAUSE
 %txt% Mod\OPP.odc ..\..\Mod\OfrontOPP.Mod
 IF errorlevel 1 PAUSE
