@@ -168,8 +168,8 @@ BEGIN
 	RETURN M(string, pattern, Length(string)-1, Length(pattern)-1)
 END Match;
 
-PROCEDURE StrToReal*(s: ARRAY OF CHAR; VAR r: REAL32);
-VAR p, e: INT16; y, g: REAL32; neg, negE: BOOLEAN;
+PROCEDURE StrToReal* (IN s: ARRAY OF CHAR; VAR r: REAL32);
+	VAR p, e: INT16; y, g: REAL32; neg, negE: BOOLEAN;
 BEGIN
 	p := 0;
 	WHILE (s[p] = " ") OR (s[p] = "0") DO INC(p) END;
@@ -203,8 +203,8 @@ BEGIN
 	r := y;
 END StrToReal;
 
-PROCEDURE StrToLongReal*(s: ARRAY OF CHAR; VAR r: LONGREAL);
-VAR p, e: INTEGER; y, g: LONGREAL; neg, negE: BOOLEAN;
+PROCEDURE StrToLongReal* (IN s: ARRAY OF CHAR; VAR r: LONGREAL);
+	VAR p, e: INTEGER; y, g: LONGREAL; neg, negE: BOOLEAN;
 BEGIN
 	p := 0;
 	WHILE (s[p] = " ") OR (s[p] = "0") DO INC(p) END;
