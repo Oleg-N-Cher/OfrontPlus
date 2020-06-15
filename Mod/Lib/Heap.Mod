@@ -101,6 +101,7 @@ MODULE Heap;
     fin: FinNode;
 
     (* garbage collector locking *)
+    lockGC*:     SHORTINT;
     lockdepth:   SHORTINT;
     interrupted: BOOLEAN;
 
@@ -452,7 +453,7 @@ MODULE Heap;
       END;
       chnk :=  nextChnk
       (* old variant without recycling of empty chunks
-			IF freesize # 0 THEN (*collect last block(s)*)
+      IF freesize # 0 THEN (*collect last block(s)*)
         start := adr - freesize;
         S.PUT(start,         start+SZA);
         S.PUT(start+sizeOff, freesize);
@@ -585,7 +586,7 @@ MODULE Heap;
       i12, i13, i14, i15, i16, i17, i18, i19, i20, i21, i22, i23: ADDRESS;
       cand: ARRAY 10000 OF ADDRESS;
   BEGIN
-    IF (lockdepth = 0) OR (lockdepth = 1) & ~markStack THEN
+    IF (lockGC = 0) OR (lockGC = 1) & ~markStack THEN 
       Lock();
       m := S.VAL(Module, modules);
       WHILE m # NIL DO
@@ -651,6 +652,7 @@ MODULE Heap;
     FileCount   := 0;
     modules     := NIL;
     fin         := NIL;
+    lockGC      := 0;
     interrupted := FALSE;
 
     HeapModuleInit;
