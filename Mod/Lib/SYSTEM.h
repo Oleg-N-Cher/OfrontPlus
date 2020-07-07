@@ -129,7 +129,7 @@ extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
 
 static inline void __STRAPND (CHAR *from, CHAR *to, INTEGER len, CHAR *mod, INTEGER pos) {
   do { len--; if (len < 0) __HALT(-8, mod, pos); } while (*to++); to--;
-  do { if (len-- < 0) __HALT(-8, mod, pos); } while (*to++ = *from++);
+  do { if (len-- < 0) __HALT(-8, mod, pos); } while ((*to++ = *from++));
 }
 #define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
 static inline void __STRCOPY (CHAR *from, CHAR *to, INTEGER len, CHAR *mod, INTEGER pos) {
