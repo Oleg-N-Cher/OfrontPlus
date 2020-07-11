@@ -205,7 +205,7 @@
 			ELSIF typ^.form = Pointer THEN
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ.txtpos) END;
 				TraverseType(typ^.BaseTyp);
-				IF typ^.BaseTyp.comp = DynArr THEN OPC.InsertArrayType(typ^.BaseTyp) END
+				IF (typ^.BaseTyp.comp = DynArr) & (typ^.BaseTyp^.sysflag <= 0) THEN OPC.InsertArrayType(typ^.BaseTyp) END
 			ELSIF typ^.form = ProcTyp THEN
 				TraverseType(typ^.BaseTyp);
 				p := typ^.link;
