@@ -1,0 +1,254 @@
+MODULE Complex8;  
+
+	(*	author:	Al Freed
+			date:	12 Dec 97
+			version:	1.0
+			report errors to:	alfreed@ohio.net	*)
+
+	(**   Establishes a record type for complex numbers in single precision. 
+			Exports arithmatical functions for complex arithmetic.
+			Uses the operator overloading capabilities of Active Oberon.
+				type:			Number	a private record for complex numbers
+				overloads:	 =	equals
+									#	doesn't equal
+									-	negation
+									~	conjugation
+									+	addition
+									-	subtraction
+									*	multiplication
+									/	division
+				functions:	 Cartesian(real, imag)	creates the complex number:  real + i * imag
+									Polar(abs, arg)	creates the complex number:  abs * exp(i * arg)
+									Float(x)	convert a real number into a complex number
+									Re(z)	returns the real part of z in Cartesian format
+									Im(z)	returns the imaginary part of z in Cartesina format
+									Arg(z)	returns the polar angle of z:  Pz
+									Abs(z)	returns the polar modulus of z: |z|	*)
+
+	IMPORT
+		Out, Math := RealMath8;
+
+	CONST
+		zero = 0.0;
+
+	TYPE
+		Number* = RECORD 
+			r, i : REAL
+		END;
+
+	(** Object Creation *)
+
+	PROCEDURE Cartesian* (real, imag : REAL) : Number;
+		VAR cplx : Number;
+	BEGIN
+		cplx.r := real;
+		cplx.i := imag;
+		RETURN cplx
+	END Cartesian;
+
+	PROCEDURE Polar* (abs, arg : REAL) : Number;
+		VAR cplx : Number;
+	BEGIN
+		cplx.r := abs * Math.Cos(arg);
+		cplx.i := abs * Math.Sin(arg);
+		RETURN cplx
+	END Polar;
+
+	PROCEDURE Float* (r : REAL) : Number;
+	BEGIN
+		RETURN Cartesian(r, zero)
+	END Float;
+
+	(** Cartesian Components *)
+
+	PROCEDURE Re* (z : Number) : REAL;
+	BEGIN
+		RETURN z.r
+	END Re;
+
+	PROCEDURE Im* (z : Number) : REAL;
+	BEGIN
+		RETURN z.i
+	END Im;
+
+	(** Polar Components *)
+
+	PROCEDURE  Arg* (z : Number) : REAL;
+	BEGIN
+		RETURN Math.ArcTan2(z.i, z.r)
+	END Arg;
+
+	PROCEDURE Abs* (z : Number) : REAL;
+		VAR coef, ratio : REAL;
+	BEGIN
+		IF (z.r = zero) & (z.i = zero) THEN
+			RETURN zero
+		ELSE
+			IF ABS(z.r) > ABS(z.i) THEN
+				coef := ABS(z.r); 
+				ratio := z.i / z.r
+			ELSE
+				coef := ABS(z.i); 
+				ratio := z.r / z.i
+			END;
+			RETURN coef * Math.Sqrt(1.0 + ratio * ratio)
+		END
+	END Abs;
+
+	(** Negation *)
+
+	PROCEDURE "-"* (z : Number) : Number;
+	BEGIN
+		RETURN Cartesian(-z.r, -z.i)
+	END "-";
+
+	(** Conjugation *)
+
+	PROCEDURE "~"* (z : Number) : Number;
+	BEGIN
+		RETURN Cartesian(z.r, -z.i)
+	END "~";
+
+	(** Equalities *)
+
+	PROCEDURE "="* (r : REAL; z : Number) : BOOLEAN;
+	BEGIN
+		RETURN (r = z.r) & (z.i = zero)
+	END "=";
+
+	PROCEDURE "="* (z : Number; r : REAL) : BOOLEAN;
+	BEGIN
+		RETURN r = z
+	END "=";
+
+	PROCEDURE "="* (z1, z2 : Number) : BOOLEAN;
+	BEGIN
+		RETURN (z1.r = z2.r) & (z1.i = z2.i)
+	END "=";
+
+	PROCEDURE "#"* (r : REAL; z : Number) : BOOLEAN;
+	BEGIN
+		RETURN (r # z.r) OR (z.i # zero)
+	END "#";
+
+	PROCEDURE "#"* (z : Number; r : REAL) : BOOLEAN;
+	BEGIN
+		RETURN r # z
+	END "#";
+
+	PROCEDURE "#"* (z1, z2 : Number) : BOOLEAN;
+	BEGIN
+		RETURN (z1.r # z2.r) OR (z1.i # z2.i)
+	END "#";
+
+	(** Addition *)
+
+	PROCEDURE "+"* (r : REAL; z : Number) : Number;
+	BEGIN
+		RETURN Cartesian(r + z.r, z.i)
+	END "+";
+
+	PROCEDURE "+"* (z : Number; r : REAL) : Number;
+	BEGIN
+		RETURN r + z
+	END "+";
+
+	PROCEDURE "+"* (z1, z2 : Number) : Number;
+	BEGIN 
+		RETURN Cartesian(z1.r + z2.r, z1.i + z2.i)
+	END "+";
+
+	(** Subtraction *)
+
+	PROCEDURE "-"* (r : REAL; z : Number) : Number;
+	BEGIN
+		RETURN r + (-z)
+	END "-";
+
+	PROCEDURE "-"* (z : Number; r : REAL) : Number;
+	BEGIN
+		RETURN z + (-r)
+	END "-";
+
+	PROCEDURE "-"* (z1, z2 : Number) : Number;
+	BEGIN 
+		RETURN z1 + (-z2)
+	END "-";
+
+	(** Multiplication *)
+
+	PROCEDURE "*"* (r : REAL; z : Number) : Number;
+	BEGIN
+		RETURN Cartesian(r * z.r, r * z.i)
+	END "*";
+
+	PROCEDURE "*"* (z : Number; r : REAL) : Number;
+	BEGIN
+		RETURN r * z
+	END "*";
+
+	PROCEDURE "*"* (z1, z2 : Number) : Number;
+		VAR cplx : Number;
+	BEGIN
+		cplx.r := z1.r * z2.r - z1.i * z2.i; 
+		cplx.i := z1.r * z2.i + z1.i * z2.r;
+		RETURN cplx
+	END "*";
+
+	(** Division *)
+
+	PROCEDURE "/"* (r : REAL; z : Number) : Number;
+		VAR cplx : Number;
+			denom, ratio : REAL;
+	BEGIN
+		IF (z.r = zero) & (z.i = zero) THEN
+			Out.String("Division by zero.");
+			HALT(21)
+		ELSIF ABS(z.r) > ABS(z.i) THEN
+			ratio := z.i / z.r;
+			denom := z.r + z.i * ratio;
+			cplx.r := r / denom;
+			cplx.i := -r * ratio / denom
+		ELSE
+			ratio := z.r / z.i;
+			denom := z.r * ratio + z.i;
+			cplx.r := r * ratio / denom;
+			cplx.i := -r / denom
+		END;
+		RETURN cplx
+	END "/";
+
+	PROCEDURE "/"* (z : Number; r : REAL) : Number;
+		VAR cplx : Number;	BEGIN
+		IF r = zero THEN
+			Out.String("Division by zero.");
+			HALT(21)
+		ELSE
+			RETURN z * (1.0/r)
+		END
+	END "/";
+
+	PROCEDURE "/"* (z1, z2 : Number) : Number;
+		(* Algorithm can be found in Press et al. *)
+		VAR cplx : Number;
+			denom, ratio : REAL;
+	BEGIN
+		IF (z2.r = zero) & (z2.i = zero) THEN
+			Out.String("Division by zero.");
+			HALT(21)
+		ELSIF ABS(z2.r) > ABS(z2.i) THEN
+			ratio := z2.i / z2.r;
+			denom := z2.r + z2.i * ratio;
+			cplx.r := (z1.r + z1.i * ratio) / denom;
+			cplx.i := (z1.i - z1.r * ratio) / denom
+		ELSE
+			ratio := z2.r / z2.i;
+			denom := z2.r * ratio + z2.i;
+			cplx.r := (z1.r * ratio + z1.i) / denom;
+			cplx.i := (z1.i * ratio - z1.r) / denom
+		END;
+		RETURN cplx
+	END "/";
+
+BEGIN
+END Complex8.

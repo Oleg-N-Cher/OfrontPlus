@@ -1,0 +1,85 @@
+<HTML>
+<HEAD>
+   <TITLE> ETH Z&uuml;rich / Computer Science / OberonX </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+
+<H1>OberonX</H1>
+
+<H2><I>Roberto Morelli</I></H2>
+
+<H3>Diploma Thesis Winter 1996<BR>
+Supervisor: P.Reali<BR>
+Institute for Computer Systems, ETH Z&uuml;rich </H3>
+
+<HR>
+<H2>Objectives</H2>
+
+<P>The OberonX programming language is an experimantal further development
+of Oberon towards the Oberon-XSC pioneered in Karlsruhe. OberonX holds
+new constructs, which improve the Oberon abstraction capabilities. The
+programming of methematical software should be made easier by the introduction
+of new language extensions. A new array concept is implemented, which introduces
+a new semantic and syntactic definition, allowing lower bounds, semi-dynamic
+and truly dynamic arrays in the language. Overloaded operators, in combiantion
+with complex return values, increase the flexibility of the language by
+removing the former restrictions. <BR>
+</P>
+
+<H2>Results</H2>
+
+<H3>Arrays</H3>
+
+<P>The most relevant features regard the possibility of indexing intervals
+specified by lower bounds and lengths, of allowing open dynamic components
+inside static ones, of using expressions to define the interval. The concept
+of pointers bounded to arrays is no longer valid : the compiler itself
+decides if an array block is to be considered static, semi-dynamic, dynamic
+or open: this allows the definition of truly dynamic arrays. The possibility
+of asymmetric multidimensional matrices declaration is also provided. Array
+structures are treated as whole entities with consequence on assignments,
+parameter passing and returs values. Te new array semantic results to be
+different from the original one and requires a different point of wiev
+for the programmer. </P>
+
+<H3>Complex Return Values</H3>
+
+<P>The return capability of Oberon functions has been extended to all the
+type structures: no restrictions are imposed. This will increase the flexibility
+and abstraction of the language when treating complex data types. Nested
+function calls with complex return types are also allowed. </P>
+
+<H3>Operators</H3>
+
+<P>The use of a set of terminal symbols belonging to the operator class,
+allows the declaration of functions usable as infix operators in expression
+context. Overloading of compiler bounded and user defined operators is
+therefore allowed. A method to resolve operator identification based on
+the argument type signatures has been developed. Imported operator qualification
+is not obligatory, but it can be necessary to avoid operator clashes, whose
+presence does not allow the program to be compiled. In case of the absence
+of a well suited operator, a method based on operan type distance computation
+allows the identification of the best operator available, allowing the
+use of every Oberon type construct. In case of approximated operator matching,
+type conversion for the basic data types is automatically executed.</P>
+
+<HR>
+[ <A HREF="http://www.inf.ethz.ch/">Department</A>
+| <A HREF="/cs/">Institute</A> 
+| <A HREF="../">Student Projects</A> ]
+<HR>
+
+<ADDRESS>
+ETH Z&uuml;rich: Institut f&uuml;r Computer Systeme, ETH Zentrum, CH-8092 Z&uuml;rich<BR>
+Comments to Patrik Reali &lt;<A HREF="mailto:reali@inf.ethz.ch">reali@inf.ethz.ch</A>&gt;<BR>
+April 4, 1997
+</ADDRESS>
+</BODY>
+</HTML>
+
+
+
+
+
+
+

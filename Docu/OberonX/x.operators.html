@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/_static/css/banner-styles.css?v=_99BHQfY" />
+<link rel="stylesheet" type="text/css" href="/_static/css/iconochive.css?v=qtvMKcIJ" />
+<!-- End Wayback Rewrite JS Include -->
+
+<title> OberonX / Operators</title>
+</head>
+<body bgcolor="#FFFFFF"><!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<style type="text/css">
+body {
+  margin-top:0 !important;
+  padding-top:0 !important;
+  /*min-width:800px !important;*/
+}
+</style>
+
+<!-- END WAYBACK TOOLBAR INSERT -->
+<a href="https://web.archive.org/web/20190422054249/http://www.ethoberon.ethz.ch/">Oberon</a> &gt; <a href="https://web.archive.org/web/20190422054249/http://www.ethoberon.ethz.ch/native/">Native</a> &gt; <a href="index.html">Compiler</a> &gt;  
+<a href="x.index.html">OberonX</a> &gt; Operators
+<h2>OberonX, Operators</h2>
+<hr>
+OberonX allows the implementation of operators. An operator is defined as follows:
+<p>
+<pre> 
+&nbsp; &nbsp; &nbsp;PROCEDURE "op" (a, b: T): Q; 
+&nbsp; &nbsp; &nbsp;BEGIN 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;..... 
+&nbsp; &nbsp; &nbsp;END "op"; 
+</pre>
+<p>
+The following operators can be defined:
+<ul>
+<li> dyadic operators: +, -, *, /, DIV, MOD
+<li> dyadic boolean operators: &lt;, &lt;=, &gt;, &gt;=, =, #, &amp;, OR. The return type must be BOOLEAN
+<li> monadic operators: -
+<li> monadic boolean operators: ~. The return type must be BOOLEAN
+<li> assignment operator: :=. The first parameter must be a VAR parameter
+</ul>
+<br> 
+There are some restrictions on the operator definitions:
+<ul>
+<li> one of the parameters must be declared in the same module. This is to avoid that operators override basic type operators and cause import conflicts.
+</ul>
+<hr>
+Examples:
+<p>
+<pre> 
+&nbsp; &nbsp; &nbsp;PROCEDURE "+"* (a, b: ARRAY OF CHAR): ARRAY OF CHAR; 
+&nbsp; &nbsp; &nbsp;VAR  res: ARRAY LEN(a) + LEN(b) + 1 OF CHAR; i, j: LONGINT; 
+&nbsp; &nbsp; &nbsp;BEGIN 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;i := 0; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;WHILE a[i] # 0X DO  res[i] := a[i]; INC(i)  END; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;j := 0; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;WHILE b[j] # 0X DO  resij] := b[j]; INC(i); INC(j)  END; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;res[i] := 0X; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;RETURN res 
+&nbsp; &nbsp; &nbsp;END "+"; 
+</pre>
+<ul>
+<li> <a href="examples/complex.txt">Complex</a> arithmetic (by Alan Freed)
+</ul>
+<hr>
+<address> 
+February 23, 2000 -  
+<a href="https://web.archive.org/web/20190422054249/mailto:reali@inf.ethz.ch">Patrik Reali</a> -  
+<a href="https://web.archive.org/web/20190422054249/http://www.cs.inf.ethz.ch/">Institut f&uuml;r Computersysteme</a> - 
+<a href="https://web.archive.org/web/20190422054249/http://www.ethz.ch/">ETH Z&uuml;rich</a> 
+(page created with HTML.Tool on Oberon) 
+</address> 
+</body>
+</html>

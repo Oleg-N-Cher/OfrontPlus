@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<link rel="stylesheet" type="text/css" href="/_static/css/banner-styles.css?v=_99BHQfY" />
+<link rel="stylesheet" type="text/css" href="/_static/css/iconochive.css?v=qtvMKcIJ" />
+<!-- End Wayback Rewrite JS Include -->
+
+<title> OberonX / Structured Return Values</title>
+</head>
+<body bgcolor="#FFFFFF"><!-- BEGIN WAYBACK TOOLBAR INSERT -->
+<style type="text/css">
+body {
+  margin-top:0 !important;
+  padding-top:0 !important;
+  /*min-width:800px !important;*/
+}
+</style>
+
+<!-- END WAYBACK TOOLBAR INSERT -->
+<a href="https://web.archive.org/web/20190422054255/http://www.ethoberon.ethz.ch/">Oberon</a> &gt; <a href="https://web.archive.org/web/20190422054255/http://www.ethoberon.ethz.ch/native/">Native</a> &gt; <a href="index.html">Compiler</a> &gt;  
+<a href="x.index.html">OberonX</a> &gt; Return Values
+<h2>OberonX, Structured Return Values</h2>
+<hr>
+OberonX allows procedures to return any type. This should allow a better abstraction in the language and help in the implementation of mathematical code, making the use of functional code much simpler.
+<p>
+Example: 
+<pre> 
+TYPE 
+&nbsp; &nbsp; &nbsp;Vector = ARRAY 3 OF LONGREAL;
+<p>
+PROCEDURE MakeVector(a0, a1, a2: LONGREAL): Vector; 
+&nbsp; &nbsp; &nbsp;VAR v: Vector; 
+&nbsp; &nbsp; &nbsp;BEGIN 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;v[0] := a0; v[1] := a1; v[2] := a2; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;RETURN v 
+&nbsp; &nbsp; &nbsp;END MakeVector;
+<p>
+PROCEDURE Add(a, b: Vector): Vector; 
+&nbsp; &nbsp; &nbsp;BEGIN 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;a[0] := a[0] + b[0]; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;a[1] := a[1] + b[1]; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;a[2] := a[2] + b[2]; 
+&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;RETURN a 
+&nbsp; &nbsp; &nbsp;END Add; 
+</pre>
+<hr>
+<address> 
+February 23, 2000 -  
+<a href="https://web.archive.org/web/20190422054255/mailto:reali@inf.ethz.ch">Patrik Reali</a> -  
+<a href="https://web.archive.org/web/20190422054255/http://www.cs.inf.ethz.ch/">Institut f&uuml;r Computersysteme</a> - 
+<a href="https://web.archive.org/web/20190422054255/http://www.ethz.ch/">ETH Z&uuml;rich</a> 
+(page created with HTML.Tool on Oberon) 
+</address> 
+</body>
+</html>
