@@ -1,0 +1,17 @@
+#!/bin/bash
+cd ../Obj
+rm -f *.a
+rm -f *.c
+rm -f *.h
+rm -f *.sym
+
+cd ..
+rm -f BlitBmp*
+rm -f Book
+rm -f Cnezinka
+rm -f Elo4ka
+rm -f Gradient24
+rm -f HelloWorld
+rm -f Mandelbrot*
+rm -f MyDLL*
+rm -f TestHttp
