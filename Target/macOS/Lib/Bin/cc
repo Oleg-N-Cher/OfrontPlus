@@ -13,9 +13,9 @@ $AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals
 
 ## Eco
 
-$CC ecoBigSets.c ecoBuffer.c ecoListen.c ecoLists.c ecoParser.c
+$CC ecoBigSets.c ecoBuffer.c ecoListen.c ecoLists.c ecoParser.c ecoVector.c
 if [ $? != 0 ]; then exit 1; fi
-$AR ecoBigSets.o ecoBuffer.o ecoListen.o ecoLists.o ecoParser.o
+$AR ecoBigSets.o ecoBuffer.o ecoListen.o ecoLists.o ecoParser.o ecoVector.o
 
 ## ETH Oberon
 
