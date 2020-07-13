@@ -254,10 +254,10 @@ extern void       Heap_INCREF();
 
 // Main module initialization, registration and finalization
 
-extern void SYSTEM_INIT(INTEGER argc, void *argvadr);
+extern void SYSTEM_INIT(INTEGER argc, void *argv);
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, &argv);
+#define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, argv)
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
 
