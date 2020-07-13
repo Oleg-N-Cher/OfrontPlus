@@ -146,11 +146,11 @@ extern void Heap_Unlock();
 
 extern void Heap_InitHeap();
 
-void SYSTEM_INIT(INTEGER argc, void *argvadr)
+void SYSTEM_INIT(INTEGER argc, void *argv)
 {
-  SYSTEM_MainStackFrame = argvadr;
+  SYSTEM_MainStackFrame = &argc;
   SYSTEM_ArgCount = argc;
-  SYSTEM_ArgVector = *(void**)argvadr;
+  SYSTEM_ArgVector = argv;
   SYSTEM_AssertFailHandler = 0;
   SYSTEM_HaltHandler = 0;
   // This function (SYSTEM_INIT) is called at program startup BEFORE any
