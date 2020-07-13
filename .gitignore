@@ -13,6 +13,7 @@ Target/Linux_amd64/Examples/Mandelbrot*
 Target/Linux_amd64/Examples/MyDLLuse
 Target/Linux_amd64/Examples/TestHttp
 Target/Linux_amd64/graphviz
+Target/Linux_amd64/odc2txt
 Target/Linux_amd64/ocat
 Target/Linux_amd64/showdef
 Target/Linux_amd64/Lib/*.a
@@ -31,6 +32,7 @@ Target/Linux_armv7/Examples/MyDLLuse
 Target/Linux_armv7/Examples/TestHttp
 Target/Linux_armv7/graphviz
 Target/Linux_armv7/ocat
+Target/Linux_armv7/odc2txt
 Target/Linux_armv7/showdef
 Target/Linux_armv7/Lib/*.a
 Target/Linux_i386/Examples/Obj/*.c
@@ -48,6 +50,7 @@ Target/Linux_i386/Examples/MyDLLuse
 Target/Linux_i386/Examples/TestHttp
 Target/Linux_i386/graphviz
 Target/Linux_i386/ocat
+Target/Linux_i386/odc2txt
 Target/Linux_i386/showdef
 Target/Linux_i386/Lib/*.a
 Target/Win32/Examples/Obj/*.a
