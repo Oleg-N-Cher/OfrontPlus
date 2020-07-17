@@ -148,7 +148,7 @@ extern void Heap_InitHeap();
 
 void SYSTEM_INIT(INTEGER argc, void *argv)
 {
-  SYSTEM_MainStackFrame = &argc;
+  SYSTEM_MainStackFrame = &argv; // MUST be aligned
   SYSTEM_ArgCount = argc;
   SYSTEM_ArgVector = argv;
   SYSTEM_AssertFailHandler = 0;
