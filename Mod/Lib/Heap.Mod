@@ -562,10 +562,10 @@ MODULE Heap;
       IF n > 100 THEN RETURN END   (* prevent tail recursion optimization *)
     END;
     IF n = 0 THEN
-      nofcand := 0; sp := S.ADR(frame);
-      stack0 := SystemMainStackFrame();
       (* check for minimum alignment of pointers *)
       inc := S.ADR(align.p) - S.ADR(align);
+      nofcand := 0; sp := S.ADR(frame); DEC(sp, sp REM0 inc); (* fix for alignment *)
+      stack0 := SystemMainStackFrame(); DEC(stack0, stack0 REM0 inc);
       IF uLT(stack0, sp) THEN inc := -inc END;
       WHILE sp # stack0 DO
         S.GET(sp, p);
