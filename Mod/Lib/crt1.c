@@ -6,7 +6,6 @@ __declspec(dllimport) void __stdcall ExitProcess (int);
 __declspec(dllimport) void exit (int);
 __declspec(dllimport) int __getmainargs (int*, char**, char**, int, void*);
 int __stdcall WinMain (void*, void*, char*, int);
-__declspec(dllimport) void * __builtin_frame_address (int level);
 
 /*
  * For now the GUI startup function is the same as the console one.
