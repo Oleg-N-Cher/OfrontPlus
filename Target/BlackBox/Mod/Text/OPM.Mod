@@ -957,7 +957,7 @@ suffix does not work in K&R *)
 
 	PROCEDURE WriteModPos*;
 	BEGIN
-		Write('"'); WriteString(modName); WriteString('", '); WriteInt(-errpos)
+		WriteString('(CHAR*)"'); WriteString(modName); WriteString('", '); WriteInt(-errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Writer; F: Files.File);

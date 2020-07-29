@@ -619,7 +619,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	PROCEDURE WriteModPos*;
 	BEGIN
-		Write('"'); WriteString(modName); WriteString('", '); WriteInt(errpos)
+		WriteString('(CHAR*)"'); WriteString(modName); WriteString('", '); WriteInt(errpos)
 	END WriteModPos;
 
 	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);
