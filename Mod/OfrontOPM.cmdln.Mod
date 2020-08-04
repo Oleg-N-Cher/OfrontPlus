@@ -66,7 +66,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 		SFext = ".sym";	(* symbol file extension *)
 		BFext = ".c";	(* body file extension *)
-		HFext = ".h";	(* header file extension *)
+		HFext = ".oh";	(* header file extension *)
 		SFtag = 0F7X;	(* symbol file tag *)
 
 		HeaderFile* = 0;
