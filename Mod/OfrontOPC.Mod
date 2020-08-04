@@ -550,7 +550,7 @@
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
 		IF (str^.comp = DynArr) OR (str^.form IN {Byte..Set, UByte}) THEN RETURN END;
-		IF (OPM.currFile IN {OPM.BodyFile, OPM.HeaderFile}) OR (str^.ref < OPM.MaxStruct (*for hidden exports*) ) THEN
+		IF (OPM.currFile = OPM.BodyFile) OR (str^.ref < OPM.MaxStruct (*for hidden exports*) ) THEN
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
