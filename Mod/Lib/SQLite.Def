@@ -1,4 +1,4 @@
-MODULE SQLite;
+MODULE [foreign] SQLite;
 IMPORT SYSTEM;
 
 CONST

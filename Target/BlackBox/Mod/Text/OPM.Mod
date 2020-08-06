@@ -69,7 +69,7 @@
 
 		SFext = ".sym";	(* symbol file extension *)
 		BFext = ".c";	(* body file extension *)
-		HFext = ".h";	(* header file extension *)
+		HFext = ".Oh";	(* header file extension *)
 		SFtag = 0F7X;	(* symbol file tag *)
 
 		HeaderFile* = 0;
@@ -957,6 +957,7 @@ suffix does not work in K&R *)
 
 	PROCEDURE WriteModPos*;
 	BEGIN
+		IF ansi IN opt THEN WriteString("(CHAR*)") END;
 		Write('"'); WriteString(modName); WriteString('", '); WriteInt(-errpos)
 	END WriteModPos;
 

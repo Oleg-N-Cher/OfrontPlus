@@ -30,7 +30,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -sC -44 SDL2.Mod SDL2mixer.Mod SQLite.Mod Out.Mod In.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod
+ofront+ -sC -44 SDL2.Mod SDL2mixer.Mod SQLite.Def Out.Mod In.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod
 IF errorlevel 1 PAUSE
 
 :: libCurl

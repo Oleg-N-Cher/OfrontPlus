@@ -39,8 +39,9 @@
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
 		PredefinedType = 2; (* for all predefined types *)
-		DefinedInHdr = 3+OPM.HeaderFile; (* named type has been defined in header file *)
-		DefinedInBdy = 3+OPM.BodyFile; (* named type has been defined in body file *)
+		RecursiveType = 3; (* for all types in recursion *)
+		TemporaryType = 4; (* for all types in recursion *)
+		MaxType = 5;
 
 
 		HeaderMsg = "Ofront+ 1.0 -";
@@ -56,7 +57,7 @@
 		LocalScope = "_s"; (* name of a local intermediate scope (variable name) *)
 		GlobalScope = "_s"; (* pointer to current scope extension *)
 		LinkName = "lnk"; (* pointer to previous scope field *)
-		FlagExt = "__h";
+		FlagExt = "__Oh";
 		LenExt = "__len";
 		DynTypExt = "__typ";
 		TagExt = "__typ";
@@ -306,7 +307,10 @@
 	PROCEDURE Undefined(obj: OPT.Object): BOOLEAN;
 	BEGIN
 		(* imported anonymous types have obj^.name = OPT.null; used e.g. for repeating inherited fields *)
-		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # 3+OPM.currFile ) & (obj^.linkadr # PredefinedType) OR (obj^.name = OPT.null)
+		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # MaxType+OPM.currFile )
+			& (obj^.linkadr # PredefinedType)
+			& (obj^.linkadr # RecursiveType)
+			OR (obj^.name = OPT.null)
 	END Undefined;
 
 	PROCEDURE^ FieldList (typ: OPT.Struct; last: BOOLEAN; VAR off, n, curAlign: INTEGER);
@@ -551,7 +555,7 @@
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
 					IF obj^.linkadr = ProcessingType THEN
-						IF str^.form # Pointer THEN obj^.linkadr := PredefinedType END
+						IF str^.form # Pointer THEN obj^.linkadr := RecursiveType END
 					ELSE obj^.linkadr := ProcessingType
 					END
 				END;
@@ -575,19 +579,29 @@
 					field := str^.link;
 					WHILE field # NIL DO DefineType(field^.typ); field := field^.link END
 				END
-			END ;
-			IF (obj # NIL) & Undefined(obj) THEN
-				OPM.WriteString("typedef"); OPM.WriteLn; OPM.Write(Tab); Indent(1);
-				obj^.linkadr := ProcessingType;
-				DeclareBase(obj); OPM.Write(Blank);
-				obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
-				DeclareObj(obj, 0);
-				obj^.typ^.strobj := obj; (* SG: revert trick *)
-				obj^.linkadr := 3+OPM.currFile;
-				EndStat; Indent(-1); OPM.WriteLn;
-				IF obj^.typ^.comp = Record THEN empty := TRUE;
-					DeclareTProcs(str^.link, empty); DefineTProcMacros(str^.link, empty);
-					IF ~empty THEN OPM.WriteLn END
+			END;
+			IF (obj # NIL) & (Undefined(obj) OR (obj^.linkadr = TemporaryType)) THEN
+				IF (obj^.linkadr # RecursiveType) OR (str.comp = Array) THEN
+					OPM.WriteString("typedef"); OPM.WriteLn; OPM.Write(Tab); Indent(1);
+					obj^.linkadr := ProcessingType;
+					DeclareBase(obj); OPM.Write(Blank);
+					obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
+					DeclareObj(obj, 0);
+					obj^.typ^.strobj := obj; (* SG: revert trick *)
+					obj^.linkadr := MaxType+OPM.currFile;
+					EndStat; Indent(-1); OPM.WriteLn;
+					IF obj^.typ^.comp = Record THEN empty := TRUE;
+						DeclareTProcs(str^.link, empty); DefineTProcMacros(str^.link, empty);
+						IF ~empty THEN OPM.WriteLn END
+					END;
+					IF (str^.form = Pointer) & (str^.BaseTyp^.comp = Array) THEN
+						obj := str.BaseTyp.strobj;
+						IF (obj # NIL) & (obj^.linkadr = RecursiveType) THEN
+							obj^.linkadr := TemporaryType;
+							DefineType(str^.BaseTyp);
+							obj^.linkadr := RecursiveType
+						END
+					END
 				END
 			END
 		END
@@ -1106,7 +1120,7 @@
 	PROCEDURE Include(IN name: ARRAY OF SHORTCHAR);
 	BEGIN
 		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteString(name);
-		OPM.WriteString(".h"); OPM.Write(Quotes); OPM.WriteLn
+		OPM.WriteString(".Oh"); OPM.Write(Quotes); OPM.WriteLn
 	END Include;
 
 	PROCEDURE IncludeImports(vis: SHORTINT);

@@ -13,7 +13,7 @@
 *
 */
 
-#include "SYSTEM.h"
+#include "SYSTEM.Oh"
 #include <stdarg.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -47,7 +47,7 @@ INTEGER SYSTEM_DIV(INTEGER x, INTEGER y)
     if (x > 0) return -1 + (x - 1) / y;
     else       return x / y;
   }
-  __HALT(-12, "SYSTEM.c", 50);
+  __HALT(-12, "SYSTEM.c", 50); return 0;
 }
 
 LONGINT SYSTEM_DIVL(LONGINT x, LONGINT y)
@@ -60,7 +60,7 @@ LONGINT SYSTEM_DIVL(LONGINT x, LONGINT y)
     if (x > 0) return -1 + (x - 1) / y;
     else       return x / y;
   }
-  __HALT(-12, "SYSTEM.c", 63);
+  __HALT(-12, "SYSTEM.c", 63); return 0;
 }
 
 INTEGER SYSTEM_MOD(INTEGER x, INTEGER y)
@@ -73,7 +73,7 @@ INTEGER SYSTEM_MOD(INTEGER x, INTEGER y)
     if (x > 0) return y + 1 + (x - 1) % y;
     else       return x % y;
   }
-  __HALT(-12, "SYSTEM.c", 76);
+  __HALT(-12, "SYSTEM.c", 76); return 0;
 }
 
 LONGINT SYSTEM_MODL(LONGINT x, LONGINT y)
@@ -86,7 +86,7 @@ LONGINT SYSTEM_MODL(LONGINT x, LONGINT y)
     if (x > 0) return y + 1 + (x - 1) % y;
     else       return x % y;
   }
-  __HALT(-12, "SYSTEM.c", 89);
+  __HALT(-12, "SYSTEM.c", 89); return 0;
 }
 
 INTEGER SYSTEM_ENTIER(REAL x)
