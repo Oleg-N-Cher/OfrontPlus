@@ -13,7 +13,7 @@
 *
 */
 
-#include "SYSTEM.oh"
+#include "SYSTEM.Oh"
 #include <stdarg.h>
 #include <signal.h>
 #include <stdlib.h>

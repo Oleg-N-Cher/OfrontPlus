@@ -57,7 +57,7 @@
 		LocalScope = "_s"; (* name of a local intermediate scope (variable name) *)
 		GlobalScope = "_s"; (* pointer to current scope extension *)
 		LinkName = "lnk"; (* pointer to previous scope field *)
-		FlagExt = "__oh";
+		FlagExt = "__Oh";
 		LenExt = "__len";
 		DynTypExt = "__typ";
 		TagExt = "__typ";
@@ -1120,7 +1120,7 @@
 	PROCEDURE Include(IN name: ARRAY OF SHORTCHAR);
 	BEGIN
 		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteString(name);
-		OPM.WriteString(".oh"); OPM.Write(Quotes); OPM.WriteLn
+		OPM.WriteString(".Oh"); OPM.Write(Quotes); OPM.WriteLn
 	END Include;
 
 	PROCEDURE IncludeImports(vis: SHORTINT);

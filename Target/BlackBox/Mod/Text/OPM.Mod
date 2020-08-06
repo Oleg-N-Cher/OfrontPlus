@@ -69,7 +69,7 @@
 
 		SFext = ".sym";	(* symbol file extension *)
 		BFext = ".c";	(* body file extension *)
-		HFext = ".oh";	(* header file extension *)
+		HFext = ".Oh";	(* header file extension *)
 		SFtag = 0F7X;	(* symbol file tag *)
 
 		HeaderFile* = 0;
