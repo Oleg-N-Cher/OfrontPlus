@@ -1566,6 +1566,7 @@
 	PROCEDURE WriteStringLiteral(IN str: ARRAY OF SHORTCHAR; len: INTEGER);
 		VAR ch: SHORTCHAR; i: INTEGER;
 	BEGIN
+		IF ansi THEN OPM.WriteString("(CHAR*)") END;
 		OPM.Write(Quotes);
 		i := 0;
 		WHILE i < len DO ch := str[i];
