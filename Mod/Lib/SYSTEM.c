@@ -161,8 +161,8 @@ void SYSTEM_INIT(INTEGER argc, void *argv, void *stkadr)
 
 SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn, int nofdim, int nofdyn, ...)
 {
-    SYSTEM_ADRINT *x, *ptab;
-    SYSTEM_ARRLEN nofelems, size, dataoff, n, nptr, *p, nofptrs, i, off;
+    SYSTEM_ADRINT *x, *p, *ptab;
+    SYSTEM_ARRLEN nofelems, size, dataoff, n, nptr, nofptrs, i, *pi, off;
     va_list ap;
     va_start(ap, nofdyn);
     nofelems = 1;
@@ -185,7 +185,7 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
     else if (typ == (SYSTEM_ADRINT*)POINTER__typ) {
         /* element type is a pointer */
         x = Heap_NEWBLK(size + nofelems * sizeof(SYSTEM_ADRINT));
-        p = (SYSTEM_ARRLEN*)(SYSTEM_ADRINT)x[-1];
+        p = (SYSTEM_ADRINT*)x[-1];
         p[-nofelems] = *p;  /* build new type desc in situ: 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nofelems - 1; n = 1;   /* n =1 for skipping the size field */
         while (n <= nofelems) {*p = n*sizeof(SYSTEM_ADRINT); p++; n++;}
@@ -198,7 +198,7 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
         while (ptab[nofptrs] >= 0) {nofptrs++;} /* number of pointers per element */
         nptr = nofelems * nofptrs;  /* total number of pointers */
         x = Heap_NEWBLK(size + nptr * sizeof(SYSTEM_ADRINT));
-        p = (SYSTEM_ARRLEN*)(SYSTEM_ADRINT)x[- 1];
+        p = (SYSTEM_ADRINT*)x[-1];
         p[-nptr] = *p;  /* build new type desc in situ; 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nptr - 1; n = 0; off = dataoff;
         while (n < nofelems) {i = 0;
@@ -211,8 +211,8 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
     if (nofdyn != 0) {
         /* setup len vector for index checks */
         va_start(ap, nofdyn);
-        p = (SYSTEM_ARRLEN*)x;
-        while (nofdyn > 0) {*p = va_arg(ap, SYSTEM_ARRLEN); p++, nofdyn--;}
+        pi = (SYSTEM_ARRLEN*)x;
+        while (nofdyn > 0) {*pi = va_arg(ap, SYSTEM_ARRLEN); pi++, nofdyn--;}
         va_end(ap);
     }
     Heap_Unlock();
