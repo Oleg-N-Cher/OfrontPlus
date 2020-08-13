@@ -8,7 +8,7 @@
 *)
 
 	IMPORT
-		OPS := OfrontOPS, OPM := OfrontOPM, SYSTEM;
+		OPS := OfrontOPS, OPM := OfrontOPM;
 
 	TYPE
 		Const* = POINTER TO ConstDesc;
@@ -134,7 +134,7 @@
 		Slimrec = 25; Sabsrec = 26; Sextrec = 27; Slimpro = 31; Sabspro = 32; Semppro = 33; Sextpro = 34; Simpo = 22;
 
 	TYPE
-		ImpCtxt = RECORD [untagged]
+		ImpCtxt = RECORD
 			nextTag, reffp: INTEGER;
 			nofr, minr, nofm: SHORTINT;
 			self: BOOLEAN;
@@ -144,7 +144,7 @@
 			glbmno: ARRAY maxImps OF BYTE	(* index is local mno *)
 		END;
 
-		ExpCtxt = RECORD [untagged]
+		ExpCtxt = RECORD
 			reffp: INTEGER;
 			ref: SHORTINT;
 			nofm: BYTE;
