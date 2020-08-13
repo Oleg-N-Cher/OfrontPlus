@@ -15,6 +15,7 @@ MODULE Heap;
     CmdNameLen    = 24;
     SZA           = SIZE(ADDRESS);    (* Size of address *)
     Unit          = 4*SZA;            (* Smallest possible heap block *)
+    ldUnit        = 4 + SZA DIV 8;    (* Unit = 2^ldUnit, for unsigned division expressed as logical shift right *)
     nofLists      = 9;                (* Number of freelist entries excluding sentinel *)
     heapSize0     = 8000*Unit;        (* Startup heap size *)
 
@@ -58,7 +59,7 @@ MODULE Heap;
       types-:    ADDRESS;
       enumPtrs-: EnumProc;
       reserved1,
-      reserved2: INTEGER
+      reserved2: ADDRESS
     END;
 
     Command* = PROCEDURE;
@@ -71,12 +72,12 @@ MODULE Heap;
 
     Finalizer = PROCEDURE(obj: S.PTR);
 
-    FinNode   = POINTER TO FinDesc;
-    FinDesc   = RECORD
+    FinNode = POINTER TO FinDesc;
+    FinDesc = RECORD
       next:     FinNode;
       obj:      ADDRESS;  (* weak pointer *)
       marked:   BOOLEAN;
-      finalize: Finalizer;
+      finalize: Finalizer
     END;
 
   VAR
@@ -87,8 +88,6 @@ MODULE Heap;
     bigBlocks:  ADDRESS;
     allocated*: ADDRESS;
     firstTry:   BOOLEAN;
-    ldUnit:     SHORTINT;   (* Unit = 2^ldUnit, for unsigned division expressed as logical shift right *)
-
 
     (* extensible heap *)
     heap-:          ADDRESS;  (* the sorted list of heap chunks *)
@@ -111,7 +110,7 @@ MODULE Heap;
 
   PROCEDURE Lock*;
   BEGIN
-    INC(lockdepth);
+    INC(lockdepth)
   END Lock;
 
   PROCEDURE -SystemHalt(code: INTEGER; mod: ARRAY OF SHORTCHAR; pos: INTEGER) "__HALT(code, mod, pos)";
@@ -120,7 +119,7 @@ MODULE Heap;
   BEGIN
     DEC(lockdepth);
     IF interrupted & (lockdepth = 0) THEN
-      SystemHalt(-9, "Heap.Mod", 122);
+      SystemHalt(-9, "Heap.Mod", 122)
     END
   END Unlock;
 
@@ -175,7 +174,8 @@ MODULE Heap;
     ELSE
       NEW(c)
     END;
-    c.name := name$; c.cmd := cmd; c.next := m.cmds; m.cmds := c
+    S.COPY(name, c.name); (* safe for non-0X-terminated strings, then will be truncated. *)
+    c.cmd := cmd; c.next := m.cmds; m.cmds := c
   END REGCMD;
 
   PROCEDURE REGTYP*(m: Module; typ: ADDRESS);
@@ -199,11 +199,11 @@ MODULE Heap;
     IF chnk # 0 THEN
       blk := chnk + blkOff; (* Heap chunk consists of a single block *)
       end := blk  + blksz;
-      S.PUT(chnk + endOff,   end);
-      S.PUT(blk  + tagOff,   blk + sizeOff);
-      S.PUT(blk  + sizeOff,  blksz);
-      S.PUT(blk  + sntlOff,  NoPtrSntl);
-      S.PUT(blk  + nextOff,  bigBlocks);
+      S.PUT(chnk + endOff,  end);
+      S.PUT(blk  + tagOff,  blk + sizeOff);
+      S.PUT(blk  + sizeOff, blksz);
+      S.PUT(blk  + sntlOff, NoPtrSntl);
+      S.PUT(blk  + nextOff, bigBlocks);
       bigBlocks := blk;  (* Prepend block to list of big blocks *)
       INC(heapsize, blksz);
       (* Maintain heap range limits *)
@@ -247,7 +247,7 @@ MODULE Heap;
   PROCEDURE NEWREC*(tag: ADDRESS): S.PTR;
     VAR
       i, i0, di, blksz, restsize, t, adr, end, next, prev: ADDRESS;
-      new:   S.PTR;
+      new: S.PTR;
   BEGIN
     Lock();
     S.GET(tag, blksz);
@@ -279,8 +279,8 @@ MODULE Heap;
         IF adr = 0 THEN (* Nothing free *)
           IF firstTry THEN
             GC(TRUE); INC(blksz, Unit);
-            (* Anti-thrashing heuristics: ensure 1/5 of the heap will not be allocated. *)
-            t := S.LSH(allocated + blksz, -(2+ldUnit)) (*uDIV 4*Unit*) * (5*Unit) ; (* Minimum preferred heapsize *)
+            (* Anti-thrashing heuristics: ensure 1/5 of the heap will not be allocated *)
+            t := S.LSH(allocated + blksz, -(2+ldUnit)) (*uDIV (4*Unit)*) * (5*Unit) ; (* Minimum preferred heapsize *)
             IF uLT(heapsize, t) THEN ExtendHeap(t - heapsize)
               (* If there is not enough heap memory then the heap will be expanded below by blksz *)
             END;
@@ -368,7 +368,7 @@ MODULE Heap;
             n := q; q := p;
             S.GET(q - SZA, tag); DEC(tag, 1);
             S.GET(tag, offset); fld := q + offset;
-            S.GET(fld, p); S.PUT(fld, S.VAL(S.PTR, n))
+            S.GET(fld, p); S.PUT(fld, n)
           ELSE                                 (* offset references a ptr field *)
             fld := q + offset;                 (* ADDRESS the pointer *)
             S.GET(fld, n);                     (* Load the pointer *)
@@ -377,7 +377,7 @@ MODULE Heap;
               IF ~ODD(tagbits) THEN
                 S.PUT(n - SZA, tagbits + 1);
                 S.PUT(q - SZA, tag + 1);
-                S.PUT(fld, S.VAL(S.PTR, p));
+                S.PUT(fld, p);
                 p := q; q := n;
                 tag := tagbits
               END
@@ -446,10 +446,10 @@ MODULE Heap;
           IF uLT(i, nofLists) THEN S.PUT(start + nextOff, freeList[i]); freeList[i] := start
           ELSE S.PUT(start + nextOff, bigBlocks); bigBlocks := start
           END;
-          prevChnk :=  chnk
+          prevChnk := chnk
         END;
         freesize := 0
-      ELSE prevChnk :=  chnk
+      ELSE prevChnk := chnk
       END;
       chnk :=  nextChnk
       (* old variant without recycling of empty chunks
@@ -487,8 +487,8 @@ MODULE Heap;
     WHILE r > 0 DO x := a[0]; a[0] := a[r]; a[r] := x; DEC(r); Sift(l, r, a) END
   END HeapSort;
 
-  PROCEDURE MarkCandidates(n: INTEGER; VAR cand: ARRAY OF ADDRESS);
-    VAR chnk, end, adr, tag, next, i, ptr, size: ADDRESS;
+  PROCEDURE MarkCandidates (n: INTEGER; VAR cand: ARRAY OF ADDRESS);
+    VAR i: INTEGER; chnk, end, adr, tag, next, ptr, size: ADDRESS;
   BEGIN
     ASSERT(n > 0);
     chnk := heap; i := 0;
@@ -499,14 +499,14 @@ MODULE Heap;
         S.GET(adr, tag);
         IF ODD(tag) THEN (*already marked*)
           S.GET(tag-1, size); INC(adr, size); ptr := adr + SZA;
-          WHILE uLT(cand[i], ptr) DO INC(i); IF i = n THEN RETURN END END ;
+          WHILE uLT(cand[i], ptr) DO INC(i); IF i = n THEN RETURN END END;
         ELSE
           S.GET(tag, size); ptr := adr + SZA; INC(adr, size);
-          WHILE uLT(cand[i], ptr) DO INC(i); IF i = n THEN RETURN END END ;
+          WHILE uLT(cand[i], ptr) DO INC(i); IF i = n THEN RETURN END END;
           IF uLT(cand[i], adr) THEN Mark(ptr) END
-        END ;
+        END;
         IF uLE(end, cand[i]) THEN (*skip rest of this heap chunk*) adr := end END
-      END ;
+      END;
       S.GET(chnk + nextChnkOff, chnk)
     END
   END MarkCandidates;
@@ -551,40 +551,45 @@ MODULE Heap;
   PROCEDURE -ExternMainStackFrame            "extern void *SYSTEM_MainStackFrame;";
   PROCEDURE -SystemMainStackFrame(): ADDRESS "(SYSTEM_ADRINT)SYSTEM_MainStackFrame";
 
-  PROCEDURE MarkStack(n: ADDRESS; VAR cand: ARRAY OF ADDRESS);
+  PROCEDURE MarkStack0* (sp: ADDRESS); (* exported in order to prevent inlining by C optimizers *)
     VAR
-      frame: S.PTR;
-      nofcand: INTEGER;
-      inc, sp, p, stack0: ADDRESS;
+      nofcand: INTEGER; inc, p, stack0: ADDRESS;
       align: RECORD ch: SHORTCHAR; p: S.PTR END;
+      cand: ARRAY 10000 OF ADDRESS;
   BEGIN
-    IF n > 0 THEN MarkStack(n-1, cand);  (* flush register windows by means of recursive calls *)
-      IF n > 100 THEN RETURN END   (* prevent tail recursion optimization *)
-    END;
-    IF n = 0 THEN
-      nofcand := 0; sp := S.ADR(frame);
-      stack0 := SystemMainStackFrame();
-      (* check for minimum alignment of pointers *)
-      inc := S.ADR(align.p) - S.ADR(align);
-      IF uLT(stack0, sp) THEN inc := -inc END;
-      WHILE sp # stack0 DO
-        S.GET(sp, p);
-        IF uLE(heapMin, p) & uLT(p, heapMax) THEN
-          IF nofcand = LEN(cand) THEN HeapSort(nofcand, cand); MarkCandidates(nofcand, cand); nofcand := 0 END;
-          cand[nofcand] := p; INC(nofcand)
-        END;
-        INC(sp, inc)
+    nofcand := 0; stack0 := SystemMainStackFrame();
+    (* check for minimum alignment of pointers *)
+    inc := S.ADR(align.p) - S.ADR(align);
+    IF uLT(stack0, sp) THEN inc := -inc END;
+    WHILE sp # stack0 DO
+      S.GET(sp, p);
+      IF uLE(heapMin, p) & uLT(p, heapMax) THEN
+        IF nofcand = LEN(cand) THEN HeapSort(nofcand, cand); MarkCandidates(nofcand, cand); nofcand := 0 END;
+        cand[nofcand] := p; INC(nofcand)
       END;
-      IF nofcand > 0 THEN HeapSort(nofcand, cand); MarkCandidates(nofcand, cand) END
-    END
+      INC(sp, inc)
+    END;
+    IF nofcand > 0 THEN HeapSort(nofcand, cand); MarkCandidates(nofcand, cand) END
+  END MarkStack0;
+
+  PROCEDURE MarkStack* (); (* exported in order to prevent inlining by C optimizers *)
+    VAR x: ADDRESS;
+  BEGIN
+    MarkStack0(S.ADR(x))
   END MarkStack;
 
-  PROCEDURE GC*(markStack: BOOLEAN);
-    VAR
-      m: Module;
-      i0,  i1,  i2,  i3,  i4,  i5,  i6,  i7,  i8,  i9,  i10, i11,
-      i12, i13, i14, i15, i16, i17, i18, i19, i20, i21, i22, i23: ADDRESS;
-      cand: ARRAY 10000 OF ADDRESS;
+  (* registers must be stored on the stack before doing garbage collection on the stack. *)
+  PROCEDURE- includesetjmp "#include <setjmp.h>";
+  PROCEDURE- setjmp "jmp_buf env; setjmp(env);";
+
+  PROCEDURE CallMarkStack; (* Pretty portable version: 
+    uses jump buffer for saving processor state incl. registers on the stack. *)
+  BEGIN
+    setjmp(); MarkStack()
+  END CallMarkStack;
+
+  PROCEDURE GC* (markStack: BOOLEAN);
+    VAR m: Module;
   BEGIN
     IF (lockGC = 0) OR (lockGC = 1) & ~markStack THEN 
       Lock();
@@ -594,20 +599,8 @@ MODULE Heap;
         m := m^.next
       END;
       IF markStack THEN
-        (* generate register pressure to force callee saved registers to memory;
-          may be simplified by inlining OS calls or processor specific instructions
-        *)
-        i0 := -100; i1 := -101; i2 := -102; i3 := -103; i4 := -104; i5 := -105; i6 := -106; i7 := -107;
-        i8 := 1; i9 := 2; i10 := 3; i11 := 4; i12 := 5; i13 := 6; i14 := 7; i15 := 8;
-        i16 := 9; i17 := 10; i18 := 11; i19 := 12; i20 := 13; i21 := 14; i22 := 15; i23 := 16;
-        LOOP INC(i0, 1); INC(i1, 2); INC(i2, 3); INC(i3, 4); INC(i4, 5); INC(i5, 6); INC(i6, 7); INC(i7, 8);
-          INC(i8, 9); INC(i9, 10); INC(i10, 11); INC(i11, 12); INC(i12, 13); INC(i13, 14); INC(i14, 15); INC(i15, 16);
-          INC(i16, 17); INC(i17, 18); INC(i18, 19); INC(i19, 20); INC(i20, 21); INC(i21, 22); INC(i22, 23); INC(i23, 24);
-          IF (i0 = -99) & (i15 = 24) THEN MarkStack(32, cand); EXIT END
-        END;
-        IF i0 + i1 + i2 + i3 + i4 + i5 + i6 + i7 + i8 + i9 + i10 + i11 + i12 + i13 + i14 + i15
-          + i16 + i17 + i18 + i19 + i20 + i21 + i22 + i23 > 10000 THEN RETURN    (* use all variables *)
-        END;
+        (* indirect call for allowing to flush the registers onto the stack *)
+        CallMarkStack()
       END;
       CheckFin;
       Scan;
@@ -639,9 +632,6 @@ MODULE Heap;
     heapMax       := 0;
     bigBlocks     := 0;
     heapMinExpand := heapSize0;
-
-    ASSERT((Unit = 16) OR (Unit = 32));
-    IF Unit = 16 THEN ldUnit := 4 ELSE ldUnit := 5 END;
 
     heap := NewChunk(heapSize0);
     S.PUT(heap + nextChnkOff, AddressZero);
