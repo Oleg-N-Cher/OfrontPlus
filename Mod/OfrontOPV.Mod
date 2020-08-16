@@ -1031,6 +1031,7 @@
 	PROCEDURE AddCopy (left, right: OPT.Node; first: BOOLEAN);
 	BEGIN
 		IF first THEN OPM.WriteString("__STRCOPY(") ELSE OPM.WriteString("__STRAPND(") END;
+		IF ansi & (right^.class = Nconst) THEN OPM.WriteString("(CHAR*)") END;
 		expr(right, MinPrec); OPM.WriteString(Comma); expr(left, MinPrec); OPM.WriteString(Comma);
 		IF left^.typ^.sysflag # 0 THEN OPM.WriteString("-1") ELSE Len(left, 0, FALSE) END;
 		OPM.WriteString(Comma); OPM.WriteModPos;
