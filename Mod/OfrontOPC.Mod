@@ -1483,7 +1483,7 @@
 			(* delete array value parameters *)
 			var := proc^.link;
 			WHILE var # NIL DO
-				IF (var^.typ^.comp = DynArr) & (var^.mode = Var) & (var^.typ^.sysflag = 0) THEN
+				IF (var^.typ^.comp IN {Array, DynArr}) & (var^.mode = Var) & (var^.typ^.sysflag = 0) THEN
 					IF indent THEN BegStat ELSE indent := TRUE END ;
 					OPM.WriteString(DelFunc); Ident(var); OPM.Write(CloseParen); EndStat
 				END ;
