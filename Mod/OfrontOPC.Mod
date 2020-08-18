@@ -1484,12 +1484,12 @@
 			var := proc^.link;
 			WHILE var # NIL DO
 				IF (var^.typ^.comp IN {Array, DynArr}) & (var^.mode = Var) & (var^.typ^.sysflag = 0) THEN
-					IF indent THEN BegStat ELSE indent := TRUE END ;
+					IF indent THEN BegStat ELSE indent := TRUE END;
 					OPM.WriteString(DelFunc); Ident(var); OPM.Write(CloseParen); EndStat
-				END ;
+				END;
 				var := var^.link
 			END
-		END ;
+		END;
 		IF eoBlock THEN EndBlk; OPM.WriteLn
 		ELSIF indent THEN BegStat
 		END;

@@ -609,6 +609,8 @@
 				(* IN only allowed for records and arrays *)
 				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
+				(* untagged open array not allowed as value parameter *)
+				ELSIF (mode = Var) & (typ^.comp = DynArr) & ODD(typ^.sysflag) THEN OPM.err(145)
 				END;
 				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Lang = "3") OR (OPM.Lang = "7")) THEN
 					par := first;
