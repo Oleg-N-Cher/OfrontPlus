@@ -593,9 +593,11 @@
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
 						IF (sym = minus) & (OPM.Lang <= "2") & (mode # VarPar) THEN
-							OPS.Get(sym); mode := VarPar; vis := inPar
+							OPS.Get(sym); par^.mode := VarPar; par^.vis := inPar
+						ELSE
+							par^.mode := mode; par^.vis := vis
 						END;
-						par^.mode := mode; par^.link := NIL; par^.vis := vis; par^.sysflag := SHORT(sys);
+						par^.link := NIL; par^.sysflag := SHORT(sys);
 						IF first = NIL THEN first := par END ;
 						IF firstPar = NIL THEN firstPar := par ELSE last^.link := par END ;
 						last := par
