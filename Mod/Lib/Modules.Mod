@@ -22,32 +22,24 @@ MODULE Modules;  (* jt 6.1.96 *)
   PROCEDURE -modules(): Module     "(Heap_Module)Heap_modules";
   (*PROCEDURE -setmodules(m: Module) "Heap_modules = m";*)
 
-	PROCEDURE Append(IN b: ARRAY OF SHORTCHAR; VAR a: ARRAY OF SHORTCHAR);
-		VAR i, j: INTEGER;
-	BEGIN
-		i := 0; WHILE a[i] # 0X DO INC(i) END;
-		j := 0; WHILE b[j] # 0X DO a[i] := b[j]; INC(i); INC(j) END;
-		a[i] := 0X
-	END Append;
-
   PROCEDURE ThisMod* (IN name: ARRAY OF SHORTCHAR): Module;
     VAR m: Module; bodyname: ARRAY 64 OF SHORTCHAR; body: Command;
   BEGIN m := modules();
-    WHILE (m # NIL) & (m.name # name) DO m := m.next END ;
+    WHILE (m # NIL) & (m.name # name) DO m := m.next END;
     IF m # NIL THEN res := 0; resMsg := ""
     ELSE res := 1; importing := name$;
-      resMsg := ' module "'; Append(name, resMsg); Append('" not found', resMsg);
-    END ;
+      resMsg := ' module "' + name + '" not found'
+    END;
     RETURN m
   END ThisMod;
 
   PROCEDURE ThisCommand* (mod: Module; IN name: ARRAY OF SHORTCHAR): Command;
     VAR c: Cmd;
   BEGIN c := mod.cmds;
-    WHILE (c # NIL) & (c.name # name) DO c := c.next END ;
+    WHILE (c # NIL) & (c.name # name) DO c := c.next END;
     IF c # NIL THEN res := 0; resMsg := ""; RETURN c.cmd
-    ELSE res := 2; resMsg := ' command "'; importing := name$;
-      Append(mod.name, resMsg); Append(".", resMsg); Append(name, resMsg); Append('" not found', resMsg);
+    ELSE res := 2; importing := name$;
+      resMsg := ' command "' + mod.name + "." + name + '" not found';
       RETURN NIL
     END
   END ThisCommand;
