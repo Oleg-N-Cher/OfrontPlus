@@ -12,6 +12,9 @@
 	IMPORT OPT := OfrontOPT, OPM := OfrontOPM;
 
 	CONST
+		genDelFunc = FALSE;
+
+	CONST
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
@@ -1482,8 +1485,8 @@
 			END;
 			(* delete array value parameters *)
 			var := proc^.link;
-			WHILE var # NIL DO
-				IF (var^.typ^.comp IN {Array, DynArr}) & (var^.mode = Var) & (var^.typ^.sysflag = 0) THEN
+			WHILE genDelFunc & (var # NIL) DO
+				IF (var^.typ^.comp = DynArr) & (var^.mode = Var) & (var^.typ^.sysflag = 0) THEN
 					IF indent THEN BegStat ELSE indent := TRUE END;
 					OPM.WriteString(DelFunc); Ident(var); OPM.Write(CloseParen); EndStat
 				END;
