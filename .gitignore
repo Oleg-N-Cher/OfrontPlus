@@ -1,6 +1,6 @@
 Arch/
 Target/Linux_amd64/Examples/Obj/*.c
-Target/Linux_amd64/Examples/Obj/*.h
+Target/Linux_amd64/Examples/Obj/*.Oh
 Target/Linux_amd64/Examples/Obj/*.sym
 Target/Linux_amd64/Examples/*.so
 Target/Linux_amd64/Examples/BlitBmp*
@@ -18,7 +18,7 @@ Target/Linux_amd64/ocat
 Target/Linux_amd64/showdef
 Target/Linux_amd64/Lib/*.a
 Target/Linux_armv7/Examples/Obj/*.c
-Target/Linux_armv7/Examples/Obj/*.h
+Target/Linux_armv7/Examples/Obj/*.Oh
 Target/Linux_armv7/Examples/Obj/*.sym
 Target/Linux_armv7/Examples/*.so
 Target/Linux_armv7/Examples/BlitBmp*
@@ -36,7 +36,7 @@ Target/Linux_armv7/odc2txt
 Target/Linux_armv7/showdef
 Target/Linux_armv7/Lib/*.a
 Target/Linux_i386/Examples/Obj/*.c
-Target/Linux_i386/Examples/Obj/*.h
+Target/Linux_i386/Examples/Obj/*.Oh
 Target/Linux_i386/Examples/Obj/*.sym
 Target/Linux_i386/Examples/*.so
 Target/Linux_i386/Examples/BlitBmp*
@@ -55,7 +55,7 @@ Target/Linux_i386/showdef
 Target/Linux_i386/Lib/*.a
 
 Target/macOS/Examples/Obj/*.c
-Target/macOS/Examples/Obj/*.h
+Target/macOS/Examples/Obj/*.Oh
 Target/macOS/Examples/Obj/*.sym
 Target/macOS/Examples/*.so
 Target/macOS/Examples/BlitBmp*
@@ -74,7 +74,7 @@ Target/macOS/showdef
 Target/macOS/Lib/*.a
 Target/Win32/Examples/Obj/*.a
 Target/Win32/Examples/Obj/*.c
-Target/Win32/Examples/Obj/*.h
+Target/Win32/Examples/Obj/*.Oh
 Target/Win32/Examples/Obj/*.sym
 Target/Win32/Examples/*.exe
 Target/Win32/Examples/*.dll
@@ -85,7 +85,7 @@ Target/Win32/Sym/
 Target/Win32/*.exe
 Target/Win64/Examples/Obj/*.a
 Target/Win64/Examples/Obj/*.c
-Target/Win64/Examples/Obj/*.h
+Target/Win64/Examples/Obj/*.Oh
 Target/Win64/Examples/Obj/*.sym
 Target/Win64/Examples/*.exe
 Target/Win64/Examples/*.dll
