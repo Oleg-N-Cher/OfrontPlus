@@ -592,12 +592,15 @@
 				LOOP
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
+						IF (sym = minus) & (OPM.Lang <= "2") & (mode # VarPar) THEN
+							OPS.Get(sym); mode := VarPar; vis := inPar
+						END;
 						par^.mode := mode; par^.link := NIL; par^.vis := vis; par^.sysflag := SHORT(sys);
 						IF first = NIL THEN first := par END ;
 						IF firstPar = NIL THEN firstPar := par ELSE last^.link := par END ;
 						last := par
 					ELSE err(ident)
-					END ;
+					END;
 					IF sym = comma THEN OPS.Get(sym)
 					ELSIF sym = ident THEN err(comma)
 					ELSIF sym = var THEN err(comma); OPS.Get(sym)
