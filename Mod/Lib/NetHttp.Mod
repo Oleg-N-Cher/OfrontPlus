@@ -37,7 +37,7 @@ END Length;
 PROCEDURE write_callback (
   ptr, size, nmemb, userdata: SYSTEM.ADRINT): SYSTEM.ADRINT;
 TYPE
-  Self = POINTER [1] TO Socket;
+  Self = POINTER [notag] TO Socket;
 VAR
   self: Self; cur_size, n: INTEGER; newbuf: Buffer;
 BEGIN
@@ -59,7 +59,7 @@ BEGIN
   RETURN cur_size
 END write_callback;
 
-PROCEDURE (VAR self: Socket) Get* (url: ARRAY [1] OF SHORTCHAR), NEW;
+PROCEDURE (VAR self: Socket) Get* (IN url: ARRAY OF SHORTCHAR), NEW;
 VAR
   msglen: INTEGER; ch: SHORTCHAR; res: c.CURLcode; syserr: SYSTEM.ADRINT;
 BEGIN
