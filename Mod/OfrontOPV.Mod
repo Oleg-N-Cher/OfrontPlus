@@ -1184,8 +1184,9 @@
 								OPM.Write(CloseParen)
 					|	copyfn:
 								OPM.WriteString(CopyFunc);
-								expr(n^.right, MinPrec); OPM.WriteString(Comma); expr(n^.left, MinPrec); OPM.WriteString(Comma);
-								Len(n^.left, 0, FALSE); OPM.Write(CloseParen)
+								expr(n^.right, MinPrec); OPM.WriteString(", "); expr(n^.left, MinPrec); OPM.WriteString(", ");
+								OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(", ");
+								Len(n^.right, 0, FALSE); OPM.WriteString("))")
 					|	(*SYSTEM*)movefn:
 								OPM.WriteString(MoveFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(Comma); expr(n^.left, MinPrec); OPM.WriteString(Comma);
