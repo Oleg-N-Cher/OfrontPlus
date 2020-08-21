@@ -578,7 +578,7 @@
 	END PointerType;
 
 	PROCEDURE FormalParameters(VAR firstPar: OPT.Object; VAR resTyp: OPT.Struct; VAR name: OPS.String);
-		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last: OPT.Object; typ: OPT.Struct;
+		VAR mode, vis: BYTE; sys: SHORTINT; par, first, last: OPT.Object; typ: OPT.Struct; errpos: INTEGER;
 	BEGIN first := NIL; last := firstPar;
 		IF (sym = ident) OR (sym = var) OR (OPM.Lang = "C") & ((sym = in) OR (sym = out)) THEN
 			LOOP
@@ -589,11 +589,13 @@
 				ELSE mode := Var
 				END;
 				IF mode = VarPar THEN CheckSysFlagVarPar(sys) END;
+				errpos := -1;	(* position of 1st "-" parameter *)
 				LOOP
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
 						IF (sym = minus) & (OPM.Lang <= "2") & (mode # VarPar) THEN
-							OPS.Get(sym); par^.mode := VarPar; par^.vis := inPar
+							OPS.Get(sym); par^.mode := VarPar; par^.vis := inPar;
+							IF errpos = -1 THEN errpos := OPM.errpos END
 						ELSE
 							par^.mode := mode; par^.vis := vis
 						END;
@@ -611,8 +613,10 @@
 				END;
 				CheckSym(colon); Type(typ, name);
 				IF mode # VarPar THEN CheckAlloc(typ, TRUE, OPM.errpos) END;
+				IF (errpos # -1) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
+					OPM.Mark(177, errpos)
 				(* IN only allowed for records and arrays *)
-				IF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
+				ELSIF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
 				(* untagged open array not allowed as value parameter *)
 				ELSIF (mode = Var) & (typ^.comp = DynArr) & ODD(typ^.sysflag) THEN OPM.err(145)
