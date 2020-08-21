@@ -1185,8 +1185,16 @@
 					|	copyfn:
 								OPM.WriteString(CopyFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(", "); expr(n^.left, MinPrec); OPM.WriteString(", ");
-								OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(", ");
-								Len(n^.right, 0, FALSE); OPM.WriteString("))")
+								IF (n^.left^.typ^.comp = Array) & (n^.left^.typ^.sysflag = 0)
+								& (n^.right^.typ^.comp = Array) & (n^.right^.typ^.sysflag = 0) THEN
+									IF n^.left^.typ^.n < n^.right^.typ^.n THEN Len(n^.left, 0, FALSE)
+									ELSE Len(n^.right, 0, FALSE)
+									END
+								ELSE
+									OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(", ");
+									Len(n^.right, 0, FALSE); OPM.Write(CloseParen);
+								END;
+								OPM.Write(CloseParen)
 					|	(*SYSTEM*)movefn:
 								OPM.WriteString(MoveFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(Comma); expr(n^.left, MinPrec); OPM.WriteString(Comma);
