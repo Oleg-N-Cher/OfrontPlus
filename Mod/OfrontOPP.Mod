@@ -594,7 +594,7 @@
 					IF sym = ident THEN
 						OPT.Insert(OPS.name, par); OPS.Get(sym);
 						IF (sym = minus) & (OPM.Lang <= "2") & (mode # VarPar) THEN
-							OPS.Get(sym); par^.mode := VarPar; par^.vis := inPar;
+							OPS.Get(sym); par^.mode := VarPar; par^.vis := inPar; err(-304);
 							IF errpos = -1 THEN errpos := OPM.errpos END
 						ELSE
 							par^.mode := mode; par^.vis := vis

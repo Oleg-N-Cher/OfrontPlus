@@ -101,6 +101,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				IF ODD(par^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 			END;
 			Ws(par^.name^);
+			IF (lang <= "2") & (par^.vis = inPar) THEN Wch("-") END;
 			WHILE (par^.link # NIL) & (par^.link^.typ = par^.typ) & (par^.link^.mode = par^.mode)
 					& (par^.link^.vis = par^.vis) & (par^.link^.sysflag = par^.sysflag) DO
 				par := par^.link; Ws(", "); Ws(par^.name^)

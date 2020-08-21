@@ -201,6 +201,7 @@ insertMarkers	Insert Markers
 265	unsupported string operation
 301	implicit type cast
 303	GPCP extension used
+304	Oakwood Guidelines extension used
 306	inappropriate symbol file ignored
 308	SYSTEM.VAL result includes memory past end of source variable
 900	never used
