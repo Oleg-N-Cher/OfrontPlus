@@ -17,7 +17,7 @@
 		neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
 		in = 17; is = 18; ash = 19; msk = 20; len = 21;
 		conv = 22; abs = 23; cap = 24; odd = 25; asr = 26;
-		lsl = 27; ror = 28; not = 35;
+		lsl = 27; ror = 28; not = 35; min = 36; max = 37;
 		(*SYSTEM*)
 		lsh = 29; rot = 30; adr = 31; bit = 33; val = 34;
 		unsgn = 40;
@@ -605,7 +605,7 @@
 			IF f # new^.form THEN Convert(left, new) END
 		ELSIF (OPM.Lang # "7") & (f IN {Char, String}) THEN
 			IF g IN {Char, String} THEN
-				IF ((f = Char) OR (g = Char)) & (op # plus) THEN new := OPT.chartyp
+				IF (f = Char) & (g = Char) & (op # plus) THEN new := OPT.chartyp
 				ELSE new := OPT.stringtyp
 				END;
 				IF (new^.form = String)
@@ -885,6 +885,18 @@
 				ELSIF f = Set THEN
 					xval^.setval := xval^.setval - yval^.setval
 				ELSIF f # Undef THEN err(106)
+				END
+		| min:
+				IF f IN intSet + realSet + {Char} THEN
+					IF ConstCmp() = gtr THEN xval^ := yval^ END;
+					x^.typ := y^.typ
+				ELSIF f # Undef THEN err(111)
+				END
+		| max:
+				IF f IN intSet + realSet + {Char} THEN
+					IF ConstCmp() = lss THEN xval^ := yval^ END;
+					x^.typ := y^.typ
+				ELSIF f # Undef THEN err(111)
 				END
 		| or:
 				IF f = Bool THEN
@@ -1179,6 +1191,9 @@
 				| minus:
 						IF ~(f IN {Undef, Byte, UByte, SInt..Set}) THEN err(106); typ := OPT.undftyp END ;
 						IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
+				| min, max:
+						IF ~(f IN {Undef} + intSet + realSet + {Char}) THEN err(111); typ := OPT.undftyp END;
+						NewOp(op, typ, z, y)
 				| or:
 						IF f = Bool THEN
 							IF z^.class = Nconst THEN
@@ -1438,7 +1453,10 @@ avoid unnecessary intermediate variables in OFront
 					| Real:  x := NewRealConst(OPM.MinReal32, OPT.realtyp)
 					| LReal: x := NewRealConst(OPM.MinReal64, OPT.lrltyp)
 					ELSE err(111)
-					END
+					END;
+					x^.hint := 1
+				ELSIF (OPM.Lang = "C") OR (OPM.Lang = "3") THEN
+					IF ~(f IN intSet + realSet + {Char}) THEN err(111) END
 				ELSE err(110)
 				END
 		| maxfn: (*MAX*)
@@ -1455,7 +1473,10 @@ avoid unnecessary intermediate variables in OFront
 					| Real:  x := NewRealConst(OPM.MaxReal32, OPT.realtyp)
 					| LReal: x := NewRealConst(OPM.MaxReal64, OPT.lrltyp)
 					ELSE err(111)
-					END
+					END;
+					x^.hint := 1
+				ELSIF (OPM.Lang = "C") OR (OPM.Lang = "3") THEN
+					IF ~(f IN intSet + realSet + {Char}) THEN err(111) END
 				ELSE err(110)
 				END
 		| chrfn: (*CHR*)
@@ -1706,6 +1727,10 @@ avoid unnecessary intermediate variables in OFront
 					END
 				ELSE err(111)
 				END
+		| minfn: (*MIN*)
+				IF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (p^.class # Ntype) THEN Op(min, p, x) ELSE err(64) END
+		| maxfn: (*MAX*)
+				IF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (p^.class # Ntype) THEN Op(max, p, x) ELSE err(64) END
 		| newfn: (*NEW(p, x...)*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF p^.typ^.comp = DynArr THEN
@@ -1844,8 +1869,13 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN p := par0;
 		IF fctno <= ashfn THEN
 			IF (fctno = newfn) & (p^.typ # OPT.notyp) THEN
-				IF p^.typ^.comp = DynArr THEN err(65) END ;
+				IF p^.typ^.comp = DynArr THEN err(65) END;
 				p^.typ := OPT.notyp
+			ELSIF (fctno = minfn) OR (fctno = maxfn) THEN
+				IF (parno < 1) OR (parno = 1) & (p^.hint # 1) THEN err(65)
+				ELSIF (p^.hint = 1) & (parno > 1) THEN err(64)
+				END;
+				p^.hint := 0
 			ELSIF fctno <= sizefn THEN (* 1 param *)
 				IF parno < 1 THEN err(65) END
 			ELSE (* more than 1 param *)

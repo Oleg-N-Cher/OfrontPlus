@@ -64,7 +64,7 @@
 
 		NodeDesc* = RECORD
 			left*, right*, link*: Node;
-			class*, subcl*: BYTE;
+			class*, subcl*, hint*: BYTE;
 			readonly*: BOOLEAN;
 			typ*: Struct;
 			obj*: Object;
@@ -1298,10 +1298,10 @@
 			EnterProc("FLT", "flt", fltfn)
 		END;
 		EnterProc("ODD", "odd", oddfn);
-		EnterProc("MIN", "min", minfn);
-		EnterProc("MAX", "max", maxfn);
 		EnterProc("CHR", "chr", chrfn);
-		IF (lang # "7") THEN
+		IF lang # "7" THEN
+			EnterProc("MIN", "min", minfn);
+			EnterProc("MAX", "max", maxfn);
 			EnterProc("SHORT", "short", shortfn);
 			EnterProc("LONG", "long", longfn)
 		END;

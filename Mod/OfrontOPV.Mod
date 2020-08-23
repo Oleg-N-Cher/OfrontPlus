@@ -17,7 +17,7 @@
 		neq = 12; lss = 13; leq = 14; gtr = 15; geq = 16;
 		in = 17; is = 18; ash = 19; msk = 20; len = 21;
 		conv = 22; abs = 23; cap = 24; odd = 25; asr = 26;
-		lsl = 27; ror = 28; not = 35;
+		lsl = 27; ror = 28; not = 35; min = 36; max = 37;
 		(*SYSTEM*)
 		lsh = 29; rot = 30; adr = 31; bit = 33; val = 34;
 		unsgn = 40; (* псевдооперация unsigned для div *)
@@ -324,7 +324,7 @@
 								RETURN 1
 					|	or:
 								RETURN 0
-					|	len, in, ash, msk, bit, lsh, rot, asr, lsl, ror:
+					|	len, in, ash, msk, bit, lsh, rot, asr, lsl, ror, min, max:
 								RETURN 10
 					END;
 		|	Nupto:
@@ -772,7 +772,7 @@
 					CASE subclass OF
 					  len:
 					  		Len(l, SHORT(r^.conval^.intval), FALSE)
-					| in, ash, msk, bit, lsh, rot, div, mod, asr, lsl, ror:
+					| in, ash, msk, bit, lsh, rot, div, mod, asr, lsl, ror, min, max:
 							CASE subclass OF
 							|	in:
 										OPM.WriteString("__IN(")
@@ -823,6 +823,20 @@
 										IF ~SideEffects(n) & (r^.class = Nconst) & (r^.conval^.intval > 0) THEN OPM.WriteString("__MOD(")
 										ELSIF form = LInt THEN OPM.WriteString("__MODFL(")
 										ELSE OPM.WriteString("__MODF(")
+										END
+							|	min:
+										IF ~SideEffects(n) THEN OPM.WriteString("__MIN(")
+										ELSIF form = Real THEN OPM.WriteString("__MINFF(")
+										ELSIF form = LReal THEN OPM.WriteString("__MINFD(")
+										ELSIF form = LInt THEN OPM.WriteString("__MINFL(")
+										ELSE OPM.WriteString("__MINF(")
+										END
+							|	max:
+										IF ~SideEffects(n) THEN OPM.WriteString("__MAX(")
+										ELSIF form = Real THEN OPM.WriteString("__MAXFF(")
+										ELSIF form = LReal THEN OPM.WriteString("__MAXFD(")
+										ELSIF form = LInt THEN OPM.WriteString("__MAXFL(")
+										ELSE OPM.WriteString("__MAXF(")
 										END
 							END;
 							expr(l, MinPrec);
@@ -1192,7 +1206,7 @@
 									END
 								ELSE
 									OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(", ");
-									Len(n^.right, 0, FALSE); OPM.Write(CloseParen);
+									Len(n^.right, 0, FALSE); OPM.Write(CloseParen)
 								END;
 								OPM.Write(CloseParen)
 					|	(*SYSTEM*)movefn:
