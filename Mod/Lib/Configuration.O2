@@ -589,7 +589,7 @@ END NewProcedure;
 BEGIN
 	argv := CopyArgVec(Args.argv);
 	argc := LEN(argv^);
-
+	banner := NIL;
 	values := NIL;
 	help := NewProcedure("help", "Display this message", Help);
 END Configuration.
