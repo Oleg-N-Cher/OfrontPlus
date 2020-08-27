@@ -25,6 +25,10 @@ if [ $? != 0 ]; then exit 1; fi
 $CC OCatCmd.c -L../Lib -lOfront -o../ocat
 if [ $? != 0 ]; then exit 1; fi
 
+## OEF
+
+$CC OEF.c -L../Lib -lOfront -o../oef
+
 ## OdcToText
 
 $CC OdcToText.c -L../Lib -lOfront -o../odc2txt

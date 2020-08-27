@@ -38,4 +38,9 @@ if [ $? != 0 ]; then exit 1; fi
 ofront+ -sC -88 libCurl.Mod NetHttp.Mod
 if [ $? != 0 ]; then exit 1; fi
 
+## Miscellaneous
+
+ofront+ -s2 -88 Pattern.O2 Configuration.O2
+if [ $? != 0 ]; then exit 1; fi
+
 find . -type f -name "*.sym" -exec mv -f {} ../Sym \;
