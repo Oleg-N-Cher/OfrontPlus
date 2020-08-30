@@ -27,6 +27,11 @@ IF errorlevel 1 PAUSE
 %CC% OCatCmd.c ..\Lib\Ofront.a -o..\ocat.exe
 IF errorlevel 1 PAUSE
 
+:: OEF
+
+%CC% OEF.c ..\Lib\Ofront.a -o..\oef.exe
+IF errorlevel 1 PAUSE
+
 :: OdcToText
 
 %CC% OdcToText.c ..\Lib\Ofront.a -o..\odc2txt.exe

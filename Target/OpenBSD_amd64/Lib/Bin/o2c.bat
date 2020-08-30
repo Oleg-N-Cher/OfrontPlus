@@ -15,7 +15,7 @@ IF errorlevel 1 PAUSE
 
 :: ETH Oberon
 
-ofront+ -s2 -88 Zlib.Mod ZlibBuffers.Mod ZlibDeflate.Mod ZlibInflate.Mod ZlibReaders.Mod ZlibWriters.Mod Zip.Mod
+ofront+ -s2 -88 Zlib.Ob2 ZlibBuffers.Ob2 ZlibDeflate.Ob2 ZlibInflate.Ob2 ZlibReaders.Ob2 ZlibWriters.Ob2 Zip.Ob2
 IF errorlevel 1 PAUSE
 
 :: OOC2
@@ -36,6 +36,11 @@ IF errorlevel 1 PAUSE
 :: libCurl
 
 ofront+ -sC -88 libCurl.Mod NetHttp.Mod
+IF errorlevel 1 PAUSE
+
+:: Miscellaneous
+
+ofront+ -s2 -88 Pattern.Ob2 Configuration.Ob2
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL

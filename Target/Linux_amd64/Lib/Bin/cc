@@ -46,5 +46,10 @@ $CC NetHttp.c
 if [ $? != 0 ]; then exit 1; fi
 $AR NetHttp.o
 
-rm *.o
+## Miscellaneous
 
+$CC Pattern.c Configuration.c
+if [ $? != 0 ]; then exit 1; fi
+$AR Pattern.o Configuration.o
+
+rm *.o

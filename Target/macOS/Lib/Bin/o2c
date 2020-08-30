@@ -15,7 +15,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## ETH Oberon
 
-ofront+ -s2 -88 Zlib.Mod ZlibBuffers.Mod ZlibDeflate.Mod ZlibInflate.Mod ZlibReaders.Mod ZlibWriters.Mod Zip.Mod
+ofront+ -s2 -88 Zlib.Ob2 ZlibBuffers.Ob2 ZlibDeflate.Ob2 ZlibInflate.Ob2 ZlibReaders.Ob2 ZlibWriters.Ob2 Zip.Ob2
 if [ $? != 0 ]; then exit 1; fi
 
 ## OOC2
@@ -40,7 +40,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## Miscellaneous
 
-ofront+ -s2 -88 Pattern.O2 Configuration.O2
+ofront+ -s2 -88 Pattern.Ob2 Configuration.Ob2
 if [ $? != 0 ]; then exit 1; fi
 
 find . -type f -name "*.sym" -exec mv -f {} ../Sym \;

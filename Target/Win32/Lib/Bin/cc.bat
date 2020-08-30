@@ -48,4 +48,10 @@ IF errorlevel 1 PAUSE
 IF errorlevel 1 PAUSE
 %AR% NetHttp.o
 
+:: Miscellaneous
+
+%CC% Pattern.c Configuration.c
+IF errorlevel 1 PAUSE
+%AR% Pattern.o Configuration.o
+
 DEL /Q *.o
