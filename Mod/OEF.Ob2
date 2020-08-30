@@ -4,7 +4,7 @@ human-readable format, including the source code position and context.
 This program parses messages from standard input (via Console) which will
 normally be piped from the compiler output. For example:
 
-  ofront+ -2 -88 -m Module.Mod | OEF
+  ofront+ -2 -88 -m Module.Mod | oef
 
 Parameters are:
 
@@ -47,7 +47,8 @@ IMPORT
 	Console,
 	Pattern,
 	Strings := ooc2Strings,
-	C := Configuration;
+	C := Configuration,
+	Platform;
 
 TYPE
 	String = Pattern.String;
@@ -83,6 +84,9 @@ VAR
 
 	(* display line numbers for source lines *)
 	withLineNumbers : C.Boolean;
+
+	(* current set of paths to search files *)
+	OBERON: ARRAY 1024 OF CHAR;
 
 PROCEDURE Min(x, y : INTEGER) : INTEGER;
 BEGIN
@@ -337,6 +341,8 @@ BEGIN
 END Options;
 
 BEGIN
+	OBERON := "."; Platform.GetEnv("OBERON", OBERON);
+	Files.SetSearchPath(OBERON);
 	C.SetBanner("oef - Ofront+ Error Filter\nThis tool shows source code context for Ofront+ compiler messages\nUsage:\n  ofront+ ... Module.Mod | oef [options]\n");
 	Options;
 	ProcessInput;
