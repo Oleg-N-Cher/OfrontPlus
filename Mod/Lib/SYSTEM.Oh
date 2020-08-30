@@ -121,8 +121,8 @@ extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
 extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
 
 #define __HALT_OLD(n)                            SYSTEM_HALT(n, (CHAR*)"", -1)
-#define __HALT(n, mod, pos)                      SYSTEM_HALT(n, (CHAR*)mod, pos)
-#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, (CHAR*)mod, pos)
+#define __HALT(n, mod, pos)                      SYSTEM_HALT(n, mod, pos)
+#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, mod, pos)
 
 
 // Strings copy, append, compare and calculate length
@@ -216,9 +216,9 @@ static inline REAL __MAXFD (REAL x, REAL y)                { return x>y?x:y; }
 // Runtime checks
 
 #define __X(i, ub, mod, pos)   (((__U_LONGINT)(i)<(__U_LONGINT)(ub))?i:(__HALT(-2,mod,pos), 0))
-#define __XF(i, ub, mod, pos)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub), (CHAR*)mod, pos)
+#define __XF(i, ub, mod, pos)  SYSTEM_XCHK((LONGINT)(i), (LONGINT)(ub), mod, pos)
 #define __R(i, ub, mod, pos)   (((__U_LONGINT)(i)<(__U_LONGINT)(ub))?i:(__HALT(-8,mod,pos),0))
-#define __RF(i, ub, mod, pos)  SYSTEM_RCHK((LONGINT)(i), (LONGINT)(ub), (CHAR*)mod, pos)
+#define __RF(i, ub, mod, pos)  SYSTEM_RCHK((LONGINT)(i), (LONGINT)(ub), mod, pos)
 #define __RETCHK(mod, pos)     __retchk: __HALT(-3, mod, pos); return 0;
 #define __CASECHK(mod, pos)    __HALT(-4, mod, pos)
 #define __WITHCHK(mod, pos)    __HALT(-7, mod, pos)
@@ -239,8 +239,8 @@ extern void       Heap_REGTYP();
 extern void       Heap_INCREF();
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
-#define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, cmd)
-#define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,(void*)enum);}
+#define __REGCMD(name, cmd)   Heap_REGCMD(m, name, cmd)
+#define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD(name,(void*)enum);}
 #define __ENDMOD              return m
 #define __IMPORT(name__init)  Heap_INCREF(name__init())
 
@@ -273,7 +273,7 @@ extern void Heap_FINALL();
 #else
 #  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, &argv)
 #endif
-#define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
+#define __REGMAIN(name, enum) m = Heap_REGMOD(name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
 
 
