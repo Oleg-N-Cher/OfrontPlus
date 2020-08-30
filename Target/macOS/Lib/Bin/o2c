@@ -10,7 +10,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## Eco
 
-ofront+ -sC -88 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.Mod ecoVector.Mod
+ofront+ -sC -88 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.CP ecoVector.Mod
 if [ $? != 0 ]; then exit 1; fi
 
 ## ETH Oberon

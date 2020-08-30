@@ -13,7 +13,7 @@ IF errorlevel 1 PAUSE
 
 :: Eco
 
-ofront+ -sC -88 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.Mod ecoVector.Mod %oef%
+ofront+ -sC -88 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.CP ecoVector.Mod %oef%
 IF errorlevel 1 PAUSE
 
 :: ETH Oberon
