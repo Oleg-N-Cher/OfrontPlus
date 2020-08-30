@@ -16,6 +16,8 @@ CONST
   Unix*    = FALSE;
   Windows* = TRUE;
 
+  newLine* = 0DX + 0AX;  (* Platform specific newline representation *)
+
 
 TYPE
   CHAR = SHORTCHAR; BOOL = INTEGER; DWORD = INTEGER;
@@ -39,7 +41,7 @@ TYPE
     mtimelow:  DWORD;  (* File modification time, value is system dependent *)
   END;
 
-  ArgPtr  = POINTER [notag] TO ARRAY 1024 OF CHAR;
+  ArgPtr* = POINTER [notag] TO ARRAY 1024 OF CHAR;
   ArgVec* = POINTER [notag] TO ARRAY 1024 OF ArgPtr;
 
 
@@ -57,8 +59,6 @@ VAR
   StdIn-:           FileHandle;
   StdOut-:          FileHandle;
   StdErr-:          FileHandle;
-
-  newLine-: ARRAY 3 OF CHAR;  (* Platform specific newline representation *)
 
 
 (* Some unsigned arithmetic *)
@@ -596,6 +596,4 @@ BEGIN
   StdIn  := getstdinhandle();
   StdOut := getstdouthandle();
   StdErr := getstderrhandle();
-
-  newLine[0] := 0DX; newLine[1] := 0AX; newLine[2] := 0X; (* CR LF *)
 END Platform.

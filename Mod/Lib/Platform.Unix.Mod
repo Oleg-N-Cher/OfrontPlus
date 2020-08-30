@@ -13,6 +13,8 @@ CONST
   StdOut* = 1;
   StdErr* = 2;
 
+  newLine* = 0AX + 0X;  (* Platform specific newline representation *)
+
 
 TYPE
   CHAR = SHORTCHAR;
@@ -37,7 +39,7 @@ TYPE
   END;
 
   EnvPtr  = POINTER [notag] TO ARRAY 1024 OF CHAR;
-  ArgPtr  = POINTER [notag] TO ARRAY 1024 OF CHAR;
+  ArgPtr* = POINTER [notag] TO ARRAY 1024 OF CHAR;
   ArgVec* = POINTER [notag] TO ARRAY 1024 OF ArgPtr;
 
 
@@ -51,8 +53,6 @@ VAR
   SeekSet-:        INTEGER;
   SeekCur-:        INTEGER;
   SeekEnd-:        INTEGER;
-
-  newLine-:  ARRAY 2 OF CHAR;  (* Platform specific newline representation *)
 
 
 (* Some unsigned arithmetic *)
@@ -496,6 +496,4 @@ BEGIN
   SeekSet := seekset();
   SeekCur := seekcur();
   SeekEnd := seekend();
-
-  newLine[0] := 0AX; newLine[1] := 0X; (* LF *)
 END Platform.
