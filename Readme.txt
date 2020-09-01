@@ -110,5 +110,21 @@ Yahoo group:
 Your comments and suggestions are welcome.
 
 
+Contributors
+============
+
+  Josef Templ, he is Ofront founder, inspirer & our really godfather!
+  Oleg V. Komlev, implemented "proper FOR" and constant arrays for O3
+  David C W Brown, very smart person who implemented real portability
+  Stewart Greenhill, an experienced programmer and just a good person
+  Oleg N. Ñher, probably the biggest commiter to the Ofront+ project.
+  Dmitry V. Dagaev, a very serious "nuclear" Multi-Oberon programmer.
+  Norayr Chilingarian, he really knows how to breed Armenian dragons!
+  Artur Yefimov, he could have done more, but thank him for that too!
+
+  ... also the entire OMinc team and all OP2 & ETH Oberon developers!
+  ... sorry who we forgot. Please remind...
+
+
 The Ofront+ team,
 2013-2020
