@@ -46,4 +46,9 @@ IF errorlevel 1 PAUSE
 ofront+ -s2 -48 Pattern.Ob2 Configuration.Ob2 %oef%
 IF errorlevel 1 PAUSE
 
+:: WinApi
+
+ofront+ -sC -48 WinApi.Def %oef%
+IF errorlevel 1 PAUSE
+
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
