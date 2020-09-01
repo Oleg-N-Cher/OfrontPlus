@@ -343,7 +343,7 @@
 		VAR d: INTEGER; array: OPT.Struct;
 	BEGIN
 		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
-		IF n^.typ^.form = String THEN
+		IF (n^.typ^.form = String) OR (n^.class = Nderef) & (n^.typ^.sysflag # 0) & (n^.typ^.n = 0) THEN
 			OPM.WriteString("__STRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
 			IF incl0x THEN OPM.WriteString(" + 1") END
 		ELSIF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN d := dim; array := n^.typ;
@@ -1162,10 +1162,8 @@
 									ELSE
 										OPM.WriteString(MoveFunc);
 										expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
-										IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
-										ELSE OPM.WriteInt(r^.typ^.size)
-										END;
-										OPM.Write(CloseParen)
+										IF r^.typ = OPT.stringtyp THEN i := r^.conval^.intval2 ELSE i := r^.typ^.size END;
+										OPM.WriteInt(MIN(i, l^.typ^.size)); OPM.Write(CloseParen)
 									END
 								ELSE
 									IF (l^.typ^.form = Pointer) & (l^.obj # NIL) & (l^.obj^.adr = 1) & (l^.obj^.mode = Var) THEN
@@ -1199,13 +1197,12 @@
 					|	copyfn:
 								OPM.WriteString(CopyFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(", "); expr(n^.left, MinPrec); OPM.WriteString(", ");
-								IF (n^.left^.typ^.comp = Array) & (n^.left^.typ^.sysflag = 0)
-								& (n^.right^.typ^.comp = Array) & (n^.right^.typ^.sysflag = 0) THEN
-									IF n^.left^.typ^.n < n^.right^.typ^.n THEN Len(n^.left, 0, FALSE)
-									ELSE Len(n^.right, 0, FALSE)
-									END
+								IF (n^.left^.typ^.comp = Array) & (n^.right^.typ^.comp = Array) THEN
+									OPM.WriteInt(MIN(n^.left^.typ^.n, n^.right^.typ^.n))
+								ELSIF (n^.left^.typ^.comp = Array) & (n^.right^.typ = OPT.stringtyp) & (n^.right^.conval # NIL) THEN
+									OPM.WriteInt(MIN(n^.left^.typ^.n, n^.right^.conval^.intval2))
 								ELSE
-									OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(", ");
+									OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(Comma);
 									Len(n^.right, 0, FALSE); OPM.Write(CloseParen)
 								END;
 								OPM.Write(CloseParen)

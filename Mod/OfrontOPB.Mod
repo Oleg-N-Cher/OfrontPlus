@@ -337,7 +337,10 @@
 	END BindNodes;
 
 	PROCEDURE NotVar(x: OPT.Node): BOOLEAN;
-	BEGIN RETURN (x^.class >= Nconst) & ((x^.class # Nmop) OR (x^.subcl # val) OR (x^.left^.class >= Nconst))
+	BEGIN
+		RETURN (x^.class >= Nconst) & ((x^.class # Nmop) OR (x^.subcl # val) OR NotVar(x^.left))
+			OR (x^.typ^.form = String)
+			OR (x^.class = Nguard) & NotVar(x^.left)
 	END NotVar;
 
 	PROCEDURE DeRef*(VAR x: OPT.Node);
@@ -661,8 +664,8 @@
 				IF y^.mnolev = 0 THEN y^.mode := XProc
 				ELSE err(73)
 				END
-			END ;
-			IF x^.BaseTyp = y^.typ THEN CheckParameters(x^.link, y^.link, FALSE)
+			END;
+			IF OPT.EqualType(x^.BaseTyp, y^.typ) THEN CheckParameters(x^.link, y^.link, FALSE)
 			ELSE err(117)
 			END
 		ELSE err(113)
@@ -1535,7 +1538,7 @@ avoid unnecessary intermediate variables in OFront
 					IF ~(x^.typ^.comp IN {DynArr, Array}) & ~(x^.typ^.form = String) THEN err(131) END
 				END
 		| copyfn: (*COPY*)
-				IF (x^.class = Nconst) & (f = Char) THEN CharToString(x); f := String END ;
+				IF (x^.class = Nconst) & (f = Char) THEN CharToString(x); f := String END;
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF (~(x^.typ^.comp IN {DynArr, Array}) OR (x^.typ^.BaseTyp^.form # Char))
 					 & (f # String) THEN err(111)
@@ -1647,9 +1650,11 @@ avoid unnecessary intermediate variables in OFront
 		| copyfn: (*COPY*)
 				IF NotVar(x) THEN err(112)
 				ELSIF x^.readonly THEN err(76)
+				ELSIF (x^.class = Nderef) & (x^.typ^.sysflag # 0) & (x^.typ^.n = 0) THEN err(137)
 				ELSE
 					CheckString(p, x^.typ, 111); t := x; x := p; p := t;
-					IF (x^.class = Nconst) & (x^.typ^.form = String) THEN AssignString(p, x)
+					IF (x^.class = Nconst) & (x^.typ^.form = String) & (p^.typ^.comp = Array) & (x^.conval^.intval2 <= p^.typ^.n)
+					THEN AssignString(p, x)
 					ELSE p := NewOp(Nassign, copyfn, p, x)
 					END
 				END;
