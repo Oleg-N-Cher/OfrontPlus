@@ -28,6 +28,7 @@ if [ $? != 0 ]; then exit 1; fi
 ## OEF
 
 $CC OEF.c -L../Lib -lOfront -o../oef
+f [ $? != 0 ]; then exit 1; fi
 
 ## OdcToText
 
