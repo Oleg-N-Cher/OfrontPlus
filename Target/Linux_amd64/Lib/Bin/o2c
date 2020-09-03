@@ -30,7 +30,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## Free Oberon
 
-ofront+ -sC -88 SDL2.cp SDL2mixer.cp SQLite.Def Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
+ofront+ -sC -88 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
 if [ $? != 0 ]; then exit 1; fi
 
 ## libCurl

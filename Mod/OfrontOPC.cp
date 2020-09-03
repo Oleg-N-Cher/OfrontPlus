@@ -60,7 +60,7 @@
 		LocalScope = "_s"; (* name of a local intermediate scope (variable name) *)
 		GlobalScope = "_s"; (* pointer to current scope extension *)
 		LinkName = "lnk"; (* pointer to previous scope field *)
-		FlagExt = "__Oh";
+		FlagExt = "__oh";
 		LenExt = "__len";
 		DynTypExt = "__typ";
 		TagExt = "__typ";
