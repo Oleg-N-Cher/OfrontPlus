@@ -70,7 +70,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     SearchPath: POINTER TO ARRAY OF SHORTCHAR;
 
 
-  PROCEDURE -IdxTrap (pos: INTEGER) '__HALT(-1, "Files.Mod", pos)';
+  PROCEDURE -IdxTrap (pos: INTEGER) '__HALT(-1, (CHAR*)"Files.Mod", pos)';
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 

@@ -239,8 +239,8 @@ extern void       Heap_REGTYP();
 extern void       Heap_INCREF();
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
-#define __REGCMD(name, cmd)   Heap_REGCMD(m, name, cmd)
-#define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD(name,(void*)enum);}
+#define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, cmd)
+#define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name,(void*)enum);}
 #define __ENDMOD              return m
 #define __IMPORT(name__init)  Heap_INCREF(name__init())
 
@@ -273,7 +273,7 @@ extern void Heap_FINALL();
 #else
 #  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, &argv)
 #endif
-#define __REGMAIN(name, enum) m = Heap_REGMOD(name,(void*)enum)
+#define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
 
 
@@ -321,7 +321,7 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
   memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT));   \
   t##__desc.basep[level] = (SYSTEM_ADRINT)t##__typ;                              \
   t##__desc.module       = (SYSTEM_ADRINT)m;                                     \
-  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.h", 306);            \
+  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, (CHAR*)"SYSTEM.h", 324);     \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(SYSTEM_ADRINT)-1)/(4*sizeof(SYSTEM_ADRINT))*(4*sizeof(SYSTEM_ADRINT)); \
   Heap_REGTYP(m, (SYSTEM_ADRINT)&t##__desc.next);                                \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
