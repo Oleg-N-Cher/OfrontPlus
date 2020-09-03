@@ -6,9 +6,9 @@ cd ../Obj
 PATH="../..:$PATH"
 export OBERON=.:../../Lib/Sym:../../../../Examples
 
-ofront+ -sC -88 MyDLL.Mod -d MyDLLuse.Mod -m
+ofront+ -sC -88 MyDLL.cp -d MyDLLuse.cp -m
 if [ $? != 0 ]; then exit 1; fi
-ofront+ -mC -88 BlitBmp.Mod BlitBmp2.Mod Book.Mod Cnezinka.Mod Elo4ka.Mod Gradient24.Mod HelloWorld.Mod Mandelbrot.Mod Mandelbrot2.Mod TestHttp.Mod
+ofront+ -mC -88 BlitBmp.cp BlitBmp2.cp Book.cp Cnezinka.cp Elo4ka.cp Gradient24.cp HelloWorld.cp Mandelbrot.cp Mandelbrot2.cp TestHttp.cp
 if [ $? != 0 ]; then exit 1; fi
 
 LIB="-I../../Lib/Obj -I../../../../Mod/Lib -L../../Lib -lOfront"

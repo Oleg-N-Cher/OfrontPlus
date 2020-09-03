@@ -4,9 +4,9 @@ SET PATH=..\..\..\Win32;%PATH%
 IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW64\bin;%PATH%
 SET OBERON=.;..\..\Lib\Sym;..\..\..\..\Examples
 
-ofront+ -sC -88 MyDLL.Mod -d MyDLLuse.Mod -m
+ofront+ -sC -88 MyDLL.cp -d MyDLLuse.cp -m
 IF errorlevel 1 PAUSE
-ofront+ -mC -88 BlitBmp.Mod BlitBmp2.Mod Book.Mod Cnezinka.Mod Elo4ka.Mod Gradient24.Mod HelloWorld.Mod Mandelbrot.Mod Mandelbrot2.Mod TestHttp.Mod
+ofront+ -mC -88 BlitBmp.cp BlitBmp2.cp Book.cp Cnezinka.cp Elo4ka.cp Gradient24.cp HelloWorld.cp Mandelbrot.cp Mandelbrot2.cp TestHttp.cp
 IF errorlevel 1 PAUSE
 
 SET StripExe=-nostartfiles ..\..\..\..\Mod\Lib\crt1.c -Wl,-e_WinMain@16 -D_WINMAIN
