@@ -385,7 +385,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       offset := SHORT(pos MOD BufSize); org := pos - offset; i := 0;
       WHILE (i < NumBufs) & (f.bufs[i] # NIL) & (org # f.bufs[i].org) DO INC(i) END;
       IF i < NumBufs THEN
-        IF f.bufs[i] = NIL THEN NEW(buf); buf.chg := FALSE; buf.org := -1; buf.f := f; f.bufs[i] := buf
+        IF f.bufs[i] = NIL THEN
+          NEW(buf); buf.chg := FALSE; buf.org := -1; buf.f := f; f.bufs[i] := buf
         ELSE buf := f.bufs[i]
         END
       ELSE
@@ -413,7 +414,9 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR offset: INTEGER; buf: Buffer;
   BEGIN
     buf := r.buf; offset := r.offset;
-    IF r.org # buf.org THEN Set(r, buf.f, r.org + offset); buf := r.buf; offset := r.offset END;
+    IF r.org # buf.org THEN
+      Set(r, buf.f, r.org + offset); buf := r.buf; offset := r.offset
+    END;
     IF (offset < buf.size) THEN
       x := buf.data[offset]; r.offset := offset + 1
     ELSIF r.org + offset < buf.f.len THEN
@@ -427,8 +430,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   PROCEDURE ReadBytes* (VAR r: Rider; VAR x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
-    IF n > LEN(x) THEN IdxTrap(421) END;
-    xpos := 0; buf := r.buf; offset := r.offset;
+    IF n > LEN(x) THEN IdxTrap(433) END;
+    xpos := 0; buf := r.buf; offset := r.offset;  (* Offset within buffer r.buf *)
     WHILE n > 0 DO
       IF (r.org # buf.org) OR (offset >= BufSize) THEN
         Set(r, buf.f, r.org + offset);
@@ -471,7 +474,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   PROCEDURE WriteBytes* (VAR r: Rider; IN x: ARRAY OF BYTE; n: INTEGER);
     VAR xpos, min, restInBuf, offset: INTEGER; buf: Buffer;
   BEGIN
-    IF n > LEN(x) THEN IdxTrap(465) END;
+    IF n > LEN(x) THEN IdxTrap(477) END;
     xpos := 0; buf := r.buf; offset := r.offset;
     WHILE n > 0 DO
       IF (r.org # buf.org) OR (offset >= BufSize) THEN
