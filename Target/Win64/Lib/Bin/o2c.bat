@@ -8,41 +8,41 @@ IF EXIST ..\..\oef.exe SET oef=^| oef
 
 :: Ofront+
 
-ofront+ -sC -88 Heap.Mod -apx Platform.Windows.Mod -atpx Console.Mod Kernel.Mod -atpx Args.Mod Reals.Mod Strings.Mod Files.Mod Modules.Mod Texts.Mod Oberon.Mod %oef%
+ofront+ -sC -88 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx Args.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Eco
 
-ofront+ -sC -88 ecoBigSets.Mod ecoBuffer.Mod ecoListen.Mod ecoLists.Mod ecoParser.CP ecoVector.Mod %oef%
+ofront+ -sC -88 ecoBigSets.cp ecoBuffer.cp ecoListen.cp ecoLists.cp ecoParser.cp ecoVector.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: ETH Oberon
 
-ofront+ -s2 -88 Zlib.Ob2 ZlibBuffers.Ob2 ZlibDeflate.Ob2 ZlibInflate.Ob2 ZlibReaders.Ob2 ZlibWriters.Ob2 Zip.Ob2 %oef%
+ofront+ -s2 -88 Zlib.ob2 ZlibBuffers.ob2 ZlibDeflate.ob2 ZlibInflate.ob2 ZlibReaders.ob2 ZlibWriters.ob2 Zip.ob2 %oef%
 IF errorlevel 1 PAUSE
 
 :: OOC2
 
-ofront+ -sC -88 ooc2Ascii.Mod ooc2ConvTypes.Mod ooc2RandomNumbers.Mod ooc2Strings.Mod %oef%
+ofront+ -sC -88 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: POW
 
-ofront+ -sC -88 powStrings.Mod %oef%
+ofront+ -sC -88 powStrings.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -sC -88 SDL2.Mod SDL2mixer.Mod SQLite.Def Out.Mod In.Mod Graph.Mod Math.Mod MathL.Mod Sound.Mod Turtle.Mod %oef%
+ofront+ -sC -88 SDL2.cp SDL2mixer.cp SQLite.Def Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: libCurl
-ofront+ -sC -88 libCurl.Mod NetHttp.Mod %oef%
+ofront+ -sC -88 libCurl.cp NetHttp.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Miscellaneous
 
-ofront+ -s2 -88 Pattern.Ob2 Configuration.Ob2 %oef%
+ofront+ -s2 -88 Pattern.ob2 Configuration.ob2 %oef%
 IF errorlevel 1 PAUSE
 
 :: WinApi

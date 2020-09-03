@@ -1123,7 +1123,7 @@
 	PROCEDURE Include(IN name: ARRAY OF SHORTCHAR);
 	BEGIN
 		OPM.WriteString("#include "); OPM.Write(Quotes); OPM.WriteString(name);
-		OPM.WriteString(".Oh"); OPM.Write(Quotes); OPM.WriteLn
+		OPM.WriteString(".oh"); OPM.Write(Quotes); OPM.WriteLn
 	END Include;
 
 	PROCEDURE IncludeImports(vis: SHORTINT);
