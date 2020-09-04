@@ -30,7 +30,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -sC -44 SDL2.cp SDL2mixer.cp SQLite.Def Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
+ofront+ -sC -44 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
 IF errorlevel 1 PAUSE
 
 :: libCurl

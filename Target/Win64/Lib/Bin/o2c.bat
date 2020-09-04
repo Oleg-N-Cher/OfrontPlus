@@ -33,7 +33,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -sC -88 SDL2.cp SDL2mixer.cp SQLite.Def Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
+ofront+ -sC -88 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: libCurl
@@ -47,7 +47,7 @@ IF errorlevel 1 PAUSE
 
 :: WinApi
 
-ofront+ -sC -88 WinApi.Def %oef%
+ofront+ -sC -88 WinApi.cp %oef%
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
