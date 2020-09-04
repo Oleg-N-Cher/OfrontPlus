@@ -440,10 +440,8 @@
 			ELSE OPM.WriteString("(CHAR)"); Entier(n, 9)
 			END
 		| Set: OPM.WriteString("(SET)"); Entier(n, 9)
-(*
 		| Real: OPM.WriteString("(SHORTREAL)"); expr(n, prec)
 		| LReal: OPM.WriteString("(REAL)"); expr(n, prec)
-*)
 		ELSE expr(n, prec)
 		END
 	END Convert;
