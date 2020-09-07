@@ -262,6 +262,15 @@ BEGIN RETURN system(cmd) END System;
 PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
 
 
+(* Expose file and path name length limits *)
+
+PROCEDURE -NAMEMAX(): INTEGER "NAME_MAX";
+PROCEDURE -PATHMAX(): INTEGER "PATH_MAX";
+
+PROCEDURE MaxNameLength*(): INTEGER; BEGIN RETURN NAMEMAX() END MaxNameLength;
+PROCEDURE MaxPathLength*(): INTEGER; BEGIN RETURN PATHMAX() END MaxPathLength; 
+
+
 (* File system *)
 
 PROCEDURE -InvalidHandleValue*(): FileHandle "(-1)";
