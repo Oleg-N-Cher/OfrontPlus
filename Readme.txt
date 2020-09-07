@@ -120,7 +120,8 @@ Contributors
   Oleg N. Ñher, probably the biggest commiter to the Ofront+ project.
   Dmitry V. Dagaev, a very serious "nuclear" Multi-Oberon programmer.
   Norayr Chilingarian, he really knows how to breed Armenian dragons!
-  Artur Yefimov, he could have done more, but thank him for that too!
+  Artur Yefimov, he could have done more, but thank him for that too.
+  Sergey A. Oborotov, he implemented improved smart support of Clang.
 
   ... also the entire OMinc team and all OP2 & ETH Oberon developers!
   ... sorry who we forgot. Please remind...
