@@ -73,6 +73,7 @@ PROCEDURE -AAincludeFcntl    "#include <fcntl.h>";
 PROCEDURE -AAincludeErrno    "#include <errno.h>";
 PROCEDURE -AAincludeStdlib   "#include <stdlib.h>";
 PROCEDURE -AAincludeStdio    "#include <stdio.h>";
+PROCEDURE -AAincludeLimits   "#include <limits.h>";
 
 
 (* Error code tests *)
