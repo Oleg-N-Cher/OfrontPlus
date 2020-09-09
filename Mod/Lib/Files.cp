@@ -226,7 +226,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
 
   PROCEDURE Close* (f: File);
-    VAR i: INTEGER; error: Platform.ErrorCode;
+    VAR i: INTEGER;
   BEGIN
     IF (f.state # create) OR (f.registerName # "") THEN
       Create(f); i := 0;
@@ -596,9 +596,18 @@ Especially Length would become fairly complex.
     Close(f);
     IF f.registerName # "" THEN
       Deregister(f.registerName);
-      Rename(f.workName, f.registerName, errcode);
-      IF errcode # 0 THEN Err("Couldn't rename temp name as register name", f, errcode) END;
-      f.workName := f.registerName; f.registerName := ""; f.tempFile := FALSE
+      errcode := Platform.CloseFile(f.fd);
+      IF errcode = 0 THEN (* Platform.RenameFile requires a closed file *)
+        Rename(f.workName, f.registerName, errcode);
+        IF errcode = 0 THEN
+          errcode := Platform.OldRW(f.registerName, f.fd);
+          IF errcode = 0 THEN
+            f.workName := f.registerName; f.registerName := ""; f.tempFile := FALSE;
+            RETURN
+          END
+        END
+      END;
+      Err("Couldn't rename temp name as register name", f, errcode)
     END
   END Register;
 
