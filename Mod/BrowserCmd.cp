@@ -441,7 +441,7 @@ BEGIN
 		Console.String('       "1": Oberon'); Console.Ln;
 		Console.String('       "2": Oberon-2'); Console.Ln;
 		Console.String('       "7": Oberon-07'); Console.Ln;
-		Console.String('       "C": Component Pascal (default)'); Console.Ln;
+		Console.String('       "C": Component Pascal (by default)'); Console.Ln;
 		Console.String('       "3": Oberon-3 (experimental dialect)'); Console.Ln;
 		Console.String('       "x": eXtra system information'); Console.Ln
 	END
