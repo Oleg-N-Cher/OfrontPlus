@@ -88,7 +88,7 @@ BEGIN
 END Hex;
 
 PROCEDURE Ln*;
-BEGIN String(Platform.newLine); Flush;
+BEGIN String(Platform.NewLine); Flush;
 END Ln;
 
 

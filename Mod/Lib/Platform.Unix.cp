@@ -1,10 +1,14 @@
 MODULE Platform; (** Unix *)
 IMPORT SYSTEM;
 
+(* Based on Vishap Oberon (voc) runtime by David C W Brown, 2016-2018
+   Improvements by Oleg N. Cher, 2019-2020
+*)
+
 
 CONST
-  pathDelimiter* = "/";
-  pathSeparator* = ":";
+  PathDelimiter* = "/";
+  PathSeparator* = ":";
 
   Unix*    = TRUE;
   Windows* = FALSE;
@@ -13,7 +17,7 @@ CONST
   StdOut* = 1;
   StdErr* = 2;
 
-  newLine* = 0AX + 0X;  (* Platform specific newline representation *)
+  NewLine* = 0AX + 0X;  (* Platform specific new line representation *)
 
 
 TYPE

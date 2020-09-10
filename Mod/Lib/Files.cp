@@ -14,8 +14,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
 
   CONST
-    pathDelimiter = Platform.pathDelimiter;
-    pathSeparator = Platform.pathSeparator;
+    PathDelimiter = Platform.PathDelimiter;
+    PathSeparator = Platform.PathSeparator;
 
     NumBufs = 4;
     BufSize = 4096;
@@ -43,7 +43,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       len, pos: LONGINT;
       bufs:     ARRAY NumBufs OF Buffer;
       swapper, state: SHORTINT;
-      next:     File;
+      next:     POINTER [notag] TO FileDesc
     END;
 
     BufDesc = RECORD
@@ -64,13 +64,13 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
 
   VAR
-    files:      File;   (* List of files backed by an OS file, whether open, registered or temporary. *)
+    files:      POINTER [notag] TO FileDesc;  (* List of files backed by an OS file, whether open, registered or temporary. *)
     tempno:     INTEGER;
     HOME:       ARRAY 1024 OF SHORTCHAR;
     SearchPath: POINTER TO ARRAY OF SHORTCHAR;
 
 
-  PROCEDURE -IdxTrap (pos: INTEGER) '__HALT(-1, (CHAR*)"Files.Mod", pos)';
+  PROCEDURE -IdxTrap (pos: INTEGER) '__HALT(-1, "Files.Mod", pos)';
 
   PROCEDURE^ Finalize(o: SYSTEM.PTR);
 
@@ -90,7 +90,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR i, j: INTEGER;
   BEGIN i := 0; j := 0;
     WHILE dir[i] # 0X DO dest[i] := dir[i]; INC(i) END;
-    IF dest[i-1] # pathDelimiter THEN dest[i] := pathDelimiter; INC(i) END;
+    IF dest[i-1] # PathDelimiter THEN dest[i] := PathDelimiter; INC(i) END;
     WHILE name[j] # 0X DO dest[i] := name[j]; INC(i); INC(j) END;
     dest[i] := 0X
   END MakeFileName;
@@ -99,14 +99,14 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     VAR n, i, j: INTEGER;
   BEGIN
     INC(tempno); n := tempno; i := 0;
-    IF finalName[0] # pathDelimiter THEN  (* relative pathname *)
+    IF finalName[0] # PathDelimiter THEN  (* relative pathname *)
       WHILE Platform.CWD[i] # 0X DO name[i] := Platform.CWD[i]; INC(i) END;
-      IF Platform.CWD[i-1] # pathDelimiter THEN name[i] := pathDelimiter; INC(i) END
+      IF Platform.CWD[i-1] # PathDelimiter THEN name[i] := PathDelimiter; INC(i) END
     END;
     j := 0;
     WHILE finalName[j] # 0X DO name[i] := finalName[j]; INC(i); INC(j) END;
     DEC(i);
-    WHILE name[i] # pathDelimiter DO DEC(i) END;
+    WHILE name[i] # PathDelimiter DO DEC(i) END;
     name[i+1] := "."; name[i+2] := "t"; name[i+3] := "m"; name[i+4] := "p"; name[i+5] := "."; INC(i, 6);
     WHILE n > 0 DO name[i] := CHR(n MOD 10 + ORD("0")); n := n DIV 10; INC(i) END;
     name[i] := "."; INC(i); n := Platform.PID;
@@ -258,15 +258,15 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       END
     ELSE
       ch := SearchPath[pos];
-      WHILE (ch = " ") OR (ch = pathSeparator) DO INC(pos); ch := SearchPath[pos] END;
+      WHILE (ch = " ") OR (ch = PathSeparator) DO INC(pos); ch := SearchPath[pos] END;
       IF ch = "~" THEN
         INC(pos); ch := SearchPath[pos];
         WHILE HOME[i] # 0X DO dir[i] := HOME[i]; INC(i) END;
-        IF (ch # pathDelimiter) & (ch # 0X) & (ch # pathSeparator) & (ch # " ") THEN
-          WHILE (i > 0) & (dir[i-1] # pathDelimiter) DO DEC(i) END
+        IF (ch # PathDelimiter) & (ch # 0X) & (ch # PathSeparator) & (ch # " ") THEN
+          WHILE (i > 0) & (dir[i-1] # PathDelimiter) DO DEC(i) END
         END
       END;
-      WHILE (ch # 0X) & (ch # pathSeparator) DO dir[i] := ch; INC(i); INC(pos); ch := SearchPath[pos] END;
+      WHILE (ch # 0X) & (ch # PathSeparator) DO dir[i] := ch; INC(i); INC(pos); ch := SearchPath[pos] END;
       WHILE (i > 0) & (dir[i-1] = " ") DO DEC(i) END
     END;
     dir[i] := 0X
@@ -275,8 +275,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
   PROCEDURE HasDir(IN name: ARRAY OF SHORTCHAR): BOOLEAN;
     VAR i: INTEGER; ch: SHORTCHAR;
   BEGIN i := 0; ch := name[0];
-    WHILE (ch # 0X) & (ch # pathDelimiter) DO INC(i); ch := name[i] END;
-    RETURN ch = pathDelimiter
+    WHILE (ch # 0X) & (ch # PathDelimiter) DO INC(i); ch := name[i] END;
+    RETURN ch = PathDelimiter
   END HasDir;
 
   PROCEDURE CacheEntry(identity: Platform.FileIdentity): File;

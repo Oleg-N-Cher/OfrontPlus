@@ -1,7 +1,10 @@
 MODULE Platform; (** Windows *)
 IMPORT SYSTEM;
 
-(* TODO:
+(* Based on Vishap Oberon (voc) runtime by David C W Brown, 2016-2018
+   Improvements and Windows 9x compatibility by Oleg N. Cher, 2019-2020
+
+   TODO:
    Use Unicode APIs with manual UTF8 conversion and prepend "\\?\" to
    file paths in order to get 32768 character path length limit (as
    opposed to 256 bytes. *)
@@ -10,13 +13,13 @@ IMPORT SYSTEM;
 CONST
   MAX_PATH = 260;
 
-  pathDelimiter* = "\";
-  pathSeparator* = ";";
+  PathDelimiter* = "\";
+  PathSeparator* = ";";
 
   Unix*    = FALSE;
   Windows* = TRUE;
 
-  newLine* = 0DX + 0AX;  (* Platform specific newline representation *)
+  NewLine* = 0DX + 0AX;  (* Platform specific new line representation *)
 
 
 TYPE

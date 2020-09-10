@@ -614,7 +614,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteReal;
 
 	PROCEDURE WriteLn* ();
-	BEGIN WriteString(Platform.newLine)
+	BEGIN WriteString(Platform.NewLine)
 	END WriteLn;
 
 	PROCEDURE WriteModPos*;
