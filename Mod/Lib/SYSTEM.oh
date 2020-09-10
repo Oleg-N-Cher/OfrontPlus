@@ -121,8 +121,8 @@ extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
 extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
 
 #define __HALT_OLD(n)                            SYSTEM_HALT(n, (CHAR*)"", -1)
-#define __HALT(n, mod, pos)                      SYSTEM_HALT(n, mod, pos)
-#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, mod, pos)
+#define __HALT(n, mod, pos)                      SYSTEM_HALT(n, (CHAR*)mod, pos)
+#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, (CHAR*)mod, pos)
 
 
 // Strings copy, append, compare and calculate length
@@ -321,7 +321,7 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
   memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT));   \
   t##__desc.basep[level] = (SYSTEM_ADRINT)t##__typ;                              \
   t##__desc.module       = (SYSTEM_ADRINT)m;                                     \
-  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, (CHAR*)"SYSTEM.h", 324);     \
+  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.h", 324);            \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(SYSTEM_ADRINT)-1)/(4*sizeof(SYSTEM_ADRINT))*(4*sizeof(SYSTEM_ADRINT)); \
   Heap_REGTYP(m, (SYSTEM_ADRINT)&t##__desc.next);                                \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
