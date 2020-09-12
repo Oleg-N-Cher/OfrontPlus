@@ -580,9 +580,8 @@ MODULE Heap;
 
   (* registers must be stored on the stack before doing garbage collection on the stack. *)
   PROCEDURE- includesetjmp "#include <setjmp.h>";
-  PROCEDURE- setjmp32 "jmp_buf env; setjmp(env)";
-  PROCEDURE- setjmp64 "jmp_buf env_align1; int align; jmp_buf env_align2; " +
-                      "setjmp(env_align1); memcpy(env_align2, env_align1, sizeof(jmp_buf))";
+  PROCEDURE- setjmp32 "jmp_buf env; setjmp(env);";
+  PROCEDURE- setjmp64 "jmp_buf env_align1; int align; jmp_buf env_align2; setjmp(env_align1); memcpy(env_align2, env_align1, sizeof(jmp_buf));";
 
   PROCEDURE CallMarkStack; (* Pretty portable version: 
     uses jump buffer for saving processor state incl. registers on the stack. *)
