@@ -13,7 +13,7 @@
     не умеет включать текст из складок (folds) и селекторов.
 *)
 
-IMPORT Files, Out := Console, CmdLine := Args;
+IMPORT Files, Out := Console, CmdLine := Args, Platform;
 
 TYPE
   Text16 = POINTER TO ARRAY OF INT16;
@@ -315,7 +315,9 @@ BEGIN
           END;
           IF f # NIL THEN Files.Close(f) END;
           IF emit THEN
-            Files.Register(utf8file); Files.Rename(tempname, utf8name, @res);
+            Files.Register(utf8file); res := Platform.CloseFile(utf8file.fd);
+            res := Platform.CloseFile(f.fd); (* Rename requires a closed file *)
+            Files.Rename(tempname, utf8name, @res);
             IF res # 0 THEN
               HaltStr("Couldn't save " + '"#"', utf8name)
             END;
