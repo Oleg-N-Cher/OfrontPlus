@@ -280,8 +280,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		BEGIN (* ("0" <= ch) & (ch <= "9") OR ("A" <= ch) & (ch <= "F") *)
 			IF ch <= "9" THEN RETURN SHORT(ORD(ch) - ORD("0"))
 			ELSIF hex THEN RETURN SHORT(ORD(ch) - ORD("A") + 10)
-			ELSE err(2); RETURN 0
-			END
+			END; err(2); RETURN 0
 		END Ord;
 
 	BEGIN (* ("0" <= ch) & (ch <= "9") *)
@@ -415,18 +414,18 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 					IF ch = OPM.Eot THEN err(5); EXIT END
 				END;
 				RETURN TRUE
-			ELSE n := 0; NEW(str, 1024);
-				LOOP
-					OPM.Get(ch);
-					IF ch = "*" THEN OPM.Get(ch);
-						IF ch = ")" THEN OPM.Get(ch); str[n] := 0X; EXIT END;
-						EnsureLen(n + 1); str[n] := "*"; INC(n)
-					END;
-					IF ch = OPM.Eot THEN err(5); str[n] := 0X; EXIT END;
-					EnsureLen(n + 1); str[n] := ch; INC(n)
+			END;
+			n := 0; NEW(str, 1024);
+			LOOP
+				OPM.Get(ch);
+				IF ch = "*" THEN OPM.Get(ch);
+					IF ch = ")" THEN OPM.Get(ch); str[n] := 0X; EXIT END;
+					EnsureLen(n + 1); str[n] := "*"; INC(n)
 				END;
-				RETURN FALSE
-			END
+				IF ch = OPM.Eot THEN err(5); str[n] := 0X; EXIT END;
+				EnsureLen(n + 1); str[n] := ch; INC(n)
+			END;
+			RETURN FALSE
 		END Comment;
 
 	BEGIN
