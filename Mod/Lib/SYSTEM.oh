@@ -335,7 +335,9 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 #define __SEND(typ, procname, num, funtyp, parlist) ((funtyp)((SYSTEM_ADRINT)*(typ-(__TPROC0OFF+num))))parlist
 
 
-#ifdef _WINMAIN
+#ifndef _WINMAIN
+#  define main(argc, argv) __attribute__ ((noinline)) main(argc, argv)
+#else
 #  if !defined WIN64 && !defined _WIN64
 #    define __stdcall __attribute__((__stdcall__))
 #  endif
