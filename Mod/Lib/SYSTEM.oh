@@ -271,7 +271,7 @@ extern void Heap_FINALL();
 #ifdef _WINMAIN
 #  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, stkadr)
 #else
-#  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, &argv)
+#  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, __builtin_frame_address(0))
 #endif
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
