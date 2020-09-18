@@ -268,11 +268,7 @@ extern void       Heap_INCREF();
 extern void SYSTEM_INIT(INTEGER argc, void *argv, void *stkadr);
 extern void Heap_FINALL();
 
-#ifdef _WINMAIN
-#  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, stkadr)
-#else
-#  define __INIT(argc, argv)  static void *m; SYSTEM_INIT(argc, argv, __builtin_frame_address(0))
-#endif
+#define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, argv, stkadr)
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
 
@@ -336,16 +332,12 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 
 
 #ifndef _WINMAIN
-#  define main(argc, argv) __attribute__ ((noinline)) main(argc, argv)
+#  define main(argc, argv) \
+     _main (int argc, char **argv, void *stkadr); \
+     int main (argc, argv) { return _main(argc, argv, &argv); } \
+     int __attribute__ ((noinline)) _main(argc, argv, void *stkadr)
 #else
-#  if !defined WIN64 && !defined _WIN64
-#    define __stdcall __attribute__((__stdcall__))
-#  endif
-#  define main(argc, argv) __stdcall WinMain( \
-     void *__hInstance, void *__hPrevInstance, char *__lpCmdLine, int __nCmdShow)
-     extern int argc;
-     extern char *argv;
-     extern void *stkadr;
+#  define main(argc, argv) _WinMain(argc, argv, void *stkadr)
 #endif
 
 
