@@ -36,9 +36,9 @@ IF errorlevel 1 PAUSE
 ofront+ -sC -48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
 IF errorlevel 1 PAUSE
 
-:: libCurl
+:: libCurl, libNuklear*
 
-ofront+ -sC -48 libCurl.cp NetHttp.cp %oef%
+ofront+ -sC -48 libCurl.cp NetHttp.cp libNuklear.cp libNuklearX.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Miscellaneous
