@@ -20,10 +20,10 @@
 
 
 INTEGER SYSTEM_ArgCount;
-void   *SYSTEM_ArgVector;
-void  (*SYSTEM_AssertFailHandler)(INTEGER n, CHAR *mod, INTEGER pos);
-void  (*SYSTEM_HaltHandler)(INTEGER n, CHAR *mod, INTEGER pos);
-void   *SYSTEM_MainStackFrame; /* adr of main proc stack frame, used for stack collection */
+void *SYSTEM_ArgVector;
+void (*SYSTEM_AssertFailHandler)(INTEGER n, CHAR *mod, INTEGER pos);
+void (*SYSTEM_HaltHandler)(INTEGER n, CHAR *mod, INTEGER pos);
+void *SYSTEM_MainStackFrame; // adr of main proc stack frame, used for stack collection
 
 
 // Procedure verions of SYSTEM.H versions used when a multiply accessed
@@ -146,9 +146,9 @@ extern void Heap_Unlock();
 
 extern void Heap_InitHeap();
 
-void SYSTEM_INIT(INTEGER argc, void *argv, void *stkadr)
+void SYSTEM_INIT(INTEGER argc, void *argv, void *stkptr)
 {
-  SYSTEM_MainStackFrame = stkadr; // MUST be aligned
+  SYSTEM_MainStackFrame = stkptr; // MUST be aligned
   SYSTEM_ArgCount = argc;
   SYSTEM_ArgVector = argv;
   SYSTEM_AssertFailHandler = 0;

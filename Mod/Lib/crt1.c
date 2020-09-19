@@ -2,7 +2,7 @@ int argc; char **argv;
 
 __declspec(dllimport) void __stdcall ExitProcess (int);
 __declspec(dllimport) int __getmainargs (int*, char***, char**, int, void*);
-extern int _WinMain (int argc, char **argv, void *stkadr);
+extern int _WinMain (int argc, char **argv, void *stkptr);
 
 void WinMain (void) {
   char* tmp;

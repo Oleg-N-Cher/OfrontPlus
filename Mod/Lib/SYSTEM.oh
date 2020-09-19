@@ -265,10 +265,10 @@ extern void       Heap_INCREF();
 
 // Main module initialization, registration and finalization
 
-extern void SYSTEM_INIT(INTEGER argc, void *argv, void *stkadr);
+extern void SYSTEM_INIT(INTEGER argc, void *argv, void *stkptr);
 extern void Heap_FINALL();
 
-#define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, argv, stkadr)
+#define __INIT(argc, argv)    static void *m; SYSTEM_INIT(argc, argv, stkptr)
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name,(void*)enum)
 #define __FINI                Heap_FINALL(); return 0
 
@@ -333,11 +333,11 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 
 #ifndef _WINMAIN
 #  define main(argc, argv) \
-     _main (int argc, char **argv, void *stkadr); \
+     _main (int argc, char **argv, void *stkptr); \
      int main (argc, argv) { return _main(argc, argv, &argv); } \
-     int __attribute__ ((noinline)) _main(argc, argv, void *stkadr)
+     int __attribute__ ((noinline)) _main(argc, argv, void *stkptr)
 #else
-#  define main(argc, argv) _WinMain(argc, argv, void *stkadr)
+#  define main(argc, argv) _WinMain(argc, argv, void *stkptr)
 #endif
 
 
