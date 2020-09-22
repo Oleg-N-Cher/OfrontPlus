@@ -146,9 +146,9 @@ extern void Heap_Unlock();
 
 extern void Heap_InitHeap();
 
-void SYSTEM_INIT(INTEGER argc, void *argv, void *stkptr)
+void SYSTEM_INIT(INTEGER argc, void *argv, void *stktop)
 {
-  SYSTEM_MainStackFrame = stkptr; // MUST be aligned
+  SYSTEM_MainStackFrame = stktop; // MUST be aligned
   SYSTEM_ArgCount = argc;
   SYSTEM_ArgVector = argv;
   SYSTEM_AssertFailHandler = 0;
