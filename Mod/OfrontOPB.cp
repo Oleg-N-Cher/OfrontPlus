@@ -1755,7 +1755,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| getfn, putfn: (*SYSTEM.GET, SYSTEM.PUT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN {Undef..Set, Pointer, ProcTyp} THEN
+				ELSIF f IN {Undef..Set, Pointer, UByte, ProcTyp} THEN
 					IF fctno = getfn THEN
 						IF NotVar(x) THEN err(112) END;
 						t := x; x := p; p := t
