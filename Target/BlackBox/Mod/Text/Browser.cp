@@ -1,4 +1,4 @@
-MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
+﻿MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
@@ -343,8 +343,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SYSTEM.INT16")
 				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INTEGER")
 				ELSIF obj = OPT.linttyp^.strobj THEN Ws("SYSTEM.INT64")
-				ELSIF obj = OPT.realtyp^.strobj THEN Ws("SYSTEM.REAL64")
-				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("REAL")
+				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
+				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("SYSTEM.REAL64")
 				ELSE Ws(obj^.name^)
 				END
 			END
@@ -374,14 +374,22 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	BEGIN
 		OPT.Import("@notself", name, done);
 		IF done THEN
-			Ws("DEFINITION "); Ws(name); Wch(";"); Wln; Wln;
+			Ws("DEFINITION "); Ws(name); Ws("; (*");
+			CASE lang OF
+			| "1": Ws("Oberon")
+			| "2": Ws("Oberon-2")
+			| "7": Ws("Oberon-07")
+			| "С": Ws("Component Pascal")
+			| "3": Ws("Oberon-3")
+			END;
+			Ws(" *)"); Wln; Wln;
 			Header("IMPORT"); i := 1; first := TRUE;
 			WHILE i < OPT.nofGmod DO
-				IF first THEN first := FALSE; Indent(2) ELSE Ws(", ") END ;
+				IF first THEN first := FALSE; Indent(2) ELSE Ws(", ") END;
 				Ws(OPT.GlbMod[i].name^);
 				INC(i)
-			END ;
-			IF ~first THEN Wch(";"); Wln END ;
+			END;
+			IF ~first THEN Wch(";"); Wln END;
 			CheckHeader;
 			Header("CONST"); Objects(OPT.GlbMod[0].right, {Con}); CheckHeader;
 			Header("TYPE"); Objects(OPT.GlbMod[0].right, {Typ}); CheckHeader;
