@@ -20,7 +20,7 @@
  * http://krum.rz.uni-mannheim.de/mas/src/masarith/MathLib.mi.html 
  * ----------------------------------------------------------------------------
  *)
-IMPLEMENTATION MODULE MathLib;
+MODULE MathLib;
 
 (* GMD Mocka MathLib. *)
 
@@ -39,7 +39,7 @@ CONST rcsidi = "$Id: MathLib.mi,v 1.4 1993/03/22 10:17:07 kredel Exp $";
 CONST copyrighti = "Copyright (c) GMD";
 
 
-
+(*
   PROCEDURE Trunc (x : LONGREAL) : INTEGER;
   (* software emulation of TRUNC for LONGREAL, x >= 0.0 *)
     VAR res, exp, i, j : INTEGER; xS : REAL; xL : LONGREAL; c : CARDINAL;
@@ -69,9 +69,9 @@ CONST copyrighti = "Copyright (c) GMD";
     divC := x DIV MaxCardI; divR := FLOAT (divC);
     modC := x MOD MaxCardI; modR := FLOAT (modC);
     RETURN divR * MaxCardR + modR;
-  END Float;
+  END Float;*)
 
-  PROCEDURE frexp (x: LONGREAL; VAR exp: INTEGER): LONGREAL;
+  PROCEDURE frexp* (x: REAL; VAR exp: INTEGER): REAL;
   (* Returns the real mantissa m of 'x' and an integer exp *)
   (* such that 'x' = m * 2 ** exp *)
     VAR neg : BOOLEAN;
@@ -92,7 +92,7 @@ CONST copyrighti = "Copyright (c) GMD";
     RETURN x
   END frexp;
 
-  PROCEDURE ldexp (value: LONGREAL; exp: INTEGER): LONGREAL;
+  PROCEDURE ldexp* (value: REAL; exp: INTEGER): REAL;
   (* Returns value * 2 ** exp *)
     VAR i: INTEGER;
   BEGIN
@@ -102,7 +102,7 @@ CONST copyrighti = "Copyright (c) GMD";
       FOR i := 1 TO -exp DO value := value / 2.0 END;
     END;
     RETURN value;
-  END ldexp;
+  END ldexp;(*
 
   PROCEDURE modf (value: LONGREAL; VAR int: INTEGER): LONGREAL;
   (* Returns the positive fractional part of value and (by int) *)
@@ -369,7 +369,7 @@ CONST copyrighti = "Copyright (c) GMD";
       (*RETURN -Trunc (arg) - 1;   HE 3/90 *)
       RETURN -Trunc (-arg) - 1;
     END;
-  END entierL;
+  END entierL;*)
 
 END MathLib.
 (* -EOF- *)
