@@ -106,6 +106,8 @@ extern INTEGER SYSTEM_MOD    (INTEGER x, INTEGER y);
 extern LONGINT SYSTEM_MODL   (LONGINT x, LONGINT y);
 extern INTEGER SYSTEM_ENTIER (REAL x);
 extern LONGINT SYSTEM_ENTIERL(REAL x);
+extern void    SYSTEM_UNPK   (SHORTREAL *x, INTEGER *exp);
+extern void    SYSTEM_PACK   (SHORTREAL *x, INTEGER exp);
 
 
 // Signal handling in SYSTEM.c
@@ -200,6 +202,8 @@ static inline LONGINT   __VALL (REAL x)      { return *(LONGINT*)  &x; }
 #define __SETOF(x)      ((SET)1<<(x))
 #define __SETRNG(l, h)  ((~(SET)0<<(l))&~(SET)0>>(8*sizeof(SET)-1-(h)))
 #define __MASK(x, m)    ((x)&~(m))
+#define __UNPK(x, exp)  SYSTEM_UNPK(x, exp)
+#define __PACK(x, exp)  SYSTEM_PACK(x, exp)
 
 #define __MIN(x, y)	    ((x)<(y)?(x):(y))
 static inline INTEGER __MINF (INTEGER x, INTEGER y)        { return x<y?x:y; }
