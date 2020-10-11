@@ -106,8 +106,8 @@ extern INTEGER SYSTEM_MOD    (INTEGER x, INTEGER y);
 extern LONGINT SYSTEM_MODL   (LONGINT x, LONGINT y);
 extern INTEGER SYSTEM_ENTIER (REAL x);
 extern LONGINT SYSTEM_ENTIERL(REAL x);
-extern void    SYSTEM_UNPK   (SHORTREAL *x, INTEGER *exp);
 extern void    SYSTEM_PACK   (SHORTREAL *x, INTEGER exp);
+extern void    SYSTEM_UNPK   (SHORTREAL *x, INTEGER *exp);
 
 
 // Signal handling in SYSTEM.c
@@ -202,8 +202,8 @@ static inline LONGINT   __VALL (REAL x)      { return *(LONGINT*)  &x; }
 #define __SETOF(x)      ((SET)1<<(x))
 #define __SETRNG(l, h)  ((~(SET)0<<(l))&~(SET)0>>(8*sizeof(SET)-1-(h)))
 #define __MASK(x, m)    ((x)&~(m))
-#define __UNPK(x, exp)  SYSTEM_UNPK(x, exp)
 #define __PACK(x, exp)  SYSTEM_PACK(x, exp)
+#define __UNPK(x, exp)  SYSTEM_UNPK(x, exp)
 
 #define __MIN(x, y)	    ((x)<(y)?(x):(y))
 static inline INTEGER __MINF (INTEGER x, INTEGER y)        { return x<y?x:y; }
@@ -321,7 +321,7 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
   memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT));   \
   t##__desc.basep[level] = (SYSTEM_ADRINT)t##__typ;                              \
   t##__desc.module       = (SYSTEM_ADRINT)m;                                     \
-  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.h", 324);            \
+  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.oh", 324);           \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(SYSTEM_ADRINT)-1)/(4*sizeof(SYSTEM_ADRINT))*(4*sizeof(SYSTEM_ADRINT)); \
   Heap_REGTYP(m, (SYSTEM_ADRINT)&t##__desc.next);                                \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
