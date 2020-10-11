@@ -38,7 +38,7 @@
 
 		(*function number*)
 		assign = 0; newfn = 1; incfn = 18; decfn = 19;
-		inclfn = 20; exclfn = 21; copyfn = 23; assertfn = 37;
+		inclfn = 20; exclfn = 21; copyfn = 23; packfn = 31; unpkfn = 32; assertfn = 37;
 
 		(*SYSTEM function number*)
 		getfn = 29; putfn = 30; sysnewfn = 35; movefn = 36;
@@ -1204,6 +1204,12 @@
 									Len(n^.right, 0, FALSE); OPM.Write(CloseParen)
 								END;
 								OPM.Write(CloseParen)
+					|	packfn:
+								OPM.WriteString("__PACK(&"); expr(n^.left, MinPrec); OPM.WriteString(Comma);
+								expr(n^.right, MinPrec); OPM.Write(CloseParen)
+					|	unpkfn:
+								OPM.WriteString("__UNPK(&"); expr(n^.left, MinPrec); OPM.WriteString(Comma + "&");
+								expr(n^.right, MinPrec); OPM.Write(CloseParen)
 					|	(*SYSTEM*)movefn:
 								OPM.WriteString(MoveFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(Comma); expr(n^.left, MinPrec); OPM.WriteString(Comma);

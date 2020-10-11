@@ -14,6 +14,7 @@
 */
 
 #include "SYSTEM.oh"
+#include <math.h>
 #include <stdarg.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -105,29 +106,14 @@ LONGINT SYSTEM_ENTIERL(REAL x)
   return i;
 }
 
-void SYSTEM_UNPK(SHORTREAL *x, INTEGER *exp)
-    // real mantissa m of 'x' and an integer exp such that 'x' = m * 2 ** exp
+void SYSTEM_PACK(SHORTREAL *x, INTEGER n) // x * 2 ** n
 {
-    BOOLEAN neg = (*x < (SHORTREAL)0);
-    *exp = 0;
-    if (neg) *x = -*x;
-    if (*x >= (SHORTREAL)1) {
-        do { *exp += 1; *x /= (SHORTREAL)2; } while (*x >= (SHORTREAL)1);
-    } else if (*x < 0.1 && *x != (SHORTREAL)0) {
-        do { *exp -= 1; *x *= (SHORTREAL)2; } while (*x < 0.1);
-    }
-    if (neg) *x = -*x;
-    //*x += *x; (*exp)--;
+    *x = ldexpf(*x, n);
 }
 
-void SYSTEM_PACK(SHORTREAL *x, INTEGER exp) // x * 2 ** exp
-{
-    INTEGER i = 1;
-    if (exp > 0) {
-        while (i <=  exp) { *x *= (SHORTREAL)2; i += 1; }
-    } else if (exp < 0) {
-        while (i <= -exp) { *x /= (SHORTREAL)2; i += 1; }
-    }
+void SYSTEM_UNPK(SHORTREAL *x, INTEGER *n)
+{   // real mantissa m of 'x' and an integer n such that 'x' = m * 2 ** n
+    *x = frexpf(*x, n); *x += *x; (*n)--;
 }
 
 

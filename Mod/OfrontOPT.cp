@@ -108,7 +108,7 @@
 		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
 		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
 		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
-		ushortfn = 25; assertfn = 37;
+		ushortfn = 25; packfn = 31; unpkfn = 32; assertfn = 37;
 
 		(*SYSTEM function number*)
 		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
@@ -1291,20 +1291,24 @@
 		EnterProc("ABS", "abs", absfn);
 		EnterProc("CAP", "cap", capfn);
 		EnterProc("ORD", "ord", ordfn);
-		IF (lang # "7") THEN
-			EnterProc("ENTIER", "entier", entierfn)
-		ELSE
+		IF lang = "7" THEN
+			EnterProc("ASR", "asr", asrfn);
+			EnterProc("LSL", "lsl", lslfn);
+			EnterProc("ROR", "ror", rorfn);
 			EnterProc("FLOOR", "floor", entierfn);
-			EnterProc("FLT", "flt", fltfn)
-		END;
-		EnterProc("ODD", "odd", oddfn);
-		EnterProc("CHR", "chr", chrfn);
-		IF lang # "7" THEN
+			EnterProc("FLT", "flt", fltfn);
+			EnterProc("PACK", "pack", packfn);
+			EnterProc("UNPK", "unpk", unpkfn)
+		ELSE
+			EnterProc("ASH", "ash", ashfn);
+			EnterProc("ENTIER", "entier", entierfn);
 			EnterProc("MIN", "min", minfn);
 			EnterProc("MAX", "max", maxfn);
 			EnterProc("SHORT", "short", shortfn);
 			EnterProc("LONG", "long", longfn)
 		END;
+		EnterProc("ODD", "odd", oddfn);
+		EnterProc("CHR", "chr", chrfn);
 		EnterProc("SIZE", "size", sizefn);
 		EnterProc("INC", "inc", incfn);
 		EnterProc("DEC", "dec", decfn);
@@ -1313,13 +1317,6 @@
 		EnterProc("LEN", "len", lenfn);
 		IF lang <= "2" THEN
 			EnterProc("COPY", "copy", copyfn)
-		END;
-		IF lang = "7" THEN
-			EnterProc("ASR", "asr", asrfn);
-			EnterProc("LSL", "lsl", lslfn);
-			EnterProc("ROR", "ror", rorfn)
-		ELSE
-			EnterProc("ASH", "ash", ashfn)
 		END;
 		EnterProc("ASSERT", "assert", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN

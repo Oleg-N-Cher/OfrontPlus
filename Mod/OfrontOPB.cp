@@ -52,7 +52,7 @@
 		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
 		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
 		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
-		ushortfn = 25; assertfn = 37;
+		ushortfn = 25; packfn = 31; unpkfn = 32; assertfn = 37;
 
 		(*SYSTEM function number*)
 		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
@@ -1591,7 +1591,12 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f # Bool THEN err(120); x := NewBoolConst(FALSE)
 				ELSE MOp(not, x)
 				END
-		END ;
+		| packfn, unpkfn: (*PACK, UNPK*)
+				IF NotVar(x) THEN err(112)
+				ELSIF f # Real THEN err(111)
+				ELSIF x^.readonly THEN err(76)
+				END
+		END;
 		par0 := x
 	END StPar0;
 
@@ -1607,7 +1612,7 @@ avoid unnecessary intermediate variables in OFront
 
 	BEGIN p := par0; f := x^.typ^.form;
 		CASE fctno OF
-		  incfn, decfn: (*INC DEC*)
+		  incfn, decfn: (*INC, DEC*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126); p^.typ := OPT.notyp
 				ELSE
 					IF x^.typ # p^.typ THEN
@@ -1839,6 +1844,21 @@ avoid unnecessary intermediate variables in OFront
 					END
 				ELSE err(69)
 				END
+		| packfn: (*PACK*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN intSet THEN
+					p := NewOp(Nassign, packfn, p, x)
+				ELSE err(111)
+				END;
+				p^.typ := OPT.notyp
+		| unpkfn: (*UNPK*)
+				IF NotVar(x) THEN err(112)
+				ELSIF x^.readonly THEN err(76)
+				ELSIF f IN intSet THEN
+					p := NewOp(Nassign, unpkfn, p, x)
+				ELSE err(111)
+				END;
+				p^.typ := OPT.notyp
 		ELSE err(64)
 		END;
 		par0 := p
