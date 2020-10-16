@@ -1846,16 +1846,14 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| packfn: (*PACK*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN intSet THEN
-					p := NewOp(Nassign, packfn, p, x)
+				ELSIF f IN intSet THEN p := NewOp(Nassign, packfn, p, x)
 				ELSE err(111)
 				END;
 				p^.typ := OPT.notyp
 		| unpkfn: (*UNPK*)
 				IF NotVar(x) THEN err(112)
 				ELSIF x^.readonly THEN err(76)
-				ELSIF f IN intSet THEN
-					p := NewOp(Nassign, unpkfn, p, x)
+				ELSIF f IN intSet THEN p := NewOp(Nassign, unpkfn, p, x)
 				ELSE err(111)
 				END;
 				p^.typ := OPT.notyp
