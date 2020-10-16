@@ -278,6 +278,9 @@
 		LOOP
 			form := typ^.form;
 			comp := typ^.comp;
+			IF (dcl^.conval # NIL) & (dcl^.conval^.arr # NIL) & (OPM.currFile = OPM.HeaderFile) THEN
+				OPM.WriteString(" " + OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket); EXIT
+			END;
 			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null)) OR (form = NoTyp) OR (comp = Record) THEN EXIT
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
 				openClause := TRUE
@@ -290,7 +293,7 @@
 					DeclareReturnType(typ^.BaseTyp);
 					EXIT
 				ELSIF comp = Array THEN
-					OPM.Write(OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket)
+					OPM.WriteString(" " + OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket)
 				END
 			ELSE
 				EXIT
@@ -986,20 +989,19 @@
 					BegStat;
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
-						IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
-								OPM.WriteString("__CONSTARR ");
-						ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
+						IF obj^.vis = internal THEN OPM.WriteString(Static)
 						ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
-					ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
-								OPM.WriteString("__CONSTARR ")
+					END;
+					IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
+						OPM.WriteString("__CONSTARR ")
 					END;
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
 					ELSE DeclareBase(obj)
 					END
 				ELSE OPM.Write(",");
-				END ;
+				END;
 				OPM.Write(Blank);
 				IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.Write("_") END ;
 				DeclareObj(obj, vis);
@@ -1016,16 +1018,16 @@
 					EndStat; BegStat;
 					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
-				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) THEN
-					IF obj^.typ^.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL"); base := NIL
-					ELSIF (obj^.typ^.form = Comp) & HasPtrs(obj^.typ) THEN OPM.WriteString(" = {0}")
-					END
 				ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) & (vis # 1) THEN (* элементы конст.массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
 					BegStat;
 					obj^.conval^.intval := 0;
 					WriteConstArr (obj, obj^.typ);
-					Indent(-1);
+					Indent(-1)
+				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) THEN
+					IF obj^.typ^.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL"); base := NIL
+					ELSIF (obj^.typ^.form = Comp) & HasPtrs(obj^.typ) THEN OPM.WriteString(" = {0}")
+					END
 				END
 			END;
 			obj := obj^.link
