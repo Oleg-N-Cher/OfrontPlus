@@ -329,7 +329,7 @@
 		ELSIF OPM.foreign IN OPM.opt THEN obj^.vis := external
 		ELSE obj^.vis := internal
 		END;
-		IF (obj^.mode IN {LProc, XProc}) THEN
+		IF obj^.mode IN {LProc, XProc} THEN
 			IF sym = lbrak THEN OPS.Get(sym);
 				IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 				IF (sym = number) & (OPS.numtyp = char) THEN
@@ -1816,12 +1816,10 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					obj^.mode := Con; obj^.typ := x^.typ; obj^.conval := x^.conval; (* ConstDesc ist not copied *)
 					IF obj^.conval^.arr # NIL THEN  (* константный массив *)
 						obj^.mode := VarPar; (* преобразуем в переменную-параметр *)
-						obj^.vis := inPar; (* причём входной параметр*)
+						IF obj^.vis = internal THEN obj^.vis := inPar ELSE obj^.vis := externalR END;
 						IF x^.obj # NIL THEN obj^.typ := x^.obj^.typ END;
-						obj^.typ^.pvused := TRUE; (* не знаю, нужно ли это *)
-						IF last = NIL THEN OPT.topScope^.scope := obj ELSE last^.link := obj END ;
-						last := obj;
-						first := NIL;
+						IF last = NIL THEN OPT.topScope^.scope := obj ELSE last^.link := obj END;
+						last := obj; first := NIL
 					END;
 					CheckSym(semicolon)
 				END

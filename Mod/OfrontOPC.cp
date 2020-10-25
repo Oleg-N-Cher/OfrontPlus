@@ -37,7 +37,7 @@
 		Ninittd = 14;
 
 		(* module visibility of objects *)
-		internal = 0; external = 1; outPar = 4;
+		internal = 0; external = 1; externalR = 2; outPar = 4;
 
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
@@ -278,9 +278,6 @@
 		LOOP
 			form := typ^.form;
 			comp := typ^.comp;
-			IF (dcl^.conval # NIL) & (dcl^.conval^.arr # NIL) & (OPM.currFile = OPM.HeaderFile) THEN
-				OPM.WriteString(" " + OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket); EXIT
-			END;
 			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null)) OR (form = NoTyp) OR (comp = Record) THEN EXIT
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
 				openClause := TRUE
@@ -974,14 +971,15 @@
 
 	PROCEDURE IdentList (obj: OPT.Object; vis: SHORTINT);
 	(* generate var and param lists; vis: 0 all global vars, local var, 1 exported(R) var, 2 par list, 3 scope var *)
-		VAR base: OPT.Struct; first: BOOLEAN; lastvis: SHORTINT;
+		VAR base: OPT.Struct; first, constarr: BOOLEAN; lastvis: SHORTINT;
 	BEGIN
 		base := NIL; first := TRUE;
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
-			IF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
+			constarr := (obj^.conval # NIL) & (obj^.conval^.arr # NIL);
+			IF constarr & (vis # 0) & (obj^.vis # externalR) THEN	(* not exported in header *)
+			ELSIF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
 				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte}) THEN base := obj^.typ END;
-				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR
-				((obj^.conval # NIL) & (obj^.conval^.arr # NIL)) THEN	(* каждый конст.массив отдельно*)
+				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR constarr THEN	(* каждый конст. массив отдельно *)
 				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;
@@ -994,9 +992,7 @@
 						ELSE OPM.WriteString(Export)
 						END
 					END;
-					IF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) THEN (* конст.массив *)
-						OPM.WriteString("__CONSTARR ")
-					END;
+					IF constarr THEN OPM.WriteString("__CONSTARR ") END;
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
 					ELSE DeclareBase(obj)
 					END
@@ -1018,11 +1014,11 @@
 					EndStat; BegStat;
 					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
-				ELSIF (obj^.conval # NIL) & (obj^.conval^.arr # NIL) & (vis # 1) THEN (* элементы конст.массива *)
+				ELSIF constarr & (vis = 0) THEN	(* элементы конст. массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
 					BegStat;
 					obj^.conval^.intval := 0;
-					WriteConstArr (obj, obj^.typ);
+					WriteConstArr(obj, obj^.typ);
 					Indent(-1)
 				ELSIF ptrinit & (vis = 0) & (obj^.mnolev > 0) THEN
 					IF obj^.typ^.form IN {Pointer, ProcTyp} THEN OPM.WriteString(" = NIL"); base := NIL

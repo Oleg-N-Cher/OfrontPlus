@@ -211,7 +211,7 @@
 				p := typ^.link;
 				WHILE p # NIL DO TraverseType(p.typ); p := p.link END
 			ELSE (* typ^.comp IN {Array, DynArr} *)
-				 TraverseType(typ^.BaseTyp)
+				TraverseType(typ^.BaseTyp)
 			END
 		END
 	END TraverseType;
