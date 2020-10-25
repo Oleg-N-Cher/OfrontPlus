@@ -1080,7 +1080,7 @@
 	BEGIN
 		IF obj # NIL THEN
 			OutObj(obj^.left);
-			IF obj^.mode IN {Con, Typ, Var, LProc, XProc, CProc, IProc} THEN
+			IF obj^.mode IN {Con, Typ, Var, VarPar, LProc, XProc, CProc, IProc} THEN
 				IF obj^.history = removed THEN FPrintErr(obj, 250)
 				ELSIF obj^.vis # internal THEN
 					CASE obj^.history OF
@@ -1100,12 +1100,15 @@
 						IF obj^.typ^.strobj = obj THEN OPM.SymWInt(Stype); OutStr(obj^.typ)
 						ELSE OPM.SymWInt(Salias); OutStr(obj^.typ); OutName(obj^.name^)
 						END
-					| Var:
-						IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END ;
-						OutStr(obj^.typ); OutName(obj^.name^);
-						IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
-							(* compute fingerprint to avoid structural type equivalence *)
-							OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
+					| Var, VarPar:
+						IF (obj^.mode = VarPar) & (obj^.vis # externalR) THEN	(* not exported *)
+						ELSE
+							IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END;
+							OutStr(obj^.typ); OutName(obj^.name^);
+							IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
+								(* compute fingerprint to avoid structural type equivalence *)
+								OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
+							END
 						END
 					| XProc:
 						OPM.SymWInt(Sxpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^)

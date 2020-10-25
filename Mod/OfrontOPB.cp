@@ -84,7 +84,7 @@
 		  Var:
 				node := OPT.NewNode(Nvar); node^.readonly := (obj^.vis = externalR) & (obj^.mnolev < 0)
 		| VarPar:
-				node := OPT.NewNode(Nvarpar); node^.readonly := obj^.vis = inPar
+				node := OPT.NewNode(Nvarpar); node^.readonly := (obj^.vis = inPar) OR (obj^.vis = externalR)
 		| Con:
 				node := OPT.NewNode(Nconst); node^.conval := OPT.NewConst();
 				node^.conval^ := obj^.conval^	(* string is not copied, only its ref *)
