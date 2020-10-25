@@ -1100,16 +1100,11 @@
 						IF obj^.typ^.strobj = obj THEN OPM.SymWInt(Stype); OutStr(obj^.typ)
 						ELSE OPM.SymWInt(Salias); OutStr(obj^.typ); OutName(obj^.name^)
 						END
-					| Var:
-						IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END ;
-						OutStr(obj^.typ); OutName(obj^.name^);
-						IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
-							(* compute fingerprint to avoid structural type equivalence *)
-							OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
-						END
-					| VarPar:
-						IF obj^.vis = externalR THEN
-							OPM.SymWInt(Srvar); OutStr(obj^.typ); OutName(obj^.name^);
+					| Var, VarPar:
+						IF (obj^.mode = VarPar) & (obj^.vis # externalR) THEN	(* not exported *)
+						ELSE
+							IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END;
+							OutStr(obj^.typ); OutName(obj^.name^);
 							IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
 								(* compute fingerprint to avoid structural type equivalence *)
 								OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
