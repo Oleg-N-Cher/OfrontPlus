@@ -1,7 +1,7 @@
 ﻿Ofront+ QuickStart
 ==================
 
-English text below
+*See English text below*
 
 Для запуска транслятора из командной строки вам нужно три вещи:
 
@@ -58,13 +58,13 @@ English text below
 
 ------------------------------------------------------------------------------
 
-To start the translator from the command line you need three things:
+To start translator from command line you will need three things:
 
 
-1. If the work takes place in several directories, it is important that
-   the translator can find the symbol files * .sym, necessary for translation,
-   as they stored information on the interfaces of imported modules.
-   So specify variable OBERON, containing the path to search for:
+1. If work takes place in several directories, it is important that
+   the translator can find symbol files *.sym, required for translation,
+   as they store information about the interfaces of the imported modules.
+   Define OBERON environment variable, that contains the search paths:
 
    UNIX / Linux 32 bit:
 
@@ -84,7 +84,7 @@ To start the translator from the command line you need three things:
 
 
 2. You must specify the address size and alignment of data types for
-   the target C files. This is done using the options:
+   the target C files. This is done using the following options:
 
    -21: 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)
    -44: 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)
@@ -92,7 +92,7 @@ To start the translator from the command line you need three things:
    -88: 64 bit addresses, 64 bit alignment (64 bit platforms)
 
 
-3. When invoke C compiler, include the directories Lib/Mod (SYSTEM.h lives there) and Lib/Obj* of wanted bit depth, and the library Ofront:
+3. When invoking a C compiler, include directories Lib/Mod (SYSTEM.h lives there) and Lib/Obj* of the required bit depth, and the library Ofront:
 
    UNIX / Linux 32 bit:
 
