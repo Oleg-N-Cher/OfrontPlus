@@ -13,6 +13,8 @@ Ofront+ is based on Ofront by Josef Templ, but supports not only Oberon/Oberon-2
 Installation
 ============
 
+To start using Ofront+, you will need to build the translator (`ofront+` executable) and its libraries (libOfront). All this is done by a single build script that is located in `/Target/Linux_amd64/Bin/build` (substitute `Linux_amd64` with your target, i.e. `Win64`). Please see `QuickStart.txt` for more info.
+
 Directory structure
 
 /Docu      - Documentation
