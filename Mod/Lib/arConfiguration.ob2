@@ -1,3 +1,4 @@
+
 (* Configuration - Setting program options via command line or configuration file
 
 This module handles:
@@ -15,6 +16,7 @@ Create a parameter using one of the following:
 	NewBoolean(name, desc, default)
 	NewInteger(name, desc, default, min, max)
 	NewString(name, desc, default)
+	NewAssoc(name, desc, multi)
 
 <name> includes the name and a description of any parameters. For example:
 	"tabs <N>"
@@ -22,7 +24,7 @@ Create a parameter using one of the following:
 The returned object has a <value> field of the corresponding type.
 
 To scan parameters from the command line:
-	pos := C.ScanOptions();
+	C.ScanOptions(pos);
 which returns the position of the first parameter that is not an option
 
 To scan parameters from a file:
@@ -50,27 +52,32 @@ Example:
 
 (* SG 2020/08/27 *)
 
-MODULE Configuration;
+MODULE arConfiguration;
 
 IMPORT 
 	Kernel,
 	Console,
-	Args, Platform,
+	Args, 
+	Platform,
 	Files, 
-	P := Pattern,
-	Strings := ooc2Strings;
+
+	Size := arSize,
+	SA := arStringAssoc,
+	SL := arStringList,
+	P := arPattern,
+	Strings := arStrings;
 
 CONST
 	None* = MIN(INTEGER)+1;		(* maximum or minimum is not defined *)
 
 TYPE
-	Handler* = PROCEDURE;
+	Handler* = PROCEDURE(argv : SL.Array; VAR pos : LONGINT);
 
 	Value* = POINTER TO ValueDesc;
 	ValueDesc* = RECORD
-		name- : P.String;
-		synopsis- : P.String;
-		desc- : P.String;
+		name- : SL.String;
+		synopsis- : SL.String;
+		desc- : SL.String;
 		next- : Value;
 	END;
 
@@ -84,28 +91,34 @@ TYPE
 	END;
 
 	String* = POINTER TO RECORD (ValueDesc)
-		value*: P.String;
+		value*: SL.String;
 	END;
 
 	Procedure* = POINTER TO RECORD (ValueDesc)
 		value: Handler;
 	END;
 
+	Assoc* = POINTER TO RECORD (ValueDesc)
+		value* : SA.Assoc;
+		multi- : BOOLEAN;
+	END;
+
 VAR
 	(* copy of arg vector as an Oberon structure *)
 	argc : LONGINT;
-	argv- : P.StringArray;
+	argv- : SL.Array;
 
+	(* list of all configuration values *)
 	values- : Value;
 
-	help : Procedure;
+	banner : SL.String;
 
-	banner : P.String;
+	settings : Assoc;
 
 (* Platform.ArgPtr is not exported  :-(
 
-PROCEDURE CopyArgPtr(p : Platform.ArgPtr) : P.String;
-VAR len, i : INTEGER; result : P.String;
+PROCEDURE CopyArgPtr(p : Platform.ArgPtr) : SL.String;
+VAR len, i : INTEGER; result : SL.String;
 BEGIN
 	len := 0;
 	WHILE p[len] # 0X DO
@@ -121,11 +134,11 @@ END CopyArgPtr;
 
 (* Copy C argument vector into an Oberon array *)
 
-PROCEDURE CopyArgVec(p : Platform.ArgVec) : P.StringArray;
+PROCEDURE CopyArgVec(p : Platform.ArgVec) : SL.Array;
 VAR
 	len, strLen : INTEGER;
 	i, j : INTEGER; 
-	result : P.StringArray;
+	result : SL.Array;
 BEGIN
 	len := 0;
 	WHILE p[len] # NIL DO
@@ -147,27 +160,15 @@ BEGIN
 	RETURN result;
 END CopyArgVec;
 
-(* maximum and minimum .... again! *)
-
-PROCEDURE Max(x, y : LONGINT) : LONGINT;
-BEGIN
-	IF x > y THEN RETURN x ELSE RETURN y END;
-END Max;
-
-PROCEDURE Min(x, y : LONGINT) : LONGINT;
-BEGIN
-	IF x < y THEN RETURN x ELSE RETURN y END;
-END Min;
-
 (* ------ Value ------ *)
 
 PROCEDURE (self : Value) Init*(name, desc: ARRAY OF CHAR);
-VAR parts : P.StringArray;
+VAR parts : SL.Array;
 BEGIN
-	self.synopsis := P.Copy(name);
+	self.synopsis := SL.Copy(name);
 	parts := P.Split(name, " ");
 	self.name := parts[0];
-	self.desc := P.Copy(desc);
+	self.desc := SL.Copy(desc);
 	self.next := values;
 	values := self;
 END Init;
@@ -184,7 +185,7 @@ argument array <argv>. On any errors, show usage and halt. After consuming the
 argument, increment <pos> to indicate the position of the next unused argument.
 *)
 
-PROCEDURE (self : Value) Accept*(argv : P.StringArray; VAR pos : LONGINT);
+PROCEDURE (self : Value) Accept*(argv : SL.Array; VAR pos : LONGINT);
 BEGIN
 	(* abstract *)
 END Accept;
@@ -234,14 +235,14 @@ BEGIN
 	nameWidth := 0; descWidth := 0; length := 0;
 	value := values;
 	WHILE value # NIL DO
-		nameWidth := Max(nameWidth, Strings.Length(value.synopsis^));
-		descWidth := Max(descWidth, Strings.Length(value.desc^));
+		nameWidth := Size.Max(nameWidth, Strings.Length(value.synopsis^));
+		descWidth := Size.Max(descWidth, Strings.Length(value.desc^));
 		INC(length);
 		value := value.next;
 	END;
 
 	(* limit space in case of very long names *)
-	nameWidth := Min(nameWidth, 15);
+	nameWidth := Size.Min(nameWidth, 15);
 
 	IF length > 0 THEN
 		Console.String("Options:"); Console.Ln;
@@ -275,18 +276,19 @@ END Error;
 
 (* Show usage and exit cleanly *)
 
-PROCEDURE Help;
+PROCEDURE Help(argv : SL.Array; VAR pos : LONGINT);
 BEGIN
 	Usage();
 	Kernel.Exit(0);
 END Help;
 
-(* get an argument, and halt if none remain *)
+(* get an argument, and halt if none remain. Apply substitutions for any
+"set" values *)
 
-PROCEDURE GetArg(argv : P.StringArray; VAR pos : LONGINT; VAR arg : P.String);
+PROCEDURE GetArg*(argv : SL.Array; VAR pos : LONGINT; VAR arg : SL.String);
 BEGIN
 	IF pos < LEN(argv^) THEN
-		arg := argv[pos]; INC(pos);
+		arg := P.Substitute(argv[pos]^, settings.value); INC(pos);
 	ELSE
 		Console.String("Missing argument at position "); Console.Int(pos, 0); 
 		Console.Ln;
@@ -351,16 +353,18 @@ TRUE *)
 
 PROCEDURE CheckOption*(VAR pos : LONGINT) : BOOLEAN;
 VAR
-	arg : P.String;
+	arg : SL.String;
 	value : Value;
+	option : SL.String; length : Strings.LengthType;
 BEGIN
 	arg := argv[pos];
 	IF arg[0] = '-' THEN
 		INC(pos);
-		Strings.Delete(arg^, 0, 1);
-		value := FindOption(arg^);
+		length := Strings.Length(arg^); NEW(option, length);
+		Strings.Extract(arg^, 1, length-1, option^);
+		value := FindOption(option^);
 		IF value = NIL THEN
-			Console.String("ERROR: Unknown option: "); Console.String(arg^); 
+			Console.String("ERROR: Unknown option: "); Console.String(option^); 
 			Console.Ln;
 			Error;
 		END;
@@ -376,14 +380,13 @@ and may include an additional argument specifying a value *)
 
 PROCEDURE ScanOptions*(VAR pos : LONGINT);
 BEGIN
-	pos := 1;
 	WHILE (pos < argc) & CheckOption(pos) DO
 	END;
 END ScanOptions;
 
 PROCEDURE SetBanner*(text : ARRAY OF CHAR);
 BEGIN
-	banner := P.Copy(text);
+	banner := SL.Copy(text);
 END SetBanner;
 
 PROCEDURE ReadLineFromFile(VAR line : ARRAY OF CHAR; VAR rd : Files.Rider) : BOOLEAN;
@@ -410,10 +413,10 @@ PROCEDURE ReadOptions*(fileName : ARRAY OF CHAR) : BOOLEAN;
 VAR 
 	line : ARRAY 1024 OF CHAR;
 	nLines : INTEGER;
-	match : P.StringArray;
+	match : SL.Array;
 	rd : Files.Rider;
 	file : Files.File;
-	name : P.String;
+	name : SL.String;
 	value : Value;
 	pos : LONGINT;
 
@@ -436,16 +439,17 @@ BEGIN
 	nLines := 0;
 	WHILE ReadLineFromFile(line, rd) DO
 		INC(nLines);
-		IF P.Match("*: *", line, match) THEN
+		IF (line[0] = 0X) OR (line[0] = '#') THEN
+			(* ignore empty lines and comments *)
+		ELSIF P.Match("*: *", line, match) THEN
 			name := match[0];
 			value := FindOption(name^);
 			IF value = NIL THEN
 				ErrorLine("Unknown option", name^);
 			END;
-			pos := 1;
+			match := P.ParseArgs(match[1]^);
+			pos := 0;
 			value.Accept(match, pos);
-		ELSIF (line[0] = 0X) OR (line[0] = '#') THEN
-			(* ignore empty lines and comments *)
 		ELSE
 			ErrorLine("Malformed line", line);
 		END;
@@ -453,6 +457,17 @@ BEGIN
 	Files.Close(file);
 	RETURN TRUE;
 END ReadOptions;
+
+PROCEDURE Read(argv : SL.Array; VAR pos : LONGINT);
+VAR 
+	arg : SL.String;
+BEGIN
+	GetArg(argv, pos, arg);
+	IF ~ReadOptions(arg^) THEN
+		Console.String("Cannot read file: "); Console.String(arg^); Console.Ln;
+		Error;
+	END;
+END Read;
 
 (* Make sure there are no extraneous arguments after <pos> *)
 
@@ -475,8 +490,8 @@ BEGIN
 	END
 END Format;
 
-PROCEDURE (self : Boolean) Accept*(argv : P.StringArray; VAR pos : LONGINT);
-VAR arg : P.String;
+PROCEDURE (self : Boolean) Accept*(argv : SL.Array; VAR pos : LONGINT);
+VAR arg : SL.String;
 BEGIN
 	IF pos<LEN(argv^) THEN
 		arg := argv[pos];
@@ -506,9 +521,9 @@ BEGIN
 	Console.Int(self.value, 0);
 END Format;
 
-PROCEDURE (self : Integer) Accept*(argv : P.StringArray; VAR pos : LONGINT);
+PROCEDURE (self : Integer) Accept*(argv : SL.Array; VAR pos : LONGINT);
 VAR 	
-	arg : P.String;
+	arg : SL.String;
 	value : INTEGER;
 BEGIN
 	GetArg(argv, pos, arg);
@@ -551,12 +566,29 @@ END NewInteger;
 
 (* ------ String ------ *)
 
+PROCEDURE StringWidth(value : ARRAY OF CHAR; width : INTEGER);
+VAR i : INTEGER; length : Strings.LengthType;
+BEGIN
+	length := Strings.Length(value);
+	IF length > width-3 THEN
+		FOR i := 0 TO width-4 DO
+			Console.Char(value[i])
+		END;
+		Console.String("...");
+	ELSE
+		Console.String(value);
+	END;
+END StringWidth;
+
 PROCEDURE (self : String) Format*;
 BEGIN
-	Console.Char('"'); Console.String(self.value^); Console.Char('"');
+	Console.Char('"');
+	Console.String(self.value^);
+	(* StringWidth(self.value^, 16); *)
+	Console.Char('"');
 END Format;
 
-PROCEDURE (self : String) Accept*(argv : P.StringArray; VAR pos : LONGINT);
+PROCEDURE (self : String) Accept*(argv : SL.Array; VAR pos : LONGINT);
 BEGIN
 	GetArg(argv, pos, self.value);
 END Accept;
@@ -566,30 +598,55 @@ VAR result : String;
 BEGIN
 	NEW(result);
 	result.Init(name, desc);
-	result.value := P.Copy(default);
+	result.value := SL.Copy(default);
 	RETURN result;
 END NewString;
 
 (* ------ Procedure ------ *)
 
-PROCEDURE (self : Procedure) Accept*(argv : P.StringArray; VAR pos : LONGINT);
+PROCEDURE (self : Procedure) Accept*(argv : SL.Array; VAR pos : LONGINT);
 BEGIN
-	self.value();
+	self.value(argv, pos);
 END Accept;
 
-PROCEDURE NewProcedure*(name, desc : ARRAY OF CHAR; value : Handler) : Procedure;
+PROCEDURE NewProcedure*(name, desc : ARRAY OF CHAR; value : Handler);
 VAR result : Procedure;
 BEGIN
 	NEW(result);
 	result.Init(name, desc);
 	result.value := value;
-	RETURN result;
 END NewProcedure;
+
+(* ------ Assoc ------ *)
+
+PROCEDURE (self : Assoc) Accept*(argv : SL.Array; VAR pos : LONGINT);
+VAR key, value : SL.String;
+BEGIN
+	GetArg(argv, pos, key);
+	GetArg(argv, pos, value);
+	IF self.multi THEN
+		SA.Set0(self.value, key^, value^);
+	ELSE
+		SA.Set(self.value, key^, value^);
+	END;
+END Accept;
+
+PROCEDURE NewAssoc*(name, desc : ARRAY OF CHAR; multi : BOOLEAN) : Assoc;
+VAR result : Assoc;
+BEGIN
+	NEW(result);
+	result.Init(name, desc);
+	result.value := NIL;
+	result.multi := multi;
+	RETURN result;
+END NewAssoc;
 
 BEGIN
 	argv := CopyArgVec(Args.argv);
 	argc := LEN(argv^);
 	banner := NIL;
 	values := NIL;
-	help := NewProcedure("help", "Display this message", Help);
-END Configuration.
+	NewProcedure("help", "Display this message", Help);
+	NewProcedure("read", "Read parameters from file", Read);
+	settings := NewAssoc("set", "Define a macro parameter", FALSE);
+END arConfiguration.

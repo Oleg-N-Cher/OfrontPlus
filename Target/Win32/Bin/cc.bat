@@ -27,9 +27,11 @@ IF errorlevel 1 PAUSE
 %CC% OCatCmd.c ..\Lib\Ofront.a -o..\ocat.exe
 IF errorlevel 1 PAUSE
 
-:: OEF
+:: OEF & OMake
 
 %CC% OEF.c ..\Lib\Ofront.a -o..\oef.exe
+IF errorlevel 1 PAUSE
+%CC% OMake.c ..\Lib\Ofront.a -o..\omake.exe
 IF errorlevel 1 PAUSE
 
 :: OdcToText

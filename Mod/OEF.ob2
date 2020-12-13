@@ -4,7 +4,7 @@ human-readable format, including the source code position and context.
 This program parses messages from standard input (via Console) which will
 normally be piped from the compiler output. For example:
 
-  ofront+ -2 -88 -m Module.Mod | oef
+  ofront+ -2 -88 -m Module.Mod | OEF
 
 Parameters are:
 
@@ -45,10 +45,10 @@ IMPORT
 	Kernel,
 	Files,
 	Console,
-	Pattern,
-	Strings := ooc2Strings,
-	C := Configuration,
-	Platform;
+	Platform,
+	Pattern := arPattern,
+	Strings := arStrings,
+	C := arConfiguration;
 
 TYPE
 	String = Pattern.String;

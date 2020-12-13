@@ -1,0 +1,36 @@
+(* Min/Max for basic types *)
+
+MODULE arSize;
+
+PROCEDURE Min*(a, b : LONGINT) : LONGINT;
+BEGIN
+	IF a < b THEN RETURN a ELSE RETURN b END;
+END Min;
+
+PROCEDURE Max*(a, b : LONGINT) : LONGINT;
+BEGIN
+	IF a > b THEN RETURN a ELSE RETURN b END;
+END Max;
+
+PROCEDURE MinReal*(a, b : REAL) : REAL;
+BEGIN
+	IF a < b THEN RETURN a ELSE RETURN b END;
+END MinReal;
+
+PROCEDURE MaxReal*(a, b : REAL) : REAL;
+BEGIN
+	IF a > b THEN RETURN a ELSE RETURN b END;
+END MaxReal;
+
+PROCEDURE MinLReal*(a, b : LONGREAL) : LONGREAL;
+BEGIN
+	IF a < b THEN RETURN a ELSE RETURN b END;
+END MinLReal;
+
+PROCEDURE MaxLReal*(a, b : LONGREAL) : LONGREAL;
+BEGIN
+	IF a > b THEN RETURN a ELSE RETURN b END;
+END MaxLReal;
+
+END arSize.
+
