@@ -13,7 +13,7 @@ PROCEDURE -strlen(argStr : C.string) : C.int
 	"strlen((const char *)argStr)";
 
 PROCEDURE -strncpy(dst, src : C.string; len : C.int) : C.string
-	"strncpy((char *)dst, (const char *)src, len)";
+	"(CHAR *)strncpy((char *)dst, (const char *)src, len)";
 
 (* Copy a C string into an ARRAY OF CHAR *)
 

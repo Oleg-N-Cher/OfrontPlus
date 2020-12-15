@@ -16,10 +16,10 @@ TYPE
 
 
 PROCEDURE -AAincludeDirent* "#include <dirent.h>";
-PROCEDURE -opendir(name : ARRAY OF CHAR) : DIR "(SYSTEM_ADRINT) opendir(name)";
+PROCEDURE -opendir(name : ARRAY OF CHAR) : DIR "(SYSTEM_ADRINT) opendir((const char *)name)";
 PROCEDURE -closedir(dir : DIR) "closedir((DIR*) dir)";
 PROCEDURE -readdir(dir : DIR) : DIRENT "(SYSTEM_ADRINT) readdir((DIR*) dir)";
-PROCEDURE -getdirname(ent : DIRENT) : C.string "(((struct dirent *) ent) -> d_name)";
+PROCEDURE -getdirname(ent : DIRENT) : C.string "(CHAR *)(((struct dirent *) ent) -> d_name)";
 PROCEDURE -getdirtype(ent : DIRENT) : C.int "(int)((struct dirent *) ent) -> d_type)";
 PROCEDURE -typeDir "DT_DIR";
 PROCEDURE -typeReg "DT_REG";
