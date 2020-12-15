@@ -38,6 +38,9 @@ IF errorlevel 1 PAUSE
 ofront+ -sC -48 libCurl.cp NetHttp.cp
 IF errorlevel 1 PAUSE
 
+:: Aria - Reusable Oberon-2 modules by Stewart Greenhill
+:: https://github.com/sgreenhill/aria
+
 ofront+ -s2 -48 ^
   arC.ob2 arCFormat.ob2 arChar.ob2 arCString.ob2 arDir.ob2 arMath.ob2 ^
   arSize.ob2 arStrings.ob2 arStringList.ob2 arStringAssoc.ob2 arText.ob2 ^
