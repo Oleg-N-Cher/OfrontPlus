@@ -25,9 +25,11 @@ if [ $? != 0 ]; then exit 1; fi
 $CC OCatCmd.c -lOfront -o../ocat
 if [ $? != 0 ]; then exit 1; fi
 
-## OEF
+## OEF & OMake
 
 $CC OEF.c -lOfront -o../oef
+if [ $? != 0 ]; then exit 1; fi
+$CC OMake.c -lOfront -o../omake
 if [ $? != 0 ]; then exit 1; fi
 
 ## OdcToText
