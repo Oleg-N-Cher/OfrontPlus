@@ -38,9 +38,11 @@ IF errorlevel 1 PAUSE
 ofront+ -sC -48 libCurl.cp NetHttp.cp
 IF errorlevel 1 PAUSE
 
-:: Miscellaneous
-
-ofront+ -s2 -48 Pattern.ob2 Configuration.ob2
+ofront+ -s2 -48 ^
+  arC.ob2 arCFormat.ob2 arChar.ob2 arCString.ob2 arDir.ob2 arMath.ob2 ^
+  arSize.ob2 arStrings.ob2 arStringList.ob2 arStringAssoc.ob2 arText.ob2 ^
+  arStream.ob2 arFile.ob2 arOut.ob2 arPath.ob2 arPattern.ob2 arErr.ob2 ^
+  arConfiguration.ob2 arValue.ob2 arFormat.ob2 arJSON.ob2
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
