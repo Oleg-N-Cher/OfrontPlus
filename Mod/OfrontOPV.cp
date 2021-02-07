@@ -716,13 +716,14 @@
 								END
 					|	abs:
 								IF SideEffects(l) THEN
-									IF l^.typ^.form < Real THEN
-										IF l^.typ^.form < LInt THEN OPM.WriteString("(INTEGER)") END ;
-										OPM.WriteString("__ABSF(")
-									ELSE OPM.WriteString("__ABSFD(")
+									IF l^.typ^.form = LReal THEN OPM.WriteString("__ABSFD(")
+									ELSIF l^.typ^.form = Real THEN OPM.WriteString("__ABSFF(")
+									ELSIF l^.typ^.form = LInt THEN OPM.WriteString("__ABSFL(")
+									ELSIF (l^.typ^.form < Int) & (OPM.AdrSize = 2) THEN OPM.WriteString("__ABSFS(")
+									ELSE OPM.WriteString("__ABSF(")
 									END
 								ELSE OPM.WriteString("__ABS(")
-								END ;
+								END;
 								expr(l, MinPrec); OPM.Write(CloseParen)
 					|	cap:
 								OPM.WriteString("__CAP("); expr(l, MinPrec); OPM.Write(CloseParen)

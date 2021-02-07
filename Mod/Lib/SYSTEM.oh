@@ -98,8 +98,6 @@ extern LONGINT SYSTEM_XCHK   (LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos);
 extern LONGINT SYSTEM_RCHK   (LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos);
 extern INTEGER SYSTEM_ASH    (INTEGER x, INTEGER n);
 extern LONGINT SYSTEM_ASHL   (LONGINT x, INTEGER n);
-extern LONGINT SYSTEM_ABS    (LONGINT i);
-extern double  SYSTEM_ABSD   (double i);
 extern INTEGER SYSTEM_DIV    (INTEGER x, INTEGER y);
 extern LONGINT SYSTEM_DIVL   (LONGINT x, LONGINT y);
 extern INTEGER SYSTEM_MOD    (INTEGER x, INTEGER y);
@@ -193,8 +191,11 @@ static inline LONGINT   __VALL (REAL x)      { return *(LONGINT*)  &x; }
 #define __ENTIER(x)     SYSTEM_ENTIER(x)
 #define __ENTIERL(x)    SYSTEM_ENTIERL(x)
 #define __ABS(x)        (((x)<0)?-(x):(x))
-#define __ABSF(x)       SYSTEM_ABS(x)
-#define __ABSFD(x)      SYSTEM_ABSD(x)
+static inline SHORTINT  __ABSFS (SHORTINT x)  { return __ABS(x); }
+static inline INTEGER   __ABSF  (INTEGER x)   { return __ABS(x); }
+static inline LONGINT   __ABSFL (LONGINT x)   { return __ABS(x); }
+static inline SHORTREAL __ABSFF (SHORTREAL x) { return __ABS(x); }
+static inline REAL      __ABSFD (REAL x)      { return __ABS(x); }
 #define __CAP(ch)       ((CHAR)((ch)&0x5f))
 #define __ODD(x)        ((x)&1)
 #define __IN(x, s)      (((s)>>(x))&1)

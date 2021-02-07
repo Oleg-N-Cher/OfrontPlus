@@ -34,9 +34,6 @@ LONGINT SYSTEM_XCHK(LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos) {return __X(i
 LONGINT SYSTEM_RCHK(LONGINT i, LONGINT ub, CHAR *mod, INTEGER pos) {return __R(i, ub, mod, pos);}
 INTEGER SYSTEM_ASH (INTEGER x, INTEGER n)  {return __ASH(x, n, INTEGER);}
 LONGINT SYSTEM_ASHL(LONGINT x, INTEGER n)  {return __ASH(x, n, LONGINT);}
-LONGINT SYSTEM_ABS (LONGINT i)             {return __ABS(i);}
-double  SYSTEM_ABSD(double i)              {return __ABS(i);}
-
 
 INTEGER SYSTEM_DIV(INTEGER x, INTEGER y)
 {
