@@ -191,7 +191,6 @@ static inline LONGINT   __VALL (REAL x)      { return *(LONGINT*)  &x; }
 #define __ENTIER(x)     SYSTEM_ENTIER(x)
 #define __ENTIERL(x)    SYSTEM_ENTIERL(x)
 #define __ABS(x)        (((x)<0)?-(x):(x))
-static inline SHORTINT  __ABSFS (SHORTINT x)  { return __ABS(x); }
 static inline INTEGER   __ABSF  (INTEGER x)   { return __ABS(x); }
 static inline LONGINT   __ABSFL (LONGINT x)   { return __ABS(x); }
 static inline SHORTREAL __ABSFF (SHORTREAL x) { return __ABS(x); }

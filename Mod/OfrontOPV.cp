@@ -815,11 +815,13 @@
 										END
 							|	div:
 										IF ~SideEffects(n) & (r^.class = Nconst) & (r^.conval^.intval > 0) THEN OPM.WriteString("__DIV(")
+										ELSIF (form < Int) & (OPM.AdrSize = 2) THEN OPM.WriteString("__DIVFS(")
 										ELSIF form = LInt THEN OPM.WriteString("__DIVFL(")
 										ELSE OPM.WriteString("__DIVF(")
 										END
 							|	mod:
 										IF ~SideEffects(n) & (r^.class = Nconst) & (r^.conval^.intval > 0) THEN OPM.WriteString("__MOD(")
+										ELSIF (form < Int) & (OPM.AdrSize = 2) THEN OPM.WriteString("__MODFS(")
 										ELSIF form = LInt THEN OPM.WriteString("__MODFL(")
 										ELSE OPM.WriteString("__MODF(")
 										END
