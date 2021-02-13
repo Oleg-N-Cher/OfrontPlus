@@ -25,8 +25,9 @@
 		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
-		module = 65; out = 66; dollar = 67; at = 68; raw = 69; eof = 70;
-		unsgn = 40; (* псевдооперация unsigned для div *)
+		module = 65; out = 66; dollar = 67; close = 68;
+		at = 69; raw = 70; eof = 71;
+		unsgn = 40;	(* pseudo-operation 'unsigned' for div *)
 
 		(* object modes *)
 		Var = 1; VarPar = 2; Con = 3; Fld = 4; Typ = 5; LProc = 6; XProc = 7;
@@ -1150,6 +1151,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			CheckSym(semicolon); Block(procdec, statseq);
 			OPB.Enter(procdec, statseq, proc); x := procdec;
 			x^.conval := OPT.NewConst(); x^.conval^.intval := c;
+			CheckSym(end);
 			IF sym = ident THEN
 				IF OPS.name # proc^.name^ THEN err(4) END;
 				OPS.Get(sym)
@@ -1799,7 +1801,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			rec: Elem;
 
 	BEGIN
-		IF ((sym < begin) OR (sym > var)) & (sym # procedure) & (sym # end) & (sym # return) THEN err(33) END;
+		IF ((sym < begin) OR (sym > var))
+			& (sym # procedure) & (sym # end) & (sym # close) & (sym # return) THEN err(33) END;
 		first := NIL; last := NIL; userList := NIL; recList := NIL;
 		LOOP
 			IF sym = const THEN
@@ -1888,7 +1891,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
 		procdec := NIL; lastdec := NIL;
-		IF (sym # procedure) & (sym # begin) & (sym # end) & (sym # return) THEN err(34) END;
+		IF (sym # procedure) & (sym # begin) & (sym # end) & (sym # close) & (sym # return) THEN err(34) END;
 		WHILE sym = procedure DO
 			OPS.Get(sym); ProcedureDeclaration(x);
 			IF x # NIL THEN
@@ -1904,8 +1907,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		END;
 		IF (level = 0) & (TDinit # NIL) THEN
 			lastTDinit^.link := statseq; statseq := TDinit
-		END;
-		CheckSym(end)
+		END
 	END Block;
 
 	PROCEDURE Module*(VAR prog: OPT.Node; opt: SET);
@@ -1951,6 +1953,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF OPM.noerr THEN TDinit := NIL; lastTDinit := NIL; c := OPM.errpos;
 				Block(procdec, statseq); OPB.Enter(procdec, statseq, NIL); prog := procdec;
 				prog^.conval := OPT.NewConst(); prog^.conval^.intval := c;
+				IF sym = close THEN OPS.Get(sym); StatSeq(prog.link) END;
+				CheckSym(end);
 				IF sym = ident THEN
 					IF OPS.name # OPT.SelfName THEN err(4) END;
 					OPS.Get(sym)

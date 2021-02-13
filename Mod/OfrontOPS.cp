@@ -59,7 +59,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		repeat = 50; for = 51; loop = 52; with = 53; exit = 54;
 		return = 55; array = 56; record = 57; pointer = 58; begin = 59;
 		const = 60; type = 61; var = 62; procedure = 63; import = 64;
-		module = 65; out = 66; dollar = 67; at = 68; raw = 69; eof = 70;
+		module = 65; out = 66; dollar = 67; close = 68;
+		at = 69; raw = 70; eof = 71;
 
 	VAR
 		ch: SHORTCHAR;     (*current character*)
@@ -106,6 +107,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		| "C":
 				IF name = "CASE" THEN sym := case
 				ELSIF name = "CONST" THEN sym := const
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (name = "CLOSE") THEN sym := close
 				END
 		| "D":
 				IF name = "DO" THEN sym := do
@@ -184,6 +186,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		| "C":
 				IF Cmp("CASE", "case") THEN sym := case
 				ELSIF Cmp("CONST", "const") THEN sym := const
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & Cmp("CLOSE", "close") THEN sym := close
 				END
 		| "D":
 				IF Cmp("DO", "do") THEN sym := do
@@ -434,11 +437,11 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			IF ch = OPM.Eot THEN sym := eof; RETURN
 			ELSE OPM.Get(ch)
 			END
-		END ;
+		END;
 		CASE ch OF   (* ch > " " *)
 			| 22X, 27X  : Str(s)
 			| "#"  : s := neq; OPM.Get(ch)
-			| "&"  : s :=  and; OPM.Get(ch)
+			| "&"  : s := and; OPM.Get(ch)
 			| "("  : OPM.Get(ch);
 							IF ch = "*" THEN
 								IF ~Comment() THEN sym := raw; RETURN END;
@@ -446,20 +449,20 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 							ELSE s := lparen
 							END
 			| ")"  : s := rparen; OPM.Get(ch)
-			| "*"  : s :=  times; OPM.Get(ch)
-			| "+"  : s :=  plus; OPM.Get(ch)
+			| "*"  : s := times; OPM.Get(ch)
+			| "+"  : s := plus; OPM.Get(ch)
 			| ","  : s := comma; OPM.Get(ch)
-			| "-"  : s :=  minus; OPM.Get(ch)
+			| "-"  : s := minus; OPM.Get(ch)
 			| "."  : OPM.Get(ch);
 							 IF ch = "." THEN OPM.Get(ch); s := upto ELSE s := period END
-			| "/"  : s := slash;  OPM.Get(ch)
+			| "/"  : s := slash; OPM.Get(ch)
 			| "0".."9": Number; s := number
 			| ":"  : OPM.Get(ch);
 							 IF ch = "=" THEN OPM.Get(ch); s := becomes ELSE s := colon END
 			| ";"  : s := semicolon; OPM.Get(ch)
 			| "<"  : OPM.Get(ch);
 							 IF ch = "=" THEN OPM.Get(ch); s := leq ELSE s := lss END
-			| "="  : s :=  eql; OPM.Get(ch)
+			| "="  : s := eql; OPM.Get(ch)
 			| ">"  : OPM.Get(ch);
 							 IF ch = "=" THEN OPM.Get(ch); s := geq ELSE s := gtr END
 			| "@": s := at; OPM.Get(ch)
@@ -473,8 +476,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			| "}"  : s := rbrace; OPM.Get(ch)
 			| "~"  : s := not; OPM.Get(ch)
 			| 7FX  : s := upto; OPM.Get(ch)
-		ELSE s :=  null; OPM.Get(ch)
-		END ;
+		ELSE s := null; OPM.Get(ch)
+		END;
 		sym := s
 	END Get;
 

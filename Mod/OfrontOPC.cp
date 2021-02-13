@@ -95,11 +95,11 @@
 
 	VAR
 		indentLevel: SHORTINT;
-		ptrinit, mainprog, ansi, oldc: BOOLEAN;
+		ptrinit, mainprog, ansi, oldc, dynlib, windows: BOOLEAN;
 		hashtab: ARRAY 105 OF BYTE;
 		keytab: ARRAY 36, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
-		BodyNameExt: ARRAY 14 OF SHORTCHAR;
+		BodyNameExt, CloseNameExt: ARRAY 15 OF SHORTCHAR;
 
 		arrayTypes: ARRAY 1024 OF OPT.Struct;	(* table of all unnamed heap allocated array types *)
 		arrayIndex: INTEGER;
@@ -111,7 +111,13 @@
 		mainprog := OPM.mainprog IN OPM.opt;
 		ansi := OPM.ansi IN OPM.opt;
 		oldc := OPM.oldc IN OPM.opt;
-		IF ansi THEN BodyNameExt := "__init (void)" ELSE BodyNameExt := "__init ()" END;
+		dynlib := OPM.dynlib IN OPM.opt;
+		windows := FALSE;
+		IF ansi THEN
+			BodyNameExt := "__init (void)"; CloseNameExt := "__close (void)"
+		ELSE
+			BodyNameExt := "__init ()"; CloseNameExt := "__close ()"
+		END;
 		arrayIndex := 0
 	END Init;
 
@@ -209,6 +215,8 @@
 		ELSE
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
 				IF mode = TProc THEN Ident(obj^.link^.typ^.strobj)
+				ELSIF mainprog & (level = 0) & ((obj^.vis = external) OR (obj^.vis = externalR)) THEN
+					WriteName(obj^.name^); RETURN (* exported from main module, prefix does not use *)
 				ELSIF level < 0 THEN (* use unaliased module name *)
 					IF ~oldc THEN OPM.WriteString(OPT.GlbMod[-level].name^)
 					ELSE OPM.Write(OPT.GlbMod[-level].name^[0])
@@ -496,7 +504,7 @@
 				ELSE empty := FALSE;
 					DefineTProcTypes(obj);
 					IF obj^.vis = internal THEN OPM.WriteString(Static)
-					ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
+					ELSIF dynlib THEN OPM.WriteString(EXPORT)
 					ELSE OPM.WriteString(Export)
 					END;
 					ProcHeader(obj, FALSE)
@@ -988,7 +996,7 @@
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
 						IF obj^.vis = internal THEN OPM.WriteString(Static)
-						ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
+						ELSIF dynlib THEN OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
 					END;
@@ -1105,11 +1113,11 @@
 			IF (obj^.mode IN {LProc, XProc}) & (obj^.vis >= vis) & ((obj^.history # removed) OR (obj^.mode = LProc)) THEN
 				(* previous XProc may be deleted or become LProc after interface change*)
 				IF vis = external THEN
-					IF (obj^.entry # NIL) OR (OPM.dynlib IN OPM.opt) THEN OPM.WriteString(EXTERN)
+					IF (obj^.entry # NIL) OR dynlib THEN OPM.WriteString(EXTERN)
 					ELSE OPM.WriteString(Extern)
 					END
 				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
-				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
+				ELSIF dynlib THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END;
 				ProcHeader(obj, FALSE)
@@ -1130,7 +1138,10 @@
 		i := 1;
 		WHILE i < OPT.nofGmod DO
 			mod := OPT.GlbMod[i];
-			IF mod^.vis >= vis THEN Include(mod^.name^) END;	(* use unaliased module name *)
+			IF mod^.vis >= vis THEN
+				Include(mod^.name^);	(* use unaliased module name *)
+				IF mod.name^ = "WinApi" THEN windows := TRUE END
+			END;
 			INC(i)
 		END
 	END IncludeImports;
@@ -1144,7 +1155,7 @@
 				BegStat;
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
-				ELSIF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT)
+				ELSIF dynlib THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END ;
 				OPM.WriteString("SYSTEM_ADRINT *"); Andent(typ); OPM.WriteString(DynTypExt);
@@ -1168,7 +1179,7 @@
 			OPM.WriteString("#define "); OPM.WriteString(OPM.modName); OPM.WriteString("__init()");
 			OPM.WriteLn
 		ELSE
-			IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
+			IF dynlib THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
 			OPM.WriteString("void *");
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
 			EndStat
@@ -1181,7 +1192,7 @@
 	PROCEDURE GenHeaderMsg;
 	BEGIN
 		OPM.WriteString("/* "); OPM.WriteString(HeaderMsg);
-		IF OPM.mainprog IN OPM.opt THEN OPM.Write("m")
+		IF mainprog THEN OPM.Write("m")
 		ELSIF OPM.newsf IN OPM.opt THEN OPM.Write("s")
 		ELSIF OPM.extsf IN OPM.opt THEN OPM.Write("e")
 		END;
@@ -1191,10 +1202,10 @@
 		IF ~(OPM.typchk IN OPM.opt) THEN OPM.Write("t") END;
 		IF ~(OPM.assert IN OPM.opt) THEN OPM.Write("a") END;
 		IF OPM.oldc IN OPM.opt THEN OPM.Write("o") END;
-		IF ~(OPM.ansi IN OPM.opt) THEN OPM.Write("k") END;
-		IF ~(OPM.ptrinit IN OPM.opt) THEN OPM.Write("p") END;
+		IF ~ansi THEN OPM.Write("k") END;
+		IF ~ptrinit THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
-		IF OPM.dynlib IN OPM.opt THEN OPM.Write("d") END;
+		IF dynlib THEN OPM.Write("d") END;
 		OPM.Write(OPM.Lang); IF OPM.for IN OPM.opt THEN OPM.Write("f") END;
 		OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
 		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
@@ -1302,36 +1313,71 @@
 	PROCEDURE EnterBody*;
 	BEGIN
 		OPM.WriteLn;
-		IF mainprog THEN
+		IF mainprog & ~dynlib THEN
 			IF ansi THEN
-				OPM.WriteString("int main(int argc, char **argv)"); OPM.WriteLn
+				OPM.WriteString("int main (int argc, char **argv)")
 			ELSE
-				OPM.WriteString("main(argc, argv)"); OPM.WriteLn;
-				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;"); OPM.WriteLn
+				OPM.WriteString("main (argc, argv)"); OPM.WriteLn;
+				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;")
 			END
 		ELSE
-			IF OPM.dynlib IN OPM.opt THEN OPM.WriteString(EXPORT) ELSE OPM.WriteString(Export) END;
-			OPM.WriteString("void *");
-			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt); OPM.WriteLn;
-		END ;
-		BegBlk; BegStat;
-		IF mainprog THEN OPM.WriteString("__INIT(argc, argv)") ELSE OPM.WriteString("__DEFMOD") END ;
-		EndStat;
+			IF mainprog THEN OPM.WriteString("__BEGIN void ")
+			ELSIF dynlib THEN OPM.WriteString(EXPORT + "void *")
+			ELSE OPM.WriteString(Export + "void *")
+			END;
+			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt)
+		END;
+		OPM.WriteLn; BegBlk;
+		IF mainprog & ~dynlib THEN BegStat; OPM.WriteString("__INIT(argc, argv)"); EndStat
+		ELSIF ~mainprog THEN BegStat; OPM.WriteString("__DEFMOD"); EndStat
+		END;
 		InitImports(OPT.topScope^.right);
 		BegStat;
-		IF mainprog THEN OPM.WriteString('__REGMAIN("') ELSE OPM.WriteString('__REGMOD("') END ;
+		IF mainprog THEN OPM.WriteString('__REGMAIN("') ELSE OPM.WriteString('__REGMOD("') END;
 		OPM.WriteString(OPM.modName);
-		IF GlbPtrs THEN OPM.WriteString('", EnumPtrs)') ELSE OPM.WriteString('", 0)') END ;
+		IF GlbPtrs THEN OPM.WriteString('", EnumPtrs)') ELSE OPM.WriteString('", 0)') END;
 		EndStat;
 		IF OPM.modName # "SYSTEM" THEN RegCmds(OPT.topScope) END
 	END EnterBody;
 
 	PROCEDURE ExitBody*;
 	BEGIN
-		BegStat;
-		IF mainprog THEN OPM.WriteString("__FINI;") ELSE OPM.WriteString("__ENDMOD;") END ;
-		OPM.WriteLn; EndBlk
+		IF ~(mainprog & dynlib) THEN
+			BegStat;
+			IF mainprog THEN OPM.WriteString("__FINI;") ELSE OPM.WriteString("__ENDMOD;") END;
+			OPM.WriteLn
+		END;
+		EndBlk
 	END ExitBody;
+
+	PROCEDURE EnterClose*;
+	BEGIN
+		OPM.WriteLn;
+		OPM.WriteString("__CLOSE void "); OPM.WriteString(OPM.modName);
+		OPM.WriteString(CloseNameExt); OPM.WriteLn;
+		BegBlk;
+		OPM.WriteString("/* CLOSE */"); OPM.WriteLn
+	END EnterClose;
+
+	PROCEDURE ExitClose*;
+	BEGIN
+		EndBlk
+	END ExitClose;
+
+	PROCEDURE DllMainBody* (close: BOOLEAN);
+	BEGIN
+		IF mainprog & dynlib & windows THEN
+			OPM.WriteLn;
+			OPM.WriteString("int __STDCALL DllMainCRTStartup (void *hinst, int reason, void *reserved)");
+			OPM.WriteLn; BegBlk; BegStat; OPM.WriteString("switch (reason) "); BegBlk;
+			BegStat; OPM.WriteString("case 1: ");
+				OPM.WriteString(OPM.modName); OPM.WriteString("__init(); break"); EndStat;
+			IF close THEN BegStat; OPM.WriteString("case 0: ");
+				OPM.WriteString(OPM.modName); OPM.WriteString("__close(); break"); EndStat
+			END;
+			EndBlk; BegStat; OPM.WriteString("return 1"); EndStat; EndBlk
+		END
+	END DllMainBody;
 
 	PROCEDURE DefineInter* (proc: OPT.Object); (* define intermediate scope record and variable *)
 		VAR scope: OPT.Object;

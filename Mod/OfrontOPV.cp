@@ -1136,22 +1136,13 @@
 			IF ~(n^.class IN {Ninittd, Ncomp, Nraw}) THEN OPC.BegStat END;
 			CASE n^.class OF
 				Nenter:
-						IF n^.obj = NIL THEN (* enter module *)
-							INC(OPM.level); stat(n^.left, outerProc); DEC(OPM.level);
-							IF ~(OPM.noinit IN OPM.opt) THEN
-								OPC.GenEnumPtrs(OPT.topScope^.scope);
-								DefineTDescs(n^.right); OPC.EnterBody; InitTDescs(n^.right);
-								OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
-								stat(n^.right, outerProc); OPC.ExitBody
-							END
-						ELSE (* enter proc *)
-							proc := n^.obj;
-							OPC.TypeDefs(proc^.scope^.right, 0);
-							IF ~proc^.scope^.leaf THEN OPC.DefineInter (proc) END ; (* define intermediate procedure scope *)
-							INC(OPM.level); stat(n^.left, proc); DEC(OPM.level);
-							OPC.EnterProc(proc); stat(n^.right, proc);
-							OPC.ExitProc(proc, TRUE, ImplicitReturn(n^.right));
-						END
+						ASSERT(n^.obj # NIL); (* enter proc *)
+						proc := n^.obj;
+						OPC.TypeDefs(proc^.scope^.right, 0);
+						IF ~proc^.scope^.leaf THEN OPC.DefineInter (proc) END; (* define intermediate procedure scope *)
+						INC(OPM.level); stat(n^.left, proc); DEC(OPM.level);
+						OPC.EnterProc(proc); stat(n^.right, proc);
+						OPC.ExitProc(proc, TRUE, ImplicitReturn(n^.right))
 			|	Ninittd: (* done in enter module *)
 			|	Nassign:
 					CASE n^.subcl OF
@@ -1323,8 +1314,22 @@
 
 	PROCEDURE Module*(prog: OPT.Node);
 	BEGIN
+		OPM.level := 0;
 		IF ~mainprog THEN OPC.GenHdr(prog^.right); OPC.GenHdrIncludes END;
-		IF ~(OPM.foreign IN OPM.opt) THEN OPC.GenBdy(prog^.right); stat(prog, NIL) END;
+		IF ~(OPM.foreign IN OPM.opt) THEN
+			OPC.GenBdy(prog^.right);
+			INC(OPM.level); stat(prog^.left, NIL); DEC(OPM.level);
+			IF ~(OPM.noinit IN OPM.opt) THEN
+				OPC.GenEnumPtrs(OPT.topScope^.scope);
+				DefineTDescs(prog^.right); OPC.EnterBody; InitTDescs(prog^.right);
+				OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
+				stat(prog^.right, NIL); OPC.ExitBody;
+				IF prog.link # NIL THEN (* close section *)
+					OPC.EnterClose; stat(prog^.link, NIL); OPC.ExitClose
+				END;
+				IF mainprog & (OPM.dynlib IN OPM.opt) THEN OPC.DllMainBody(prog^.link # NIL) END
+			END
+		END;
 		OPC.CleanupArrays
 	END Module;
 

@@ -393,9 +393,6 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END;
 			INC(i)
-		END;
-		IF {dynlib, mainprog} * opt = {dynlib, mainprog} THEN EXCL(opt, mainprog);
-			LogWStr("  warning: option "); LogW(OptionChar); LogWStr("m ignored"); LogWLn
 		END
 	END ScanOptions;
 

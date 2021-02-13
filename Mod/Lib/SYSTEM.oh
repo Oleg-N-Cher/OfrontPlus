@@ -265,6 +265,8 @@ extern void       Heap_INCREF();
 #    define __EXTERN
 #  endif
 #endif
+#define __BEGIN __attribute__((constructor))
+#define __CLOSE __attribute__((destructor))
 #define __STDCALL __attribute__((__stdcall__))
 
 // Main module initialization, registration and finalization
