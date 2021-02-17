@@ -215,8 +215,6 @@
 		ELSE
 			IF (mode # Typ) OR (obj^.linkadr # PredefinedType) THEN
 				IF mode = TProc THEN Ident(obj^.link^.typ^.strobj)
-				ELSIF mainprog & (level = 0) & ((obj^.vis = external) OR (obj^.vis = externalR)) THEN
-					WriteName(obj^.name^); RETURN (* exported from main module, prefix does not use *)
 				ELSIF level < 0 THEN (* use unaliased module name *)
 					IF ~oldc THEN OPM.WriteString(OPT.GlbMod[-level].name^)
 					ELSE OPM.Write(OPT.GlbMod[-level].name^[0])
@@ -996,7 +994,9 @@
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
 						IF obj^.vis = internal THEN OPM.WriteString(Static)
-						ELSIF dynlib THEN OPM.WriteString(EXPORT)
+						ELSIF dynlib THEN
+							IF mainprog & (obj^.entry = NIL) THEN obj^.entry := obj^.name END;
+							OPM.WriteString(EXPORT)
 						ELSE OPM.WriteString(Export)
 						END
 					END;
@@ -1117,7 +1117,9 @@
 					ELSE OPM.WriteString(Extern)
 					END
 				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
-				ELSIF dynlib THEN OPM.WriteString(EXPORT)
+				ELSIF dynlib THEN
+					IF mainprog & (obj^.entry = NIL) THEN obj^.entry := obj^.name END;
+					OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END;
 				ProcHeader(obj, FALSE)
