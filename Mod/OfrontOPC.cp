@@ -985,7 +985,7 @@
 			IF constarr & (vis # 0) & (obj^.vis # externalR) THEN	(* not exported in header *)
 			ELSIF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
 				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte}) THEN base := obj^.typ END;
-				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR constarr THEN	(* каждый конст. массив отдельно *)
+				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR constarr THEN	(* each const. array separately *)
 				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
 					first := FALSE;
@@ -993,7 +993,7 @@
 					BegStat;
 					IF (vis = 1) & (obj^.vis # internal) THEN OPM.WriteString(Extern)
 					ELSIF (obj^.mnolev = 0) & (vis = 0) THEN
-						IF obj^.vis = internal THEN OPM.WriteString(Static)
+						IF (obj^.vis = internal) OR constarr & (obj^.vis # externalR) THEN OPM.WriteString(Static)
 						ELSIF dynlib THEN
 							IF mainprog & (obj^.entry = NIL) THEN obj^.entry := obj^.name END;
 							OPM.WriteString(EXPORT)
