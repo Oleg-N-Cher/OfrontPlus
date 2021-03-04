@@ -18,8 +18,8 @@ $CC HelloWorld.c -o../HelloWorld $LIB
 if [ $? != 0 ]; then exit 1; fi
 
 # ---------- Generate MyDLL.so (WARNING!!! The circular dependency!) ----------
-##$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def -I../../Lib/Obj -I../../../../Mod/Lib
-##if [ $? != 0 ]; then exit 1; fi
+$CC MyDLL.c -fPIC -shared -oMyDLL.so -Wl,--retain-symbols-file,MyDLL.def -I../../Lib/Obj -I../../../../Mod/Lib
+if [ $? != 0 ]; then exit 1; fi
 #nm -gC MyDLL.so
 # ---------- Generate MyDLLuse (WARNING!!! The circular dependency!) ----------
 ##$CC MyDLLuse.c -fPIC -oMyDLLuse -Wl,--retain-symbols-file,MyDLLuse.def $LIB MyDLL.so -Wl,-rpath,.
