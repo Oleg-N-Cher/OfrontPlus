@@ -59,4 +59,10 @@ $AR arC.o arCFormat.o arChar.o arCString.o arDir.o arMath.o \
   arStream.o arFile.o arOut.o arPath.o arPattern.o arErr.o \
   arConfiguration.o arValue.o arFormat.o arJSON.o
 
+## BlackBox
+
+$CC bbMath.c
+if [ $? != 0 ]; then exit 1; fi
+$AR bbMath.o
+
 rm *.o
