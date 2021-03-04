@@ -51,6 +51,11 @@ ofront+ -s2 -48 ^
   arConfiguration.ob2 arValue.ob2 arFormat.ob2 arJSON.ob2 %oef%
 IF errorlevel 1 PAUSE
 
+:: BlackBox
+
+ofront+ -sC -48 bbMath.cp %oef%
+IF errorlevel 1 PAUSE
+
 :: WinApi
 
 ofront+ -sC -48 WinApi.cp %oef%
