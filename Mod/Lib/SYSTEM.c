@@ -20,6 +20,10 @@
 #include <stdlib.h>
 
 
+LONGINT SYSTEM_INF = 0x7FF0000000000000L;
+INTEGER SYSTEM_INFS = 0x7F800000;
+
+
 INTEGER SYSTEM_ArgCount;
 void *SYSTEM_ArgVector;
 void (*SYSTEM_AssertFailHandler)(INTEGER n, CHAR *mod, INTEGER pos);

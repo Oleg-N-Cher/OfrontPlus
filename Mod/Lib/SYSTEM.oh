@@ -56,6 +56,8 @@ typedef int SYSTEM_ARRLEN; // 32 or 64 bits, see also OPM.IndexSize and MaxIndex
 #define NIL          ((void*)0)
 #define __MAXEXT     16
 #define POINTER__typ ((SYSTEM_ADRINT*)(1))  // not NIL and not a valid type
+#define __INF        (*(REAL*)&SYSTEM_INF)
+#define __INFS       (*(SHORTREAL*)&SYSTEM_INFS)
 
 
 // Oberon types
@@ -89,6 +91,10 @@ typedef unsigned int   __U_SET;
   typedef long long          LONGINT;
   typedef unsigned long long __U_LONGINT;
 #endif
+
+
+extern LONGINT SYSTEM_INF;
+extern INTEGER SYSTEM_INFS;
 
 
 // Run time system routines in SYSTEM.c

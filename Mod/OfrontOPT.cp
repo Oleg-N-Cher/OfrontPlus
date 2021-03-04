@@ -152,7 +152,7 @@
 		END ;
 
 	VAR
-		universe, syslink: Object;
+		universe, syslink, infinity: Object;
 		impCtxt: ImpCtxt;
 		expCtxt: ExpCtxt;
 		nofhdfld: INTEGER;
@@ -1166,6 +1166,12 @@
 		obj^.mode := Con; obj^.typ := booltyp; obj^.conval^.intval := value
 	END EnterBoolConst;
 
+	PROCEDURE EnterRealConst(IN name, lowcase: ARRAY OF SHORTCHAR; val: REAL; VAR obj: Object);
+	BEGIN
+		Insert2(name, lowcase, obj); obj^.conval := NewConst();
+		obj^.mode := Con; obj^.typ := realtyp; obj^.conval^.realval := val
+	END EnterRealConst;
+
 	PROCEDURE EnterTyp(IN name, lowcase: ARRAY OF SHORTCHAR; form: BYTE; size: SHORTINT; VAR res: Struct);
 		VAR obj: Object; typ: Struct;
 	BEGIN
@@ -1289,6 +1295,11 @@
 		END;
 		EnterBoolConst("FALSE", "false", 0);	(* 0 and 1 are compiler internal representation only *)
 		EnterBoolConst("TRUE", "true",  1);
+		IF lang = "C" THEN
+			EnterRealConst("INF", "inf", OPM.InfReal, infinity)
+		ELSE
+			EnterRealConst("INF@", "inf@", OPM.InfReal, infinity)
+		END;
 		EnterProc("HALT", "halt", haltfn);
 		EnterProc("NEW", "new", newfn);
 		EnterProc("ABS", "abs", absfn);
@@ -1323,7 +1334,7 @@
 		END;
 		EnterProc("ASSERT", "assert", assertfn);
 		IF (lang = "C") OR (lang = "3") THEN
-			EnterProc("BITS", "bits", bitsfn);	(* Component Pascal BITS() *)
+			EnterProc("BITS", "bits", bitsfn);
 			EnterProc("USHORT", "ushort", ushortfn)
 		END;
 		EnterAttr("ABSTRACT", "abstract", absAttr);
@@ -1348,6 +1359,7 @@
 		SelfName := name$; topScope^.name := NewName(name);
 		GlbMod[0] := topScope; nofGmod := 1;
 		newsf := nsf IN opt; findpc := fpc IN opt; extsf := newsf OR (esf IN opt); sfpresent := TRUE;
+		infinity^.conval^.intval := OPM.ConstNotAlloc;
 		depth := 0
 	END Init;
 

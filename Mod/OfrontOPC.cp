@@ -1685,9 +1685,15 @@
 		|	Char:
 					WriteCharLiteral(SHORT(CHR(con^.intval)))
 		|	Real:
-					OPM.WriteReal(con^.realval, "f")
+					IF con^.realval = INF THEN OPM.WriteString("__INFS")
+					ELSIF con^.realval = -INF THEN OPM.WriteString("-__INFS")
+					ELSE OPM.WriteReal(con^.realval, "f")
+					END
 		|	LReal:
-					OPM.WriteReal(con^.realval, 0X)
+					IF con^.realval = INF THEN OPM.WriteString("__INF")
+					ELSIF con^.realval = -INF THEN OPM.WriteString("-__INF")
+					ELSE OPM.WriteReal(con^.realval, 0X)
+					END
 		|	Set:
 					OPM.WriteString("0x");
 					skipLeading := TRUE;

@@ -82,11 +82,12 @@
 		MaxReal32Pat = 07F7FFFFFH;	(* most positive, 32-bit pattern *)
 		MaxReal64PatL = 0FFFFFFFFH;	(* most positive, lower 32-bit pattern *)
 		MaxReal64PatH = 07FEFFFFFH;	(* most positive, higher 32-bit pattern *)
+		InfRealPat = 07F800000H;	(* real infinity pattern *)
 		maxErrors = 64;
 
 	VAR
 		LEHost: BOOLEAN;	(* little or big endian host *)
-		MinReal32-, MaxReal32-, MinReal64-, MaxReal64-: REAL;
+		MinReal32-, MaxReal32-, InfReal-, MinReal64-, MaxReal64-: REAL;
 		SetSize-, IndexSize-, MaxSet-: SHORTINT; MaxIndex-: LONGINT;
 
 		noerr-, warning156-: BOOLEAN;
@@ -1091,6 +1092,7 @@ suffix does not work in K&R *)
 		VAR test: SHORTINT; lo: SHORTCHAR;
 	BEGIN
 		test := 1; SYSTEM.GET(SYSTEM.ADR(test), lo); LEHost := lo = 1X;
+		InfReal := SYSTEM.VAL(SHORTREAL, InfRealPat);
 		MinReal32 := SYSTEM.VAL(SHORTREAL, MinReal32Pat);
 		MaxReal32 := SYSTEM.VAL(SHORTREAL, MaxReal32Pat);
 		MinReal64 := Compound(MinReal64PatL, MinReal64PatH);
