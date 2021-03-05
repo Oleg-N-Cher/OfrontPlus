@@ -61,4 +61,10 @@ IF errorlevel 1 PAUSE
   arStream.o arFile.o arOut.o arPath.o arPattern.o arErr.o ^
   arConfiguration.o arValue.o arFormat.o arJSON.o
 
+:: BlackBox
+
+%CC% bbMath.c
+IF errorlevel 1 PAUSE
+%AR% bbMath.o
+
 DEL /Q *.o
