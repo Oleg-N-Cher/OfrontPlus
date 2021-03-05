@@ -48,4 +48,9 @@ ofront+ -s2 -48 ^
   arConfiguration.ob2 arValue.ob2 arFormat.ob2 arJSON.ob2
 IF errorlevel 1 PAUSE
 
+:: BlackBox
+
+ofront+ -sC -48 bbMath.cp
+IF errorlevel 1 PAUSE
+
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL

@@ -48,4 +48,9 @@ ofront+ -s2 -48 \
   arConfiguration.ob2 arValue.ob2 arFormat.ob2 arJSON.ob2
 if [ $? != 0 ]; then exit 1; fi
 
+## BlackBox
+
+ofront+ -sC -48 bbMath.cp
+if [ $? != 0 ]; then exit 1; fi
+
 find . -type f -name "*.sym" -exec mv -f {} ../Sym \;
