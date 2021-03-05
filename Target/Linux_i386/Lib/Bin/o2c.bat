@@ -20,12 +20,12 @@ IF errorlevel 1 PAUSE
 
 :: OOC2
 
-ofront+ -eC -44 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp
+ofront+ -sC -44 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp
 IF errorlevel 1 PAUSE
 
 :: POW
 
-ofront+ -eC -44 powStrings.cp
+ofront+ -sC -44 powStrings.cp
 IF errorlevel 1 PAUSE
 
 :: Free Oberon
