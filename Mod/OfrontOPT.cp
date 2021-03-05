@@ -1210,6 +1210,7 @@
 
 		(*initialization of module SYSTEM*)
 		EnterTyp("PTR", "ptr", Pointer, OPM.AdrSize, sysptrtyp);
+		EnterTyp("UINT8", "uint8", UByte, 1, ubytetyp);
 		IF lang # "3" THEN
 			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
@@ -1218,7 +1219,6 @@
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
 			EnterTyp("REAL32", "real32", Real, 4, realtyp);
 			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
-			EnterTyp("UINT8", "uint8", UByte, 1, ubytetyp);
 			IF lang <= "2" THEN
 				EnterTypeAlias("BYTE", "byte", byte, bytetyp)
 			END;
@@ -1262,7 +1262,6 @@
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
 			EnterTyp("REAL32", "real32", Real, 4, realtyp);
 			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
-			EnterTyp("UINT8", "uint8", UByte, 1, ubytetyp);
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
