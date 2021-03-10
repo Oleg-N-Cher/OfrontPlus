@@ -830,6 +830,7 @@
 										ELSIF form = Real THEN OPM.WriteString("__MINFF(")
 										ELSIF form = LReal THEN OPM.WriteString("__MINFD(")
 										ELSIF form = LInt THEN OPM.WriteString("__MINFL(")
+										ELSIF (form < Int) & (OPM.AdrSize = 2) THEN OPM.WriteString("__MINFS(")
 										ELSE OPM.WriteString("__MINF(")
 										END
 							|	max:
@@ -837,6 +838,7 @@
 										ELSIF form = Real THEN OPM.WriteString("__MAXFF(")
 										ELSIF form = LReal THEN OPM.WriteString("__MAXFD(")
 										ELSIF form = LInt THEN OPM.WriteString("__MAXFL(")
+										ELSIF (form < Int) & (OPM.AdrSize = 2) THEN OPM.WriteString("__MAXFS(")
 										ELSE OPM.WriteString("__MAXF(")
 										END
 							END;
