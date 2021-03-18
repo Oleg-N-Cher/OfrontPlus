@@ -57,7 +57,7 @@ BEGIN
 	IF flush IN {NoFlush, SyncFlush, FullFlush} THEN
 		w.flush := flush;
 		w.wrapper := wrapper;
-		ZlibDeflate.Open(w.s, level, strategy, FALSE);
+		ZlibDeflate.Open(w.s, level, strategy, wrapper);
 		IF w.s.res = Ok THEN
 			NEW(w.out); ZlibBuffers.Init(w.s.out, w.out^, 0, BufSize, BufSize);
 			w.crc32 := Zlib.CRC32(0, w.out^, -1, -1);
