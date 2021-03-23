@@ -1210,7 +1210,9 @@
 
 		(*initialization of module SYSTEM*)
 		EnterTyp("PTR", "ptr", Pointer, OPM.AdrSize, sysptrtyp);
-		EnterTyp("UINT8", "uint8", UByte, 1, ubytetyp);
+		IF lang <= "3" THEN
+			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp)
+		END;
 		IF lang # "3" THEN
 			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
@@ -1219,9 +1221,6 @@
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
 			EnterTyp("REAL32", "real32", Real, 4, realtyp);
 			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
-			IF lang <= "2" THEN
-				EnterTypeAlias("BYTE", "byte", byte, bytetyp)
-			END;
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
@@ -1253,9 +1252,9 @@
 			EnterTypeAlias("LONGINT", "longint", int64, linttyp);
 			EnterTypeAlias("SHORTREAL", "shortreal", real32, realtyp);
 			EnterTypeAlias("REAL", "real", real64, lrltyp);
-			EnterTypeAlias("UBYTE", "ubyte", ubyte, ubytetyp)
+			EnterTyp("UBYTE", "ubyte", UByte, 1, ubytetyp)
 		ELSIF lang = "3" THEN
-			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
+			EnterTyp("CHAR", "char8", Char, 1, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
@@ -1266,14 +1265,7 @@
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
 			ELSE EnterTypeAlias("ADRINT", "adrint", adrint, linttyp)
-			END;
-			EnterTypeAlias("CHAR", "char", char8, chartyp);
-			EnterTypeAlias("BYTE", "byte", int8, bytetyp);
-			EnterTypeAlias("SHORTINT", "shortint", int16, sinttyp);
-			EnterTypeAlias("INTEGER", "integer", int32, inttyp);
-			EnterTypeAlias("LONGINT", "longint", int64, linttyp);
-			EnterTypeAlias("SHORTREAL", "shortreal", real32, realtyp);
-			EnterTypeAlias("REAL", "real", real64, lrltyp)
+			END
 		ELSIF lang <= "2" THEN
 			EnterTypeAlias("CHAR", "char", char8, chartyp);
 			EnterTypeAlias("SHORTINT", "shortint", int8, bytetyp);
@@ -1283,7 +1275,7 @@
 			EnterTypeAlias("REAL", "real", real32, realtyp);
 			EnterTypeAlias("LONGREAL", "longreal", real64, lrltyp);
 		ELSE (* "7" *)
-			EnterTypeAlias("BYTE", "byte", ubyte, ubytetyp);
+			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp);
 			EnterTypeAlias("CHAR", "char", char8, chartyp);
 			IF OPM.AdrSize # 2 THEN
 				EnterTypeAlias("INTEGER", "integer", int32, inttyp)

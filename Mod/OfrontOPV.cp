@@ -24,7 +24,8 @@
 
 		(* structure forms *)
 		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; Pointer = 13; ProcTyp = 15; Comp = 16;
+		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11;
+		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
 
 		(* composite structure forms *)
 		Array = 2; DynArr = 3; Record = 4;
@@ -433,10 +434,11 @@
 			END
 		| LInt:
 			IF from < LInt THEN OPM.WriteString("(LONGINT)") END; LEntier(n, 9)
-		| Char:
+		| Char, UByte:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
 				IF SideEffects(n) THEN OPM.Write("F") END;
-				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen)
+				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
+				OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(CHAR)"); Entier(n, 9)
 			END
 		| Set: OPM.WriteString("(SET)"); Entier(n, 9)

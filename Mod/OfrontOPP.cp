@@ -1634,7 +1634,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF L # 1 THEN
 							(* строим спецусловие для ForUntil: y=«id := z» или «id := 0» *)
 							SetPos(apar);
-							OPB.Construct(Nrepeat, s, apar); (* постоили REPEAT UNTIL*)
+							OPB.Construct(Nrepeat, s, apar); (* построили REPEAT UNTIL *)
 							SetPos(s);
 							IF t # id THEN (* нужен инкремент id*)
 								apar := OPB.NewLeaf(id); OPB.StPar1(apar, z, incfn);

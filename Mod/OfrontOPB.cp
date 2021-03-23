@@ -270,13 +270,13 @@
 	END Max;
 
 	PROCEDURE Short2Size*(n: LONGINT; size: INTEGER): LONGINT;
-    		(* укорачивает знаковую константу  до size байтов *)
+		(* truncates a signed constant to size bytes *)
 	BEGIN
 		CASE size OF
 			| 8:
-			| 4: n := n MOD 100000000L
-			| 2: n := n MOD 10000H
-			| 1: n := n MOD 100H
+			| 4: n := SHORT(n)
+			| 2: n := SHORT(SHORT(n) MOD 10000H)
+			| 1: n := SHORT(SHORT(SHORT(n) MOD 100H))
 		END;
 		RETURN n
 	END Short2Size;
@@ -1282,7 +1282,7 @@
 		| UByte:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
 					(0 <= ynode^.conval^.intval) & (ynode^.conval^.intval <= 255) THEN (* Ok *)
-				ELSIF g # f THEN err(113) END
+				ELSIF (OPM.Lang = "C") & (g # f) THEN err(113) END
 		| SInt:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
 					(MIN(SHORTINT) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(SHORTINT)) THEN (* Ok *)
