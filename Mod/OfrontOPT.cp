@@ -1261,6 +1261,11 @@
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
 			EnterTyp("REAL32", "real32", Real, 4, realtyp);
 			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
+			IF OPM.AdrSize # 2 THEN
+				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
+			ELSE
+				EnterTypeAlias("INTEGER", "integer", int16, sinttyp)
+			END;
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);

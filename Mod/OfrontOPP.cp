@@ -1501,19 +1501,19 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						OPS.Get(sym); ConstExpression(z)	(* то читаем его как константное выражение*)
 					ELSE
 						z := OPB.NewIntConst(1)	(*иначе берем константу 1*)
-					END ;
-
-					(* x = "id:=A"; y=B; z=Step; apar="A" *)
-					obj := NIL;	(* по умолчанию IF нужен*)
-					IF (y^.class = Nconst) THEN	(* если В - константа *)
-						IF (x^.left^.typ^.form = Byte) & (( y^.conval^.intval < OPB.Min(Byte)) OR ( y^.conval^.intval > OPB.Max(Byte)))
-						 OR (x^.left^.typ^.form # Byte)&((y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form)) THEN
-							err(113); y := OPB.NewIntConst(0) (* то это д б константа совместимого типа *)
+					END;
+					(* x = "id := A"; y = B; z = Step; apar = "A" *)
+					obj := NIL;	(* by default IF is needed *)
+					IF y^.class = Nconst THEN	(* if B is a constant *)
+						IF (y^.conval^.intval < OPB.Min(x^.left^.typ^.form)) OR (y^.conval^.intval > OPB.Max(x^.left^.typ^.form))
+						 OR (x^.left^.typ^.form # Byte) & ((y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form))
+						THEN
+							err(113); y := OPB.NewIntConst(0)	(* it must be a constant of a compatible type *)
 						END;
 						IF apar^.class = Nconst THEN (* А и В - константы*)
 							IF (z^.conval^.intval > 0) & (apar^.conval^.intval <= y^.conval^.intval ) OR
 								(z^.conval^.intval < 0) & (apar^.conval^.intval >= y^.conval^.intval ) THEN
-									obj := id; (* условие IF не нужно*)
+									obj := id;	(* IF condition is not needed *)
 							ELSE
 									id := NIL (* цикл не выполнится ни разу *)
 							END
@@ -1538,7 +1538,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					END;
 					pos := OPM.errpos;	(* теперь указатель ошибок указывает на Step*)
 					IF (z^.conval^.intval = 0) OR (z^.typ^.form IN {Undef, Bool, Char}) OR (z^.typ^.form > x^.left^.typ^.form) THEN
-						IF (x^.left^.typ^.form # Byte) OR (z^.conval^.intval < OPB.Min(Byte)) OR ( z^.conval^.intval > OPB.Max(Byte))
+						IF (x^.left^.typ^.form # Byte) OR (z^.conval^.intval < MIN(BYTE)) OR (z^.conval^.intval > MAX(BYTE))
 						THEN err(63); z := OPB.NewIntConst(1)
 						END;
 					END;

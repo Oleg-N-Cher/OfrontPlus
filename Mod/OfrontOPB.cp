@@ -275,8 +275,8 @@
 		CASE size OF
 			| 8:
 			| 4: n := SHORT(n)
-			| 2: n := SHORT(SHORT(n) MOD 10000H)
-			| 1: n := SHORT(SHORT(SHORT(n) MOD 100H))
+			| 2: n := SHORT(SHORT(n))
+			| 1: n := SHORT(SHORT(SHORT(n)))
 		END;
 		RETURN n
 	END Short2Size;
@@ -563,7 +563,7 @@
 					ELSIF OPM.AdrSize = 2 THEN z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
 					END
-			| unsgn: (* (unsigned) для div *)
+			| unsgn: (* (unsigned) for div *)
 					IF f IN intSet THEN z := NewOp(op, typ, z) ELSE err(127) END
 			END
 		END;
@@ -1280,9 +1280,11 @@
 					(MIN(BYTE) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(BYTE)) THEN (* Ok *)
 				ELSIF g # f THEN err(113) END
 		| UByte:
-				IF (g IN intSet) & (ynode^.class = Nconst) &
-					(0 <= ynode^.conval^.intval) & (ynode^.conval^.intval <= 255) THEN (* Ok *)
-				ELSIF (OPM.Lang = "C") & (g # f) THEN err(113) END
+				IF g IN intSet THEN
+					IF ynode^.class = Nconst THEN
+						IF (ynode^.conval^.intval < 0) OR (ynode^.conval^.intval > 255) THEN err(113) END
+					ELSIF (OPM.Lang = "C") & (g # f) THEN err(113) END
+				ELSIF g # f THEN err(113) END
 		| SInt:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
 					(MIN(SHORTINT) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(SHORTINT)) THEN (* Ok *)

@@ -103,10 +103,10 @@ PROCEDURE ReadFile (
   f: Files.File; VAR text: Text16; VAR txtlen: INTEGER; VAR bom: BOOLEAN);
 
   VAR x, len, next, down, end: INTEGER; in, in1: Files.Rider;
-    ch16: INT16; b: BYTE;
+    ch16: INT16; b: INT8;
 
   PROCEDURE ReadInt (VAR x: INTEGER);
-    VAR b: BYTE;
+    VAR b: INT8;
   BEGIN
     Files.ReadByte(@in, @b); x := b MOD 256;
     Files.ReadByte(@in, @b); x := x + (b MOD 256) * 100H;
@@ -115,7 +115,7 @@ PROCEDURE ReadFile (
   END ReadInt;
 
   PROCEDURE ReadHead (VAR next, down, end: INTEGER);
-    VAR b, t: BYTE; n: INTEGER;
+    VAR b, t: INT8; n: INTEGER;
   BEGIN
     Files.ReadByte(@in, @b);
     REPEAT
@@ -178,7 +178,7 @@ END ReadFile;
 
 (*
 PROCEDURE ReadFile2 (f: Files.File; VAR text: Text16; VAR bom: BOOLEAN);
-  VAR i : INTEGER; in: Files.Rider; b, state: BYTE;
+  VAR i: INTEGER; in: Files.Rider; b, state: INT8;
 BEGIN
   bom := FALSE;
   IF f # NIL THEN  (* read text file *)
