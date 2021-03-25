@@ -6,7 +6,7 @@ IMPORT SYSTEM;
 
 TYPE
 	char* = SYSTEM.CHAR8;
-	uchar* = SYSTEM.UINT8;
+	uchar* = SYSTEM.BYTE;
 
 	string* = POINTER [notag] TO ARRAY [notag] OF char;
 
