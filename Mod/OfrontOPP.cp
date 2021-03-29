@@ -1433,8 +1433,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			cond := null; (* пока условие не нашли *)
 			Nlast := CalcNlast(A, B, Step); (* последнее за границы типа не выйдет *)
 			(* в отличие от последующего или предыдущего *)
-			sgnPostLast := Sign(OPB.Short2Size(Nlast + Step, id^.typ^.size));
-			sgnPredLast := Sign(OPB.Short2Size(Nlast - Step, id^.typ^.size));
+			sgnPostLast := Sign(OPB.Short2Size(Nlast + Step, id^.typ^.form));
+			sgnPredLast := Sign(OPB.Short2Size(Nlast - Step, id^.typ^.form));
 			IF Nlast = 0 THEN cond := -eql
 			ELSIF ( Sign(Nlast) = -Sign(Step) ) & (Sign(Nlast) # sgnPostLast )THEN
 				CASE sgnPostLast OF
@@ -1560,22 +1560,23 @@ PROCEDURE Factor(VAR x: OPT.Node);
 									OPB.Assign(apar, z);
 									apar^.subcl := geq (* условие id>=0 *)
 								ELSE
-									t := NIL; (* нужна вспомогательная переменная *)
+									t := NIL	(* need an auxiliary variable *)
 								END
 							END
 						END;
-						IF t # id THEN (* заводим вспомогательную переменную*)
+						IF t # id THEN	(* create an auxiliary variable *)
 							name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
-							t^.mode := Var; t^.typ := x^.left^.typ;
+							t^.mode := Var;
+							IF x^.left^.typ^.form = UByte THEN t^.typ := OPT.bytetyp ELSE t^.typ := x^.left^.typ END;
 							fpar := OPT.topScope^.scope;
 							IF fpar = NIL THEN OPT.topScope^.scope := t
 							ELSE
-								WHILE fpar^.link # NIL DO fpar := fpar^.link END ;
+								WHILE fpar^.link # NIL DO fpar := fpar^.link END;
 								fpar^.link := t
-							END ;
+							END;
 							apar := OPB.NewLeaf(t);
 							OPB.Assign(apar, OPB.NewIntConst(-1));
-							apar^.subcl := eql;	(* условие t=0 *)
+							apar^.subcl := eql	(* condition t=0 *)
 						END;
 
 						IF (t = id) & (idtyp = NIL) THEN	(* а вот тут возможен выход константы за границы типа,

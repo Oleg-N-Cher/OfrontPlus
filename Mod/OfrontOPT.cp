@@ -1213,14 +1213,14 @@
 		IF lang <= "3" THEN
 			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp)
 		END;
+		EnterTyp("REAL32", "real32", Real, 4, realtyp);
+		EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
 		IF lang # "3" THEN
 			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
-			EnterTyp("REAL32", "real32", Real, 4, realtyp);
-			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
 			| 4: EnterTypeAlias("ADRINT", "adrint", adrint, inttyp);
@@ -1259,8 +1259,7 @@
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
-			EnterTyp("REAL32", "real32", Real, 4, realtyp);
-			EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
+			EnterTypeAlias("REAL", "real", real32, realtyp);
 			IF OPM.AdrSize # 2 THEN
 				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
 			ELSE

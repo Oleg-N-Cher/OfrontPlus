@@ -261,7 +261,7 @@
 	BEGIN
 		CASE tf OF
 		| Byte: m := MAX(BYTE)
-		| UByte: m := 255
+		| UByte: m := 0FFH
 		| SInt: m := MAX(SHORTINT)
 		| Int: m := MAX(INTEGER)
 		| LInt: m := MAX(LONGINT)
@@ -269,26 +269,32 @@
 		RETURN m
 	END Max;
 
-	PROCEDURE Short2Size*(n: LONGINT; size: INTEGER): LONGINT;
-		(* truncates a signed constant to size bytes *)
+	PROCEDURE Short2Size*(n: LONGINT; form: BYTE): LONGINT;
 	BEGIN
-		CASE size OF
-			| 8:
-			| 4: n := SHORT(n)
-			| 2: n := SHORT(SHORT(n))
-			| 1: n := SHORT(SHORT(SHORT(n)))
+		CASE form OF
+			| LInt:
+			| Int: n := SHORT(n)
+			| SInt: n := SHORT(SHORT(n))
+			| Byte: n := SHORT(SHORT(SHORT(n)))
+			| UByte: n := n MOD 100H
 		END;
 		RETURN n
 	END Short2Size;
 
 	PROCEDURE NewShortConst*(uintval: LONGINT; size: INTEGER): OPT.Node;
-		(* создание новой знаковой константы длиной size байтов по соответствующей
-		(кодируемой той же комбинацией битов) беззнаковой константе uintval *)
+		(* creates of a new signed constant of size bytes from the corresponding
+		(encoded with the same combination of bits) unsigned constant uintval *)
 	VAR x: OPT.Node;
 	BEGIN
 		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
-		x^.conval^.intval := Short2Size(uintval, size);
-		SetIntType(x, FALSE); RETURN x
+		CASE size OF	(* truncates a signed constant to size bytes *)
+			| 8:
+			| 4: uintval := SHORT(uintval)
+			| 2: uintval := SHORT(SHORT(uintval))
+			| 1: uintval := SHORT(SHORT(SHORT(uintval)))
+		END;
+		x^.conval^.intval := uintval; SetIntType(x, FALSE);
+		RETURN x
 	END NewShortConst;
 
 	PROCEDURE NewRealConst*(realval: REAL; typ: OPT.Struct): OPT.Node;
@@ -632,7 +638,7 @@
 			ELSIF (f = Real) OR (g = Real) THEN new := OPT.realtyp
 			ELSIF (f = LInt) OR (g = LInt) THEN new := OPT.linttyp
 			ELSIF (f = Int) OR (g = Int) THEN new := OPT.inttyp
-			ELSIF (OPM.AdrSize = 2) OR (OPM.Lang <= "3") THEN new := OPT.sinttyp
+			ELSIF (OPM.AdrSize = 2) OR (OPM.Lang <= "3") THEN new := OPT.bytetyp
 			ELSE new := OPT.inttyp
 			END;
 			IF g # new^.form THEN right^.typ := new END;
@@ -1278,7 +1284,7 @@
 		| Byte:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
 					(MIN(BYTE) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(BYTE)) THEN (* Ok *)
-				ELSIF g # f THEN err(113) END
+				ELSIF ~(g IN {Byte, UByte}) THEN err(113) END
 		| UByte:
 				IF g IN intSet THEN
 					IF ynode^.class = Nconst THEN
@@ -1486,7 +1492,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| chrfn: (*CHR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN {Undef, Byte, SInt..LInt} THEN Convert(x, OPT.chartyp)
+				ELSIF f IN {Undef} + intSet THEN Convert(x, OPT.chartyp)
 				ELSE err(111); x^.typ := OPT.chartyp
 				END
 		| shortfn: (*SHORT*)
