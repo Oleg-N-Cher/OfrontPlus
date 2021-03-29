@@ -29,6 +29,8 @@
 		oldc* = 13;	(* old C compilers restrictions support *)
 		foreign* = 14;	(* interface on external library *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
+		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
+		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -364,7 +366,8 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
 			| "1", "3"(*undocumented*), "C", "7": Lang := SHORT(s[i])
-
+			| "G": opt := opt / {gpcp}
+			| "O": opt := opt / {oakwood}
 			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
 					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
@@ -390,7 +393,6 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 					IF s[i+1] # 0X THEN LogW(s[i+1]); INC(i) END;
 					LogWStr(" ignored"); LogWLn
 				END
-
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END;
 			INC(i)

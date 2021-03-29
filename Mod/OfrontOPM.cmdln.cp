@@ -26,6 +26,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		oldc* = 13;	(* old C compilers restrictions support *)
 		foreign* = 14;	(* interface on external library *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
+		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
+		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -233,7 +235,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
 			| "1", "3"(*undocumented*), "C", "7": Lang := s[i]
-
+			| "G": opt := opt / {gpcp}
+			| "O": opt := opt / {oakwood}
 			(* target machine address size and alignment
 					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
 					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
@@ -259,7 +262,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 					IF s[i+1] # 0X THEN LogW(s[i+1]); INC(i) END;
 					LogWStr(" ignored"); LogWLn
 				END
-
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END;
 			INC(i)
