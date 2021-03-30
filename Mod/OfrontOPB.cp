@@ -5,7 +5,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	2015-10-07 jt, support for SYSTEM.ADR("x"), i.e. applied to char constant, added in MOp
 	2017-03-16 dcwbrown, allow usage of SYSTEM.VAL in CONST section to explicitly define types of integer constants
 	2017-08-16 jt, second operand of INC/DEC may be any integer type not larger than first operand
-	2018-02-14 olegncher, issue #44: unlimited length of strings (as in BlackBox)
+	2018-02-14 olegncher, issue #44: unlimited length of string literals
 *)
 
 	IMPORT OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM, SYSTEM;
@@ -93,7 +93,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| LProc..IProc:
 				node := OPT.NewNode(Nproc)
 		ELSE err(127); node := OPT.NewNode(Nvar)
-		END ;
+		END;
 		node^.obj := obj; node^.typ := obj^.typ;
 		RETURN node
 	END NewLeaf;
@@ -107,8 +107,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE Link* (VAR x, last: OPT.Node; y: OPT.Node);
 	BEGIN
-		IF x = NIL THEN x := y ELSE last^.link := y END ;
-		WHILE y^.link # NIL DO y := y^.link END ;
+		IF x = NIL THEN x := y ELSE last^.link := y END;
+		WHILE y^.link # NIL DO y := y^.link END;
 		last := y
 	END Link;
 
@@ -161,7 +161,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ELSIF if^.link = NIL THEN x := x^.right; RETURN
 			ELSE if := if^.link; x^.left := if
 			END
-		END ;
+		END;
 		pred := if; if := if^.link;
 		WHILE if # NIL DO
 			IF if^.left^.class = Nconst THEN
@@ -221,7 +221,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			fp^.mode := Var;	(* fp is variable, element of the array *)
 			NEW(y);
 			(* allocate a piece of memory for n elements of the array *)
-			CASE typ^.size OF	(* Size of array elements in bytes (for BlackBox). *)
+			CASE typ^.size OF	(* size of array elements in bytes (for BlackBox). *)
 			| 1:	(* BOOLEAN, CHAR, BYTE (for Ofront+) *)
 						NEW(y^.val1, n)
 			| 2:	(* a type with 2-bytes size *)
@@ -316,7 +316,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		VAR ch: SHORTCHAR;
 	BEGIN
 		n^.typ := OPT.stringtyp; ch := SHORT(CHR(n^.conval^.intval)); NEW(n^.conval^.ext, 2);
-		IF ch = 0X THEN n^.conval^.intval2 := 1 ELSE n^.conval^.intval2 := 2; n^.conval^.ext[1] := 0X END ;
+		IF ch = 0X THEN n^.conval^.intval2 := 1 ELSE n^.conval^.intval2 := 2; n^.conval^.ext[1] := 0X END;
 		n^.conval^.ext[0] := ch; n^.conval^.intval := OPM.ConstNotAlloc; n^.obj := NIL
 	END CharToString8;
 
@@ -379,19 +379,19 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	BEGIN
 		f := y^.typ^.form;
 		IF x^.class >= Nconst THEN err(79)
-		ELSIF ~(f IN intSet) OR (y^.class IN {Nproc, Ntype}) THEN err(80); y^.typ := OPT.inttyp END ;
+		ELSIF ~(f IN intSet) OR (y^.class IN {Nproc, Ntype}) THEN err(80); y^.typ := OPT.inttyp END;
 		IF x^.typ^.comp = Array THEN typ := x^.typ^.BaseTyp;
 			IF (y^.class = Nconst) & ((y^.conval^.intval < 0) OR (y^.conval^.intval >= x^.typ^.n)) THEN err(81) END
 		ELSIF x^.typ^.comp = DynArr THEN typ := x^.typ^.BaseTyp;
 			IF (y^.class = Nconst) & (y^.conval^.intval < 0) THEN err(81) END
 		ELSE err(82); typ := OPT.undftyp
-		END ;
+		END;
 		BindNodes(Nindex, typ, x, y); x^.readonly := x^.left^.readonly
 	END Index;
 
 	PROCEDURE Field* (VAR x: OPT.Node; y: OPT.Object);
 	BEGIN (*x^.typ^.comp = Record*)
-		IF x^.class >= Nconst THEN err(77) END ;
+		IF x^.class >= Nconst THEN err(77) END;
 		IF (y # NIL) & (y^.mode IN {Fld, TProc}) THEN
 			BindNodes(Nfield, y^.typ, x, NIL); x^.obj := y;
 			x^.readonly := x^.left^.readonly OR ((y^.vis = externalR) & (y^.mnolev < 0))
@@ -554,7 +554,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						ELSE z := NewOp(op, typ, z)
 						END
 					ELSE err(111)
-					END ;
+					END;
 					z^.typ := OPT.booltyp
 			| adr: (*SYSTEM.ADR*)
 					IF (z^.class = Nconst) & (f = Char8) & (z^.conval^.intval >= 20H) THEN
@@ -579,8 +579,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		IF g = Pointer THEN
 			p := x^.typ^.BaseTyp; q := y^.typ^.BaseTyp;
 			IF (p^.comp = Record) & (q^.comp = Record) THEN
-				IF p^.extlev < q^.extlev THEN t := p; p := q; q := t END ;
-				WHILE (p # q) & (p # NIL) & (p # OPT.undftyp) DO p := p^.BaseTyp END ;
+				IF p^.extlev < q^.extlev THEN t := p; p := q; q := t END;
+				WHILE (p # q) & (p # NIL) & (p # OPT.undftyp) DO p := p^.BaseTyp END;
 				IF p = NIL THEN err(100) END
 			ELSE err(100)
 			END
@@ -712,7 +712,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF xval^.intval # yval^.intval THEN res := neq
 					ELSE res := eql
 					END
-			END ;
+			END;
 			x^.typ := OPT.booltyp; RETURN res
 		END ConstCmp;
 
@@ -771,9 +771,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			| ProcTyp:
 					IF g # NilTyp THEN err(100) END
 			ELSE err(100); y^.typ := x^.typ; yval^ := xval^
-			END ;
+			END;
 			f := x^.typ^.form
-		END ;	(* {x^.typ = y^.typ} *)
+		END;	(* {x^.typ = y^.typ} *)
 		CASE op OF
 		  times:
 				IF f IN intSet THEN xv := xval^.intval; yv := yval^.intval;
@@ -800,7 +800,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF yval^.intval # 0 THEN
 						xval^.realval := xval^.intval / yval^.intval; GetRealConstType(Real32, 205, xval, x^.typ)
 					ELSE err(205); xval^.realval := 1.0
-					END ;
+					END;
 					x^.typ := OPT.realtyp
 				ELSIF f IN realSet THEN
 					temp := ABS(yval^.realval) >= 1.0;
@@ -986,8 +986,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		BEGIN
 			xCharArr := ((x^.typ^.comp IN {Array, DynArr}) & (x^.typ^.BaseTyp^.form=Char8)) OR (f=String8);
 			yCharArr := (((y^.typ^.comp IN {Array, DynArr}) & (y^.typ^.BaseTyp^.form=Char8)) OR (g=String8));
-			IF xCharArr & (g = Char8) & (y^.class = Nconst) THEN CharToString8(y); g := String8; yCharArr := TRUE END ;
-			IF yCharArr & (f = Char8) & (x^.class = Nconst) THEN CharToString8(x); f := String8; xCharArr := TRUE END ;
+			IF xCharArr & (g = Char8) & (y^.class = Nconst) THEN CharToString8(y); g := String8; yCharArr := TRUE END;
+			IF yCharArr & (f = Char8) & (x^.class = Nconst) THEN CharToString8(x); f := String8; xCharArr := TRUE END;
 			ok := xCharArr & yCharArr;
 			IF ok THEN	(* replace ""-string compare with 0X-char compare, if possible *)
 				IF (f=String8) & (x^.conval^.intval2 = 1) THEN	(* y is array of char *)
@@ -997,7 +997,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					y^.typ := OPT.chartyp; y^.conval^.intval := 0;
 					Index(x, NewIntConst(0))
 				END
-			END ;
+			END;
 			RETURN ok
 		END strings;
 
@@ -1091,17 +1091,17 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 								END
 							END
 						ELSIF ~(f IN {Undef, Real32..Set}) THEN err(105); typ := OPT.undftyp
-						END ;
+						END;
 						IF do THEN NewOp(op, typ, z, y) END
 				| slash:
 						IF f IN intSet THEN
-							IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN err(205) END ;
+							IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN err(205) END;
 							Convert(z, OPT.realtyp); Convert(y, OPT.realtyp);
 							typ := OPT.realtyp
 						ELSIF f IN realSet THEN
 							IF (y^.class = Nconst) & (y^.conval^.realval = 0.0) THEN err(205) END
 						ELSIF (f # Set) & (f # Undef) THEN err(102); typ := OPT.undftyp
-						END ;
+						END;
 						NewOp(op, typ, z, y)
 				| div:
 						do := TRUE;
@@ -1195,7 +1195,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						END;
 						IF do THEN NewOp(op, typ, z, y) END
 				| minus:
-						IF ~(f IN {Undef, Int8, Byte, Int16..Set}) THEN err(106); typ := OPT.undftyp END ;
+						IF ~(f IN {Undef, Int8, Byte, Int16..Set}) THEN err(106); typ := OPT.undftyp END;
 						IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
 				| min, max:
 						IF ~(f IN {Undef} + intSet + realSet + {Char8}) THEN err(111); typ := OPT.undftyp END;
@@ -1214,12 +1214,12 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				| eql, neq:
 						IF (f IN {Undef..Set, NilTyp, Pointer, ProcTyp}) OR strings(z, y) THEN typ := OPT.booltyp
 						ELSE err(107); typ := OPT.undftyp
-						END ;
+						END;
 						NewOp(op, typ, z, y)
 				| lss, leq, gtr, geq:
 						IF (f IN {Undef, Int8, Char8..Real64}) OR strings(z, y) THEN typ := OPT.booltyp
 						ELSE err(108); typ := OPT.undftyp
-						END ;
+						END;
 						NewOp(op, typ, z, y)
 				END
 			END
@@ -1235,21 +1235,21 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			IF x^.class = Nconst THEN
 				k := x^.conval^.intval;
 				IF (0 > k) OR (k > OPM.MaxSet) THEN err(202) END
-			END ;
+			END;
 			IF y^.class = Nconst THEN
 				l := y^.conval^.intval;
 				IF (0 > l) OR (l > OPM.MaxSet) THEN err(202) END
-			END ;
+			END;
 			IF (x^.class = Nconst) & (y^.class = Nconst) THEN
 				IF k <= l THEN
 					x^.conval^.setval := {k..l}
 				ELSE err(201); x^.conval^.setval := {l..k}
-				END ;
+				END;
 				x^.obj := NIL
 			ELSE BindNodes(Nupto, OPT.settyp, x, y)
 			END
 		ELSE err(93)
-		END ;
+		END;
 		x^.typ := OPT.settyp
 	END SetRange;
 
@@ -1269,7 +1269,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.typ := OPT.settyp
 	END SetElem;
 
-	PROCEDURE CheckAssign* (x: OPT.Struct; ynode: OPT.Node);	(* x := y *)
+	PROCEDURE CheckAssign* (x: OPT.Struct; VAR ynode: OPT.Node);	(* x := y *)
 		VAR f, g: INTEGER; y, b: OPT.Struct;
 	BEGIN
 		y := ynode^.typ; f := x^.form; g := y^.form;
@@ -1338,6 +1338,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF x^.comp = Array THEN
 					IF (ynode^.class = Nconst) & (g = Char8) THEN CharToString8(ynode); y := ynode^.typ; g := String8 END;
 					IF x = y THEN (* ok *)
+					ELSIF (OPM.Lang = "7") & (g = Comp) & (y^.comp = DynArr) & (y^.BaseTyp = OPT.chartyp) THEN
+						StrDeref(ynode)
 					ELSIF (g = String8) & (x^.BaseTyp = OPT.chartyp) THEN (* check length of string *)
 						IF ynode^.conval^.intval2 > x^.n THEN err(114) END
 					(* an array of characters is assigned to an array of characters *)
@@ -1370,8 +1372,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 (*
 avoid unnecessary intermediate variables in OFront
 
-		IF (x^.class = Nmop) & (x^.subcl = val) THEN x := x^.left END ;
-		IF x^.class = Nguard THEN x := x^.left END ;	(* skip last (and unique) guard *)
+		IF (x^.class = Nmop) & (x^.subcl = val) THEN x := x^.left END;
+		IF x^.class = Nguard THEN x := x^.left END;	(* skip last (and unique) guard *)
 		IF (x^.class = Nvar) & (dynArrToo OR (x^.typ^.comp # DynArr)) THEN x^.obj^.leaf := FALSE END
 *)
 	END CheckLeaf;
@@ -1387,22 +1389,22 @@ avoid unnecessary intermediate variables in OFront
 					ELSE err(218)
 					END
 				ELSE err(69)
-				END ;
+				END;
 				x^.typ := OPT.notyp
 		| newfn: (*NEW*)
 				typ := OPT.notyp;
 				IF NotVar(x) THEN err(112)
 				ELSIF f = Pointer THEN
-					IF OPM.NEWusingAdr THEN CheckLeaf(x, TRUE) END ;
-					IF x^.readonly THEN err(76) END ;
+					IF OPM.NEWusingAdr THEN CheckLeaf(x, TRUE) END;
+					IF x^.readonly THEN err(76) END;
 					f := x^.typ^.BaseTyp^.comp;
 					IF f IN {Record, DynArr, Array} THEN
-						IF f = DynArr THEN typ := x^.typ^.BaseTyp END ;
+						IF f = DynArr THEN typ := x^.typ^.BaseTyp END;
 						BindNodes(Nassign, OPT.notyp, x, NIL); x^.subcl := newfn
 					ELSE err(111)
 					END
 				ELSE err(111)
-				END ;
+				END;
 				x^.typ := typ
 		| absfn: (*ABS*)
 				MOp(abs, x)
@@ -1452,8 +1454,8 @@ avoid unnecessary intermediate variables in OFront
 					CASE f OF
 					  Bool:  x := NewBoolConst(FALSE)
 					| Char8:  x := NewIntConst(0); x^.typ := OPT.chartyp
-					| Int8:  x := NewIntConst(MIN(BYTE))
 					| Byte: x := NewIntConst(0)
+					| Int8:  x := NewIntConst(MIN(BYTE))
 					| Int16:  x := NewIntConst(MIN(SHORTINT))
 					| Int32:   x := NewIntConst(MIN(INTEGER))
 					| Int64:  x := NewIntConst(MIN(LONGINT))
@@ -1472,8 +1474,8 @@ avoid unnecessary intermediate variables in OFront
 					CASE f OF
 					  Bool:  x := NewBoolConst(TRUE)
 					| Char8:  x := NewIntConst(0FFH); x^.typ := OPT.chartyp
+					| Byte: x := NewIntConst(0FFH)
 					| Int8:  x := NewIntConst(MAX(BYTE))
-					| Byte: x := NewIntConst(255)
 					| Int16:  x := NewIntConst(MAX(SHORTINT))
 					| Int32:   x := NewIntConst(MAX(INTEGER))
 					| Int64:  x := NewIntConst(MAX(LONGINT))
@@ -1633,10 +1635,10 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF f IN intSet THEN
 					IF (x^.class = Nconst) & ((0 > x^.conval^.intval) OR (x^.conval^.intval > OPM.MaxSet)) THEN err(202)
-					END ;
+					END;
 					p := NewOp(Nassign, fctno, p, x)
 				ELSE err(111)
-				END ;
+				END;
 				p^.typ := OPT.notyp
 		| lenfn: (*LEN*)
 				IF (f IN intSet) & (x^.class = Nconst) THEN
@@ -1752,7 +1754,7 @@ avoid unnecessary intermediate variables in OFront
 					IF f IN intSet THEN
 						IF (x^.class = Nconst) & ((x^.conval^.intval <= 0) OR (x^.conval^.intval > OPM.MaxIndex)) THEN err(63) END
 					ELSE err(111)
-					END ;
+					END;
 					p^.right := x; p^.typ := p^.typ^.BaseTyp
 				ELSE err(64)
 				END
@@ -1760,7 +1762,7 @@ avoid unnecessary intermediate variables in OFront
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSIF ~(f IN intSet) THEN err(111)
 				ELSE
-					IF fctno = lshfn THEN p := NewOp(Ndop, lsh, p, x) ELSE p := NewOp(Ndop, rot, p, x) END ;
+					IF fctno = lshfn THEN p := NewOp(Ndop, lsh, p, x) ELSE p := NewOp(Ndop, rot, p, x) END;
 					p^.typ := p^.left^.typ
 				END
 		| getfn, putfn: (*SYSTEM.GET, SYSTEM.PUT*)
@@ -1779,7 +1781,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f IN intSet THEN
 					p := NewOp(Ndop, bit, p, x)
 				ELSE err(111)
-				END ;
+				END;
 				p^.typ := OPT.booltyp
 		| valfn: (*SYSTEM.VAL*)	(* type is changed without considering the byte ordering on the target machine *)
 				(* p (1st param): desired type *)
@@ -1806,7 +1808,7 @@ avoid unnecessary intermediate variables in OFront
 					IF (x^.class >= Nconst) OR ((f IN realSet) # (p^.typ^.form IN realSet)) THEN
 						t := OPT.NewNode(Nmop); t^.subcl := val; t^.left := x; x := t
 					ELSE x^.readonly := FALSE
-					END ;
+					END;
 *)
 					x^.typ := p^.typ;
 				END;
@@ -1816,7 +1818,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF f IN intSet THEN
 					p := NewOp(Nassign, sysnewfn, p, x)
 				ELSE err(111)
-				END ;
+				END;
 				p^.typ := OPT.notyp
 		| movefn: (*SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1832,7 +1834,7 @@ avoid unnecessary intermediate variables in OFront
 					IF (x^.class = Nconst) & (f IN {Int8, Int16, Int32}) THEN Convert(x, OPT.linttyp)
 					ELSIF ~(f IN {Int64, Pointer}) THEN err(111); x^.typ := OPT.linttyp
 					END
-				END ;
+				END;
 				p^.link := x
 		| assertfn: (*ASSERT*)
 				IF (f IN intSet) & (x^.class = Nconst) THEN
@@ -1874,7 +1876,7 @@ avoid unnecessary intermediate variables in OFront
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 			ELSIF p^.typ^.comp # DynArr THEN err(64)
 			ELSIF f IN intSet THEN
-				IF (x^.class = Nconst) & ((x^.conval^.intval <= 0) OR (x^.conval^.intval > OPM.MaxIndex)) THEN err(63) END ;
+				IF (x^.class = Nconst) & ((x^.conval^.intval <= 0) OR (x^.conval^.intval > OPM.MaxIndex)) THEN err(63) END;
 				node := p^.right; WHILE node^.link # NIL DO node := node^.link END;
 				node^.link := x; p^.typ := p^.typ^.BaseTyp
 			ELSE err(111)
@@ -1885,10 +1887,10 @@ avoid unnecessary intermediate variables in OFront
 				node := OPT.NewNode(Nassign); node^.subcl := movefn; node^.right := p;
 				node^.left := p^.link; p^.link := x; p := node
 			ELSE err(111)
-			END ;
+			END;
 			p^.typ := OPT.notyp
 		ELSE err(64)
-		END ;
+		END;
 		par0 := p
 	END StParN;
 
@@ -1930,7 +1932,7 @@ avoid unnecessary intermediate variables in OFront
 							p^.subcl := len
 						END
 					ELSIF p^.typ^.comp = DynArr THEN dim := 0;
-						WHILE p^.class = Nindex DO p := p^.left; INC(dim) END ;	(* possible side effect ignored *)
+						WHILE p^.class = Nindex DO p := p^.left; INC(dim) END;	(* possible side effect ignored *)
 						CASE OPM.IndexSize OF
 						| 2: BindNodes(Ndop, OPT.sinttyp, p, NewIntConst(dim))
 						| 4: BindNodes(Ndop, OPT.inttyp, p, NewIntConst(dim))
@@ -2056,7 +2058,7 @@ avoid unnecessary intermediate variables in OFront
 		ELSIF (x^.class = Nfield) & (x^.obj^.mode = TProc) THEN typ := x^.typ;
 			x^.class := Nproc; p := x^.left; x^.left := NIL; p^.link := apar; apar := p; fp := x^.obj^.link
 		ELSE typ := x^.typ^.BaseTyp
-		END ;
+		END;
 		BindNodes(Ncall, typ, x, apar); x^.obj := fp
 	END Call;
 
@@ -2076,7 +2078,7 @@ avoid unnecessary intermediate variables in OFront
 			IF x # NIL THEN CheckAssign(proc^.typ, x)
 			ELSIF proc^.typ # OPT.notyp THEN err(124)
 			END
-		END ;
+		END;
 		node := OPT.NewNode(Nreturn); node^.typ := OPT.notyp; node^.obj := proc; node^.left := x; x := node
 	END Return;
 
@@ -2089,7 +2091,7 @@ avoid unnecessary intermediate variables in OFront
 		IF (y^.class = Nconst) & (y^.typ^.form = String8) & (x^.typ^.form # Pointer) THEN AssignString(x, y)
 		ELSE
 			IF x^.typ^.comp = Record THEN
-				IF x^.class = Nguard THEN z := x^.left ELSE z := x END ;
+				IF x^.class = Nguard THEN z := x^.left ELSE z := x END;
 				IF (z^.class = Nderef) & (z^.left^.class = Nguard) THEN
 					z^.left := z^.left^.left	(* skip guard before dereferencing *)
 				END;
@@ -2106,7 +2108,7 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN
 		node := OPT.NewNode(Ninittd); node^.typ := typ;
 		node^.conval := OPT.NewConst(); node^.conval^.intval := typ^.txtpos;
-		IF inittd = NIL THEN inittd := node ELSE last^.link := node END ;
+		IF inittd = NIL THEN inittd := node ELSE last^.link := node END;
 		last := node
 	END Inittd;
 
