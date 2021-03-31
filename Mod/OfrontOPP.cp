@@ -1315,21 +1315,21 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		BEGIN
 			Expression(x); pos := OPM.errpos;
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-			ELSIF ~(x^.typ^.form IN {Byte, Char..LInt}) THEN err(125)
-			END ;
+			ELSIF ~(x^.typ^.form IN {Byte, UByte, Char..LInt}) THEN err(125)
+			END;
 			CheckSym(of); cases := NIL; lastcase := NIL; n := 0;
 			LOOP
 				IF sym < bar THEN
 					CaseLabelList(lab, x^.typ^.form, n, tab);
 					CheckSym(colon); StatSeq(y);
 					OPB.Construct(Ncasedo, lab, y); OPB.Link(cases, lastcase, lab)
-				END ;
+				END;
 				IF sym = bar THEN OPS.Get(sym) ELSE EXIT END
-			END ;
+			END;
 			IF n > 0 THEN low := tab[0].low; high := tab[n-1].high;
 				IF high - low > OPM.MaxCaseRange THEN err(209) END
 			ELSE low := 1; high := 0
-			END ;
+			END;
 			e := sym = else;
 			IF e THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END ;
 			OPB.Construct(Ncaselse, cases, y); OPB.Construct(Ncase, x, cases);
@@ -1666,6 +1666,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF obj = NIL	(* цикл может не исполниться ни разу*) THEN (* нужен IF *)
 							IF y^.class = Nassign THEN y := OPB.NewLeaf(t) END; (* присваивали t:=B*)
 							s := OPB.NewLeaf(id);
+							IF id^.typ^.form = UByte THEN OPB.MOp(unsgn, y) END;
 							IF z^.conval^.intval > 0 THEN OPB.Op(leq,s,y)
 															ELSE OPB.Op(geq,s,y)
 							END;

@@ -1636,13 +1636,13 @@
 		OPM.Write(Quotes)
 	END WriteStringLiteral;
 
-	PROCEDURE Case*(caseVal: INTEGER; form: SHORTINT);
+	PROCEDURE Case* (caseVal: INTEGER; form: SHORTINT);
 	BEGIN
 		OPM.WriteString(CaseStat);
 		CASE form OF
-		|	Char :
+		|	Char:
 					WriteCharLiteral(SHORT(CHR(caseVal)))
-		|	Byte, SInt, Int, LInt :
+		|	Byte, UByte, SInt, Int, LInt:
 					OPM.WriteInt(caseVal)
 		END;
 		OPM.WriteString(Colon)
