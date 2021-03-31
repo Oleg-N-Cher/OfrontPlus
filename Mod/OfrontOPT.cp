@@ -1,4 +1,4 @@
-﻿MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
+MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*
 2002-04-11  jt: SHORT(SHORT(-mno)) used for -mno for BB 1.4
@@ -30,7 +30,7 @@
 			intval2*: INTEGER;	(* string length, proc var size or larger case label *)
 			setval*: SET;	(* constant value, procedure body present or "ELSE" present in case *)
 			realval*: REAL;	(* real or longreal constant value *)
-			arr*: ConstArr	(*  для данных константного массива *)
+			arr*: ConstArr	(*  constant array data *)
 		END;
 
 		ObjDesc* = RECORD
@@ -1260,10 +1260,10 @@
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
 			EnterTyp("INT64", "int64", LInt, 8, linttyp);
 			EnterTypeAlias("REAL", "real", real32, realtyp);
-			IF OPM.AdrSize # 2 THEN
-				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
-			ELSE
+			IF OPM.AdrSize = 2 THEN
 				EnterTypeAlias("INTEGER", "integer", int16, sinttyp)
+			ELSE
+				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
 			END;
 			CASE OPM.AdrSize OF
 			| 2: EnterTypeAlias("ADRINT", "adrint", adrint, sinttyp);
@@ -1281,10 +1281,10 @@
 		ELSE (* "7" *)
 			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp);
 			EnterTypeAlias("CHAR", "char", char8, chartyp);
-			IF OPM.AdrSize # 2 THEN
-				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
-			ELSE
+			IF OPM.AdrSize = 2 THEN
 				EnterTypeAlias("INTEGER", "integer", int16, sinttyp)
+			ELSE
+				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
 			END;
 			EnterTypeAlias("REAL", "real", real32, realtyp)
 		END;
