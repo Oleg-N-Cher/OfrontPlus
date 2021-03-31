@@ -1338,7 +1338,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF x^.comp = Array THEN
 					IF (ynode^.class = Nconst) & (g = Char8) THEN CharToString8(ynode); y := ynode^.typ; g := String8 END;
 					IF x = y THEN (* ok *)
-					ELSIF (OPM.Lang = "7") & (g = Comp) & (y^.comp = DynArr) & (y^.BaseTyp = OPT.chartyp) THEN
+					ELSIF (OPM.Lang = "7") & (g = Comp) & (y^.comp = DynArr)
+					 & (y^.BaseTyp = OPT.chartyp) & (x^.BaseTyp = OPT.chartyp) THEN
 						StrDeref(ynode)
 					ELSIF (g = String8) & (x^.BaseTyp = OPT.chartyp) THEN (* check length of string *)
 						IF ynode^.conval^.intval2 > x^.n THEN err(114) END
