@@ -947,7 +947,7 @@
 		(* выводит в листинг i-й элемент константного массива arr *)
 		BEGIN
 			CASE bt^.size OF
-				| 1: IF bt^.form = Char THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
+				| 1: IF bt^.form IN {Char, UByte} THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
 				| 2: OPM.WriteInt(arr.val2[i])
 				| 4: OPM.WriteInt(arr.val4[i])
 				| 8: OPM.WriteInt(arr.val8[i])
