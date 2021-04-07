@@ -635,7 +635,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ELSIF (f = Real32) OR (g = Real32) THEN new := OPT.realtyp
 			ELSIF (f = Int64) OR (g = Int64) THEN new := OPT.linttyp
 			ELSIF (f = Int32) OR (g = Int32) THEN new := OPT.inttyp
-			ELSIF (OPM.AdrSize = 2) OR (OPM.Lang <= "3") THEN new := OPT.bytetyp
+			ELSIF (OPM.AdrSize = 2) OR (OPM.Lang <= "3") THEN new := OPT.sinttyp
 			ELSE new := OPT.inttyp
 			END;
 			IF g # new^.form THEN right^.typ := new END;
