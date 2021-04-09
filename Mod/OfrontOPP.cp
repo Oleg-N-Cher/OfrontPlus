@@ -1659,28 +1659,26 @@ PROCEDURE Factor(VAR x: OPT.Node);
 							END;
 
 						ELSE
-							x := s;
+							x := s
 						END;
 
-						(* строим IF *)
-						IF obj = NIL	(* цикл может не исполниться ни разу*) THEN (* нужен IF *)
-							IF y^.class = Nassign THEN y := OPB.NewLeaf(t) END; (* присваивали t:=B*)
+						(* build IF *)
+						IF obj = NIL (* the loop body may not be executed even once *) THEN (* need IF *)
+							IF y^.class = Nassign THEN y := OPB.NewLeaf(t) END;	(* assigned t := B *)
 							s := OPB.NewLeaf(id);
 							IF id^.typ^.form = UByte THEN OPB.MOp(unsgn, y) END;
-							IF z^.conval^.intval > 0 THEN OPB.Op(leq,s,y)
-															ELSE OPB.Op(geq,s,y)
-							END;
-							OPB.Construct(Nif, s, x); SetPos(s); lastif := s;	(* строим IF id<=B THEN ...*)
-							OPB.Construct(Nifelse, s, NIL);						(* ветви ELSE нет*)
+							IF z^.conval^.intval > 0 THEN OPB.Op(leq, s, y) ELSE OPB.Op(geq, s, y) END;
+							OPB.Construct(Nif, s, x); SetPos(s); lastif := s;	(* build IF id <= B THEN ... *)
+							OPB.Construct(Nifelse, s, NIL);	(* no ELSE branch *)
 							OPB.OptIf(s);
-							x := s;
+							x := s
 						END;
-						pos := OPM.errpos;
+						pos := OPM.errpos
 					ELSE
-						x := NIL;	(* от цикла не остается ничего *)
-					END; (* id # NIL*)
-				ELSE err(68); sym := while;  (* id не целый, обработаем блок как будто WHILE *)
-				END;
+						x := NIL	(* nothing is left of the loop *)
+					END	(* id # NIL *)
+				ELSE err(68); sym := while	(* id is not integer, process the block as if WHILE *)
+				END
 			ELSE err(ident)
 			END
 		END ForImproved;
@@ -1894,6 +1892,10 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
 		procdec := NIL; lastdec := NIL;
+		WHILE sym = raw DO OPS.Get(sym);
+			NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
+			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos; OPB.Link(statseq, procdec, x)
+		END;
 		IF (sym # procedure) & (sym # begin) & (sym # end) & (sym # close) & (sym # return) THEN err(34) END;
 		WHILE sym = procedure DO
 			OPS.Get(sym); ProcedureDeclaration(x);
