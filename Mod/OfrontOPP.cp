@@ -330,7 +330,7 @@
 		ELSIF OPM.foreign IN OPM.opt THEN obj^.vis := external
 		ELSE obj^.vis := internal
 		END;
-		IF obj^.mode IN {LProc, XProc} THEN
+		IF obj^.mode IN {LProc, XProc, Var} THEN
 			IF sym = lbrak THEN OPS.Get(sym);
 				IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 				IF (sym = number) & (OPS.numtyp = char) THEN
