@@ -1779,8 +1779,11 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END;
 				pos := OPM.errpos;
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
-			ELSIF sym = raw THEN OPS.Get(sym);
-				NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL)
+			ELSE
+				WHILE sym = raw DO
+					NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
+					SetPos(x); OPB.Link(stat, last, x); x := NIL; OPS.Get(sym)
+				END
 			END;
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
 			IF (OPM.Lang = "7") & (sym = return) THEN (* no semicolon before RETURN *)
@@ -1892,9 +1895,10 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
 		procdec := NIL; lastdec := NIL;
-		WHILE sym = raw DO OPS.Get(sym);
+		WHILE sym = raw DO
 			NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
-			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos; OPB.Link(statseq, procdec, x)
+			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos; OPB.Link(statseq, procdec, x);
+			OPS.Get(sym)
 		END;
 		IF (sym # procedure) & (sym # begin) & (sym # end) & (sym # close) & (sym # return) THEN err(34) END;
 		WHILE sym = procedure DO
