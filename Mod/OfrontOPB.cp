@@ -1319,7 +1319,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				END
 		| ProcTyp:
 				IF ynode^.class = Nproc THEN CheckProc(x, ynode^.obj)
-				ELSIF (x = y) OR (g = NilTyp) THEN (* ok *)
+				ELSIF OPT.EqualType(x, y) OR (g = NilTyp) THEN (* ok *)
 				ELSE err(113)
 				END
 		| NoTyp, NilTyp:
