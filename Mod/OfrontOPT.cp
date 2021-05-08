@@ -500,7 +500,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				FPrintStr(obj^.typ); OPM.FPrint(fprint, obj^.typ^.pbfp)
 			END;
 			IF obj^.sysflag # 0 THEN OPM.FPrint(fprint, obj^.sysflag) END;
-			IF (obj^.mode IN {LProc, XProc}) & (obj^.entry # NIL) THEN FPrintName(fprint, obj^.entry) END;
+			IF (obj^.mode IN {LProc, XProc, Var}) & (obj^.entry # NIL) THEN FPrintName(fprint, obj^.entry) END;
 			obj^.fprint := fprint
 		END
 	END FPrintObj;
@@ -1090,7 +1090,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					| pvmodified: FPrintErr(obj, 251)
 					END;
 					IF obj^.sysflag # 0 THEN OPM.SymWInt(Ssys); OPM.SymWInt(obj^.sysflag) END;
-					IF obj^.mode IN {LProc, XProc} THEN	(* name alias for types handled in OutStr *)
+					IF obj^.mode IN {LProc, XProc, Var} THEN	(* name alias for types handled in OutStr *)
 						IF obj^.entry # NIL THEN OPM.SymWInt(Sentry); OutName(obj^.entry) END
 					END;
 					CASE obj^.mode OF
