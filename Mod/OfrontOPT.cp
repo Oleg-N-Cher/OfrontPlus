@@ -1288,6 +1288,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			END;
 			EnterTypeAlias("REAL", "real", real32, realtyp)
 		END;
+		stringtyp.BaseTyp := chartyp;
 		EnterBoolConst("FALSE", "false", 0);	(* 0 and 1 are compiler internal representation only *)
 		EnterBoolConst("TRUE", "true",  1);
 		IF lang = "C" THEN

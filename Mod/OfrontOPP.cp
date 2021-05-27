@@ -8,6 +8,8 @@
 		OPB := OfrontOPB, OPT := OfrontOPT, OPS := OfrontOPS, OPM := OfrontOPM;
 
 	CONST
+		AnchorVarPar = TRUE;
+
 		(* numtyp values *)
 		char = 1; integer = 2; real = 3; longreal = 4;
 
@@ -37,7 +39,7 @@
 		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
-		intSet = {Byte, UByte, SInt..LInt};
+		intSet = {Byte, UByte, SInt..LInt}; charSet = {Char};
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -50,7 +52,7 @@
 		Nconst = 7; Ntype = 8; Nproc = 9; Nupto = 10; Nmop = 11; Ndop = 12; Ncall = 13;
 		Ninittd = 14; Nif = 15; Ncaselse = 16; Ncasedo = 17; Nenter = 18; Nassign = 19;
 		Nifelse = 20; Ncase = 21; Nwhile = 22; Nrepeat = 23; Nloop = 24; Nexit = 25;
-		Nreturn = 26; Nwith = 27; Ntrap = 28; Nraw = 31;
+		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30; Nraw = 31;
 
 		(* node subclasses *)
 		super = 1;
@@ -699,8 +701,8 @@
 		END
 	END Type;
 
-	PROCEDURE ActualParameters(VAR aparlist: OPT.Node; fpar: OPT.Object);
-		VAR apar, last: OPT.Node;
+	PROCEDURE ActualParameters(VAR aparlist: OPT.Node; fpar: OPT.Object; VAR pre, lastp: OPT.Node);
+		VAR apar, last, n: OPT.Node;
 	BEGIN aparlist := NIL; last := NIL;
 		IF sym # rparen THEN
 			LOOP
@@ -713,7 +715,19 @@
 				Expression(apar);
 				IF fpar # NIL THEN
 					IF (OPM.Lang = "C") & (apar.typ.form = Pointer) & (fpar.typ.form = Comp) THEN OPB.DeRef(apar) END;
-					OPB.Param(apar, fpar); OPB.Link(aparlist, last, apar);
+					OPB.Param(apar, fpar);
+					IF (fpar.mode = Var) OR (fpar.vis = inPar) THEN OPB.CheckBuffering(apar, NIL, fpar, pre, lastp) END;
+					OPB.Link(aparlist, last, apar);
+					IF AnchorVarPar & (fpar.mode = VarPar)	(* source output: avoid double evaluation *)
+							 & ((fpar.mode = VarPar) & (fpar.typ.comp = Record) & (fpar.typ.sysflag = 0)
+								OR (fpar.typ.comp = DynArr) & (fpar.typ.sysflag = 0)) THEN
+						n := apar;
+						WHILE n.class IN {Nfield, Nindex, Nguard} DO n := n.left END;
+						IF (n.class = Nderef) & (n.subcl = 0) THEN
+							IF n.left.class = Nguard THEN n := n.left END;
+							OPB.CheckVarParBuffering(n.left, pre, lastp)
+						END
+					END;
 					fpar := fpar^.link;
 				ELSE err(64)
 				END;
@@ -727,7 +741,7 @@
 	END ActualParameters;
 
 	PROCEDURE selector(VAR x: OPT.Node);
-		VAR obj, proc, p, fpar: OPT.Object; y, apar: OPT.Node; typ: OPT.Struct; name: OPS.Name;
+		VAR obj, proc, p, fpar: OPT.Object; y, apar, pre, lastp: OPT.Node; typ: OPT.Struct; name: OPS.Name;
 	BEGIN
 		LOOP
 			IF sym = lbrak THEN OPS.Get(sym);
@@ -801,9 +815,13 @@
 						ELSE err(ident)
 						END
 					ELSE	(* function call *)
+						pre := NIL; lastp := NIL;
 						OPB.PrepCall(x, fpar);
-						ActualParameters(apar, fpar);
+						IF (x.obj # NIL) & (x.obj.mode = TProc) THEN OPB.CheckBuffering(x.left, NIL, x.obj.link, pre, lastp)
+						END;
+						ActualParameters(apar, fpar, pre, lastp);
 						OPB.Call(x, apar, fpar);
+						IF pre # NIL THEN OPB.Construct(Ncomp, pre, x); pre.typ := x.typ; x := pre END;
 						IF level > 0 THEN OPT.topScope.link.leaf := FALSE END
 					END;
 					CheckSym(rparen)
@@ -973,7 +991,7 @@
 	END ConstArray;
 
 PROCEDURE Factor(VAR x: OPT.Node);
-		VAR fpar, id: OPT.Object; apar: OPT.Node;
+		VAR id: OPT.Object;
 	BEGIN
 		IF sym < lparen THEN err(13);
 			REPEAT OPS.Get(sym) UNTIL sym >= lparen
@@ -1041,11 +1059,21 @@ PROCEDURE Factor(VAR x: OPT.Node);
 	END SimpleExpression;
 
 	PROCEDURE Expression(VAR x: OPT.Node);
-		VAR y: OPT.Node; obj: OPT.Object; relation: BYTE;
+		VAR y, pre, last: OPT.Node; obj: OPT.Object; relation: BYTE;
 	BEGIN SimpleExpression(x);
 		IF (eql <= sym) & (sym <= geq) THEN
-			relation := sym; OPS.Get(sym);
-			SimpleExpression(y); OPB.Op(relation, x, y)
+			relation := sym; OPS.Get(sym); SimpleExpression(y);
+			pre := NIL; last := NIL;
+			(* IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form IN charSet) THEN
+				OPB.StrDeref(x)
+			END;
+			IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form IN charSet) THEN
+				OPB.StrDeref(y)
+			END; *)
+			OPB.CheckBuffering(x, NIL, NIL, pre, last);
+			OPB.CheckBuffering(y, NIL, NIL, pre, last);
+			OPB.Op(relation, x, y);
+			IF pre # NIL THEN OPB.Construct(Ncomp, pre, x); pre.typ := x.typ; x := pre END
 		ELSIF sym = in THEN
 			OPS.Get(sym); SimpleExpression(y); OPB.In(x, y)
 		ELSIF sym = is THEN
@@ -1307,7 +1335,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 
 	PROCEDURE StatSeq(VAR stat: OPT.Node);
 		VAR fpar, id, t, obj: OPT.Object; idtyp: OPT.Struct; e: BOOLEAN; L: LONGINT;
-				s, x, y, z, apar, last, lastif: OPT.Node; pos: INTEGER; name: OPS.Name;
+				s, x, y, z, apar, last, lastif, pre, lastp: OPT.Node; pos: INTEGER; name: OPS.Name;
 
 		PROCEDURE CasePart(VAR x: OPT.Node);
 			VAR n: SHORTINT; low, high: INTEGER; e: BOOLEAN;
@@ -1693,20 +1721,27 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF sym = becomes THEN
 					OPS.Get(sym); Expression(y);
 					IF (OPM.Lang = "C") & (y.typ.form = Pointer) & (x.typ.form = Comp) THEN OPB.DeRef(y) END;
-					OPB.Assign(x, y)
+					pre := NIL; lastp := NIL;
+					OPB.CheckBuffering(y, x, NIL, pre, lastp);
+					OPB.Assign(x, y);
+					IF pre # NIL THEN SetPos(x); OPB.Construct(Ncomp, pre, x); x := pre END
 				ELSIF sym = eql THEN
 					err(becomes); OPS.Get(sym); Expression(y); OPB.Assign(x, y)
 				ELSIF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN
 					StandProcCall(x);
 					IF (x # NIL) & (x^.typ # OPT.notyp) THEN err(55) END
-				ELSE OPB.PrepCall(x, fpar);
+				ELSE
+					pre := NIL; lastp := NIL;
+					OPB.PrepCall(x, fpar);
+					IF (x.obj # NIL) & (x.obj.mode = TProc) THEN OPB.CheckBuffering(x.left, NIL, x.obj.link, pre, lastp) END;
 					IF sym = lparen THEN
-						OPS.Get(sym); ActualParameters(apar, fpar); CheckSym(rparen)
+						OPS.Get(sym); ActualParameters(apar, fpar, pre, lastp); CheckSym(rparen)
 					ELSE apar := NIL;
 						IF fpar # NIL THEN err(65) END
 					END ;
 					OPB.Call(x, apar, fpar);
-					IF x^.typ # OPT.notyp THEN err(55) END ;
+					IF x^.typ # OPT.notyp THEN err(55) END;
+					IF pre # NIL THEN SetPos(x); OPB.Construct(Ncomp, pre, x); x := pre END;
 					IF level > 0 THEN OPT.topScope^.link^.leaf := FALSE END
 				END ;
 				pos := OPM.errpos

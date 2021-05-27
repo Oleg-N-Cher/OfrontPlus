@@ -188,6 +188,21 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		x^.conval := OPT.NewConst(); x^.conval^.setval := {}; RETURN x
 	END EmptySet;
 
+	PROCEDURE GetTempVar* (IN name: ARRAY OF SHORTCHAR; typ: OPT.Struct; VAR obj: OPT.Object);
+		VAR n: OPS.Name; o: OPT.Object;
+	BEGIN
+		n := "@@  "; OPT.Insert(n, obj); obj.name^ := name$;	(* avoid err 1 *)
+		obj.mode := Var; obj.typ := typ;
+		o := OPT.topScope.scope;
+		IF o = NIL THEN OPT.topScope.scope := obj
+		ELSE
+			WHILE o.link # NIL DO o := o.link END;
+			o.link := obj
+		END
+	END GetTempVar;
+
+	(* ---------- constant operations ---------- *)
+
 	PROCEDURE SetIntType (node: OPT.Node; raw: BOOLEAN);
 		VAR v: LONGINT;
 	BEGIN v := node^.conval^.intval;
@@ -2112,5 +2127,152 @@ avoid unnecessary intermediate variables in OFront
 		IF inittd = NIL THEN inittd := node ELSE last^.link := node END;
 		last := node
 	END Inittd;
+
+	(* handling of temporary variables for string operations *)
+	
+	PROCEDURE Overlap (left, right: OPT.Node): BOOLEAN;
+	BEGIN
+		IF right.class = Nconst THEN
+			RETURN FALSE
+		ELSIF (right.class = Ndop) & (right.subcl = plus) THEN
+			RETURN Overlap(left, right.left) OR Overlap(left, right.right)
+		ELSE
+			WHILE right.class = Nmop DO right := right.left END;
+			IF right.class = Nderef THEN right := right.left END;
+			IF left.typ.BaseTyp # right.typ.BaseTyp THEN RETURN FALSE END;
+			LOOP
+				IF left.class = Nvarpar THEN
+					WHILE (right.class = Nindex) OR (right.class = Nfield) OR (right.class = Nguard) DO
+						right := right.left
+					END;
+					RETURN (right.class # Nvar) OR (right.obj.mnolev < left.obj.mnolev)
+				ELSIF right.class = Nvarpar THEN
+					WHILE (left.class = Nindex) OR (left.class = Nfield) OR (left.class = Nguard) DO left := left.left END;
+					RETURN (left.class # Nvar) OR (left.obj.mnolev < right.obj.mnolev)
+				ELSIF (left.class = Nvar) & (right.class = Nvar) THEN
+					RETURN left.obj = right.obj
+				ELSIF (left.class = Nderef) & (right.class = Nderef) THEN
+					RETURN TRUE
+				ELSIF (left.class = Nindex) & (right.class = Nindex) THEN
+					IF (left.right.class = Nconst) & (right.right.class = Nconst)
+						& (left.right.conval.intval # right.right.conval.intval) THEN RETURN FALSE END;
+					left := left.left; right := right.left
+				ELSIF (left.class = Nfield) & (right.class = Nfield) THEN
+					IF left.obj # right.obj THEN RETURN FALSE END;
+					left := left.left; right := right.left;
+					WHILE left.class = Nguard DO left := left.left END;
+					WHILE right.class = Nguard DO right := right.left END
+				ELSE
+					RETURN FALSE
+				END
+			END
+		END
+	END Overlap;
+
+	PROCEDURE GetStaticLength (n: OPT.Node; OUT length: INTEGER);
+		VAR x: INTEGER;
+	BEGIN
+		IF n.class = Nconst THEN
+			length := n.conval.intval2 - 1
+		ELSIF (n.class = Ndop) & (n.subcl = plus) THEN
+			GetStaticLength(n.left, length); GetStaticLength(n.right, x);
+			IF (length >= 0) & (x >= 0) THEN length := length + x ELSE length := -1 END
+		ELSE
+			WHILE (n.class = Nmop) & (n.subcl = conv) DO n := n.left END;
+			IF (n.class = Nderef) & (n.subcl = 1) THEN n := n.left END;
+			IF n.typ.comp = Array THEN
+				length := n.typ.n - 1
+			ELSIF n.typ.comp = DynArr THEN
+				length := -1
+			ELSE	(* error case *)
+				length := 4
+			END
+		END
+	END GetStaticLength;
+
+	PROCEDURE GetMaxLength (n: OPT.Node; VAR stat, last: OPT.Node; OUT length: OPT.Node);
+		VAR x: OPT.Node; d: INTEGER; obj: OPT.Object;
+	BEGIN
+		IF n.class = Nconst THEN
+			length := NewIntConst(n.conval.intval2 - 1)
+		ELSIF (n.class = Ndop) & (n.subcl = plus) THEN
+			GetMaxLength(n.left, stat, last, length); GetMaxLength(n.right, stat, last, x);
+			IF (length.class = Nconst) & (x.class = Nconst) THEN ConstOp(plus, length, x)
+			ELSE BindNodes(Ndop, length.typ, length, x); length.subcl := plus
+			END
+		ELSE
+			WHILE (n.class = Nmop) & (n.subcl = conv) DO n := n.left END;
+			IF (n.class = Nderef) & (n.subcl = 1) THEN n := n.left END;
+			IF n.typ.comp = Array THEN
+				length := NewIntConst(n.typ.n - 1)
+			ELSIF n.typ.comp = DynArr THEN
+				d := 0;
+				WHILE n.class = Nindex DO n := n.left; INC(d) END;
+				ASSERT((n.class = Nderef) OR (n.class = Nvar) OR (n.class = Nvarpar));
+				IF (n.class = Nderef) & (n.left.class # Nvar) & (n.left.class # Nvarpar) THEN
+					GetTempVar("@tmp", n.left.typ, obj);
+					x := NewLeaf(obj); Assign(x, n.left); Link(stat, last, x);
+					n.left := NewLeaf(obj);	(* tree is manipulated here *)
+					n := NewLeaf(obj); DeRef(n)
+				END;
+				IF (n.typ.sysflag # 0) & (n.typ.comp = DynArr) & (n.typ.BaseTyp.form = Char8) THEN
+					StrDeref(n);
+					BindNodes(Ndop, OPT.inttyp, n, NewIntConst(d)); n.subcl := len;
+					BindNodes(Ndop, OPT.inttyp, n, NewIntConst(1)); n.subcl := plus
+				ELSE
+					BindNodes(Ndop, OPT.inttyp, n, NewIntConst(d)); n.subcl := len;
+				END;
+				length := n
+			ELSE	(* error case *)
+				length := NewIntConst(4)
+			END
+		END
+	END GetMaxLength;
+
+	PROCEDURE CheckBuffering* (
+		VAR n: OPT.Node; left: OPT.Node; par: OPT.Object; VAR stat, last: OPT.Node
+	);
+		VAR length, x: OPT.Node; obj: OPT.Object; typ: OPT.Struct; len, xlen: INTEGER;
+	BEGIN
+		IF (n.typ.form = String8)
+			& ((n.class = Ndop) & (n.subcl = plus) & ((left = NIL) OR Overlap(left, n.right))
+				OR (n.class = Nmop) & (n.subcl = conv) & (left = NIL)
+				OR (par # NIL) & (par.vis = inPar) & (par.typ.comp = Array)) THEN
+			IF (par # NIL) & (par.typ.comp = Array) THEN
+				len := par.typ.n - 1
+			ELSE
+				IF left # NIL THEN GetStaticLength(left, len) ELSE len := -1 END;
+				GetStaticLength(n, xlen);
+				IF (len = -1) OR (xlen # -1) & (xlen < len) THEN len := xlen END
+			END;
+			IF len # -1 THEN
+				typ := OPT.NewStr(Comp, Array); typ.n := len + 1; typ.BaseTyp := n.typ.BaseTyp;
+				GetTempVar("@str", typ, obj);
+				x := NewLeaf(obj); Assign(x, n); Link(stat, last, x);
+				n := NewLeaf(obj)
+			ELSE
+				IF left # NIL THEN GetMaxLength(left, stat, last, length)
+				ELSE GetMaxLength(n, stat, last, length)
+				END;
+				typ := OPT.NewStr(Pointer, Basic);
+				typ.BaseTyp := OPT.NewStr(Comp, DynArr); typ.BaseTyp.BaseTyp := n.typ.BaseTyp;
+				GetTempVar("@ptr", typ, obj);
+				x := NewLeaf(obj); Construct(Nassign, x, length); x.subcl := newfn; Link(stat, last, x);
+				x := NewLeaf(obj); DeRef(x); Assign(x, n); Link(stat, last, x);
+				n := NewLeaf(obj); DeRef(n)
+			END;
+			StrDeref(n)
+		END
+	END CheckBuffering;
+	
+	PROCEDURE CheckVarParBuffering* (VAR n: OPT.Node; VAR stat, last: OPT.Node);
+		VAR x: OPT.Node; obj: OPT.Object;
+	BEGIN
+		IF (n.class # Nvar) OR (n.obj.mnolev <= 0) THEN
+			GetTempVar("@ptr", n.typ, obj);
+			x := NewLeaf(obj); Assign(x, n); Link(stat, last, x);
+			n := NewLeaf(obj)
+		END
+	END CheckVarParBuffering;
 
 END OfrontOPB.
