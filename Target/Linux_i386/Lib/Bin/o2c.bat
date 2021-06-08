@@ -41,7 +41,7 @@ IF errorlevel 1 PAUSE
 :: Aria - Reusable Oberon-2 modules by Stewart Greenhill
 :: https://github.com/sgreenhill/aria
 
-ofront+ -s2 -44 ^
+ofront+ -sO2 -44 ^
   arC.ob2 arCFormat.ob2 arChar.ob2 arCString.ob2 arDir.ob2 arMath.ob2 ^
   arSize.ob2 arStrings.ob2 arStringList.ob2 arStringAssoc.ob2 arText.ob2 ^
   arStream.ob2 arFile.ob2 arOut.ob2 arPath.ob2 arPattern.ob2 arErr.ob2 ^
