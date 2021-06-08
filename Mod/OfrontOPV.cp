@@ -340,13 +340,18 @@
 	PROCEDURE^ expr (n: OPT.Node; prec: SHORTINT);
 	PROCEDURE^ design(n: OPT.Node; prec: SHORTINT);
 
+
 	PROCEDURE Len(n: OPT.Node; dim: INTEGER; incl0x: BOOLEAN);
 		VAR d: INTEGER; array: OPT.Struct;
 	BEGIN
 		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
-		IF (n^.typ^.form = String) OR (n^.class = Nderef) & (n^.typ^.sysflag # 0) & (n^.typ^.n = 0) THEN
-			OPM.WriteString("__STRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
-			IF incl0x THEN OPM.WriteString(" + 1") END
+		IF (n.typ.form = String) OR (n^.class = Nderef) & (n^.typ^.sysflag # 0) & (n^.typ^.n = 0) THEN
+			IF n^.class = Nconst THEN OPM.WriteInt(n^.conval^.intval2 * n^.typ^.BaseTyp^.size)
+			ELSIF n^.class = Nderef THEN Len(n^.left, dim, incl0x)
+			ELSE
+				OPM.WriteString("__STRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
+				IF incl0x THEN OPM.WriteString(" + 1") END
+			END
 		ELSIF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN d := dim; array := n^.typ;
 			WHILE d > 0 DO array := array^.BaseTyp; DEC(d) END;
 			IF array^.comp = DynArr THEN
@@ -1051,27 +1056,28 @@
 	BEGIN
 		IF first THEN OPM.WriteString("__STRCOPY(") ELSE OPM.WriteString("__STRAPND(") END;
 		IF ansi & (right^.class = Nconst) THEN OPM.WriteString("(CHAR*)") END;
-		expr(right, MinPrec); OPM.WriteString(Comma); expr(left, MinPrec); OPM.WriteString(Comma);
-		IF left^.typ^.sysflag # 0 THEN OPM.WriteString("-1") ELSE Len(left, 0, FALSE) END;
+		expr(right, MinPrec); OPM.WriteString(Comma); Len(right, 0, FALSE);
+		OPM.WriteString(Comma);
+		expr(left, MinPrec); OPM.WriteString(Comma); Len(left, 0, FALSE);
 		OPM.WriteString(Comma); OPM.WriteModPos;
 		OPM.Write(")")
 	END AddCopy;
 
 	PROCEDURE StringCopy (left, right: OPT.Node; exp: BOOLEAN);
 	BEGIN
-		ASSERT(right^.class # Nconst);
-		IF right^.class = Ndop THEN
-			ASSERT(right^.subcl = plus);
-			IF ~SameExp(left, right^.left) THEN
-				AddCopy(left, right^.left, TRUE);
+		ASSERT(right.class # Nconst);
+		IF right.class = Ndop THEN
+			ASSERT(right.subcl = plus);
+			IF ~SameExp(left, right.left) THEN
+				AddCopy(left, right.left, TRUE);
 				IF exp THEN OPM.WriteString(", ") ELSE OPC.EndStat; OPC.BegStat END
 			END;
-			right := right^.right;
-			WHILE right^.class = Ndop DO
-				ASSERT(right^.subcl = plus);
-				AddCopy(left, right^.left, FALSE);
+			right := right.right;
+			WHILE right.class = Ndop DO
+				ASSERT(right.subcl = plus);
+				AddCopy(left, right.left, FALSE);
 				IF exp THEN OPM.WriteString(", ") ELSE OPC.EndStat; OPC.BegStat END;
-				right := right^.right
+				right := right.right
 			END;
 			AddCopy(left, right, FALSE)
 		ELSE
@@ -1153,13 +1159,14 @@
 						assign:
 								l := n^.left; r := n^.right;
 								IF l^.typ^.comp IN {Array, DynArr} THEN
-									IF (r^.typ^.form = String) & (r^.class # Nconst) THEN
-										StringCopy(l, r, FALSE)
+									IF r.typ.form = String THEN
+										IF r.class # Nconst THEN StringCopy(l, r, FALSE) ELSE AddCopy(l, r, TRUE) END
 									ELSE
 										OPM.WriteString(MoveFunc);
 										expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
-										IF r^.typ = OPT.stringtyp THEN i := r^.conval^.intval2 ELSE i := r^.typ^.size END;
-										OPM.WriteInt(MIN(i, l^.typ^.size)); OPM.Write(CloseParen)
+										IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
+										ELSE OPM.WriteInt(r^.typ^.size); OPM.Write(CloseParen)
+										END
 									END
 								ELSE
 									IF (l^.typ^.form = Pointer) & (l^.obj # NIL) & (l^.obj^.adr = 1) & (l^.obj^.mode = Var) THEN

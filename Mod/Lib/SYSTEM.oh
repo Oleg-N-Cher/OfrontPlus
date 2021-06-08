@@ -133,13 +133,21 @@ extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
 
 // Strings copy, append, compare and calculate length
 
-static inline void __STRAPND (CHAR *from, CHAR *to, INTEGER len, CHAR *mod, INTEGER pos) {
-  do { len--; if (len < 0) __HALT(-8, mod, pos); } while (*to++); to--;
-  do { if (len-- < 0) __HALT(-8, mod, pos); } while ((*to++ = *from++));
+static inline void __STRAPND (
+  CHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
+{
+  do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
+  do {
+    if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
+  } while ((*dst++ = *src++));
 }
 #define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
-static inline void __STRCOPY (CHAR *from, CHAR *to, INTEGER len, CHAR *mod, INTEGER pos) {
-  do { len--; if (len < 0) __HALT(-8, mod, pos); *to++ = *from; } while (*from++);
+static inline void __STRCOPY (
+	CHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
+{
+  do {
+    if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
+  } while ((*dst++ = *src++));
 }
 static inline INTEGER __STRLEN (CHAR *str) { // LEN(str$)
   INTEGER n = 0; while (str[n]) n++; return n;
