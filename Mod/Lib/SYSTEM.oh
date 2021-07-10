@@ -143,13 +143,14 @@ static inline void __STRAPND (
 }
 #define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
 static inline void __STRCOPY (
-	CHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
+  CHAR *src, CHAR *dst, INTEGER max_len, CHAR *mod, INTEGER pos)
 {
-  do {
-    if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
-  } while ((*dst++ = *src++));
+  do { if (max_len-- == 0) __HALT(-8, mod, pos); } while ((*dst++ = *src++));
 }
-static inline INTEGER __STRLEN (CHAR *str) { // LEN(str$)
+static inline INTEGER __STRLEN (CHAR *str, INTEGER len) { // LEN(str$)
+  INTEGER n = 0; while (len-- && str[n]) n++; return n;
+}
+static inline INTEGER __CSTRLEN (CHAR *str) { // LEN(Cstr$)
   INTEGER n = 0; while (str[n]) n++; return n;
 }
 
@@ -219,12 +220,12 @@ static inline REAL      __ABSFD (REAL x)      { return __ABS(x); }
 #define __PACK(x, n)  SYSTEM_PACK(x, n)
 #define __UNPK(x, n)  SYSTEM_UNPK(x, n)
 
-#define __MIN(x, y)	    ((x)<(y)?(x):(y))
+#define __MIN(x, y)     ((x)<(y)?(x):(y))
 static inline INTEGER __MINF (INTEGER x, INTEGER y)        { return x<y?x:y; }
 static inline LONGINT __MINFL (LONGINT x, LONGINT y)       { return x<y?x:y; }
 static inline SHORTREAL __MINFF (SHORTREAL x, SHORTREAL y) { return x<y?x:y; }
 static inline REAL __MINFD (REAL x, REAL y)                { return x<y?x:y; }
-#define __MAX(x, y)	    ((x)>(y)?(x):(y))
+#define __MAX(x, y)     ((x)>(y)?(x):(y))
 static inline INTEGER __MAXF (INTEGER x, INTEGER y)        { return x>y?x:y; }
 static inline LONGINT __MAXFL (LONGINT x, LONGINT y)       { return x>y?x:y; }
 static inline SHORTREAL __MAXFF (SHORTREAL x, SHORTREAL y) { return x>y?x:y; }

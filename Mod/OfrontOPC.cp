@@ -296,7 +296,7 @@
 					DeclareReturnType(typ^.BaseTyp);
 					EXIT
 				ELSIF comp = Array THEN
-					OPM.WriteString(" " + OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket)
+					OPM.Write(OpenBracket); OPM.WriteInt(typ^.n); OPM.Write(CloseBracket)
 				END
 			ELSE
 				EXIT

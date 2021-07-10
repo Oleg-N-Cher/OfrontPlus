@@ -345,11 +345,14 @@
 		VAR d: INTEGER; array: OPT.Struct;
 	BEGIN
 		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
-		IF (n.typ.form = String) OR (n^.class = Nderef) & (n^.typ^.sysflag # 0) & (n^.typ^.n = 0) THEN
+		IF n.typ.form = String THEN
 			IF n^.class = Nconst THEN OPM.WriteInt(n^.conval^.intval2 * n^.typ^.BaseTyp^.size)
-			ELSIF n^.class = Nderef THEN Len(n^.left, dim, incl0x)
+			ELSIF (n^.class = Nderef) & (n^.left^.typ^.sysflag = 0) THEN
+				OPM.WriteString("__STRLEN("); expr(n, MinPrec);
+				OPM.WriteString(Comma); Len(n^.left, dim, FALSE); OPM.WriteString(CloseParen);
+				IF incl0x THEN OPM.WriteString(" + 1") END
 			ELSE
-				OPM.WriteString("__STRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
+				OPM.WriteString("__CSTRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
 				IF incl0x THEN OPM.WriteString(" + 1") END
 			END
 		ELSIF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN d := dim; array := n^.typ;
@@ -363,6 +366,21 @@
 			OPC.Len(n^.obj, n^.typ, dim)
 		END
 	END Len;
+
+	PROCEDURE MinLen (left, right: OPT.Node);
+	BEGIN
+		IF (right^.class = Nderef) & (right^.typ^.comp # DynArr) & (right^.left^.typ^.sysflag = 0) THEN
+			right := right^.left
+		END;
+		IF right^.typ^.form = String THEN Len(left, 0, TRUE)
+		ELSIF (left^.typ^.form = String) OR (left^.typ^.sysflag # 0) THEN Len(right, 0, TRUE)
+		ELSIF (left^.typ^.comp = Array) & (right^.typ^.comp = Array) THEN
+			OPM.WriteInt(MIN(left^.typ^.n, right^.typ^.n))
+		ELSE
+			OPM.WriteString("__MIN("); Len(left, 0, TRUE); OPM.WriteString(Comma);
+			Len(right, 0, TRUE); OPM.Write(CloseParen)
+		END
+	END MinLen;
 
 	PROCEDURE SameExp (n1, n2: OPT.Node): BOOLEAN;
 	BEGIN
@@ -1056,9 +1074,17 @@
 	BEGIN
 		IF first THEN OPM.WriteString("__STRCOPY(") ELSE OPM.WriteString("__STRAPND(") END;
 		IF ansi & (right^.class = Nconst) THEN OPM.WriteString("(CHAR*)") END;
-		expr(right, MinPrec); OPM.WriteString(Comma); Len(right, 0, FALSE);
-		OPM.WriteString(Comma);
-		expr(left, MinPrec); OPM.WriteString(Comma); Len(left, 0, FALSE);
+		expr(right, MinPrec); OPM.WriteString(Comma);
+		IF ~first THEN
+			IF right^.class = Nderef THEN right := right^.left END;
+			IF right^.typ^.sysflag # 0 THEN OPM.WriteString("-1") ELSE Len(right, 0, FALSE) END;
+			OPM.WriteString(Comma)
+		END;
+		expr(left, MinPrec); OPM.WriteString(Comma);
+		IF first THEN MinLen(left, right)
+		ELSIF left^.typ^.sysflag # 0 THEN OPM.WriteString("-1")
+		ELSE Len(left, 0, FALSE)
+		END;
 		OPM.WriteString(Comma); OPM.WriteModPos;
 		OPM.Write(")")
 	END AddCopy;
@@ -1159,14 +1185,17 @@
 						assign:
 								l := n^.left; r := n^.right;
 								IF l^.typ^.comp IN {Array, DynArr} THEN
-									IF r.typ.form = String THEN
-										IF r.class # Nconst THEN StringCopy(l, r, FALSE) ELSE AddCopy(l, r, TRUE) END
+									IF r.class # Nconst THEN
+										StringCopy(l, r, FALSE)
+									ELSIF (l.typ.sysflag = 0) & ~((l.typ.comp = Array) & (r.conval.intval2 <= l.typ.n)) THEN
+										AddCopy(l, r, TRUE)
 									ELSE
 										OPM.WriteString(MoveFunc);
 										expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
 										IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
-										ELSE OPM.WriteInt(r^.typ^.size); OPM.Write(CloseParen)
-										END
+										ELSE OPM.WriteInt(r^.typ^.size)
+										END;
+										OPM.Write(CloseParen)
 									END
 								ELSE
 									IF (l^.typ^.form = Pointer) & (l^.obj # NIL) & (l^.obj^.adr = 1) & (l^.obj^.mode = Var) THEN
@@ -1199,16 +1228,9 @@
 								OPM.Write(CloseParen)
 					|	copyfn:
 								OPM.WriteString(CopyFunc);
-								expr(n^.right, MinPrec); OPM.WriteString(", "); expr(n^.left, MinPrec); OPM.WriteString(", ");
-								IF (n^.left^.typ^.comp = Array) & (n^.right^.typ^.comp = Array) THEN
-									OPM.WriteInt(MIN(n^.left^.typ^.n, n^.right^.typ^.n))
-								ELSIF (n^.left^.typ^.comp = Array) & (n^.right^.typ = OPT.stringtyp) & (n^.right^.conval # NIL) THEN
-									OPM.WriteInt(MIN(n^.left^.typ^.n, n^.right^.conval^.intval2))
-								ELSE
-									OPM.WriteString("__MIN("); Len(n^.left, 0, FALSE); OPM.WriteString(Comma);
-									Len(n^.right, 0, FALSE); OPM.Write(CloseParen)
-								END;
-								OPM.Write(CloseParen)
+								expr(n^.right, MinPrec); OPM.WriteString(Comma);
+								expr(n^.left, MinPrec); OPM.WriteString(Comma);
+								MinLen(n^.left, n^.right); OPM.Write(CloseParen)
 					|	packfn:
 								OPM.WriteString("__PACK(&"); expr(n^.left, MinPrec); OPM.WriteString(Comma);
 								expr(n^.right, MinPrec); OPM.Write(CloseParen)
