@@ -367,7 +367,7 @@
 		END
 	END Len;
 
-	PROCEDURE MinLen (left, right: OPT.Node);
+	PROCEDURE MaxLen (left, right: OPT.Node);
 	BEGIN
 		IF (right^.class = Nderef) & (right^.typ^.comp # DynArr) & (right^.left^.typ^.sysflag = 0) THEN
 			right := right^.left
@@ -380,7 +380,7 @@
 			OPM.WriteString("__MIN("); Len(left, 0, TRUE); OPM.WriteString(Comma);
 			Len(right, 0, TRUE); OPM.Write(CloseParen)
 		END
-	END MinLen;
+	END MaxLen;
 
 	PROCEDURE SameExp (n1, n2: OPT.Node): BOOLEAN;
 	BEGIN
@@ -1081,7 +1081,7 @@
 			OPM.WriteString(Comma)
 		END;
 		expr(left, MinPrec); OPM.WriteString(Comma);
-		IF first THEN MinLen(left, right)
+		IF first THEN MaxLen(left, right)
 		ELSIF left^.typ^.sysflag # 0 THEN OPM.WriteString("-1")
 		ELSE Len(left, 0, FALSE)
 		END;
@@ -1230,7 +1230,7 @@
 								OPM.WriteString(CopyFunc);
 								expr(n^.right, MinPrec); OPM.WriteString(Comma);
 								expr(n^.left, MinPrec); OPM.WriteString(Comma);
-								MinLen(n^.left, n^.right); OPM.Write(CloseParen)
+								MaxLen(n^.left, n^.right); OPM.Write(CloseParen)
 					|	packfn:
 								OPM.WriteString("__PACK(&"); expr(n^.left, MinPrec); OPM.WriteString(Comma);
 								expr(n^.right, MinPrec); OPM.Write(CloseParen)
