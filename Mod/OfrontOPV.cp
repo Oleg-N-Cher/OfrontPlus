@@ -367,21 +367,6 @@
 		END
 	END Len;
 
-	PROCEDURE MaxLen (left, right: OPT.Node);
-	BEGIN
-		IF (right^.class = Nderef) & (right^.typ^.comp # DynArr) & (right^.left^.typ^.sysflag = 0) THEN
-			right := right^.left
-		END;
-		IF right^.typ^.form = String THEN Len(left, 0, TRUE)
-		ELSIF (left^.typ^.form = String) OR (left^.typ^.sysflag # 0) THEN Len(right, 0, TRUE)
-		ELSIF (left^.typ^.comp = Array) & (right^.typ^.comp = Array) THEN
-			OPM.WriteInt(MIN(left^.typ^.n, right^.typ^.n))
-		ELSE
-			OPM.WriteString("__MIN("); Len(left, 0, TRUE); OPM.WriteString(Comma);
-			Len(right, 0, TRUE); OPM.Write(CloseParen)
-		END
-	END MaxLen;
-
 	PROCEDURE SameExp (n1, n2: OPT.Node): BOOLEAN;
 	BEGIN
 		IF (n2^.class = Nderef) & (n2^.typ^.form = String) THEN n2 := n2^.left END;
@@ -400,6 +385,21 @@
 		END;
 		RETURN FALSE
 	END SameExp;
+
+	PROCEDURE MaxLen (left, right: OPT.Node);
+	BEGIN
+		IF (right^.class = Nderef) & (right^.typ^.comp # DynArr) & (right^.left^.typ^.sysflag = 0) THEN
+			right := right^.left
+		END;
+		IF (right^.typ^.form = String) OR SameExp(left, right) THEN Len(left, 0, TRUE)
+		ELSIF (left^.typ^.form = String) OR (left^.typ^.sysflag # 0) THEN Len(right, 0, TRUE)
+		ELSIF (left^.typ^.comp = Array) & (right^.typ^.comp = Array) THEN
+			OPM.WriteInt(MIN(left^.typ^.n, right^.typ^.n))
+		ELSE
+			OPM.WriteString("__MIN("); Len(left, 0, TRUE); OPM.WriteString(Comma);
+			Len(right, 0, TRUE); OPM.Write(CloseParen)
+		END
+	END MaxLen;
 
 	PROCEDURE SideEffects(n: OPT.Node): BOOLEAN;
 	BEGIN
@@ -1185,9 +1185,9 @@
 						assign:
 								l := n^.left; r := n^.right;
 								IF l^.typ^.comp IN {Array, DynArr} THEN
-									IF r.class # Nconst THEN
+									IF (r.typ.form = String) & (r.class # Nconst) THEN
 										StringCopy(l, r, FALSE)
-									ELSIF (l.typ.sysflag = 0) & ~((l.typ.comp = Array) & (r.conval.intval2 <= l.typ.n)) THEN
+									ELSIF (r.typ.form = String) & (l.typ.sysflag = 0) & ~((l.typ.comp = Array) & (r.conval.intval2 <= l.typ.n)) THEN
 										AddCopy(l, r, TRUE)
 									ELSE
 										OPM.WriteString(MoveFunc);
