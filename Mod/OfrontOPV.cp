@@ -391,10 +391,12 @@
 		IF (right^.class = Nderef) & (right^.typ^.comp # DynArr) & (right^.left^.typ^.sysflag = 0) THEN
 			right := right^.left
 		END;
-		IF (right^.typ^.form = String) OR SameExp(left, right) THEN Len(left, 0, TRUE)
-		ELSIF (left^.typ^.form = String) OR (left^.typ^.sysflag # 0) THEN Len(right, 0, TRUE)
+		IF (left^.typ^.form = String) OR (left^.typ^.sysflag # 0) THEN
+			Len(right, 0, TRUE)
 		ELSIF (left^.typ^.comp = Array) & (right^.typ^.comp = Array) THEN
 			OPM.WriteInt(MIN(left^.typ^.n, right^.typ^.n))
+		ELSIF (right^.typ^.form = String) OR SameExp(left, right) THEN
+			Len(left, 0, TRUE)
 		ELSE
 			OPM.WriteString("__MIN("); Len(left, 0, TRUE); OPM.WriteString(Comma);
 			Len(right, 0, TRUE); OPM.Write(CloseParen)
