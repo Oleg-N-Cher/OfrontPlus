@@ -329,11 +329,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF stop OR (S >= Args.argc) THEN noerr := TRUE; RETURN END;
 		s := ""; Args.Get(S, s);
 		endpos := LEN(s$) - 4;
-		Lang := GlobalLang;
 		IF    Strings.Pos(".ob1", s, 1) = endpos THEN Lang := "1"
 		ELSIF Strings.Pos(".ob2", s, 1) = endpos THEN Lang := "2"
 		ELSIF Strings.Pos(".ob3", s, 1) = endpos THEN Lang := "3"
 		ELSIF Strings.Pos(".ob7", s, 1) = endpos THEN Lang := "7"
+		ELSE Lang := GlobalLang
 		END;
 		NEW(T); Texts.Open(T, s);
 		LogWStr(s);
