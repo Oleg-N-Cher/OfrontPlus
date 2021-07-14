@@ -4,7 +4,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	31.1.2007 jt synchronized with BlackBox version, in particular PromoteIntConstToLInt added
 *)
 
-	IMPORT SYSTEM, Texts, Files, Platform, Args, Console, OfrontErrors;
+	IMPORT SYSTEM, Texts, Files, Strings, Platform, Args, Console, OfrontErrors;
 
 	CONST
 		OptionChar* = "-";
@@ -313,22 +313,28 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
 		VAR s: ARRAY 256 OF CHAR;
 	BEGIN
-		Alignment := GlobalAlignment; AdrSize := GlobalAdrSize; Lang := GlobalLang;
+		Alignment := GlobalAlignment; AdrSize := GlobalAdrSize;
 		opt := glbopt;
 		s := ""; Args.Get(S, s);
-		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END ;
+		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END;
 		curpos := 256; errpos := curpos; lasterrpos := curpos - 10;
 		GetProperties
 	END InitOptions;
 
 	(* get the source for one translation; msg is "translating" or "compiling" *)
-	PROCEDURE Init*(IN msg: ARRAY OF CHAR; VAR done: BOOLEAN);
-		VAR T: Texts.Text; beg, end, time: LONGINT;
-			s: ARRAY 256 OF CHAR;
+	PROCEDURE Init* (IN msg: ARRAY OF CHAR; VAR done: BOOLEAN);
+		VAR T: Texts.Text; endpos: INTEGER; s: ARRAY 256 OF CHAR;
 	BEGIN
 		done := FALSE; curpos := 0;
-		IF stop OR (S >= Args.argc) THEN noerr := TRUE; RETURN END ;
+		IF stop OR (S >= Args.argc) THEN noerr := TRUE; RETURN END;
 		s := ""; Args.Get(S, s);
+		endpos := LEN(s$) - 4;
+		Lang := GlobalLang;
+		IF    Strings.Pos(".ob1", s, 1) = endpos THEN Lang := "1"
+		ELSIF Strings.Pos(".ob2", s, 1) = endpos THEN Lang := "2"
+		ELSIF Strings.Pos(".ob3", s, 1) = endpos THEN Lang := "3"
+		ELSIF Strings.Pos(".ob7", s, 1) = endpos THEN Lang := "7"
+		END;
 		NEW(T); Texts.Open(T, s);
 		LogWStr(s);
 		IF Files.Old(s) = NIL THEN LogWStr(" not found"); LogWLn; noerr := FALSE
@@ -336,9 +342,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Texts.OpenReader(inR, T, 0);
 			LogWStr("  "); LogWStr(msg);
 			done := TRUE; noerr := TRUE
-		END ;
+		END;
 		INC(S);
-		level := 0; errpos := curpos; lasterrpos := curpos -10
+		level := 0; errpos := curpos; lasterrpos := curpos - 10
 	END Init;
 
 	(* ------------------------- read source text -------------------------*)
