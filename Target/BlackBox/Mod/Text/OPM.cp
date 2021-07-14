@@ -399,7 +399,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		END
 	END ScanOptions;
 
-	PROCEDURE GetOptionsAt(pos: INTEGER; VAR opt: SET);
+	PROCEDURE GetOptionsAt (pos: INTEGER; VAR opt: SET);
 		VAR respos: INTEGER; ch: CHAR; module, done: BOOLEAN; optstr: ARRAY 256 OF CHAR;
 	BEGIN
 		respos := 0; module := TRUE; done := FALSE;
@@ -416,7 +416,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		optstr[respos] := 0X; ScanOptions(optstr, opt)
 	END GetOptionsAt;
 
-	PROCEDURE GetModuleOptions(VAR opt: SET);
+	PROCEDURE GetModuleOptions (VAR opt: SET);
 		VAR pos, endpos: INTEGER; source: TextModels.Model; w: Windows.Window;
 	BEGIN
 		IF options.par # NIL THEN
@@ -424,6 +424,18 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			IF source # NIL THEN
 				w := Windows.dir.Focus(Controllers.targetPath);
 				IF (w # NIL) & (w.loc # NIL) & (w.name # "") THEN
+					endpos := LEN(w.name$) - 4;
+					Strings.Find(w.name, ".ob1", 1, pos);
+					IF pos = endpos THEN Lang := "1"
+					ELSE Strings.Find(w.name, ".ob2", 1, pos);
+						IF pos = endpos THEN Lang := "2"
+						ELSE Strings.Find(w.name, ".ob3", 1, pos);
+							IF pos = endpos THEN Lang := "3"
+							ELSE Strings.Find(w.name, ".ob7", 1, pos);
+								IF pos = endpos THEN Lang := "7" END
+							END
+						END
+					END;
 					pos := 0;
 					REPEAT
 						Strings.Find(options.par^, w.name, pos, pos);
