@@ -147,8 +147,10 @@ static inline void __STRCOPY (
 {
   do { if (max_len-- == 0) __HALT(-8, mod, pos); } while ((*dst++ = *src++));
 }
-static inline INTEGER __STRLEN (CHAR *str, INTEGER len) { // LEN(str$)
-  INTEGER n = 0; while (len-- && str[n]) n++; return n;
+static inline INTEGER __STRLEN (CHAR *str, INTEGER len, CHAR *mod, INTEGER pos)
+{
+  INTEGER n = 0; while (len-- && str[n]) n++; if (str[n]) __HALT(-8, mod, pos);
+  return n;
 }
 static inline INTEGER __CSTRLEN (CHAR *str) { // LEN(Cstr$)
   INTEGER n = 0; while (str[n]) n++; return n;

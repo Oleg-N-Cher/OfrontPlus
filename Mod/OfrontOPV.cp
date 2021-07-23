@@ -349,7 +349,8 @@
 			IF n^.class = Nconst THEN OPM.WriteInt(n^.conval^.intval2 * n^.typ^.BaseTyp^.size)
 			ELSIF (n^.class = Nderef) & (n^.left^.typ^.sysflag = 0) THEN
 				OPM.WriteString("__STRLEN("); expr(n, MinPrec);
-				OPM.WriteString(Comma); Len(n^.left, dim, FALSE); OPM.WriteString(CloseParen);
+				OPM.WriteString(Comma); Len(n^.left, dim, FALSE);
+				OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen);
 				IF incl0x THEN OPM.WriteString(" + 1") END
 			ELSE
 				OPM.WriteString("__CSTRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
