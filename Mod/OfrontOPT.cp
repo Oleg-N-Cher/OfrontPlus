@@ -188,7 +188,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	PROCEDURE NewName* (IN name: ARRAY OF SHORTCHAR): OPS.String;
 		VAR i: INTEGER; p: OPS.String;
 	BEGIN
-		i := 0; WHILE name[i] # 0X DO INC(i) END;
+		i := LEN(name$);
 		IF i > 0 THEN NEW(p, i + 1); p^ := name$; RETURN p
 		ELSE RETURN null
 		END
@@ -329,7 +329,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 
 (*-------------------------- Fingerprinting --------------------------*)
 
-	PROCEDURE FPrintName(VAR fp: INTEGER; VAR name: ARRAY OF SHORTCHAR);
+	PROCEDURE FPrintName (VAR fp: INTEGER; IN name: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0;
 		REPEAT ch := name[i]; OPM.FPrint(fp, ORD(ch)); INC(i) UNTIL ch = 0X
@@ -499,8 +499,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			ELSIF obj^.mode = Typ THEN
 				FPrintStr(obj^.typ); OPM.FPrint(fprint, obj^.typ^.pbfp)
 			END;
-			IF obj^.sysflag # 0 THEN OPM.FPrint(fprint, obj^.sysflag) END;
-			IF (obj^.mode IN {LProc, XProc, Var}) & (obj^.entry # NIL) THEN FPrintName(fprint, obj^.entry) END;
+			IF obj.sysflag # 0 THEN OPM.FPrint(fprint, obj.sysflag) END;
+			IF (obj.mode IN {LProc, XProc, Var}) & (obj.entry # NIL) THEN FPrintName(fprint, obj.entry) END;
 			obj^.fprint := fprint
 		END
 	END FPrintObj;
@@ -636,15 +636,15 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			new := NewObj(); new^.mnolev := SHORT(SHORT(-mno));
 			IF last = NIL THEN par := new ELSE last^.link := new END;
 			IF tag = Ssys THEN
-				new^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt());
-				IF ODD(new^.sysflag DIV inBit) THEN new^.vis := inPar
-				ELSIF ODD(new^.sysflag DIV outBit) THEN new^.vis := outPar
+				new.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt());
+				IF ODD(new.sysflag DIV inBit) THEN new.vis := inPar
+				ELSIF ODD(new.sysflag DIV outBit) THEN new.vis := outPar
 				END
 			END;
 			IF tag = Svalpar THEN new^.mode := Var
 			ELSE new^.mode := VarPar;
-				IF tag = Sinpar THEN new^.vis := inPar
-				ELSIF tag = Soutpar THEN new^.vis := outPar
+				IF tag = Sinpar THEN new.vis := inPar
+				ELSIF tag = Soutpar THEN new.vis := outPar
 				END
 			END;
 			InStruct(new^.typ); new^.adr := SHORT(OPM.SymRInt()); InName(new^.name);
@@ -663,10 +663,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			obj^.adr := SHORT(OPM.SymRInt())
 		ELSE
 			obj^.mode := Fld;
-			IF tag = Shdptr THEN obj^.name := NewName(OPM.HdPtrName) ELSE obj^.name := NewName(OPM.HdProcName) END ;
+			IF tag = Shdptr THEN obj^.name := NewName(OPM.HdPtrName) ELSE obj^.name := NewName(OPM.HdProcName) END;
 			obj^.typ := undftyp; obj^.vis := internal;
 			obj^.adr := SHORT(OPM.SymRInt())
-		END ;
+		END;
 		RETURN obj
 	END InFld;
 
@@ -681,8 +681,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			obj^.typ := undftyp; obj^.vis := internal;
 			obj^.adr := 10000H*SHORT(OPM.SymRInt())
 		ELSE
-			obj^.vis := external;
-			IF tag = Simpo THEN obj^.vis := externalR; tag := SHORT(OPM.SymRInt()) END;
+			obj.vis := external;
+			IF tag = Simpo THEN obj.vis := externalR; tag := SHORT(OPM.SymRInt()) END;
 			obj^.mode := TProc; obj^.conval := NewConst(); obj^.conval^.intval := -1;
 			InSign(mno, obj^.typ, obj^.link); InName(obj^.name);
 			obj^.adr := 10000H*SHORT(OPM.SymRInt());
@@ -820,10 +820,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		ELSE
 			obj := NewObj(); obj^.mnolev := SHORT(SHORT(-mno)); obj^.vis := external;
 			IF tag = Ssys THEN
-				obj^.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt())
+				obj.sysflag := SHORT(SHORT(SHORT(OPM.SymRInt()))); tag := SHORT(OPM.SymRInt())
 			END;
 			IF tag = Sentry THEN
-				InName(obj^.entry); tag := SHORT(OPM.SymRInt())
+				InName(obj.entry); tag := SHORT(OPM.SymRInt())
 			END;
 			IF tag <= Pointer THEN	(* Constant *)
 				obj^.mode := Con; obj^.typ := impCtxt.ref[tag]; obj^.conval := NewConst(); InConstant(tag, obj^.conval)
@@ -862,7 +862,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				IF old # NIL THEN
 					(* obj is from old symbol file, old is new declaration *)
 					IF old^.vis = internal THEN old^.history := removed
-					ELSE FPrintObj(old);	(* FPrint(obj) already called *)
+					ELSE FPrintObj(old); FPrintStr(old.typ);	(* FPrint(obj) already called *)
 						IF obj^.fprint # old^.fprint THEN old^.history := pbmodified
 						ELSIF obj^.typ^.pvfp # old^.typ^.pvfp THEN old^.history := pvmodified
 						ELSE old^.history := same
@@ -879,7 +879,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				END
 			(* ELSE OutObj not called for obj with mnolev < 0 *)
 			END
-		END ;
+		END;
 		RETURN obj
 	END InObj;
 
