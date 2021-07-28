@@ -630,50 +630,40 @@ Especially Length would become fairly complex.
   END ReadBool;
 
   PROCEDURE ReadSInt* (VAR R: Rider; VAR x: SHORTINT);
-    VAR b: ARRAY SIZE(SHORTINT) OF SHORTCHAR;
-  BEGIN ReadBytes(R, b, SIZE(SHORTINT));
-    IF SIZE(SHORTINT) = 1 THEN
-      x := ORD(b[0])
-    ELSE
-      x := SHORT(ORD(b[0]) + ORD(b[1])*256)
-    END
+    VAR b: ARRAY 2 OF SHORTCHAR;
+  BEGIN ReadBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 2), 2);
+    x := SHORT(ORD(b[0]) + ORD(b[1])*256)
   END ReadSInt;
 
   PROCEDURE ReadInt* (VAR R: Rider; VAR x: INTEGER);
-    VAR b: ARRAY SIZE(INTEGER) OF SHORTCHAR;
-  BEGIN ReadBytes(R, b, SIZE(INTEGER));
-    IF SIZE(INTEGER) = 2 THEN
-      x := ORD(b[0]) + ORD(b[1])*256
-    ELSE
-      x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
-    END
+    VAR b: ARRAY 4 OF SHORTCHAR;
+  BEGIN ReadBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 4), 4);
+    x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
   END ReadInt;
 
   PROCEDURE ReadLInt* (VAR R: Rider; VAR x: LONGINT);
-    VAR b: ARRAY SIZE(LONGINT) OF SHORTCHAR; n: INTEGER; s: LONGINT;
-  BEGIN ReadBytes(R, b, SIZE(LONGINT));
-    IF SIZE(LONGINT) = 4 THEN
-      x := ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H
-    ELSE
-      x := ORD(b[0]); s := 100H;
-      FOR n := 1 TO SIZE(LONGINT)-1 DO INC(x, ORD(b[n])*s); s := s*100H END
-    END
+    VAR b: ARRAY 8 OF SHORTCHAR; n: INTEGER; s: LONGINT;
+  BEGIN ReadBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 8), 8);
+    x := ORD(b[0]); s := 100H;
+    FOR n := 1 TO 7 DO INC(x, ORD(b[n])*s); s := s*100H END
   END ReadLInt;
 
   PROCEDURE ReadSet* (VAR R: Rider; VAR x: SET);
     VAR b: ARRAY 4 OF SHORTCHAR;
-  BEGIN ReadBytes(R, b, 4);
+  BEGIN ReadBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 4), 4);
     x := SYSTEM.VAL(SET, ORD(b[0]) + ORD(b[1])*100H + ORD(b[2])*10000H + ORD(b[3])*1000000H)
   END ReadSet;
 
   PROCEDURE ReadReal* (VAR R: Rider; VAR x: SHORTREAL);
-    VAR b: ARRAY 4 OF SHORTCHAR;
-  BEGIN ReadBytes(R, b, 4); FlipBytes(b, x)
+    VAR b: ARRAY 4 OF BYTE;
+  BEGIN ReadBytes(R, b, 4);
+    FlipBytes(b, SYSTEM.THISARRAY(SYSTEM.ADR(x), 4))
   END ReadReal;
 
   PROCEDURE ReadLReal* (VAR R: Rider; VAR x: REAL);
-    VAR b: ARRAY 8 OF SHORTCHAR;
-  BEGIN ReadBytes(R, b, 8); FlipBytes(b, x)
+    VAR b: ARRAY 8 OF BYTE;
+  BEGIN ReadBytes(R, b, 8);
+    FlipBytes(b, SYSTEM.THISARRAY(SYSTEM.ADR(x), 8))
   END ReadLReal;
 
   PROCEDURE ReadString* (VAR R: Rider; VAR x: ARRAY OF SHORTCHAR);
@@ -713,63 +703,52 @@ Especially Length would become fairly complex.
   END WriteChar;
 
   PROCEDURE WriteSInt* (VAR R: Rider; x: SHORTINT);
-    VAR b: ARRAY SIZE(SHORTINT) OF SHORTCHAR;
+    VAR b: ARRAY 2 OF SHORTCHAR;
   BEGIN
-    IF SIZE(SHORTINT) = 1 THEN
-      b[0] := CHR(x)
-    ELSE
-      b[0] := CHR(x); b[1] := CHR(x DIV 256)
-    END;
-    WriteBytes(R, b, SIZE(SHORTINT))
+    b[0] := CHR(x); b[1] := CHR(x DIV 256);
+    WriteBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 2), 2)
   END WriteSInt;
 
   PROCEDURE WriteInt* (VAR R: Rider; x: INTEGER);
-    VAR b: ARRAY SIZE(INTEGER) OF SHORTCHAR;
+    VAR b: ARRAY 4 OF SHORTCHAR;
   BEGIN
-    IF SIZE(INTEGER) = 2 THEN
-      b[0] := CHR(x); b[1] := CHR(x DIV 256)
-    ELSE
-      b[0] := CHR(x); b[1] := CHR(x DIV 100H);
-      b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H)
-    END;
-    WriteBytes(R, b, SIZE(INTEGER))
+    b[0] := CHR(x); b[1] := CHR(x DIV 100H);
+    b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H);
+    WriteBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 4), 4)
   END WriteInt;
 
   PROCEDURE WriteLInt* (VAR R: Rider; x: LONGINT);
-    VAR b: ARRAY SIZE(LONGINT) OF SHORTCHAR; n: INTEGER; s: LONGINT;
+    VAR b: ARRAY 8 OF SHORTCHAR; n: INTEGER; s: LONGINT;
   BEGIN
-    IF SIZE(LONGINT) = 4 THEN
-      b[0] := CHR(x); b[1] := CHR(x DIV 100H);
-      b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H)
-    ELSE
-      b[0] := CHR(x); s := 100H;
-      FOR n := 0 TO SIZE(LONGINT)-1 DO b[n] := CHR(x DIV s); s := s*100H END
-    END;
-    WriteBytes(R, b, SIZE(LONGINT))
+    b[0] := CHR(x); s := 100H;
+    FOR n := 0 TO 7 DO b[n] := CHR(x DIV s); s := s*100H END;
+    WriteBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 8), 8)
   END WriteLInt;
 
   PROCEDURE WriteSet* (VAR R: Rider; x: SET);
     VAR b: ARRAY 4 OF SHORTCHAR; i: INTEGER;
   BEGIN i := SYSTEM.VAL(INTEGER, x);
     b[0] := CHR(i); b[1] := CHR(i DIV 100H); b[2] := CHR(i DIV 10000H); b[3] := CHR(i DIV 1000000H);
-    WriteBytes(R, b, 4)
+    WriteBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(b), 4), 4)
   END WriteSet;
 
   PROCEDURE WriteReal* (VAR R: Rider; x: SHORTREAL);
-    VAR b: ARRAY 4 OF SHORTCHAR;
-  BEGIN FlipBytes(x, b); WriteBytes(R, b, 4)
+    VAR b: ARRAY 4 OF BYTE;
+  BEGIN FlipBytes(SYSTEM.THISARRAY(SYSTEM.ADR(x), 4), b);
+    WriteBytes(R, b, 4)
   END WriteReal;
 
   PROCEDURE WriteLReal* (VAR R: Rider; x: REAL);
-    VAR b: ARRAY 8 OF SHORTCHAR;
-  BEGIN FlipBytes(x, b); WriteBytes(R, b, 8)
+    VAR b: ARRAY 8 OF BYTE;
+  BEGIN FlipBytes(SYSTEM.THISARRAY(SYSTEM.ADR(x), 8), b);
+    WriteBytes(R, b, 8)
   END WriteLReal;
 
   PROCEDURE WriteString* (VAR R: Rider; IN x: ARRAY OF SHORTCHAR);
     VAR i: INTEGER;
   BEGIN i := 0;
     WHILE x[i] # 0X DO INC(i) END;
-    WriteBytes(R, x, i+1)
+    WriteBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(x), LEN(x)), i+1)
   END WriteString;
 
   PROCEDURE WriteNum* (VAR R: Rider; x: LONGINT);

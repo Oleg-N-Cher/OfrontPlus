@@ -94,7 +94,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
   PROCEDURE Read*(VAR ch: SHORTCHAR);
     VAR n: INTEGER; error: Platform.ErrorCode;
   BEGIN Flush();
-    error := Platform.ReadBuf(Platform.StdIn, SYSTEM.VAL(BYTE, ch), n);
+    error := Platform.ReadBuf(Platform.StdIn, SYSTEM.THISARRAY(SYSTEM.ADR(ch), 1), n);
     IF n # 1 THEN ch := 0X END
   END Read;
 

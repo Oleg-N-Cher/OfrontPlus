@@ -113,6 +113,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		(*SYSTEM function number*)
 		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
 		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
+		typfn = 38; thisrecfn = 39; thisarrfn = 40;
 
 		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval) *)
 		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
@@ -1228,6 +1229,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			END
 		END;
 		EnterProc("ADR", "adr", adrfn);
+		EnterProc("TYP", "typ", typfn);
 		EnterProc("LSH", "lsh", lshfn);
 		EnterProc("ROT", "rot", rotfn);
 		EnterProc("GET", "get", getfn);
@@ -1236,6 +1238,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("VAL", "val", valfn);
 		EnterProc("NEW", "new", sysnewfn);
 		EnterProc("MOVE", "move", movefn);
+		EnterProc("THISRECORD", "thisrecord", thisrecfn);
+		EnterProc("THISARRAY", "thisarray", thisarrfn);
 		IF lang > "2" THEN
 			EnterProc("COPY", "copy", copyfn)
 		END;

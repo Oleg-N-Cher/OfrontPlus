@@ -4,7 +4,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 MODULE Zip;	(** Stefan Walthert  **)
 
 IMPORT
-	Files, Zlib, ZlibReaders, ZlibWriters;
+	Files, Zlib, ZlibReaders, ZlibWriters, SYSTEM;
 
 CONST
 	
@@ -142,9 +142,9 @@ BEGIN
 		IF len < BufSize THEN n := len
 		ELSE n := BufSize
 		END;
-		Files.ReadBytes(src, buf, n);
+		Files.ReadBytes(src, SYSTEM.THISARRAY(SYSTEM.ADR(buf), BufSize), n);
 		IF compCRC32 THEN crc32 := Zlib.CRC32(crc32, buf, 0, n - src.res) END;
-		Files.WriteBytes(dst, buf, n - src.res);
+		Files.WriteBytes(dst, SYSTEM.THISARRAY(SYSTEM.ADR(buf), BufSize), n - src.res);
 		DEC(len, n)
 	UNTIL len = 0
 END Copy;
@@ -188,14 +188,14 @@ BEGIN
 		Files.ReadSInt(r, ent.intFileAttr);	(* internal file attributes *)
 		Files.ReadInt(r, ent.extFileAttr);	(* external file attributes *)
 		Files.ReadInt(r, ent.offsetLocal);	(* relative offset of local header *)
-		Files.ReadBytes(r, ent.name, nameLen);	(* filename *)
+		Files.ReadBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.name), LEN(ent.name)), nameLen);	(* filename *)
 		IF extraLen # 0 THEN
 			NEW(ent.extraField, extraLen);
-			Files.ReadBytes(r, ent.extraField^, extraLen)	(* extra field *)
+			Files.ReadBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.extraField^), LEN(ent.extraField^)), extraLen)	(* extra field *)
 		END;
 		IF commentLen > 0 THEN
 			NEW(ent.comment, commentLen);
-			Files.ReadBytes(r, ent.comment^, commentLen)	(* file comment *)
+			Files.ReadBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.comment^), LEN(ent.comment^)), commentLen)	(* file comment *)
 		END;
 		(* read extra field length in the local file header (can be different from extra field length stored in the file header...) *)
 		longDummy := SHORT(Files.Pos(r));	(* store actual position of file reader *)
@@ -228,9 +228,9 @@ BEGIN
 	ELSE
 		Files.WriteInt(r, 0)
 	END;
-	Files.WriteBytes(r, ent.name, StringLength(ent.name));	(* filename *)
+	Files.WriteBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.name), LEN(ent.name)), StringLength(ent.name));	(* filename *)
 	IF ent.extraField # NIL THEN
-		Files.WriteBytes(r, ent.extraField^, LEN(ent.extraField^))	(* extra field *)
+		Files.WriteBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.extraField^), LEN(ent.extraField^)), LEN(ent.extraField^))	(* extra field *)
 	END
 END WriteLocalFileHeader;
 
@@ -263,12 +263,12 @@ BEGIN
 	Files.WriteInt(r, ent.intFileAttr);	(* internal file attributes *)
 	Files.WriteLInt(r, ent.extFileAttr);	(* external file attributes *)
 	Files.WriteLInt(r, ent.offsetLocal);	(* relative offset of local header *)
-	Files.WriteBytes(r, ent.name, StringLength(ent.name));	(* filename *)
+	Files.WriteBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.name), LEN(ent.name)), StringLength(ent.name));	(* filename *)
 	IF ent.extraField # NIL THEN
-		Files.WriteBytes(r, ent.extraField^, LEN(ent.extraField^))	(* extra field *)
+		Files.WriteBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.extraField^), LEN(ent.extraField^)), LEN(ent.extraField^))	(* extra field *)
 	END;
 	IF ent.comment # NIL THEN
-		Files.WriteBytes(r, ent.comment^, LEN(ent.comment^))	(* file comment *)
+		Files.WriteBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(ent.comment^), LEN(ent.comment^)), LEN(ent.comment^))	(* file comment *)
 	END
 END WriteFileHeader;
 
@@ -296,7 +296,7 @@ BEGIN
 		Files.WriteInt(r, 0)	(* zipfile comment length *)
 	ELSE
 		Files.WriteInt(r, SHORT(LEN(arc.comment^)));	(* zipfile comment length *)
-		Files.WriteBytes(r, arc.comment^, LEN(arc.comment^))	(* zipfile comment *)
+		Files.WriteBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(arc.comment^), LEN(arc.comment^)), LEN(arc.comment^))	(* zipfile comment *)
 	END
 END WriteEndOfCentDir;
 
@@ -356,7 +356,7 @@ BEGIN
 			Files.ReadSInt(r, intDummy);	(* zipfile comment length *)
 			IF intDummy # 0 THEN
 				NEW(arc.comment, intDummy);
-				Files.ReadBytes(r, arc.comment^, intDummy)	(* zipfile comment *)
+				Files.ReadBytes(r, SYSTEM.THISARRAY(SYSTEM.ADR(arc.comment^), LEN(arc.comment^)), intDummy)	(* zipfile comment *)
 			END;
 			IF Files.Pos(r) # Files.Length(f) THEN
 				res := NotZipArchiveError;
@@ -688,10 +688,10 @@ BEGIN
 	IF r.open THEN
 		IF r IS UncompReader THEN
 			IF offset = 0 THEN
-				Files.ReadBytes(r(UncompReader).fr, buf, len);
+				Files.ReadBytes(r(UncompReader).fr, SYSTEM.THISARRAY(SYSTEM.ADR(buf), LEN(buf)), len);
 			ELSE
 				NEW(bufp, len);
-				Files.ReadBytes(r(UncompReader).fr, bufp^, len);
+				Files.ReadBytes(r(UncompReader).fr, SYSTEM.THISARRAY(SYSTEM.ADR(bufp^), LEN(bufp^)), len);
 				FOR i := 0 TO len - 1 DO
 					buf[offset + i] := bufp[i]
 				END

@@ -57,6 +57,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		(*SYSTEM function number*)
 		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
 		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
+		typfn = 38; thisrecfn = 39; thisarrfn = 40;
 
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
@@ -504,7 +505,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		END NewOp;
 
 	BEGIN z := x;
-		IF (z^.class = Ntype) OR (z^.class = Nproc) & (op # adr) THEN err(126)
+		IF (z^.class = Ntype) OR (z^.class = Nproc) & (op # adr) & (op # typfn) THEN err(126)
 		ELSE typ := z^.typ; f := typ^.form;
 			CASE op OF
 			  not:
@@ -581,6 +582,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					CASE OPM.AdrSize OF 4: z^.typ := OPT.inttyp | 2: z^.typ := OPT.sinttyp
 					ELSE z^.typ := OPT.linttyp
 					END
+			| typfn: (*TYP*)
+				z := NewOp(op, typ, z);
+				CASE OPM.AdrSize OF 4: z.typ := OPT.inttyp | 8: z.typ := OPT.linttyp ELSE z.typ := OPT.sinttyp
+				END
 			| unsgn:	(* (unsigned) for div *)
 					IF f IN intSet THEN z := NewOp(op, typ, z) ELSE err(127) END
 			END
@@ -1574,11 +1579,35 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| adrfn: (*SYSTEM.ADR*)
 				CheckLeaf(x, FALSE); MOp(adr, x)
+		| typfn: (*TYP*)
+				CheckLeaf(x, FALSE);
+				IF x.class = Ntype THEN
+					IF x.typ.form = Pointer THEN x := NewLeaf(x.typ.BaseTyp.strobj) END;
+					IF x.typ.comp # Record THEN err(111) END;
+					MOp(adr, x)
+				ELSE
+					IF x.typ.form = Pointer THEN DeRef(x) END;
+					IF x.typ.comp # Record THEN err(111) END;
+					MOp(typfn, x)
+				END
 		| sizefn: (*SIZE*)
 				IF x^.class # Ntype THEN err(110); x := NewIntConst(1)
 				ELSIF (f IN {Int8..Set, Pointer, ProcTyp}) OR (x^.typ^.comp IN {Array, Record}) THEN
 					typSize(x^.typ); x^.typ^.pvused := TRUE; x := NewIntConst(x^.typ^.size)
 				ELSE err(111); x := NewIntConst(1)
+				END
+		| thisrecfn, (*THISRECORD*)
+		  thisarrfn: (*THISARRAY*)
+				IF (x.class = Ntype) OR (x.class = Nproc) THEN err(126)
+				ELSE
+					CASE OPM.AdrSize OF
+					| 2: IF f IN {Int8, Byte} THEN Convert(x, OPT.sinttyp) ELSIF f # Int16 THEN err(111) END
+					| 4: IF f IN {Int8, Int16, Byte} THEN Convert(x, OPT.inttyp) ELSIF f # Int32 THEN err(111) END
+					ELSE
+						IF f IN {Int8, Int16, Int32, Byte} THEN Convert(x, OPT.linttyp)
+						ELSIF f # Int64 THEN err(111)
+						END
+					END
 				END
 		| lshfn, rotfn: (*SYSTEM.LSH, SYSTEM.ROT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1773,6 +1802,20 @@ avoid unnecessary intermediate variables in OFront
 					END;
 					p^.right := x; p^.typ := p^.typ^.BaseTyp
 				ELSE err(64)
+				END
+		| thisrecfn, (*THISRECORD*)
+		  thisarrfn: (*THISARRAY*)
+				IF (x.class = Ntype) OR (x.class = Nproc) THEN err(126)
+				ELSE
+					CASE OPM.AdrSize OF
+					| 2: IF f IN {Int8, Byte} THEN Convert(x, OPT.sinttyp) ELSIF f # Int16 THEN err(111) END
+					| 4: IF f IN {Int8, Int16, Byte} THEN Convert(x, OPT.inttyp) ELSIF f # Int32 THEN err(111) END
+					ELSE
+						IF f IN {Int8, Int16, Int32, Byte} THEN Convert(x, OPT.linttyp)
+						ELSIF f # Int64 THEN err(111)
+						END
+					END;
+					p := NewOp(Ndop, fctno, p, x); p.typ := OPT.undftyp
 				END
 		| lshfn, rotfn: (*SYSTEM.LSH, SYSTEM.ROT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1974,7 +2017,11 @@ avoid unnecessary intermediate variables in OFront
 			ELSIF parno < 1 THEN err(65)
 			END
 		ELSE (*SYSTEM*)
-			IF (parno < 1) OR
+			IF fctno = typfn THEN
+				IF parno < 1 THEN err(65) END
+			ELSIF (fctno = thisrecfn) OR (fctno = thisarrfn) THEN
+				IF parno < 2 THEN err(65) END
+			ELSIF (parno < 1) OR
 				(fctno > adrfn) & (parno < 2) OR
 				(fctno = movefn) & (parno < 3) THEN err(65)
 			END
@@ -1987,8 +2034,12 @@ avoid unnecessary intermediate variables in OFront
 	BEGIN (* ftyp^.comp = DynArr *)
 		IF ~ODD(ftyp^.sysflag) & ODD(atyp^.sysflag) & (atyp^.comp # Array) THEN err(137) END;
 		f := atyp^.comp; ftyp := ftyp^.BaseTyp; atyp := atyp^.BaseTyp;
-		IF ftyp = OPT.bytetyp THEN (* ok, but ... *)
-			IF ~(f IN {Array, DynArr}) OR ~(atyp^.form IN {Int8..Int16}) THEN err(-301) END (* ... warning 301 *)
+		IF fvarpar & (ftyp = OPT.ubytetyp) THEN (* ok, but ... *)
+			IF ~(f IN {Array, DynArr}) OR ~(atyp^.form IN {Int8..Char8, Byte}) THEN
+				IF OPM.Lang > "2" THEN err(67) ELSE err(-301) END (* ... warning 301 *)
+			ELSIF ~OPT.EqualType(ftyp, atyp) THEN
+				IF OPM.Lang > "2" THEN err(66) ELSE err(-301) END
+			END
 		ELSIF f IN {Array, DynArr} THEN
 			IF ftyp^.comp = DynArr THEN DynArrParCheck(ftyp, atyp, fvarpar)
 			ELSIF ~fvarpar & (ftyp.form = Pointer) & OPT.Extends(atyp, ftyp) THEN (* ok *)
@@ -2021,8 +2072,8 @@ avoid unnecessary intermediate variables in OFront
 		IF fp.typ.form # Undef THEN
 			IF fp^.mode = VarPar THEN
 				IF ODD(fp^.sysflag DIV nilBit) & (ap^.typ = OPT.niltyp) THEN (* ok *)
-				ELSIF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) THEN (* ok *)
-				ELSIF (fp^.typ^.comp = DynArr) & (fp^.typ^.sysflag = 0) & (fp^.typ^.n = 0) & (ap^.class = Ndop) THEN
+				ELSIF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) & (ap.subcl = thisrecfn) THEN (* ok *)
+				ELSIF (fp^.typ^.comp = DynArr) & (fp^.typ^.sysflag = 0) & (fp^.typ^.n = 0) & (ap^.class = Ndop) & (ap.subcl = thisarrfn) THEN
 					(* ok *)
 				ELSE
 					IF fp^.vis = inPar THEN
@@ -2033,9 +2084,9 @@ avoid unnecessary intermediate variables in OFront
 						END;
 						IF ap^.readonly THEN err(76) END;
 					END;
-					IF fp^.typ^.comp = DynArr THEN
+					IF fp.typ.comp = DynArr THEN
 						IF ap^.typ^.form IN {Char8, String8} THEN CheckString(ap, fp^.typ, 67)
-						ELSE DynArrParCheck(fp^.typ, ap^.typ, fp^.vis # inPar) END
+						ELSE DynArrParCheck(fp.typ, ap.typ, fp.vis # inPar) END
 					ELSIF (fp^.typ = OPT.sysptrtyp) & (ap^.typ^.form = Pointer) THEN (* ok *)
 					ELSIF (fp^.vis # outPar) & (fp^.typ^.comp = Record) & OPT.Extends(ap^.typ, fp^.typ) THEN (* ok *)
 					ELSIF fp^.vis = inPar THEN CheckAssign(fp^.typ, ap)

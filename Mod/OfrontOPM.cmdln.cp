@@ -562,11 +562,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN Files.WriteChar(R[currFile], ch)
 	END Write;
 
-	PROCEDURE WriteString*(IN s: ARRAY OF CHAR);
+	PROCEDURE WriteString* (IN s: ARRAY OF CHAR);
 		VAR i: INTEGER;
 	BEGIN i := 0;
 		WHILE s[i] # 0X DO INC(i) END;
-		Files.WriteBytes(R[currFile], s, i)
+		Files.WriteBytes(R[currFile], SYSTEM.THISARRAY(SYSTEM.ADR(s), LEN(s)), i)
 	END WriteString;
 
 	PROCEDURE WriteHex* (i: INTEGER);
@@ -632,14 +632,15 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		Write('"'); WriteString(modName); WriteString('", '); WriteInt(errpos)
 	END WriteModPos;
 
-	PROCEDURE Append(VAR R: Files.Rider; F: Files.File);
+	PROCEDURE Append (VAR R: Files.Rider; F: Files.File);
 		VAR R1: Files.Rider; buffer: ARRAY 4096 OF CHAR;
 	BEGIN
 		IF F # NIL THEN
-			Files.Set(R1, F, 0); Files.ReadBytes(R1, buffer, LEN(buffer));
+			Files.Set(R1, F, 0);
+			Files.ReadBytes(R1, SYSTEM.THISARRAY(SYSTEM.ADR(buffer), LEN(buffer)), LEN(buffer));
 			WHILE LEN(buffer) - R1.res > 0 DO
-				Files.WriteBytes(R, buffer, LEN(buffer) - R1.res);
-				Files.ReadBytes(R1, buffer, LEN(buffer))
+				Files.WriteBytes(R, SYSTEM.THISARRAY(SYSTEM.ADR(buffer), LEN(buffer)), LEN(buffer) - R1.res);
+				Files.ReadBytes(R1, SYSTEM.THISARRAY(SYSTEM.ADR(buffer), LEN(buffer)), LEN(buffer))
 			END
 		END
 	END Append;

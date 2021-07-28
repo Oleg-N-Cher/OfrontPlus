@@ -883,10 +883,13 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
               IF ch = 0AX THEN Files.WriteChar(msg.r, CR) ELSE Files.WriteChar(msg.r, ch) END
             END
           ELSE Files.Set(r1, u.file, u.org); delta := u.len;
-            WHILE delta > LEN(block) DO Files.ReadBytes(r1, block, LEN(block));
-              Files.WriteBytes(msg.r, block, LEN(block)); DEC(delta, LEN(block))
+            WHILE delta > LEN(block) DO
+              Files.ReadBytes(r1, s.THISARRAY(s.ADR(block), LEN(block)), LEN(block));
+              Files.WriteBytes(msg.r, s.THISARRAY(s.ADR(block), LEN(block)), LEN(block));
+              DEC(delta, LEN(block))
             END;
-            Files.ReadBytes(r1, block, delta); Files.WriteBytes(msg.r, block, delta)
+            Files.ReadBytes(r1, s.THISARRAY(s.ADR(block), LEN(block)), delta);
+            Files.WriteBytes(msg.r, s.THISARRAY(s.ADR(block), LEN(block)), delta)
           END
         END
       ELSE iden.mod[0] := 0X; u(Elem).handle(u(Elem), iden);

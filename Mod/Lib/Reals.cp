@@ -92,11 +92,17 @@ MODULE Reals;
   END Unpack;
   
   PROCEDURE ConvertH* (y: REAL; VAR d: ARRAY OF CHAR);
-  BEGIN Unpack(y, d)
+  BEGIN
+    Unpack(
+      S.THISARRAY(S.ADR(y), SIZE(REAL)),
+      S.THISARRAY(S.ADR(d), LEN(d)))
   END ConvertH;
   
   PROCEDURE ConvertHL* (x: LONGREAL; VAR d: ARRAY OF CHAR);
-  BEGIN Unpack(x, d)
+  BEGIN
+    Unpack(
+      S.THISARRAY(S.ADR(x), SIZE(LONGREAL)),
+      S.THISARRAY(S.ADR(d), LEN(d)))
   END ConvertHL;
 
   PROCEDURE RealToStr* (x: LONGREAL; digits: LONGINT; VAR d: ARRAY OF CHAR);

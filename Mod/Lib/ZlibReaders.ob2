@@ -4,7 +4,7 @@ Refer to the "General ETH Oberon System Source License" contract available at: h
 MODULE ZlibReaders;	(** Stefan Walthert  **)
 
 IMPORT
-	Files, Zlib, ZlibBuffers, ZlibInflate;
+	Files, Zlib, ZlibBuffers, ZlibInflate, SYSTEM;
 
 CONST
 	(** result codes **)
@@ -54,7 +54,7 @@ BEGIN
 		ZlibBuffers.Init(r.s.out, buf, offset, len, len);
 		WHILE (r.s.out.avail # 0) & (r.res = Ok) DO
 			IF r.s.in.avail = 0 THEN
-				Files.ReadBytes(r.r, r.in^, BufSize);
+				Files.ReadBytes(r.r, SYSTEM.THISARRAY(SYSTEM.ADR(r.in^), BufSize), BufSize);
 				ZlibBuffers.Rewind(r.s.in, BufSize - r.r.res);
 				IF r.s.in.avail = 0 THEN
 					r.eof := TRUE;
@@ -101,7 +101,7 @@ BEGIN
 	IF r.res = Ok THEN
 		REPEAT
 			ReadBytes(r, buf, 0, BufSize, read);
-			Files.WriteBytes(dst, buf, read)
+			Files.WriteBytes(dst, SYSTEM.THISARRAY(SYSTEM.ADR(buf), BufSize), read)
 		UNTIL (r.res # Ok) OR (read = 0);
 		crc32 := r.crc32;
 		Close(r)

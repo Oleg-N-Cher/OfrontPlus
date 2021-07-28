@@ -43,6 +43,7 @@
 
 		(*SYSTEM function number*)
 		getfn = 29; putfn = 30; sysnewfn = 35; movefn = 36;
+		typfn = 38; thisrecfn = 39; thisarrfn = 40;
 
 		(*procedure flags*)
 		hasBody = 1; isRedef = 2; absAttr = 17; empAttr = 19; extAttr = 20;
@@ -298,7 +299,7 @@
 					RETURN 9
 		|	Nmop:
 					CASE subclass OF
-						not, minus, adr, val, conv, unsgn:
+						not, minus, adr, typfn, val, conv, unsgn:
 								RETURN 9
 					|	is, abs, cap, odd, bit:
 								RETURN 10
@@ -618,68 +619,74 @@
 		WHILE n # NIL DO typ := fp^.typ;
 			IF (typ^.form = n^.typ^.form) & (typ^.form IN {Byte..Set}) THEN typ := n^.typ END;
 			comp := typ^.comp; form := typ^.form; mode := fp^.mode; prec := MinPrec;
-			IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
-				OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
-			END;
-			IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
-				IF (mode = VarPar) & ~((comp IN {Array, DynArr}) & (n^.class = Nconst)) THEN
-					IF n^.typ^.form # NilTyp THEN
-						IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
-						OPM.Write("&")
-					END; prec := 9
+			IF (mode = VarPar) & ((n.subcl = thisarrfn) OR (n.subcl = thisrecfn)) THEN
+				OPM.WriteString("(void*)"); expr(n.left, MinPrec); OPM.WriteString(Comma);
+				IF n.subcl = thisrecfn THEN OPM.WriteString("(void*)") END;
+				expr(n.right, MinPrec)
+			ELSE
+				IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
+					OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
+				END;
+				IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
+					IF (mode = VarPar) & ~((comp IN {Array, DynArr}) & (n^.class = Nconst)) THEN
+						IF n^.typ^.form # NilTyp THEN
+							IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
+							OPM.Write("&")
+						END; prec := 9
+					ELSIF ansi THEN
+						IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN
+							OPM.WriteString("(CHAR*)")	(* force to unsigned char *)
+						ELSIF (form = Pointer) & (typ # n^.typ) & (n^.typ # OPT.niltyp) THEN
+							OPM.WriteString("(void*)")	(* type extension *)
+						ELSIF (comp = Record) & (n^.typ # typ) THEN (* record value projection *)
+							OPM.WriteString("*("); OPC.Andent(typ); OPM.WriteString("*)&"); prec := 9
+						END
+					ELSE
+						IF (form IN {Real, LReal}) & (n^.typ^.form IN {Byte, SInt, Int, LInt}) THEN (* real promotion *)
+							OPM.WriteString("(double)"); prec := 9
+						ELSIF (form = LInt) & (n^.typ^.form < LInt) THEN (* integral promotion *)
+							OPM.WriteString("(LONGINT)"); prec := 9
+						END
+					END
 				ELSIF ansi THEN
-					IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN
-						OPM.WriteString("(CHAR*)")	(* force to unsigned char *)
-					ELSIF (form = Pointer) & (typ # n^.typ) & (n^.typ # OPT.niltyp) THEN
-						OPM.WriteString("(void*)")	(* type extension *)
-					ELSIF (comp = Record) & (n^.typ # typ) THEN (* record value projection *)
-						OPM.WriteString("*("); OPC.Andent(typ); OPM.WriteString("*)&"); prec := 9
+					(* casting of params should be simplified eventually *)
+					IF ((mode = VarPar) OR (typ^.BaseTyp^.form = Comp)) & (typ # n^.typ) & (prec = MinPrec) THEN
+						OPM.WriteString("(void*)")
 					END
-				ELSE
-					IF (form IN {Real, LReal}) & (n^.typ^.form IN {Byte, SInt, Int, LInt}) THEN (* real promotion *)
-						OPM.WriteString("(double)"); prec := 9
-					ELSIF (form = LInt) & (n^.typ^.form < LInt) THEN (* integral promotion *)
-						OPM.WriteString("(LONGINT)"); prec := 9
-					END
-				END
-			ELSIF ansi THEN
-				(* casting of params should be simplified eventually *)
-				IF ((mode = VarPar) OR (typ^.BaseTyp^.form = Comp)) & (typ # n^.typ) & (prec = MinPrec) THEN
-					OPM.WriteString("(void*)")
-				END
-			END;
-			IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN expr(n^.left, prec)	(* avoid cast in lvalue *)
-			ELSE expr(n, prec)
-			END;
-			IF (form = LInt) & (n^.class = Nconst)
-			& (n^.conval^.intval <= MAX(INTEGER)) & (n^.conval^.intval >= MIN(INTEGER)) THEN
-				OPM.PromoteIntConstToLInt()
-			ELSIF (comp = Record) & (mode = VarPar) THEN
-				IF ~ODD(typ^.sysflag) THEN OPM.WriteString(", "); TypeOf(n) END
-			ELSIF (comp = DynArr) & ~ODD(typ^.sysflag) THEN
-				IF ODD(n^.typ^.sysflag) & (n^.typ^.comp # Array) THEN OPM.err(137) END;
-				IF n^.class = Nconst THEN (* ap is string constant *)
-					OPM.WriteString(Comma);
-					IF OPM.IndexSize > 4 THEN OPM.WriteString("(LONGINT)") END;
-					OPM.WriteInt(n^.conval^.intval2)
-				ELSE
-					aptyp := n^.typ; dim := 0;
-					WHILE (typ^.comp = DynArr) & (typ^.BaseTyp^.form # Byte) DO
-						OPM.WriteString(Comma); Len(n, dim, TRUE);
-						typ := typ^.BaseTyp; aptyp := aptyp^.BaseTyp; INC(dim)
-					END ;
-					IF (typ^.comp = DynArr) & (typ^.BaseTyp^.form = Byte) THEN
+				END;
+				IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN expr(n^.left, prec)	(* avoid cast in lvalue *)
+				ELSE expr(n, prec)
+				END;
+				IF (form = LInt) & (n^.class = Nconst)
+				& (n^.conval^.intval <= MAX(INTEGER)) & (n^.conval^.intval >= MIN(INTEGER)) THEN
+					OPM.PromoteIntConstToLInt()
+				ELSIF (comp = Record) & (mode = VarPar) THEN
+					IF ~ODD(typ^.sysflag) THEN OPM.WriteString(", "); TypeOf(n) END
+				ELSIF (comp = DynArr) & ~ODD(typ^.sysflag) THEN
+					IF ODD(n^.typ^.sysflag) & (n^.typ^.comp # Array) THEN OPM.err(137) END;
+					IF n^.class = Nconst THEN (* ap is string constant *)
 						OPM.WriteString(Comma);
-						WHILE aptyp^.comp = DynArr DO
-							Len(n, dim, FALSE); OPM.WriteString(" * "); INC(dim); aptyp := aptyp^.BaseTyp
-						END ;
-						OPM.WriteInt(aptyp^.size); OPM.PromoteIntConstToLInt()
+						IF OPM.IndexSize > 4 THEN OPM.WriteString("(LONGINT)") END;
+						OPM.WriteInt(n^.conval^.intval2)
+					ELSE
+						aptyp := n^.typ; dim := 0;
+						WHILE (typ^.comp = DynArr) & (typ^.BaseTyp^.form # Byte) DO
+							OPM.WriteString(Comma); Len(n, dim, TRUE);
+							typ := typ^.BaseTyp; aptyp := aptyp^.BaseTyp; INC(dim)
+						END;
+						IF (typ^.comp = DynArr) & (typ^.BaseTyp^.form = Byte) THEN
+							OPM.WriteString(Comma);
+							WHILE aptyp^.comp = DynArr DO
+								Len(n, dim, FALSE); OPM.WriteString(" * "); INC(dim); aptyp := aptyp^.BaseTyp
+							END;
+							OPM.WriteInt(aptyp^.size); OPM.PromoteIntConstToLInt()
+						END
 					END
 				END
-			END ;
+			END;
 			n := n^.link; fp := fp^.link;
 			IF n # NIL THEN OPM.WriteString(Comma) END
-		END ;
+		END;
 		OPM.Write(CloseParen)
 	END ActualPar;
 
@@ -757,6 +764,8 @@
 								OPM.WriteString("__CAP("); expr(l, MinPrec); OPM.Write(CloseParen)
 					|	odd:
 								OPM.WriteString("__ODD("); expr(l, MinPrec); OPM.Write(CloseParen)
+					|	typfn: (*SYSTEM*)
+								OPM.WriteString("(SYSTEM_ADRINT)"); TypeOf(l)
 					|	adr: (*SYSTEM*)
 								IF ~oldc THEN OPM.WriteString("(SYSTEM_ADRINT)") END;
 								IF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
