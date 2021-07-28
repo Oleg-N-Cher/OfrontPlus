@@ -1,0 +1,40 @@
+os: windows
+
+language: bash
+
+notifications:
+  email: false
+
+branches:
+  only:
+    - master
+
+script:
+  - mkdir unix-88
+  - cd unix-88
+  - cp ../Mod/Lib/SYSTEM.* .
+  - ../Target/Win32/Bin/o2c-bootstrap.bat -88
+  - cd ..
+  - mkdir unix-48
+  - cd unix-48
+  - cp ../Mod/Lib/SYSTEM.* .
+  - ../Target/Win32/Bin/o2c-bootstrap.bat -48
+  - cd ..
+  - mkdir unix-44
+  - cd unix-44
+  - cp ../Mod/Lib/SYSTEM.* .
+  - ../Target/Win32/Bin/o2c-bootstrap.bat -44
+  - cd ..
+  - rm -Rf .git
+
+after_success: |
+  if [ -n "$GITHUB_API_KEY" ]; then
+    cd "$TRAVIS_BUILD_DIR"
+    git init
+    git add unix-88
+    git add unix-48
+    git add unix-44
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m o2c
+    # Make sure to make the output quiet, or else the API token will leak!
+    git push -f -q https://Oleg-N-Cher:$GITHUB_API_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
+  fi
