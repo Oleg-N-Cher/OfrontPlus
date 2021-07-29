@@ -29,8 +29,8 @@ script:
   - ../Target/Win32/Bin/o2c-bootstrap.bat -44
   - cd ..
   - rm -Rf .git
-  - mv -f ../Target/Linux_amd64/Bin/.travis.yml .
-  - mv ../Target/Linux_amd64/Bin/cc-bootstrap .
+  - mv -f Target/Linux_amd64/Bin/.travis.yml .
+  - mv Target/Linux_amd64/Bin/cc-bootstrap .
 
 after_success: |
   if [ -n "$GITHUB_API_KEY" ]; then
