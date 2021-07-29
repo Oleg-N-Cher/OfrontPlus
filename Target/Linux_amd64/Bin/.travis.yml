@@ -1,0 +1,35 @@
+os:
+  - linux
+  - osx
+  - freebsd
+
+language: c
+
+compiler: clang
+
+notifications:
+  email: false
+
+branches:
+  only:
+    - master
+
+script:
+  - chmod +x cc-bootstrap
+  - cd unix-88
+  - ../cc-bootstrap
+  - cd ..
+  - if [ "$TRAVIS_OS_NAME" = "linux"   ]; then mkdir -p Target/Linux_amd64  ;cp ofront+ Target/Linux_amd64  ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx"     ]; then mkdir -p Target/macOS        ;cp ofront+ Target/macOS        ;fi
+  - if [ "$TRAVIS_OS_NAME" = "freebsd" ]; then mkdir -p Target/FreeBSD_amd64;cp ofront+ Target/FreeBSD_amd64;fi
+
+after_success: |
+  if [ -n "$GITHUB_API_KEY" ]; then
+    cd "$TRAVIS_BUILD_DIR"
+    git pull -q https://Oleg-N-Cher:$GITHUB_API_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
+    git rm .travis.yml &>/dev/null
+    git add Target
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #$TRAVIS_BUILD_NUMBER"
+    # Make sure to make the output quiet, or else the API token will leak!
+    git push -q https://Oleg-N-Cher:$GITHUB_API_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
+  fi

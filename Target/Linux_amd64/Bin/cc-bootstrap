@@ -1,0 +1,108 @@
+#!/bin/sh
+
+CC="cc -m64 -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+AR="ar -rc libOfront.a"
+
+## Ofront+
+
+$CC SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+if [ $? != 0 ]; then exit 1; fi
+$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+
+## Eco
+
+$CC ecoBigSets.c ecoBuffer.c ecoListen.c ecoLists.c ecoParser.c ecoVector.c
+if [ $? != 0 ]; then exit 1; fi
+$AR ecoBigSets.o ecoBuffer.o ecoListen.o ecoLists.o ecoParser.o ecoVector.o
+
+## ETH Oberon
+
+$CC Zlib.c ZlibBuffers.c ZlibDeflate.c ZlibInflate.c ZlibReaders.c ZlibWriters.c Zip.c
+if [ $? != 0 ]; then exit 1; fi
+$AR Zlib.o ZlibBuffers.o ZlibDeflate.o ZlibInflate.o ZlibReaders.o ZlibWriters.o Zip.o
+
+## OOC2
+
+$CC ooc2Ascii.c ooc2ConvTypes.c ooc2RandomNumbers.c ooc2Strings.c
+if [ $? != 0 ]; then exit 1; fi
+$AR ooc2Ascii.o ooc2ConvTypes.o ooc2RandomNumbers.o ooc2Strings.o
+
+## POW
+
+$CC powStrings.c
+if [ $? != 0 ]; then exit 1; fi
+$AR powStrings.o
+
+## Free Oberon
+
+$CC SDL2.c SDL2mixer.c In.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
+if [ $? != 0 ]; then exit 1; fi
+$AR SDL2.o SDL2mixer.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
+
+## libCurl
+
+$CC NetHttp.c
+if [ $? != 0 ]; then exit 1; fi
+$AR NetHttp.o
+
+## Aria - Reusable Oberon-2 modules by Stewart Greenhill
+## https://github.com/sgreenhill/aria
+
+$CC arC.c arCFormat.c arChar.c arCString.c arDir.c arMath.c \
+  arSize.c arStrings.c arStringList.c arStringAssoc.c arText.c \
+  arStream.c arFile.c arOut.c arPath.c arPattern.c arErr.c \
+  arConfiguration.c arValue.c arFormat.c arJSON.c
+if [ $? != 0 ]; then exit 1; fi
+$AR arC.o arCFormat.o arChar.o arCString.o arDir.o arMath.o \
+  arSize.o arStrings.o arStringList.o arStringAssoc.o arText.o \
+  arStream.o arFile.o arOut.o arPath.o arPattern.o arErr.o \
+  arConfiguration.o arValue.o arFormat.o arJSON.o
+
+## BlackBox
+
+$CC bbMath.c
+if [ $? != 0 ]; then exit 1; fi
+$AR bbMath.o
+
+rm *.o 
+
+CC="cc -m64 -I. -L. -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables"
+
+$CC -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c
+if [ $? != 0 ]; then exit 1; fi
+
+## Ofront+
+
+$CC OfrontCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -lOfront -lm -o../ofront+
+if [ $? != 0 ]; then exit 1; fi
+
+## Browser
+
+$CC BrowserCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -lOfront -lm -o../showdef
+if [ $? != 0 ]; then exit 1; fi
+
+## ImportGraph
+
+$CC ImportGraph.c -lOfront -lm -o../graphviz
+if [ $? != 0 ]; then exit 1; fi
+
+## OCat
+
+$CC OCatCmd.c -lOfront -lm -o../ocat
+if [ $? != 0 ]; then exit 1; fi
+
+## OEF & OMake
+
+$CC OEF.c -lOfront -lm -o../oef
+if [ $? != 0 ]; then exit 1; fi
+$CC OMake.c -lOfront -lm -o../omake
+if [ $? != 0 ]; then exit 1; fi
+
+## OdcToText
+
+$CC OdcToText.c -lOfront -lm -o../odc2txt
+if [ $? != 0 ]; then exit 1; fi
+
+cd ..
+./ofront+
+if [ $? != 0 ]; then exit 1; fi

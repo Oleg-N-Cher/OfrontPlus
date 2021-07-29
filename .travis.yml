@@ -29,6 +29,8 @@ script:
   - ../Target/Win32/Bin/o2c-bootstrap.bat -44
   - cd ..
   - rm -Rf .git
+  - mv -f ../Target/Linux_amd64/Bin/.travis.yml .
+  - mv ../Target/Linux_amd64/Bin/cc-bootstrap .
 
 after_success: |
   if [ -n "$GITHUB_API_KEY" ]; then
@@ -37,7 +39,9 @@ after_success: |
     git add unix-88
     git add unix-48
     git add unix-44
-    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m o2c
+    git add .travis.yml
+    git add cc-bootstrap
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "o2c #$TRAVIS_BUILD_NUMBER"
     # Make sure to make the output quiet, or else the API token will leak!
     git push -f -q https://Oleg-N-Cher:$GITHUB_API_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
   fi
