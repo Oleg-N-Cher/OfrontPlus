@@ -7,34 +7,34 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## Ofront+
 
-$CC OfrontCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -lOfront -o../ofront+
+$CC OfrontCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -lOfront -lm -o../ofront+
 if [ $? != 0 ]; then exit 1; fi
 
 ## Browser
 
-$CC BrowserCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -lOfront -o../showdef
+$CC BrowserCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -lOfront -lm -o../showdef
 if [ $? != 0 ]; then exit 1; fi
 
 ## ImportGraph
 
-$CC ImportGraph.c -lOfront -o../graphviz
+$CC ImportGraph.c -lOfront -lm -o../graphviz
 if [ $? != 0 ]; then exit 1; fi
 
 ## OCat
 
-$CC OCatCmd.c -lOfront -o../ocat
+$CC OCatCmd.c -lOfront -lm -o../ocat
 if [ $? != 0 ]; then exit 1; fi
 
 ## OEF & OMake
 
-$CC OEF.c -lOfront -o../oef
+$CC OEF.c -lOfront -lm -o../oef
 if [ $? != 0 ]; then exit 1; fi
-$CC OMake.c -lOfront -o../omake
+$CC OMake.c -lOfront -lm -o../omake
 if [ $? != 0 ]; then exit 1; fi
 
 ## OdcToText
 
-$CC OdcToText.c -lOfront -o../odc2txt
+$CC OdcToText.c -lOfront -lm -o../odc2txt
 if [ $? != 0 ]; then exit 1; fi
 
 rm *.o
