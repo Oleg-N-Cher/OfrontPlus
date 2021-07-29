@@ -1,15 +1,15 @@
-      Name            Argument types       Result type        Description
+      Name          Argument types       Result type        Description
 
-SYSTEM.THISARRAY(adr: ADRINT; len: INT32): ARRAY OF ... - used in a list of actual parameters.
-                                                        Allows to pass the memory area at the
-                                                        address adr as array of expected type.
-                                                        The element type will match the required
-                                                        element type of the array parameter.
-                                                        The length of the array (the number
-                                                        of elements) is len.
+SYSTEM.THISARR(adr: ADRINT; len: INT32): ARRAY OF ... - used in a list of actual parameters.
+                                                      Allows to pass the memory area at the
+                                                      address adr as array of expected type.
+                                                      The element type will match the required
+                                                      element type of the array parameter.
+                                                      The length of the array (the number
+                                                      of elements) is len.
 
-SYSTEM.THISRECORD(adr, type_tag: ADRINT): RECORD ...    - allows to pass the memory area as
-                                                        a record of the expected type.
-                                                        See example in BlackBox/System/Meta
+SYSTEM.THISREC(adr, type_tag: ADRINT): RECORD ...     - allows to pass the memory area as
+                                                      a record of the expected type.
+                                                      See example in BlackBox/System/Meta
 
-SYSTEM.TYP(T)       record/record type     ADRINT       Type tag of record type T.
+SYSTEM.TYP(T)     record/record type     ADRINT       Type tag of record or record type T.

@@ -1238,8 +1238,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("VAL", "val", valfn);
 		EnterProc("NEW", "new", sysnewfn);
 		EnterProc("MOVE", "move", movefn);
-		EnterProc("THISRECORD", "thisrecord", thisrecfn);
-		EnterProc("THISARRAY", "thisarray", thisarrfn);
+		EnterProc("THISREC", "thisrec", thisrecfn);
+		EnterProc("THISARR", "thisarr", thisarrfn);
 		IF lang > "2" THEN
 			EnterProc("COPY", "copy", copyfn)
 		END;

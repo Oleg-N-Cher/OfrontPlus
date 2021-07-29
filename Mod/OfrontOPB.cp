@@ -1596,8 +1596,8 @@ avoid unnecessary intermediate variables in OFront
 					typSize(x^.typ); x^.typ^.pvused := TRUE; x := NewIntConst(x^.typ^.size)
 				ELSE err(111); x := NewIntConst(1)
 				END
-		| thisrecfn, (*THISRECORD*)
-		  thisarrfn: (*THISARRAY*)
+		| thisrecfn, (*THISREC*)
+		  thisarrfn: (*THISARR*)
 				IF (x.class = Ntype) OR (x.class = Nproc) THEN err(126)
 				ELSE
 					CASE OPM.AdrSize OF
@@ -1803,8 +1803,8 @@ avoid unnecessary intermediate variables in OFront
 					p^.right := x; p^.typ := p^.typ^.BaseTyp
 				ELSE err(64)
 				END
-		| thisrecfn, (*THISRECORD*)
-		  thisarrfn: (*THISARRAY*)
+		| thisrecfn, (*THISREC*)
+		  thisarrfn: (*THISARR*)
 				IF (x.class = Ntype) OR (x.class = Nproc) THEN err(126)
 				ELSE
 					CASE OPM.AdrSize OF

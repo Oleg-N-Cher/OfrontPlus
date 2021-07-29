@@ -83,7 +83,7 @@ BEGIN
 		ZlibBuffers.Init(w.s.in, buf, offset, len, len);
 		WHILE (w.res = Ok) & (w.s.in.avail # 0) DO
 			IF (w.s.out.avail = 0) THEN
-				Files.WriteBytes(w.r, SYSTEM.THISARRAY(SYSTEM.ADR(w.out^), BufSize), BufSize);
+				Files.WriteBytes(w.r, SYSTEM.THISARR(SYSTEM.ADR(w.out^), BufSize), BufSize);
 				ZlibBuffers.Rewrite(w.s.out)
 			END;
 			IF w.res = Ok THEN
@@ -117,7 +117,7 @@ BEGIN
 	LOOP
 		len := BufSize - w.s.out.avail;
 		IF len # 0 THEN
-			Files.WriteBytes(w.r, SYSTEM.THISARRAY(SYSTEM.ADR(w.out^), BufSize), len);
+			Files.WriteBytes(w.r, SYSTEM.THISARR(SYSTEM.ADR(w.out^), BufSize), len);
 			ZlibBuffers.Rewrite(w.s.out)
 		END;
 		IF done THEN EXIT END;
@@ -146,7 +146,7 @@ BEGIN
 			IF (srclen - totWritten) >= BufSize THEN read := BufSize
 			ELSE read := srclen - totWritten
 			END;
-			Files.ReadBytes(src, SYSTEM.THISARRAY(SYSTEM.ADR(buf), BufSize), read);
+			Files.ReadBytes(src, SYSTEM.THISARR(SYSTEM.ADR(buf), BufSize), read);
 			WriteBytes(w, buf, 0, read - src.res, written);
 			INC(totWritten, written)
 		UNTIL (w.res # Ok) OR (totWritten >= srclen);
