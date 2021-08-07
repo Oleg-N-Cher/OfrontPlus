@@ -1,5 +1,5 @@
 @ECHO OFF
-SET PATH=%CD%\..\Target\Win32
+SET PATH=%CD%\..\Target\Win64
 SET OBERON=%CD%;%CD%\..\Mod;%CD%\..\Mod\Lib
 
 :: Ofront+
