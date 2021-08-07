@@ -1,3 +1,1 @@
--sC -48
-Platform.Windows.Mod -atpx
-Kernel.Mod -atpx
+-sC -48 Platform.Windows.cp -atpx Kernel.cp -atpx
