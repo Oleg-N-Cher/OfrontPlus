@@ -505,7 +505,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		END NewOp;
 
 	BEGIN z := x;
-		IF (z^.class = Ntype) OR (z^.class = Nproc) & (op # adr) & (op # typfn) THEN err(126)
+		IF ((z^.class = Ntype) OR (z^.class = Nproc)) & (op # adr) & (op # typfn) THEN err(126)
 		ELSE typ := z^.typ; f := typ^.form;
 			CASE op OF
 			  not:
@@ -576,11 +576,20 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (z^.class = Nconst) & (f = Char8) & (z^.conval^.intval >= 20H) THEN
 						CharToString8(z); f := String8
 					END;
-					IF (z^.class < Nconst) OR (z^.class = Nproc) OR (f = String8) THEN z := NewOp(op, typ, z)
+					IF (z.class = Nproc) & (z.obj.mode # CProc) THEN
+						IF z.obj.mnolev > 0 THEN err(73)
+						ELSIF z.obj.mode = LProc THEN z.obj.mode := XProc
+						END;
+						z := NewOp(op, typ, z)
+					ELSIF z.class = Ntype THEN
+						IF (z.obj.typ.sysflag # 0) OR (typ.comp = Basic) & (f # Pointer) THEN err(111) END;
+						z := NewOp(op, typ, z)
+					ELSIF (z^.class < Nconst) OR (z.class = Nconst) & (f = String8) THEN
+						z := NewOp(op, typ, z)
 					ELSE err(127)
 					END;
-					CASE OPM.AdrSize OF 4: z^.typ := OPT.inttyp | 2: z^.typ := OPT.sinttyp
-					ELSE z^.typ := OPT.linttyp
+					CASE OPM.AdrSize OF 4: z^.typ := OPT.inttyp | 8: z^.typ := OPT.linttyp
+					ELSE z^.typ := OPT.sinttyp
 					END
 			| typfn: (*TYP*)
 				z := NewOp(op, typ, z);

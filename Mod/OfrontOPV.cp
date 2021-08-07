@@ -768,7 +768,8 @@
 								OPM.WriteString("(SYSTEM_ADRINT)"); TypeOf(l)
 					|	adr: (*SYSTEM*)
 								IF ~oldc THEN OPM.WriteString("(SYSTEM_ADRINT)") END;
-								IF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
+								IF l^.class = Ntype THEN TypeOf(l)
+								ELSIF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
 									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END;
 									expr(l, exprPrec)
