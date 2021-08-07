@@ -1,6 +1,8 @@
 os: windows
 
-language: bash
+language: c
+
+compiler: gcc
 
 notifications:
   email: false
@@ -10,6 +12,12 @@ branches:
     - master
 
 script:
+  - cd Target/Win64/Lib/Bin
+  - ./build.bat
+  - cd ../../Bin
+  - ./o2c.bat
+  - ./cc.bat
+  - cd ../..
   - mkdir unix-88
   - cd unix-88
   - cp ../Mod/Lib/SYSTEM.* .
@@ -28,18 +36,6 @@ script:
   - cp ../Mod/Lib/*.h0 .
   - ../Target/Win32/Bin/o2c-bootstrap.bat -44 Unix
   - cd ..
-  - mkdir windows-48
-  - cd windows-48
-  - cp ../Mod/Lib/SYSTEM.* .
-  - cp ../Mod/Lib/*.h0 .
-  - ../Target/Win32/Bin/o2c-bootstrap.bat -48 Windows
-  - cd ..
-  - mkdir windows-88
-  - cd windows-88
-  - cp ../Mod/Lib/SYSTEM.* .
-  - cp ../Mod/Lib/*.h0 .
-  - ../Target/Win32/Bin/o2c-bootstrap.bat -88 Windows
-  - cd ..
   - rm -Rf .git
   - mv -f Target/Linux_amd64/Bin/.travis.yml .
   - mv Target/Linux_amd64/Bin/cc-bootstrap .
@@ -51,7 +47,7 @@ after_success: |
     git add unix-88
     git add unix-48
     git add unix-44
-    git add windows*
+    git add Target/Win64/*.exe
     git add .travis.yml
     git add cc-bootstrap
     git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "o2c #$TRAVIS_BUILD_NUMBER"
