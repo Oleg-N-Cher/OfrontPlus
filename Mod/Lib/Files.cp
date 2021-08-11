@@ -140,7 +140,8 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
         osfile.registerName := osfile.workName;
         GetTempName(osfile.registerName, osfile.workName);
         osfile.tempFile := TRUE;
-        osfile.state := open;
+        error := Platform.CloseFile(osfile.fd);
+        osfile.state := close;
         error := Platform.RenameFile(osfile.registerName, osfile.workName);
         IF error # 0 THEN
           Err("Couldn't rename previous version of file being registered", osfile, error)
