@@ -4,7 +4,7 @@ SET PATH=..;%PATH%
 SET OBERON=.;..\Lib\Sym;..\Sym;..\..\..\Mod
 
 SET oef=
-IF EXIST ..\oef.exe SET oef=^| oef
+::IF EXIST ..\oef.exe SET oef=^| oef
 
 ofront+ -s -48 ^
   OfrontErrors.cp OfrontOPM.cmdln.cp -G OfrontOPS.cp OfrontOPT.cp OfrontOPB.cp ^
