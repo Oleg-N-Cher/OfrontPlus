@@ -1,4 +1,5 @@
 Arch/
+Mod/TextReplacer.cp
 Target/Linux_amd64/Examples/Obj/*.c
 Target/Linux_amd64/Examples/Obj/*.oh
 Target/Linux_amd64/Examples/Obj/*.sym
@@ -86,6 +87,8 @@ Target/Win32/Examples/Obj/*.oh
 Target/Win32/Examples/Obj/*.sym
 Target/Win32/Examples/*.exe
 Target/Win32/Examples/*.dll
+Target/Win32/Bin/textrepl.bat
+Target/Win32/Lib/C/
 Target/Win32/Lib/Obj/
 Target/Win32/Lib/*.a
 Target/Win32/Obj/
