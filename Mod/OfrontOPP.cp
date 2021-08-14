@@ -287,7 +287,9 @@
 
 	PROCEDURE CheckSym(s: SHORTINT);
 	BEGIN
-		IF sym = s THEN OPS.Get(sym) ELSE OPM.err(s) END
+		IF sym = s THEN OPS.Get(sym)
+		ELSIF (OPM.Lang # "3") OR (s # semicolon) THEN OPM.err(s)
+		END
 	END CheckSym;
 
 	PROCEDURE qualident(VAR id: OPT.Object);
@@ -1823,7 +1825,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
 			IF (OPM.Lang = "7") & (sym = return) THEN (* no semicolon before RETURN *)
 			ELSIF sym = semicolon THEN OPS.Get(sym)
-			ELSIF (sym <= ident) OR (if <= sym) & (sym <= return) THEN err(semicolon)
+			ELSIF (sym <= ident) OR (if <= sym) & (sym <= return)  THEN
+				IF OPM.Lang # "3" THEN err(semicolon) END
 			ELSE EXIT
 			END
 		END;
