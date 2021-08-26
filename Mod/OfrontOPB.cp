@@ -1356,7 +1356,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| Comp:
 				x^.pvused := TRUE;	(* idfp of y guarantees assignment compatibility with x *)
 				IF x^.comp = Record THEN
-					IF (x = y) & (x^.attribute = extAttr) THEN (* ok *)
+					IF (x = y) & (x^.attribute = extAttr) & (OPM.Lang # "C") THEN (* ok *)
 					ELSIF ~OPT.EqualType(x, y) OR (x^.attribute # 0) THEN err(113)
 					END
 				ELSIF g IN {Char8, String8} THEN
