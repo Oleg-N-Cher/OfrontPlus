@@ -79,7 +79,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     Console.Ln; Console.String("-- "); Console.String(s); Console.String(": ");
     IF f # NIL THEN
       IF f.registerName # "" THEN Console.String(f.registerName) ELSE Console.String(f.workName) END;
-      IF f.fd # 0 THEN Console.String("f.fd = "); Console.LongInt(f.fd, 1) END
+      IF f.fd # 0 THEN Console.String(" f.fd = "); Console.LongInt(f.fd, 1) END
     END;
     IF errcode # 0 THEN Console.String(" errcode = "); Console.Int(errcode, 1) END;
     Console.Ln;
