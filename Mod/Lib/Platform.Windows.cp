@@ -51,7 +51,7 @@ TYPE
 VAR
   LittleEndian-:    BOOLEAN;
   PID-:             DWORD;  (* Note: Must be updated by Fork implementation *)
-  CWD-:             ARRAY 4096 OF CHAR;
+  CWD-:             ARRAY MAX_PATH OF CHAR;
 
   TimeStart:        DWORD;  (* milliseconds *)
 

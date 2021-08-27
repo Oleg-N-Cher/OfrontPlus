@@ -50,7 +50,7 @@ TYPE
 VAR
   LittleEndian-:   BOOLEAN;
   PID-:            INTEGER;  (* Note: Must be updated by Fork implementation *)
-  CWD-:            ARRAY 256 OF CHAR;
+  CWD-:            ARRAY 4096 OF CHAR;
 
   TimeStart:       INTEGER;  (* milliseconds *)
 
