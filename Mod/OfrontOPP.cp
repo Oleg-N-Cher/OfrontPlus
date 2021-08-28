@@ -815,7 +815,8 @@
 							ELSE err(52)
 							END
 						ELSE err(ident)
-						END
+						END;
+						CheckSym(rparen)
 					ELSE	(* function call *)
 						pre := NIL; lastp := NIL;
 						OPB.PrepCall(x, fpar);
@@ -824,9 +825,10 @@
 						ActualParameters(apar, fpar, pre, lastp);
 						OPB.Call(x, apar, fpar);
 						IF pre # NIL THEN OPB.Construct(Ncomp, pre, x); pre.typ := x.typ; x := pre END;
-						IF level > 0 THEN OPT.topScope.link.leaf := FALSE END
-					END;
-					CheckSym(rparen)
+						IF level > 0 THEN OPT.topScope.link.leaf := FALSE END;
+						CheckSym(rparen);
+						IF (OPM.Lang # "3") & (OPM.Lang # "C") & ((sym = arrow) OR (sym = period)) THEN err(126) END
+					END
 				ELSE EXIT
 				END
 			ELSE EXIT
@@ -1732,6 +1734,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				ELSIF (x^.class = Nproc) & (x^.obj^.mode = SProc) THEN
 					StandProcCall(x);
 					IF (x # NIL) & (x^.typ # OPT.notyp) THEN err(55) END
+				ELSIF (OPM.Lang # "3") & (x.class = Ncall) THEN err(55)
 				ELSE
 					pre := NIL; lastp := NIL;
 					OPB.PrepCall(x, fpar);
@@ -1740,12 +1743,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						OPS.Get(sym); ActualParameters(apar, fpar, pre, lastp); CheckSym(rparen)
 					ELSE apar := NIL;
 						IF fpar # NIL THEN err(65) END
-					END ;
+					END;
 					OPB.Call(x, apar, fpar);
 					IF x^.typ # OPT.notyp THEN err(55) END;
 					IF pre # NIL THEN SetPos(x); OPB.Construct(Ncomp, pre, x); x := pre END;
 					IF level > 0 THEN OPT.topScope^.link^.leaf := FALSE END
-				END ;
+				END;
 				pos := OPM.errpos
 			ELSIF sym = if THEN
 				OPS.Get(sym); Expression(x); CheckBool(x); CheckSym(then); StatSeq(y);

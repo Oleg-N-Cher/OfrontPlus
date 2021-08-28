@@ -527,9 +527,9 @@
 					IF ~(comp IN {Array, DynArr}) THEN OPM.Write(Deref) END; (* deref var parameter *)
 					OPC.CompleteIdent(n^.obj)
 		|	Nfield:
-					IF n^.left^.class = Nderef THEN design(n^.left^.left, designPrec); OPM.WriteString("->")
+					IF n^.left^.class = Nderef THEN expr(n^.left^.left, designPrec); OPM.WriteString("->")
 					ELSE design(n^.left, designPrec); OPM.Write(".")
-					END ;
+					END;
 					OPC.Ident(n^.obj)
 		|	Nderef:
 					IF n.subcl # 0 THEN
@@ -1275,8 +1275,8 @@
 							OPC.Ident(proc);
 							n^.obj := proc^.link
 						ELSIF n^.left^.class = Nproc THEN design(n^.left, 10)
-						ELSE design(n^.left, ProcTypeVar)
-						END ;
+						ELSE expr(n^.left, ProcTypeVar)
+						END;
 						ActualPar(n^.right, n^.obj)
 			|	Nifelse:
 						IF n^.subcl # assertfn THEN IfStat(n, FALSE, outerProc)
