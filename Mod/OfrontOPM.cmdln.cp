@@ -28,6 +28,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
 		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
 		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
+		widetext* = 18;	(* UTF-16LE encoded text format enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -84,6 +85,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		InfRealPat = 07F800000H;	(* real infinity pattern *)
 
 	TYPE
+		LONGCHAR = CHAR;
 		CHAR = SHORTCHAR;
 		FileName = ARRAY 32 OF CHAR;
 
@@ -234,6 +236,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "d": opt := opt / {dynlib}
 			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
+			| "w": opt := opt / {widetext}
 			| "1", "3"(*undocumented*), "C", "7": Lang := s[i]
 			| "G": opt := opt / {gpcp}
 			| "O": opt := opt / {oakwood}
@@ -348,15 +351,19 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END Init;
 
 	(* ------------------------- read source text -------------------------*)
+	PROCEDURE ^ err*(n: SHORTINT);
 
-	PROCEDURE Get*(VAR ch: CHAR);	(* read next character from source text, 0X if eof *)
+	PROCEDURE Get* (OUT longch: LONGCHAR);	(* read next character from source text, 0X if eof *)
+		VAR ch: CHAR;
 	BEGIN
-		Texts.Read(inR, ch);
-		IF ch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
+		IF ~(widetext IN opt) THEN Texts.Read(inR, ch); longch := ch
+		ELSIF ~Texts.ReadLong(inR, longch) THEN err(3); longch := 0X
+		END;
+		IF longch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
 		ELSIF curpos MOD 256 # 255 THEN INC(curpos)
 			(* at 255 means:  >= 255 *)
 		END;
-		IF (ch < 09X) & ~inR.eot THEN ch := " " END
+		IF (longch < 09X) & ~inR.eot THEN longch := " " END
 	END Get;
 
 	PROCEDURE MakeFileName(IN name: ARRAY OF CHAR; VAR FName: ARRAY OF CHAR; IN ext: ARRAY OF CHAR);
@@ -380,14 +387,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END;
 		LogWNum(n, 1);
 		LogWStr("  ");
-		(*NEW(T); Texts.Open(T, "OfrontErrors.Text"); Texts.OpenScanner(S, T, 0);
-		REPEAT S.line := 0;
-			REPEAT Texts.Scan(S) UNTIL S.eot OR (S.line # 0)
-		UNTIL S.eot OR (S.class = Texts.Int) & (S.i = n);
-		IF ~S.eot THEN Texts.Read(S, ch); i := 0;
-			WHILE ~S.eot & (ch # 0DX) DO buf[i] := ch; INC(i); Texts.Read(S, ch) END ;
-			buf[i] := 0X; LogWStr(buf);
-		END*)
 		OfrontErrors.LogErrMsg(n)
 	END LogErrMsg;
 

@@ -1535,6 +1535,7 @@ avoid unnecessary intermediate variables in OFront
 					ELSIF f = Int64 THEN Convert(x, OPT.inttyp)
 					ELSIF f = Real64 THEN Convert(x, OPT.realtyp)
 					ELSIF (OPM.Lang = "C") & (f = Char8) & (x^.class # Nconst) THEN (* CHAR => SHORTCHAR *)
+					ELSIF (OPM.Lang = "C") & (f = String8) THEN
 					ELSE err(111)
 					END
 				END
@@ -1554,6 +1555,7 @@ avoid unnecessary intermediate variables in OFront
 					ELSIF f = Int32 THEN Convert(x, OPT.linttyp)
 					ELSIF f = Real32 THEN Convert(x, OPT.lrltyp)
 					ELSIF (OPM.Lang = "C") & (f = Char8) THEN (* SHORTCHAR => CHAR *)
+					ELSIF (OPM.Lang = "C") & (f = String8) THEN
 					ELSE err(111)
 					END
 				END

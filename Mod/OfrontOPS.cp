@@ -17,6 +17,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	VAR
 		name-: Name;
 		str-: String;
+		lstr-: POINTER TO ARRAY OF CHAR;
 		numtyp-: SHORTINT; (* 1 = char, 2 = integer, 3 = real, 4 = longreal *)
 		intval-: LONGINT;	(* integer value or string length (incl. 0X) *)
 		realval-: SHORTREAL;
@@ -63,7 +64,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		at = 69; raw = 70; eof = 71;
 
 	VAR
-		ch: SHORTCHAR;     (*current character*)
+		ch: CHAR;     (*current character*)
 		checkKeyword: PROCEDURE (VAR sym: BYTE);
 
 	PROCEDURE err(n: SHORTINT);
@@ -71,16 +72,17 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END err;
 
 	PROCEDURE Str(VAR sym: BYTE);
-		VAR i: INTEGER; och: SHORTCHAR;
-			s: ARRAY 256 OF SHORTCHAR; t: String;
-	BEGIN i := 0; och := ch;
-		LOOP OPM.Get(ch);
-			IF ch = och THEN EXIT END;
-			IF ch < " " THEN err(3); EXIT END;
-			IF i < LEN(s) - 1 THEN s[i] := ch
-			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(t, 2 * LEN(s)); t^ := s$; t^[i] := ch
-			ELSIF i < LEN(t^) - 1 THEN t^[i] := ch
-			ELSE str := t; str^[i] := 0X; NEW(t, 2 * LEN(str^)); t^ := str^$; t^[i] := ch
+		VAR i: INTEGER; och, lch: CHAR; long: BOOLEAN;
+			s: ARRAY 256 OF CHAR; t: POINTER TO ARRAY OF CHAR;
+	BEGIN i := 0; och := ch; long := FALSE;
+		LOOP OPM.Get(lch);
+			IF lch = och THEN EXIT END;
+			IF lch < " " THEN err(3); EXIT END;
+			IF lch > 0FFX THEN long := TRUE END;
+			IF i < LEN(s) - 1 THEN s[i] := lch
+			ELSIF i = LEN(s) - 1 THEN s[i] := 0X; NEW(lstr, 2 * LEN(s)); lstr^ := s$; lstr[i] := lch
+			ELSIF i < LEN(lstr^) - 1 THEN lstr[i] := lch
+			ELSE t := lstr; t[i] := 0X; NEW(lstr, 2 * LEN(t^)); lstr^ := t^$; lstr[i] := lch
 			END;
 			INC(i)
 		END;
@@ -88,8 +90,16 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			IF s[0] < " " THEN err(3) END
 		ELSE
 			sym := string; numtyp := 0; intval := i + 1; NEW(str, intval);
-			IF i < LEN(s) THEN s[i] := 0X; str^ := s$
-			ELSE t^[i] := 0X; str^ := t^$
+			IF long THEN
+				IF i < LEN(s) THEN s[i] := 0X; NEW(lstr, intval); lstr^ := s$
+				ELSE lstr[i] := 0X
+				END;
+				str^ := SHORT(lstr$)
+			ELSE
+				IF i < LEN(s) THEN s[i] := 0X; str^ := SHORT(s$);
+				ELSE lstr[i] := 0X; str^ := SHORT(lstr$)
+				END;
+				lstr := NIL
 			END
 		END;
 		OPM.Get(ch)
@@ -265,10 +275,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END AutoKeywords;
 
 	PROCEDURE Identifier(VAR sym: BYTE);
-		VAR i: SHORTINT;
+		VAR i: INTEGER;
 	BEGIN i := 0;
 		REPEAT
-			name[i] := ch; INC(i); OPM.Get(ch)
+			name[i] := SHORT(ch); INC(i); OPM.Get(ch)
 		UNTIL (ch < "0") OR ("9" < ch) & (CAP(ch) < "A") OR ("Z" < CAP(ch)) & (ch # "_") OR (i = MaxIdLen);
 		IF i = MaxIdLen THEN err(240); DEC(i) END;
 		name[i] := 0X; sym := ident;
@@ -279,10 +289,10 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		VAR i, j, m, n, d, e: INTEGER; f, g: REAL; expCh: SHORTCHAR; neg: BOOLEAN;
 			dig: ARRAY 24 OF SHORTCHAR;
 
-		PROCEDURE Ord(ch: SHORTCHAR; hex: BOOLEAN): SHORTINT;
+		PROCEDURE Ord(ch: CHAR; hex: BOOLEAN): INTEGER;
 		BEGIN (* ("0" <= ch) & (ch <= "9") OR ("A" <= ch) & (ch <= "F") *)
-			IF ch <= "9" THEN RETURN SHORT(ORD(ch) - ORD("0"))
-			ELSIF hex THEN RETURN SHORT(ORD(ch) - ORD("A") + 10)
+			IF ch <= "9" THEN RETURN ORD(ch) - ORD("0")
+			ELSIF hex THEN RETURN ORD(ch) - ORD("A") + 10
 			END; err(2); RETURN 0
 		END Ord;
 
@@ -291,7 +301,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		LOOP (* read mantissa *)
 			IF ("0" <= ch) & (ch <= "9") OR (d = 0) & ("A" <= ch) & (ch <= "F") THEN
 				IF (m > 0) OR (ch # "0") THEN (* ignore leading zeros *)
-					IF n < LEN(dig) THEN dig[n] := ch; INC(n) END;
+					IF n < LEN(dig) THEN dig[n] := SHORT(ch); INC(n) END;
 					INC(m)
 				END;
 				OPM.Get(ch); INC(i)
@@ -343,7 +353,8 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			f := 0; g := 0; e := 0; j := 0; expCh := "E";
 			WHILE (j < 15) & (j < n) DO g := g * 10 + Ord(dig[j], FALSE); INC(j) END;	(* !!! *)
 			WHILE n > j DO (* 0 <= f < 1 *) DEC(n); f := (Ord(dig[n], FALSE) + f)/10 END;
-			IF (ch = "E") OR (ch = "D") & (OPM.Lang <= "3") THEN expCh := ch; OPM.Get(ch); neg := FALSE;
+			IF (ch = "E") OR (ch = "D") & (OPM.Lang <= "3") THEN
+				expCh := SHORT(ch); OPM.Get(ch); neg := FALSE;
 				IF ch = "-" THEN neg := TRUE; OPM.Get(ch)
 				ELSIF ch = "+" THEN OPM.Get(ch)
 				END;
@@ -426,7 +437,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 					EnsureLen(n + 1); str[n] := "*"; INC(n)
 				END;
 				IF ch = OPM.Eot THEN err(5); str[n] := 0X; EXIT END;
-				EnsureLen(n + 1); str[n] := ch; INC(n)
+				EnsureLen(n + 1); str[n] := SHORT(ch); INC(n)
 			END;
 			RETURN FALSE
 		END Comment;

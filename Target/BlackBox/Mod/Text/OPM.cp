@@ -31,6 +31,7 @@
 		noinit* = 15;	(* don't generate BEGIN section's body *)
 		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
 		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
+		widetext* = 18;	(* UTF-16LE encoded text format enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -365,6 +366,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			| "d": opt := opt / {dynlib}
 			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
+			| "w": opt := opt / {widetext}
 			| "1", "3"(*undocumented*), "C", "7": Lang := SHORT(s[i])
 			| "G": opt := opt / {gpcp}
 			| "O": opt := opt / {oakwood}
@@ -740,10 +742,11 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		RETURN " " (* Replace an unknown character to " " *)
 	END WideCharToCP;
 
-	PROCEDURE Get*(VAR ch: SHORTCHAR);	(* read next character from source text, 0X if eof *)
+	PROCEDURE Get* (OUT ch: CHAR);	(* read next character from source text, 0X if eof *)
 	BEGIN
 		inR.Read();
 		IF inR.eot THEN ch := 0X
+		ELSIF widetext IN opt THEN ch := inR.char
 		ELSE ch := WideCharToCP(inR.char); INC(curpos)
 		END
 	END Get;

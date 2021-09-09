@@ -4,7 +4,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
 
   TYPE
     SHORTINT = s.INT8; INTEGER = s.INT16; LONGINT = s.INT32; HUGEINT = s.INT64;
-    CHAR = s.CHAR8; REAL = s.REAL32; LONGREAL = s.REAL64;
+    CHAR = s.CHAR8; LONGCHAR = s.CHAR16; REAL = s.REAL32; LONGREAL = s.REAL64;
 
   (*--- insert field e: Elem into Texts.Scanner and change Texts.Scan to set it in case of class=6 *)
 
@@ -338,7 +338,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     END
   END OpenReader;
 
-  PROCEDURE Read* (VAR R: Reader; VAR ch: CHAR);
+  PROCEDURE Read* (VAR R: Reader; OUT ch: CHAR);
     VAR u: Run; pos: LONGINT; nextch: CHAR;
   BEGIN u := R.run; R.fnt := u.fnt; R.col := u.col; R.voff := u.voff; INC(R.off);
     IF u IS Piece THEN Files.ReadChar(R.rider, ch); R.elem := NIL;
@@ -357,6 +357,30 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       R.run := u; R.off := 0
     END
   END Read;
+
+  PROCEDURE ReadLong* (VAR R: Reader; OUT longch: LONGCHAR): BOOLEAN;
+    VAR ch: CHAR; val: LONGINT;
+  BEGIN Read(R, ch);
+    IF ch < 80X THEN
+      longch := ch
+    ELSIF ch < 0E0X THEN
+      val := ORD(ch) - 192;
+      IF val < 0 THEN RETURN FALSE END;
+      Read(R, ch); val := val * 64 + ORD(ch) - 128;
+      IF (ch < 80X) OR (ch >= 0E0X) THEN RETURN FALSE END;
+      longch := CHR(val)
+    ELSIF ch < 0F0X THEN 
+      val := ORD(ch) - 224;
+      Read(R, ch); val := val * 64 + ORD(ch) - 128;
+      IF (ch < 80X) OR (ch >= 0E0X) THEN RETURN FALSE END;
+      Read(R, ch); val := val * 64 + ORD(ch) - 128;
+      IF (ch < 80X) OR (ch >= 0E0X) THEN RETURN FALSE END;
+      longch := CHR(val)
+    ELSE
+      RETURN FALSE
+    END;
+    RETURN TRUE
+  END ReadLong;
 
   PROCEDURE ReadElem* (VAR R: Reader);
     VAR u, un: Run;

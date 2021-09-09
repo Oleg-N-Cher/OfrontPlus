@@ -1218,6 +1218,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
 		IF lang # "3" THEN
 			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
+			EnterTypeAlias("CHAR16", "char16", char8, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
@@ -1250,6 +1251,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterTyp("SET", "set", Set, OPM.SetSize, settyp);
 		IF lang = "C" THEN
 			EnterTypeAlias("SHORTCHAR", "shortchar", char8, chartyp);
+			EnterTypeAlias("CHAR", "char", char8, chartyp);
 			EnterTypeAlias("BYTE", "byte", int8, bytetyp);
 			EnterTypeAlias("SHORTINT", "shortint", int16, sinttyp);
 			EnterTypeAlias("INTEGER", "integer", int32, inttyp);
@@ -1258,7 +1260,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("REAL", "real", real64, lrltyp);
 			EnterTyp("UBYTE", "ubyte", UByte, 1, ubytetyp)
 		ELSIF lang = "3" THEN
-			EnterTyp("CHAR", "char8", Char, 1, chartyp);
+			EnterTyp("CHAR", "char", Char, 1, chartyp);
+			EnterTypeAlias("LONGCHAR", "longchar", char8, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
