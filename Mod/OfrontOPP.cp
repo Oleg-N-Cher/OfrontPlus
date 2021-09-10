@@ -1363,7 +1363,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			ELSE low := 1; high := 0
 			END;
 			e := sym = else;
-			IF e THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END ;
+			IF e & (OPM.Lang # "7") THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END;
 			OPB.Construct(Ncaselse, cases, y); OPB.Construct(Ncase, x, cases);
 			cases^.conval := OPT.NewConst();
 			cases^.conval^.intval := low; cases^.conval^.intval2 := high;
