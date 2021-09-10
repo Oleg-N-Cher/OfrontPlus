@@ -1362,7 +1362,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF high - low > OPM.MaxCaseRange THEN err(209) END
 			ELSE low := 1; high := 0
 			END;
-			e := sym = else;
+			e := (sym = else) OR (OPM.Lang = "7");
 			IF e & (OPM.Lang # "7") THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END;
 			OPB.Construct(Ncaselse, cases, y); OPB.Construct(Ncase, x, cases);
 			cases^.conval := OPT.NewConst();

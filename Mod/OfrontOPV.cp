@@ -1027,15 +1027,18 @@
 			OPC.BegStat; OPM.WriteString(Break); OPC.EndStat;
 			OPC.Indent(-1);
 			switchCase := switchCase^.link
-		END ;
-		OPC.BegStat; OPM.WriteString("default: ");
-		IF n^.right^.conval^.setval # {} THEN	(* else branch *)
-			OPC.Indent(1); OPM.WriteLn; stat(n^.right^.right, outerProc);
-			OPC.BegStat; OPM.WriteString(Break); OPC.Indent(-1)
-		ELSE
-			OPM.WriteString("__CASECHK("); OPM.WriteModPos; OPM.Write(")")
 		END;
-		OPC.EndStat; OPC.EndBlk
+		IF OPM.Lang # "7" THEN
+			OPC.BegStat; OPM.WriteString("default: ");
+			IF n^.right^.conval^.setval # {} THEN	(* else branch *)
+				OPC.Indent(1); OPM.WriteLn; stat(n^.right^.right, outerProc);
+				OPC.BegStat; OPM.WriteString(Break); OPC.Indent(-1)
+			ELSE
+				OPM.WriteString("__CASECHK("); OPM.WriteModPos; OPM.Write(")")
+			END;
+			OPC.EndStat
+		END;
+		OPC.EndBlk
 	END CaseStat;
 
 	PROCEDURE ImplicitReturn(n: OPT.Node): BOOLEAN;
