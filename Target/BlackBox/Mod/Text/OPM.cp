@@ -300,6 +300,39 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		RETURN inV
 	END ViewsOld;
 
+	(* utf8 strings *)
+
+	PROCEDURE PutUtf8* (VAR str: ARRAY OF SHORTCHAR; val: INTEGER; VAR idx: INTEGER);
+	BEGIN
+		ASSERT((val >= 0) & (val < 65536));
+		IF val < 128 THEN
+			str[idx] := SHORT(CHR(val)); INC(idx)
+		ELSIF val < 2048 THEN
+			str[idx] := SHORT(CHR(val DIV 64 + 192)); INC(idx);
+			str[idx] := SHORT(CHR(val MOD 64 + 128)); INC(idx)
+		ELSE
+			str[idx] := SHORT(CHR(val DIV 4096 + 224)); INC(idx);
+			str[idx] := SHORT(CHR(val DIV 64 MOD 64 + 128)); INC(idx);
+			str[idx] := SHORT(CHR(val MOD 64 + 128)); INC(idx)
+		END
+	END PutUtf8;
+
+	PROCEDURE GetUtf8* (IN str: ARRAY OF SHORTCHAR; VAR val, idx: INTEGER);
+		VAR ch: SHORTCHAR;
+	BEGIN
+		ch := str[idx]; INC(idx);
+		IF ch < 80X THEN
+			val := ORD(ch)
+		ELSIF ch < 0E0X THEN
+			val := ORD(ch) - 192;
+			ch := str[idx]; INC(idx); val := val * 64 + ORD(ch) - 128
+		ELSE
+			val := ORD(ch) - 224;
+			ch := str[idx]; INC(idx); val := val * 64 + ORD(ch) - 128;
+			ch := str[idx]; INC(idx); val := val * 64 + ORD(ch) - 128
+		END
+	END GetUtf8;
+
 	(* ------------------------- Log Output ------------------------- *)
 
 	PROCEDURE LogW*(ch: CHAR);
