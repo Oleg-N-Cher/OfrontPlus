@@ -85,9 +85,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		InfRealPat = 07F800000H;	(* real infinity pattern *)
 
 	TYPE
-		LONGCHAR = CHAR;
-		CHAR = SHORTCHAR;
-		FileName = ARRAY 32 OF CHAR;
+		FileName = ARRAY 32 OF SHORTCHAR;
 
 	VAR
 		LEHost: BOOLEAN;	(* little or big endian host *)
@@ -100,11 +98,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		currFile*: INTEGER;	(* current output file *)
 		level*: INTEGER;	(* procedure nesting level *)
 		pc-, entno-: INTEGER;  (* entry number *)
-		modName-: ARRAY 32 OF CHAR;
-		objname*: ARRAY 64 OF CHAR;
+		modName-: ARRAY 32 OF SHORTCHAR;
+		objname*: ARRAY 64 OF SHORTCHAR;
 
 		opt*, glbopt: SET;
-		GlobalLang, Lang-: CHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
+		GlobalLang, Lang-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
 		GlobalAdrSize, AdrSize-, GlobalAlignment, Alignment-: SHORTINT;
 
 		crc32tab: ARRAY 256 OF INTEGER;
@@ -119,7 +117,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		S: INTEGER;
 		stop: BOOLEAN;
 
-		OBERON:  ARRAY 1024 OF CHAR;
+		OBERON: ARRAY 1024 OF SHORTCHAR;
 
 	(* ----------------------- System runtime ----------------------- *)
 
@@ -175,13 +173,46 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		RETURN y
 	END IntPower;
 
+	(* utf8 strings *)
+
+	PROCEDURE PutUtf8* (VAR str: ARRAY OF SHORTCHAR; val: INTEGER; VAR idx: INTEGER);
+	BEGIN
+		ASSERT((val >= 0) & (val < 65536));
+		IF val < 128 THEN
+			str[idx] := SHORT(CHR(val)); INC(idx)
+		ELSIF val < 2048 THEN
+			str[idx] := SHORT(CHR(val DIV 64 + 192)); INC(idx);
+			str[idx] := SHORT(CHR(val MOD 64 + 128)); INC(idx)
+		ELSE
+			str[idx] := SHORT(CHR(val DIV 4096 + 224)); INC(idx);
+			str[idx] := SHORT(CHR(val DIV 64 MOD 64 + 128)); INC(idx);
+			str[idx] := SHORT(CHR(val MOD 64 + 128)); INC(idx)
+		END
+	END PutUtf8;
+
+	PROCEDURE GetUtf8* (IN str: ARRAY OF SHORTCHAR; VAR val, idx: INTEGER);
+		VAR ch: SHORTCHAR;
+	BEGIN
+		ch := str[idx]; INC(idx);
+		IF ch < 80X THEN
+			val := ORD(ch)
+		ELSIF ch < 0E0X THEN
+			val := ORD(ch) - 192;
+			ch := str[idx]; INC(idx); val := val * 64 + ORD(ch) - 128
+		ELSE
+			val := ORD(ch) - 224;
+			ch := str[idx]; INC(idx); val := val * 64 + ORD(ch) - 128;
+			ch := str[idx]; INC(idx); val := val * 64 + ORD(ch) - 128
+		END
+	END GetUtf8;
+
 	(* ------------------------- Log Output ------------------------- *)
 
-	PROCEDURE LogW*(ch: CHAR);
+	PROCEDURE LogW*(ch: SHORTCHAR);
 	BEGIN Console.Char(ch)
 	END LogW;
 
-	PROCEDURE LogWStr*(IN s: ARRAY OF CHAR);
+	PROCEDURE LogWStr*(IN s: ARRAY OF SHORTCHAR);
 	BEGIN Console.String(s)
 	END LogWStr;
 
@@ -217,7 +248,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- parameter handling -------------------------*)
 
-	PROCEDURE ScanOptions(VAR s: ARRAY OF CHAR; VAR opt: SET);
+	PROCEDURE ScanOptions(VAR s: ARRAY OF SHORTCHAR; VAR opt: SET);
 		VAR i: INTEGER;
 	BEGIN i := 1; (* skip - *)
 		WHILE s[i] # 0X DO
@@ -274,8 +305,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END ScanOptions;
 
-	PROCEDURE OpenPar*(IN title, cmd: ARRAY OF CHAR);	(* prepare for a sequence of translations *)
-		VAR s: ARRAY 256 OF CHAR;
+	PROCEDURE OpenPar*(IN title, cmd: ARRAY OF SHORTCHAR);	(* prepare for a sequence of translations *)
+		VAR s: ARRAY 256 OF SHORTCHAR;
 	BEGIN
 		IF Args.argc = 1 THEN stop := TRUE;
 			Console.Ln;
@@ -314,7 +345,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END OpenPar;
 
 	PROCEDURE InitOptions*;	(* get the options for one translation *)
-		VAR s: ARRAY 256 OF CHAR;
+		VAR s: ARRAY 256 OF SHORTCHAR;
 	BEGIN
 		Alignment := GlobalAlignment; AdrSize := GlobalAdrSize;
 		opt := glbopt;
@@ -325,8 +356,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END InitOptions;
 
 	(* get the source for one translation; msg is "translating" or "compiling" *)
-	PROCEDURE Init* (IN msg: ARRAY OF CHAR; VAR done: BOOLEAN);
-		VAR T: Texts.Text; endpos: INTEGER; s: ARRAY 256 OF CHAR;
+	PROCEDURE Init* (IN msg: ARRAY OF SHORTCHAR; VAR done: BOOLEAN);
+		VAR T: Texts.Text; endpos: INTEGER; s: ARRAY 256 OF SHORTCHAR;
 	BEGIN
 		done := FALSE; curpos := 0;
 		IF stop OR (S >= Args.argc) THEN noerr := TRUE; RETURN END;
@@ -353,8 +384,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- read source text -------------------------*)
 	PROCEDURE ^ err*(n: SHORTINT);
 
-	PROCEDURE Get* (OUT longch: LONGCHAR);	(* read next character from source text, 0X if eof *)
-		VAR ch: CHAR;
+	PROCEDURE Get* (OUT longch: CHAR);	(* read next character from source text, 0X if eof *)
+		VAR ch: SHORTCHAR;
 	BEGIN
 		IF ~(widetext IN opt) THEN Texts.Read(inR, ch); longch := ch
 		ELSIF ~Texts.ReadLong(inR, longch) THEN err(3); longch := 0X
@@ -366,8 +397,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF (longch < 09X) & ~inR.eot THEN longch := " " END
 	END Get;
 
-	PROCEDURE MakeFileName(IN name: ARRAY OF CHAR; VAR FName: ARRAY OF CHAR; IN ext: ARRAY OF CHAR);
-		VAR i, j: INTEGER; ch: CHAR;
+	PROCEDURE MakeFileName(IN name: ARRAY OF SHORTCHAR; VAR FName: ARRAY OF SHORTCHAR; IN ext: ARRAY OF SHORTCHAR);
+		VAR i, j: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0;
 		LOOP ch := name[i];
 			IF ch = 0X THEN EXIT END ;
@@ -379,8 +410,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END MakeFileName;
 
 	PROCEDURE LogErrMsg(n: SHORTINT);
-		(*VAR S: Texts.Scanner; T: Texts.Text; ch: CHAR; i: INTEGER;
-			buf: ARRAY 1024 OF CHAR;*)
 	BEGIN
 		IF n >= 0 THEN LogWStr("  err ")
 		ELSE LogWStr("  warning "); n := SHORT(-n)
@@ -475,7 +504,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- Read Symbol File ------------------------- *)
 
-	PROCEDURE SymRCh*(VAR ch: CHAR);
+	PROCEDURE SymRCh*(VAR ch: SHORTCHAR);
 	BEGIN Files.ReadChar(oldSF, ch)
 	END SymRCh;
 
@@ -500,8 +529,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE CloseOldSym*;
 	END CloseOldSym;
 
-	PROCEDURE OldSym*(IN modName: ARRAY OF CHAR; VAR done: BOOLEAN);
-		VAR ch: CHAR; fileName: FileName;
+	PROCEDURE OldSym*(IN modName: ARRAY OF SHORTCHAR; VAR done: BOOLEAN);
+		VAR ch: SHORTCHAR; fileName: FileName;
 	BEGIN MakeFileName(modName, fileName, SFext);
 		oldSFile := Files.Old(fileName); done := oldSFile # NIL;
 		IF done THEN
@@ -518,7 +547,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- Write Symbol File ------------------------- *)
 
-	PROCEDURE SymWCh*(ch: CHAR);
+	PROCEDURE SymWCh*(ch: SHORTCHAR);
 	BEGIN Files.WriteChar(newSF, ch)
 	END SymWCh;
 
@@ -546,7 +575,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE DeleteNewSym*;
 	END DeleteNewSym;
 
-	PROCEDURE NewSym*(VAR modName: ARRAY OF CHAR);
+	PROCEDURE NewSym*(VAR modName: ARRAY OF SHORTCHAR);
 		VAR fileName: FileName;
 	BEGIN MakeFileName(modName, fileName, SFext);
 		newSFile := Files.New(fileName);
@@ -557,11 +586,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- Write Header & Body Files ------------------------- *)
 
-	PROCEDURE Write*(ch: CHAR);
+	PROCEDURE Write*(ch: SHORTCHAR);
 	BEGIN Files.WriteChar(R[currFile], ch)
 	END Write;
 
-	PROCEDURE WriteString* (IN s: ARRAY OF CHAR);
+	PROCEDURE WriteString* (IN s: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER;
 	BEGIN i := 0;
 		WHILE s[i] # 0X DO INC(i) END;
@@ -569,19 +598,22 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteString;
 
 	PROCEDURE WriteHex* (i: INTEGER);
-		VAR s: ARRAY 3 OF CHAR;
-			digit : INTEGER;
+		VAR s: ARRAY 3 OF SHORTCHAR; digit: INTEGER;
 	BEGIN
 		digit := SHORT(i) DIV 16;
-		IF digit < 10 THEN s[0] := CHR (ORD ("0") + digit); ELSE s[0] := CHR (ORD ("a") - 10 + digit ); END;
+		IF digit < 10 THEN s[0] := SHORT(CHR(ORD("0") + digit))
+		ELSE s[0] := SHORT(CHR(ORD("a") - 10 + digit))
+		END;
 		digit := SHORT(i) MOD 16;
-		IF digit < 10 THEN s[1] := CHR (ORD ("0") + digit); ELSE s[1] := CHR (ORD ("a") - 10 + digit ); END;
+		IF digit < 10 THEN s[1] := SHORT(CHR(ORD("0") + digit))
+		ELSE s[1] := SHORT(CHR(ORD("a") - 10 + digit))
+		END;
 		s[2] := 0X;
 		WriteString(s)
 	END WriteHex;
 
 	PROCEDURE WriteInt* (i: LONGINT);
-		VAR s: ARRAY 20 OF CHAR; i1: LONGINT; k: INTEGER;
+		VAR s: ARRAY 20 OF SHORTCHAR; i1: LONGINT; k: INTEGER;
 	BEGIN
 		IF (i = MIN(INTEGER)) OR (i = MIN(LONGINT)) THEN	(* requires special bootstrap for 64 bit *)
 			(* ABS(MIN(INTEGER)) is one more than MAX(INTEGER), causing problems representing the value
@@ -590,16 +622,16 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 				For LONGINT it is the only way to represent MinLInt. *)
 			Write("("); WriteInt(i+1); WriteString("-1)")	(* requires special bootstrap for 64 bit *)
 		ELSE i1 := ABS(i);
-			s[0] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; k := 1;
-			WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END;
+			s[0] := SHORT(CHR(i1 MOD 10 + ORD("0"))); i1 := i1 DIV 10; k := 1;
+			WHILE i1 > 0 DO s[k] := SHORT(CHR(i1 MOD 10 + ORD("0"))); i1 := i1 DIV 10; INC(k) END;
 			IF i < 0 THEN s[k] := "-"; INC(k) END;
 			WHILE k > 0 DO  DEC(k); Write(s[k]) END;
 			IF (ansi IN opt) & ((i < MIN(INTEGER)) OR (i > MAX(INTEGER))) THEN WriteString("LL") END
 		END
 	END WriteInt;
 
-	PROCEDURE WriteReal* (r: REAL; suffx: CHAR);
-		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF CHAR; ch: CHAR; i: INTEGER;
+	PROCEDURE WriteReal* (r: REAL; suffx: SHORTCHAR);
+		VAR W: Texts.Writer; T: Texts.Text; R: Texts.Reader; s: ARRAY 32 OF SHORTCHAR; ch: SHORTCHAR; i: INTEGER;
 	BEGIN
 		IF ABS(r) > 1.0E+308 THEN Write("("); WriteReal(r / 2, suffx); WriteString(" * 2)"); RETURN END;
 		IF (r < MAX(LONGINT)) & (r > MIN(LONGINT)) & (r = ENTIER(r)) THEN
@@ -632,7 +664,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteModPos;
 
 	PROCEDURE Append (VAR R: Files.Rider; F: Files.File);
-		VAR R1: Files.Rider; buffer: ARRAY 4096 OF CHAR;
+		VAR R1: Files.Rider; buffer: ARRAY 4096 OF SHORTCHAR;
 	BEGIN
 		IF F # NIL THEN
 			Files.Set(R1, F, 0);
@@ -644,8 +676,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END Append;
 
-	PROCEDURE OpenFiles*(VAR moduleName: ARRAY OF CHAR);
-		VAR FName: ARRAY 32 OF CHAR;
+	PROCEDURE OpenFiles*(VAR moduleName: ARRAY OF SHORTCHAR);
+		VAR FName: ARRAY 32 OF SHORTCHAR;
 	BEGIN
 		modName := moduleName$;
 		HFile := Files.New("");
@@ -665,7 +697,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END OpenFiles;
 
 	PROCEDURE CloseFiles*;
-		VAR FName: ARRAY 32 OF CHAR; res: INTEGER; body: BOOLEAN;
+		VAR FName: ARRAY 32 OF SHORTCHAR; res: INTEGER; body: BOOLEAN;
 	BEGIN
 		body := ~(foreign IN opt);
 		IF noerr THEN LogWStr("    ");

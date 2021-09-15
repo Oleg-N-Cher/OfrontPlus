@@ -36,16 +36,17 @@
 		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13; Attr = 20;
 
 		(* Structure forms *)
-		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
+		Undef = 0; Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
-		intSet = {Byte, UByte, SInt..LInt}; charSet = {Char};
+		Char16 = 17; String16 = 18;
+		intSet = {Byte, UByte, SInt..LInt}; charSet = {Char8, Char16};
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
 		(*function number*)
-		haltfn = 0; newfn = 1; incfn = 18; decfn = 19; sysnewfn = 35;
+		haltfn = 0; newfn = 1; incfn = 19; decfn = 20; sysnewfn = 36;
 
 		(* nodes classes *)
 		Nvar = 0; Nvarpar = 1; Nfield = 2; Nderef = 3; Nindex = 4; Nguard = 5; Neguard = 6;
@@ -161,7 +162,7 @@
 			ELSIF obj.mode = TProc THEN	(* proc return type *)
 				IF typ.form = Comp THEN typ := OPT.undftyp; OPM.Mark(54, pos) END
 			ELSIF obj.mode = Typ THEN	(* alias type *)
-				IF typ.form IN {Byte..Set, LInt} THEN	(* make alias structure *)
+				IF typ.form IN {Byte..Set, Char16, LInt} THEN	(* make alias structure *)
 					t := OPT.NewStr(typ.form, Basic); i := t.ref;
 					t^ := typ^; t.ref := i; t.strobj := obj; t.mno := 0;
 					t.BaseTyp := typ; typ := t
@@ -201,7 +202,7 @@
 				END;
 				CheckRecursiveType(struct, typ, pos)
 			ELSIF struct.form = ProcTyp THEN	(* proc type return type *)
-				IF typ.form = Comp THEN typ := OPT.undftyp; OPM.Mark(54, pos) END;
+				IF typ.form = Comp THEN typ := OPT.undftyp; OPM.Mark(54, pos) END
 			ELSE HALT(100)
 			END;
 			struct.BaseTyp := typ
@@ -252,7 +253,7 @@
 					IF typ.strobj # NIL THEN
 						OPM.LogWStr(m.name); OPM.LogWStr(" not implemented in "); OPM.LogWStr(typ.strobj.name)
 					ELSE
-						OPM.LogWStr(m.name); OPM.LogWStr(" not implemented");
+						OPM.LogWStr(m.name); OPM.LogWStr(" not implemented")
 					END
 				END
 			END;
@@ -386,7 +387,7 @@
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
-			IF (sym = ident) & (OPS.name = "stdcall") THEN OPS.Get(sym); sysflag := 1
+			IF (sym = ident) & ((OPS.name = "stdcall") OR (OPS.name = "callback")) THEN OPS.Get(sym); sysflag := 1
 			ELSIF (sym = ident) & (OPS.name = "fastcall") THEN OPS.Get(sym); sysflag := 2
 			ELSE OPS.Get(sym); err(178); sysflag := 0
 			END;
@@ -902,13 +903,13 @@
 	(* конструкция "константный массив". typ - текущий уровень массива *)
 		VAR apar: OPT.Node; n, i: INTEGER; fp: OPT.Object; y: OPT.ConstArr;
 	BEGIN
-		IF (sym # lparen) & (typ^.BaseTyp^.form = Char) THEN (* это должна быть строка *)
+		IF (sym # lparen) & (typ^.BaseTyp^.form IN charSet) THEN (* это должна быть строка *)
 			ConstExpression(apar); (* попытаемся взять эту строку *)
-			IF (apar^.typ^.comp = Basic) & (apar^.typ^.form = String) &
+			IF (apar^.typ^.comp = Basic) & (apar^.typ^.form IN {String8, String16}) &
 				(apar^.conval^.intval2 <= typ^.n) THEN (* взяли строку допустимой длины *)
 				String2Chars(apar, x);
 				INC(x^.conval^.intval, typ^.n);
-			ELSIF (apar^.typ^.comp = Basic) & (apar^.typ^.form = Char) THEN (* прочитался символ *)
+			ELSIF (apar^.typ^.comp = Basic) & (apar^.typ^.form IN charSet) THEN (* прочитался символ *)
 				IF x^.conval^.intval < LEN(x^.conval^.arr.val1) THEN
 					x^.conval^.arr.val1[x^.conval^.intval] := SHORT(SHORT(SHORT(apar^.conval^.intval)));
 					INC(x^.conval^.intval, typ^.n)
@@ -922,15 +923,15 @@
 		CheckSym(lparen);
 		n := typ^.n; (* количество элементов массива *)
 		i := 0;
-		IF typ^.BaseTyp^.form IN intSet + {Bool, Char} THEN (* массив из целых (в т.ч. BYTE)  *)
+		IF typ^.BaseTyp^.form IN intSet + charSet + {Bool} THEN (* массив из целых (в т.ч. BYTE)  *)
 			y := x^.conval^.arr;
 			fp := OPT.NewObj(); fp^.typ := typ^.BaseTyp;
 			fp^.mode := Var;  (* fp - переменная, элемент массива *)
 			IF sym # rparen THEN
 				LOOP ConstExpression(apar); (* берем очередной элемент *)
 					IF i < n THEN
-						IF (i = 0) & (typ^.BaseTyp^.form IN {Char, Byte})  (* считывали первый символ *)
-							& (apar^.typ^.comp = Basic) & (apar^.typ^.form = String)  (* а прочитали строку *)
+						IF (i = 0) & (typ^.BaseTyp^.form IN charSet + {Byte})  (* считывали первый символ *)
+							& (apar^.typ^.comp = Basic) & (apar^.typ^.form IN {String8, String16})  (* а прочитали строку *)
 							& (apar^.conval^.intval2 <= typ^.n)  (* допустимой длины *) THEN
 							String2Chars(apar, x);
 						ELSE
@@ -965,7 +966,7 @@
 				END
 			END;
 			IF i # n THEN
-				IF (i = 1) & (typ^.BaseTyp^.form IN {Char, Byte}) THEN
+				IF (i = 1) & (typ^.BaseTyp^.form IN charSet + {Byte}) THEN
 				(* один символ (мы его уже считали) может означать целую строку *)
 				ELSE
 			 		err(65)
@@ -1010,14 +1011,16 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			END
 		ELSIF sym = number THEN
 			CASE OPS.numtyp OF
-			   char: x := OPB.NewIntConst(OPS.intval); x^.typ := OPT.chartyp
+			   char:
+					x := OPB.NewIntConst(OPS.intval); x^.typ := OPT.char8typ;
+					IF OPS.intval > 255 THEN x.typ := OPT.char16typ END
 			| integer: x := OPB.NewIntConst(OPS.intval)
 			| real: x := OPB.NewRealConst(OPS.realval, OPT.realtyp)
 			| longreal: x := OPB.NewRealConst(OPS.lrlval, OPT.lrltyp)
-			END ;
+			END;
 			OPS.Get(sym)
 		ELSIF sym = string THEN
-			x := OPB.NewString(OPS.str, SHORT(OPS.intval)); OPS.Get(sym)
+			x := OPB.NewString(OPS.str, OPS.lstr, SHORT(OPS.intval)); OPS.Get(sym)
 		ELSIF sym = nil THEN
 			x := OPB.Nil(); OPS.Get(sym)
 		ELSIF sym = lparen THEN
@@ -1028,7 +1031,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		ELSIF sym = not THEN
 			OPS.Get(sym); Factor(x); OPB.MOp(not, x)
 		ELSE err(13); OPS.Get(sym); x := NIL
-		END ;
+		END;
 		IF x = NIL THEN x := OPB.NewIntConst(1); x^.typ := OPT.undftyp END
 	END Factor;
 
@@ -1050,12 +1053,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		END;
 		WHILE (plus <= sym) & (sym <= or) DO
 			addop := sym; OPS.Get(sym); Term(y);
-			IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN OPB.DeRef(x) END;
-			IF (x^.typ^.comp IN {Array, DynArr}) & (x^.typ^.BaseTyp.form = Char) THEN
+			IF (OPM.Lang = "C") & (x.typ.form = Pointer) THEN OPB.DeRef(x) END;
+			IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form IN charSet) THEN
 				OPB.StrDeref(x)
 			END;
-			IF (OPM.Lang = "C") & (y^.typ^.form = Pointer) THEN OPB.DeRef(y) END;
-			IF (y^.typ^.comp IN {Array, DynArr}) & (y^.typ^.BaseTyp.form = Char) THEN
+			IF (OPM.Lang = "C") & (y.typ.form = Pointer) THEN OPB.DeRef(y) END;
+			IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form IN charSet) THEN
 				OPB.StrDeref(y)
 			END;
 			OPB.Op(addop, x, y)
@@ -1305,7 +1308,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		VAR x, y, lastlab: OPT.Node; i, f: SHORTINT; xval, yval: INTEGER;
 	BEGIN lab := NIL; lastlab := NIL;
 		LOOP ConstExpression(x); f := x^.typ^.form;
-			IF f IN intSet + {Char} THEN xval := SHORT(x^.conval^.intval)
+			IF f IN intSet + charSet THEN xval := SHORT(x^.conval^.intval)
 			ELSE err(61); xval := 1
 			END ;
 			IF (f IN intSet) # (LabelForm IN intSet) THEN err(60) END;
@@ -1347,7 +1350,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		BEGIN
 			Expression(x); pos := OPM.errpos;
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-			ELSIF ~(x^.typ^.form IN {Byte, UByte, Char..LInt}) THEN err(125)
+			ELSIF ~(x^.typ^.form IN intSet + charSet) THEN err(125)
 			END;
 			CheckSym(of); cases := NIL; lastcase := NIL; n := 0;
 			LOOP
@@ -1402,7 +1405,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					END;
 					z := OPB.NewLeaf(t); OPB.Assign(z, y); SetPos(z); OPB.Link(stat, last, z);
 					y := OPB.NewLeaf(t)
-				ELSIF (y^.typ^.form IN {Undef, Bool, Char}) THEN err(113)
+				ELSIF (y^.typ^.form IN charSet + {Undef, Bool}) THEN err(113)
 				ELSE OPB.CheckAssign(x^.left^.typ, y)
 				END;
 				OPB.Link(stat, last, x);
@@ -1539,7 +1542,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					obj := NIL;	(* by default IF is needed *)
 					IF y^.class = Nconst THEN	(* if B is a constant *)
 						IF (y^.conval^.intval < OPB.Min(x^.left^.typ^.form)) OR (y^.conval^.intval > OPB.Max(x^.left^.typ^.form))
-						 OR (x^.left^.typ^.form # Byte) & ((y^.typ^.form IN {Undef, Bool, Char}) OR (y^.typ^.form > x^.left^.typ^.form))
+						 OR (x^.left^.typ^.form # Byte) & ((y^.typ^.form IN charSet + {Undef, Bool}) OR (y^.typ^.form > x^.left^.typ^.form))
 						THEN
 							err(113); y := OPB.NewIntConst(0)	(* it must be a constant of a compatible type *)
 						END;
@@ -1570,7 +1573,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF y^.class # Nconst THEN SetPos(y) END (* запомнить позицию В ??? *)
 					END;
 					pos := OPM.errpos;	(* теперь указатель ошибок указывает на Step*)
-					IF (z^.conval^.intval = 0) OR (z^.typ^.form IN {Undef, Bool, Char}) OR (z^.typ^.form > x^.left^.typ^.form) THEN
+					IF (z^.conval^.intval = 0) OR (z^.typ^.form IN charSet + {Undef, Bool}) OR (z^.typ^.form > x^.left^.typ^.form) THEN
 						IF (x^.left^.typ^.form # Byte) OR (z^.conval^.intval < MIN(BYTE)) OR (z^.conval^.intval > MAX(BYTE))
 						THEN err(63); z := OPB.NewIntConst(1)
 						END;
@@ -1882,26 +1885,26 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						OPS.Get(sym); Type(obj^.typ, name); SetType(NIL, obj, obj^.typ, name)
 					END;
 					obj.mode := Typ;
-					IF obj.typ.form IN {Byte..Set, LInt} THEN	(* make alias structure *)
+					IF obj.typ.form IN {Byte..Set, Char16, LInt} THEN	(* make alias structure *)
 						typ := OPT.NewStr(obj.typ.form, Basic); i := typ.ref;
 						typ^ := obj.typ^; typ.ref := i; typ.strobj := NIL; typ.mno := 0; typ.txtpos := OPM.errpos;
-						typ.BaseTyp := obj.typ; obj.typ := typ;
+						typ.BaseTyp := obj.typ; obj.typ := typ
 					END;
 					IF obj^.typ^.strobj = NIL THEN obj^.typ^.strobj := obj END;
-					IF obj^.typ^.form = Pointer THEN	(* !!! *)
-						typ := obj^.typ^.BaseTyp;
-						IF (typ # NIL) & (typ^.comp = Record) & (typ^.strobj = NIL) THEN
+					IF obj.typ.form = Pointer THEN	(* !!! *)
+						typ := obj.typ.BaseTyp;
+						IF (typ # NIL) & (typ.comp = Record) & (typ.strobj = NIL) THEN
 							(* pointer to unnamed record: name record as "pointerName^" *)
-							rname := obj^.name$; i := 0;
+							rname := obj.name$; i := 0;
 							WHILE rname[i] # 0X DO INC(i) END;
 							rname[i] := "^"; rname[i+1] := 0X;
-							OPT.Insert(rname, o); o^.mode := Typ; o^.typ := typ; typ^.strobj := o
+							OPT.Insert(rname, o); o.mode := Typ; o.typ := typ; typ.strobj := o
 						END
 					END;
 					IF obj.vis # internal THEN
-						typ := obj^.typ;
-						IF typ^.form = Pointer THEN typ := typ^.BaseTyp END;
-						IF typ^.comp = Record THEN typ^.exp := TRUE END
+						typ := obj.typ;
+						IF typ.form = Pointer THEN typ := typ.BaseTyp END;
+						IF typ.comp = Record THEN typ.exp := TRUE END
 					END;
 					CheckSym(semicolon)
 				END

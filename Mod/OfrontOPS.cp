@@ -316,7 +316,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 		IF d = 0 THEN (* integer *)
 			IF n = m THEN intval := 0; i := 0;
 				IF ch = "X" THEN (* character *) OPM.Get(ch); numtyp := char;
-					IF n <= 2 THEN
+					IF n <= 4 THEN
 						WHILE i < n DO intval := intval*10H + Ord(dig[i], TRUE); INC(i) END
 					ELSE err(203)
 					END

@@ -65,6 +65,7 @@ typedef int SYSTEM_ARRLEN; // 32 or 64 bits, see also OPM.IndexSize and MaxIndex
 typedef unsigned char  BOOLEAN;
 typedef signed char    BYTE;
 typedef unsigned char  CHAR;
+typedef unsigned short LONGCHAR;  // 16-bit character
 typedef short          SHORTINT;
 typedef int            INTEGER;   // INTEGER is 32 bit
 typedef unsigned int   SET;       // SET is 32 bit
@@ -133,7 +134,7 @@ extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
 
 // Strings copy, append, compare and calculate length
 
-static inline void __STRAPND (
+static inline void __STRAPNDCC (
   CHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
   do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
@@ -141,9 +142,20 @@ static inline void __STRAPND (
     if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
   } while ((*dst++ = *src++));
 }
-#define __STRCMP(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
-static inline void __STRCOPY (
+#define __STRCMPCC(a, b)  SYSTEM_STRCMP((CHAR*)(a), (CHAR*)(b))
+static inline void __STRCOPYCC (  // sdst := ssrc
   CHAR *src, CHAR *dst, INTEGER max_len, CHAR *mod, INTEGER pos)
+{
+  do { if (max_len-- == 0) __HALT(-8, mod, pos); } while ((*dst++ = *src++));
+}
+static inline void __STRCOPYTC (  // sdst := SHORT(lsrc)
+  LONGCHAR *src, CHAR *dst, INTEGER max_len, CHAR *mod, INTEGER pos)
+{
+  do { if (max_len-- == 0) __HALT(-8, mod, pos); *dst++ = (CHAR)*src;
+  } while ((*src++ & 0xff));
+}
+static inline void __STRCOPYLL (	// ldst := lsrc
+  LONGCHAR *src, LONGCHAR *dst, INTEGER max_len, CHAR *mod, INTEGER pos)
 {
   do { if (max_len-- == 0) __HALT(-8, mod, pos); } while ((*dst++ = *src++));
 }
@@ -153,6 +165,14 @@ static inline INTEGER __STRLEN (CHAR *str, INTEGER len, CHAR *mod, INTEGER pos)
   return n;
 }
 static inline INTEGER __CSTRLEN (CHAR *str) { // LEN(Cstr$)
+  INTEGER n = 0; while (str[n]) n++; return n;
+}
+static inline INTEGER __STRLENL (LONGCHAR *str, INTEGER len, CHAR *mod, INTEGER pos)
+{
+  INTEGER n = 0; while (len-- && str[n]) n++; if (str[n]) __HALT(-8, mod, pos);
+  return n;
+}
+static inline INTEGER __CSTRLENL (LONGCHAR *str) { // LEN(Cstr$)
   INTEGER n = 0; while (str[n]) n++; return n;
 }
 
@@ -199,6 +219,8 @@ static inline LONGINT   __VALL (REAL x)      { return *(LONGINT*)  &x; }
 #define __SHORTF(x, y, mod, pos)  ((int)(__RF((x)+(y),(y)+(y),mod,pos) - (y)))
 #define __CHR(x, mod, pos)        ((CHAR)__R(x, 256, mod, pos))
 #define __CHRF(x, mod, pos)       ((CHAR)__RF(x, 256, mod, pos))
+#define __CHRL(x, mod, pos)       ((LONGCHAR)__R(x, 65536, mod, pos))
+#define __CHRFL(x, mod, pos)      ((LONGCHAR)__RF(x, 65536, mod, pos))
 #define __DIV(x, y)     ((x)>=0?(x)/(y):-1-(-1-(x))/(y))
 #define __DIVF(x, y)    SYSTEM_DIV(x, y)
 #define __DIVFL(x, y)   SYSTEM_DIVL(x, y)

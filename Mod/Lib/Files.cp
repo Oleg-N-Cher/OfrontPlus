@@ -108,9 +108,9 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     DEC(i);
     WHILE name[i] # PathDelimiter DO DEC(i) END;
     name[i+1] := "."; name[i+2] := "t"; name[i+3] := "m"; name[i+4] := "p"; name[i+5] := "."; INC(i, 6);
-    WHILE n > 0 DO name[i] := CHR(n MOD 10 + ORD("0")); n := n DIV 10; INC(i) END;
+    WHILE n > 0 DO name[i] := SHORT(CHR(n MOD 10 + ORD("0"))); n := n DIV 10; INC(i) END;
     name[i] := "."; INC(i); n := Platform.PID;
-    WHILE n > 0 DO name[i] := CHR(n MOD 10 + ORD("0"));  n := n DIV 10; INC(i) END;
+    WHILE n > 0 DO name[i] := SHORT(CHR(n MOD 10 + ORD("0")));  n := n DIV 10; INC(i) END;
     name[i] := 0X
   END GetTempName;
 
@@ -706,30 +706,30 @@ Especially Length would become fairly complex.
   PROCEDURE WriteSInt* (VAR R: Rider; x: SHORTINT);
     VAR b: ARRAY 2 OF SHORTCHAR;
   BEGIN
-    b[0] := CHR(x); b[1] := CHR(x DIV 256);
+    b[0] := SHORT(CHR(x)); b[1] := SHORT(CHR(x DIV 256));
     WriteBytes(R, SYSTEM.THISARR(SYSTEM.ADR(b), 2), 2)
   END WriteSInt;
 
   PROCEDURE WriteInt* (VAR R: Rider; x: INTEGER);
     VAR b: ARRAY 4 OF SHORTCHAR;
   BEGIN
-    b[0] := CHR(x); b[1] := CHR(x DIV 100H);
-    b[2] := CHR(x DIV 10000H); b[3] := CHR(x DIV 1000000H);
+    b[0] := SHORT(CHR(x)); b[1] := SHORT(CHR(x DIV 100H));
+    b[2] := SHORT(CHR(x DIV 10000H)); b[3] := SHORT(CHR(x DIV 1000000H));
     WriteBytes(R, SYSTEM.THISARR(SYSTEM.ADR(b), 4), 4)
   END WriteInt;
 
   PROCEDURE WriteLInt* (VAR R: Rider; x: LONGINT);
     VAR b: ARRAY 8 OF SHORTCHAR; n: INTEGER; s: LONGINT;
   BEGIN
-    b[0] := CHR(x); s := 100H;
-    FOR n := 0 TO 7 DO b[n] := CHR(x DIV s); s := s*100H END;
+    b[0] := SHORT(CHR(x)); s := 100H;
+    FOR n := 0 TO 7 DO b[n] := SHORT(CHR(x DIV s)); s := s*100H END;
     WriteBytes(R, SYSTEM.THISARR(SYSTEM.ADR(b), 8), 8)
   END WriteLInt;
 
   PROCEDURE WriteSet* (VAR R: Rider; x: SET);
     VAR b: ARRAY 4 OF SHORTCHAR; i: INTEGER;
   BEGIN i := SYSTEM.VAL(INTEGER, x);
-    b[0] := CHR(i); b[1] := CHR(i DIV 100H); b[2] := CHR(i DIV 10000H); b[3] := CHR(i DIV 1000000H);
+    b[0] := SHORT(CHR(i)); b[1] := SHORT(CHR(i DIV 100H)); b[2] := SHORT(CHR(i DIV 10000H)); b[3] := SHORT(CHR(i DIV 1000000H));
     WriteBytes(R, SYSTEM.THISARR(SYSTEM.ADR(b), 4), 4)
   END WriteSet;
 
@@ -754,8 +754,8 @@ Especially Length would become fairly complex.
 
   PROCEDURE WriteNum* (VAR R: Rider; x: LONGINT);
   BEGIN
-    WHILE (x < - 64) OR (x > 63) DO WriteChar(R, CHR(SHORT(x) MOD 128 + 128)); x := x DIV 128 END;
-    WriteChar(R, CHR(SHORT(x) MOD 128))
+    WHILE (x < - 64) OR (x > 63) DO WriteChar(R, SHORT(CHR(SHORT(x) MOD 128 + 128))); x := x DIV 128 END;
+    WriteChar(R, SHORT(CHR(SHORT(x) MOD 128)))
   END WriteNum;
 
   PROCEDURE GetName*(f: File; VAR name: ARRAY OF SHORTCHAR);

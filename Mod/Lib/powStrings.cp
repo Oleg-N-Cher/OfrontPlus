@@ -167,7 +167,7 @@ PROCEDURE UpCaseChar*(x:CHAR):CHAR;
     letters of the latter function depends on the individual compiler implementation. *)
 BEGIN
   CASE x OF
-    "a".."z":x:=CHR(ORD(x)+ORD("A")-ORD("a"));
+    "a".."z":x:=SHORT(CHR(ORD(x)+ORD("A")-ORD("a")));
   | 0F6X: x:=0D6X; (* | "ö": x:="Ö"; *)
   | 0E4X: x:=0C4X; (* | "ä": x:="Ä"; *)
   | 0FCX: x:=0DCX; (* | "ü": x:="Ü"; *)
@@ -502,7 +502,7 @@ BEGIN
       END;
     END;
     WHILE (x#0) & (i<maxlen) DO
-      t[i]:=CHR(48+x MOD 10);
+      t[i]:=SHORT(CHR(48+x MOD 10));
       x:=x DIV 10;
       INC(i);
     END;
@@ -560,7 +560,7 @@ BEGIN
     END;
     WHILE (x#0) & (i<maxlen) DO
       digit:=x MOD 16;
-      IF digit<10 THEN t[i]:=CHR(48+digit) ELSE t[i]:=CHR(55+digit) END;
+      IF digit<10 THEN t[i]:=SHORT(CHR(48+digit)) ELSE t[i]:=SHORT(CHR(55+digit)) END;
       x:=x DIV 16;
       INC(i);
     END;

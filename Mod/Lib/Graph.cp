@@ -692,7 +692,7 @@ END SetScreenAlpha;
 
 PROCEDURE SetAlpha*(bmp: Bitmap; alpha: INTEGER);
 BEGIN
-  IF SDL.SetSurfaceAlphaMod(bmp.surface, CHR(alpha)) = 0 THEN END
+  IF SDL.SetSurfaceAlphaMod(bmp.surface, SHORT(CHR(alpha))) = 0 THEN END
 END SetAlpha;
 
 PROCEDURE SetClip*(bmp: Bitmap; x, y, w, h: INTEGER);
@@ -1260,7 +1260,7 @@ BEGIN done := FALSE;
     WaitEvents(-1);
     WHILE PollEvent(event) DO
       CASE event.type OF
-        keyDown: ch := CHR(event.key.sym); done := TRUE
+        keyDown: ch := SHORT(CHR(event.key.sym)); done := TRUE
       | quit: ch := 0X; done := TRUE
       ELSE
       END

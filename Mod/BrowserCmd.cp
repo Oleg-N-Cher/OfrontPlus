@@ -11,9 +11,10 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13;
 
 		(* structure forms *)
-		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
+		Undef = 0; Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		Char16 = 17; String16 = 18;
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -41,6 +42,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN Texts.Write(W, ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN Texts.WriteLongInt(W, i, 0) END Wi;
 	PROCEDURE Wln; BEGIN Texts.WriteLn(W) END Wln;
+	PROCEDURE Whex(i: INTEGER); BEGIN Texts.WriteHex(W, i) END Whex;
 
 	PROCEDURE StringConst (IN s: ARRAY OF SHORTCHAR);
 		VAR ch: SHORTCHAR; i: INTEGER; quoted, first: BOOLEAN;
@@ -125,16 +127,12 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						CASE obj^.typ^.form OF
 						| Bool:
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
-						| Char:
+						| Char8, Char16:
 								IF obj^.conval^.intval = 22H THEN Wch("'"); Wch('"'); Wch("'")
 								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN
-									Wch(22X); Wch(CHR(obj^.conval^.intval)); Wch(22X)
+									Wch(22X); Wch(SHORT(CHR(obj^.conval^.intval))); Wch(22X)
 								ELSE
-									i := SHORT(obj^.conval^.intval) DIV 16;
-									IF i > 9 THEN Wch(CHR(55 + i)) ELSE Wch(CHR(48 + i)) END ;
-									i := SHORT(obj^.conval^.intval) MOD 16;
-									IF i > 9 THEN Wch(CHR(55 + i)) ELSE Wch(CHR(48 + i)) END ;
-									Wch("X")
+									Whex(SHORT(obj^.conval^.intval)); Wch("X")
 								END
 						| Byte, SInt, Int, LInt:
 								Wi(obj^.conval^.intval)
@@ -151,7 +149,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 								Texts.WriteLongReal(W, obj^.conval^.realval, 8)
 						| LReal:
 								Texts.WriteLongReal(W, obj^.conval^.realval, 17)
-						| String:
+						| String8, String16:
 								StringConst(obj^.conval^.ext^)
 						| NilTyp:
 								Ws("NIL")
@@ -301,7 +299,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 			ELSIF obj^.vis = internal THEN Wch("#")
 			END;
 			IF lang = "C" THEN
-				IF obj = OPT.chartyp^.strobj THEN Ws("SHORTCHAR")
+				IF obj = OPT.char8typ^.strobj THEN Ws("SHORTCHAR")
+				ELSIF obj = OPT.char16typ^.strobj THEN Ws("CHAR")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("BYTE")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SHORTINT")
 				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INTEGER")
@@ -312,7 +311,8 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSE Ws(obj^.name^)
 				END
 			ELSIF lang = "3" THEN
-				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				IF obj = OPT.char8typ^.strobj THEN Ws("CHAR")
+				ELSIF obj = OPT.char16typ^.strobj THEN Ws("LONGCHAR")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("INT8")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("INT16")
 				ELSIF obj = OPT.inttyp^.strobj THEN Ws("INT32")
@@ -323,7 +323,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSE Ws(obj^.name^)
 				END
 			ELSIF lang <= "2" THEN
-				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				IF obj = OPT.char8typ^.strobj THEN Ws("CHAR")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("SHORTINT")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("INTEGER")
 				ELSIF obj = OPT.inttyp^.strobj THEN Ws("LONGINT")
@@ -331,10 +331,11 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("LONGREAL")
 				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("SYSTEM.BYTE")
+				ELSIF obj = OPT.char16typ^.strobj THEN Ws("SYSTEM.CHAR16")
 				ELSE Ws(obj^.name^)
 				END
 			ELSE (* "7" *)
-				IF obj = OPT.chartyp^.strobj THEN Ws("CHAR")
+				IF obj = OPT.char8typ^.strobj THEN Ws("CHAR")
 				ELSIF obj = OPT.ubytetyp^.strobj THEN Ws("BYTE")
 				ELSIF obj = OPT.bytetyp^.strobj THEN Ws("SYSTEM.INT8")
 				ELSIF obj = OPT.sinttyp^.strobj THEN Ws("SYSTEM.INT16")
@@ -342,6 +343,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 				ELSIF obj = OPT.linttyp^.strobj THEN Ws("SYSTEM.INT64")
 				ELSIF obj = OPT.realtyp^.strobj THEN Ws("REAL")
 				ELSIF obj = OPT.lrltyp^.strobj THEN Ws("SYSTEM.REAL64")
+				ELSIF obj = OPT.char16typ^.strobj THEN Ws("SYSTEM.CHAR16")
 				ELSE Ws(obj^.name^)
 				END
 			END

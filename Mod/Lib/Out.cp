@@ -60,9 +60,9 @@ BEGIN
     s := "8085774586302733229"; i := 19
   ELSE
     IF x < 0 THEN x := - x END;
-    s[0] := CHR(zero + (x MOD 10)); x := x DIV 10;
+    s[0] := SHORT(CHR(zero + (x MOD 10))); x := x DIV 10;
     i := 1; WHILE x # 0 DO
-      s[i] := CHR(zero + (x MOD 10));
+      s[i] := SHORT(CHR(zero + (x MOD 10)));
       x := x DIV 10;
       INC(i)
     END
@@ -82,8 +82,8 @@ BEGIN
   x := SYSTEM.ROT(x, 4*(16-n));
   WHILE n > 0 DO
     x := SYSTEM.ROT(x,4); DEC(n);
-    IF x MOD 16 < 10 THEN Char(CHR((x MOD 16) + ORD('0')))
-    ELSE Char(CHR((x MOD 16) - 10 + ORD('A'))) END
+    IF x MOD 16 < 10 THEN Char(SHORT(CHR((x MOD 16) + ORD('0'))))
+    ELSE Char(SHORT(CHR((x MOD 16) - 10 + ORD('A')))) END
   END
 END Hex;
 
@@ -96,7 +96,7 @@ END Ln;
 
 PROCEDURE digit(n: HUGEINT; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
 BEGIN
-  DEC(i); s[i] := CHR(n MOD 10 + 48);
+  DEC(i); s[i] := SHORT(CHR(n MOD 10 + 48));
 END digit;
 
 PROCEDURE prepend(IN t: ARRAY OF CHAR; VAR s: ARRAY OF CHAR; VAR i: INTEGER);
@@ -125,7 +125,7 @@ PROCEDURE RealP(x: LONGREAL; n: INTEGER; long: BOOLEAN);
 
 (* RealP(x, n) writes the long real number x to the end of the output stream using an
    exponential form. If the textual representation of x requires m characters (including  a
-   three-digit signed exponent), x is right adjusted in a ﬁeld of Max(n, m) characters padded
+   three-digit signed exponent), x is right adjusted in a field of Max(n, m) characters padded
    with blanks at the left end. A plus sign of the mantissa is not written.
    LONGREAL is 1/sign, 11/exponent, 52/significand *)
 
@@ -242,7 +242,7 @@ BEGIN
     (* First generate the low 9 digits. *)
     IF j < 0 THEN j := 0 END;
     WHILE k < 9 DO
-      d[k] := CHR(j MOD 10 + 48); j := j DIV 10; INC(k)
+      d[k] := SHORT(CHR(j MOD 10 + 48)); j := j DIV 10; INC(k)
     END;
     (* Fall through to generate the upper digits *)
   ELSE
@@ -251,7 +251,7 @@ BEGIN
   END;
 
   WHILE k < n DO
-    d[k] := CHR(i MOD 10 + 48); i := i DIV 10; INC(k)
+    d[k] := SHORT(CHR(i MOD 10 + 48)); i := i DIV 10; INC(k)
   END
 END ConvertL;
 

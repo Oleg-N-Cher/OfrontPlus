@@ -30,7 +30,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		Undef = 0; Int8 = 1; Bool = 2; Char8 = 3; Int16 = 4; Int32 = 5; Int64 = 6;
 		Real32 = 7; Real64 = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; Byte = 14; ProcTyp = 15; Comp = 16;
-		intSet = {Int8, Byte, Int16..Int64}; realSet = {Real32, Real64};
+		Char16 = 17; String16 = 18;
+		intSet = {Int8, Byte, Int16..Int64}; realSet = {Real32, Real64}; charSet = {Char8, Char16};
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -49,15 +50,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		assign = 0;
 		haltfn = 0; newfn = 1; absfn = 2; capfn = 3; ordfn = 4;
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
-		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
-		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
-		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
-		ushortfn = 25; packfn = 31; unpkfn = 32; assertfn = 37;
+		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; lchrfn = 14;
+		sizefn = 15; asrfn = 16; lslfn = 17; rorfn = 18; incfn = 19;
+		decfn = 20; inclfn = 21; exclfn = 22; lenfn = 23; copyfn = 24;
+		ashfn = 25; ushortfn = 26; packfn = 32; unpkfn = 33; assertfn = 38;
 
 		(*SYSTEM function number*)
-		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
-		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
-		typfn = 38; thisrecfn = 39; thisarrfn = 40;
+		adrfn = 27; lshfn = 28; rotfn = 29; getfn = 30; putfn = 31;
+		bitfn = 34; valfn = 35; sysnewfn = 36; movefn = 37;
+		typfn = 39; thisrecfn = 40; thisarrfn = 41;
 
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
@@ -319,30 +320,75 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		RETURN x
 	END NewRealConst;
 
-	PROCEDURE NewString* (str: OPS.String; len: INTEGER): OPT.Node;
-		VAR x: OPT.Node;
+	PROCEDURE NewString* (str: OPS.String; lstr: POINTER TO ARRAY OF CHAR; len: INTEGER): OPT.Node;
+		VAR i, j, c: INTEGER; x: OPT.Node; ext: OPT.ConstExt;
 	BEGIN
-		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst(); x^.typ := OPT.stringtyp;
+		x := OPT.NewNode(Nconst); x^.conval := OPT.NewConst();
+		IF lstr # NIL THEN
+			x.typ := OPT.string16typ;
+			NEW(ext, 3 * len); i := 0; j := 0;
+			REPEAT c := ORD(lstr[i]); INC(i); OPM.PutUtf8(ext^, c, j) UNTIL c = 0;
+			x.conval.ext := ext
+		ELSE
+			x^.typ := OPT.string8typ; x^.conval^.ext := str
+		END;
 		x^.conval^.intval := OPM.ConstNotAlloc; x^.conval^.intval2 := len;
-		x^.conval^.ext := str;
 		RETURN x
 	END NewString;
 
 	PROCEDURE CharToString8 (n: OPT.Node);
 		VAR ch: SHORTCHAR;
 	BEGIN
-		n^.typ := OPT.stringtyp; ch := SHORT(CHR(n^.conval^.intval)); NEW(n^.conval^.ext, 2);
+		n^.typ := OPT.string8typ; ch := SHORT(CHR(n^.conval^.intval)); NEW(n^.conval^.ext, 2);
 		IF ch = 0X THEN n^.conval^.intval2 := 1 ELSE n^.conval^.intval2 := 2; n^.conval^.ext[1] := 0X END;
 		n^.conval^.ext[0] := ch; n^.conval^.intval := OPM.ConstNotAlloc; n^.obj := NIL
 	END CharToString8;
 
+	PROCEDURE CharToString16 (n: OPT.Node);
+		VAR i: INTEGER;
+	BEGIN
+		n.typ := OPT.string16typ; NEW(n.conval.ext, 4);
+		IF n.conval.intval = 0 THEN
+			n.conval.ext[0] := 0X; n.conval.intval2 := 1
+		ELSE
+			i := 0; OPM.PutUtf8(n.conval.ext^, SHORT(n.conval.intval), i);
+			n.conval.ext[i] := 0X; n.conval.intval2 := 2
+		END;
+		n.conval.intval := OPM.ConstNotAlloc; n.obj := NIL
+	END CharToString16;
+
+	PROCEDURE String8ToString16 (n: OPT.Node);
+		VAR i, j, x: INTEGER; ext, new: OPT.ConstExt;
+	BEGIN
+		n.typ := OPT.string16typ; ext := n.conval.ext;
+		NEW(new, 2 * n.conval.intval2); i := 0; j := 0; 
+		REPEAT x := ORD(ext[i]); INC(i); OPM.PutUtf8(new^, x, j) UNTIL x = 0;
+		n.conval.ext := new; n.obj := NIL
+	END String8ToString16;
+
+	PROCEDURE String16ToString8 (n: OPT.Node);
+		VAR i, j, x: INTEGER; ext, new: OPT.ConstExt;
+	BEGIN
+		n.typ := OPT.string8typ; ext := n.conval.ext;
+		NEW(new, n.conval.intval2); i := 0; j := 0;
+		REPEAT OPM.GetUtf8(ext^, x, i); new[j] := SHORT(CHR(x MOD 256)); INC(j) UNTIL x = 0;
+		n.conval.ext := new; n.obj := NIL
+	END String16ToString8;
+
 	PROCEDURE CheckString (n: OPT.Node; typ: OPT.Struct; e: SHORTINT);
 		VAR ntyp: OPT.Struct;
 	BEGIN
-		ntyp := n^.typ;
-		IF (typ^.comp IN {Array, DynArr}) & (typ^.BaseTyp.form = Char8) OR (typ^.form = String8) THEN
-			IF (n^.class = Nconst) & (ntyp^.form = Char8) THEN CharToString8(n)
-			ELSIF (ntyp^.comp IN {Array, DynArr}) & (ntyp^.BaseTyp.form = Char8) OR (ntyp^.form = String8) THEN (* ok *)
+		ntyp := n.typ;
+		IF (typ.comp IN {Array, DynArr}) & (typ.BaseTyp.form = Char8) OR (typ.form = String8) THEN
+			IF (n.class = Nconst) & (ntyp.form = Char8) THEN CharToString8(n)
+			ELSIF (ntyp.comp IN {Array, DynArr}) & (ntyp.BaseTyp.form = Char8) OR (ntyp.form = String8) THEN (* ok *)
+			ELSE err(e)
+			END
+		ELSIF (typ.comp IN {Array, DynArr}) & (typ.BaseTyp.form = Char16) OR (typ.form = String16) THEN
+			IF (n.class = Nconst) & (ntyp.form IN charSet) THEN CharToString16(n)
+			ELSIF (n.class = Nconst) & (ntyp.form = String8) THEN String8ToString16(n)
+			ELSIF (ntyp.comp IN {Array, DynArr}) & (ntyp.BaseTyp.form = Char16) OR (ntyp.form = String16) THEN
+				(* ok *)
 			ELSE err(e)
 			END
 		ELSE err(e)
@@ -380,12 +426,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	END DeRef;
 
 	PROCEDURE StrDeref* (VAR x: OPT.Node);
-		VAR typ: OPT.Struct;
+		VAR typ, btyp: OPT.Struct;
 	BEGIN
 		typ := x^.typ;
 		IF (x^.class = Nconst) OR (x^.class = Ntype) OR (x^.class = Nproc) THEN err(78)
-		ELSIF (typ^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.form = Char8) THEN
-			BindNodes(Nderef, OPT.stringtyp, x, NIL); x^.subcl := 1
+		ELSIF (typ^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.form IN charSet) THEN
+			IF (typ.BaseTyp # NIL) & (typ.BaseTyp.form = Char8) THEN btyp := OPT.string8typ
+			ELSE btyp := OPT.string16typ
+			END;
+			BindNodes(Nderef, btyp, x, NIL); x^.subcl := 1
 		ELSE err(90)
 		END
 	END StrDeref;
@@ -556,12 +605,13 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSE err(111)
 					END
 			| cap:
-					IF f = Char8 THEN
+					IF f IN charSet THEN
 						IF z^.class = Nconst THEN
-							z^.conval^.intval := ORD(CAP(SHORT(CHR(z^.conval^.intval)))); z^.obj := NIL
+							IF ODD(z.conval.intval DIV 32) THEN DEC(z.conval.intval, 32) END;
+							z^.obj := NIL
 						ELSE z := NewOp(op, typ, z)
 						END
-					ELSE err(111); z^.typ := OPT.chartyp
+					ELSE err(111); z^.typ := OPT.char8typ
 					END
 			| odd:
 					IF f IN intSet THEN
@@ -575,6 +625,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			| adr: (*SYSTEM.ADR*)
 					IF (z^.class = Nconst) & (f = Char8) & (z^.conval^.intval >= 20H) THEN
 						CharToString8(z); f := String8
+					ELSIF (z^.class = Nconst) & (f = Char16) & (z^.conval^.intval >= 20H) THEN
+						CharToString16(z); f := String16
 					END;
 					IF (z.class = Nproc) & (z.obj.mode # CProc) THEN
 						IF z.obj.mnolev > 0 THEN err(73)
@@ -638,13 +690,19 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			END;
 			IF g # new^.form THEN Convert(right, new) END;
 			IF f # new^.form THEN Convert(left, new) END
-		ELSIF (OPM.Lang # "7") & (f IN {Char8, String8}) THEN
-			IF g IN {Char8, String8} THEN
-				IF (f = Char8) & (g = Char8) & (op # plus) THEN new := OPT.chartyp
-				ELSE new := OPT.stringtyp
+		ELSIF (OPM.Lang # "7") & (f IN charSet + {String8, String16}) THEN
+			IF g IN charSet + {String8, String16} THEN
+				IF (f = String16) OR (g = String16) OR (f = Char16) & (g = String8) OR (f = String8) & (g = Char16) THEN
+					new := OPT.string16typ
+				ELSIF ((f = Char16) OR (g = Char16)) & (op # plus) THEN new := OPT.char16typ
+				ELSIF (f = String8) OR (g = String8) THEN new := OPT.string8typ
+				ELSIF op = plus THEN
+					IF (f = Char16) OR (g = Char16) THEN new := OPT.string16typ
+					ELSE new := OPT.string8typ
+					END
 				END;
-				IF (new^.form = String8)
-					& ((f = Char8) & (left^.class # Nconst) OR (g = Char8) & (right^.class # Nconst))
+				IF (new.form IN {String8, String16})
+					& ((f IN charSet) & (left.class # Nconst) OR (g IN charSet) & (right.class # Nconst))
 				THEN
 					err(100)
 				END
@@ -714,7 +772,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			CASE f OF
 			  Undef:
 					res := eql
-			| Int8, Char8..Int64:
+			| Int8, Char8..Int64, Char16:
 					IF xval^.intval < yval^.intval THEN res := lss
 					ELSIF xval^.intval > yval^.intval THEN res := gtr
 					ELSE res := eql
@@ -732,7 +790,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF xval^.setval # yval^.setval THEN res := neq
 					ELSE res := eql
 					END
-			| String8:
+			| String8, String16:
 					IF xval^.ext^ < yval^.ext^ THEN res := lss
 					ELSIF xval^.ext^ > yval^.ext^ THEN res := gtr
 					ELSE res := eql
@@ -749,8 +807,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		f := x^.typ^.form; g := y^.typ^.form; xval := x^.conval; yval := y^.conval;
 		IF f # g THEN
 			CASE f OF
-			  Char8:
+			  Char8, Char16:
 					IF g = String8 THEN CharToString8(x)
+					ELSIF g = String16 THEN CharToString16(x)
 					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| Int8:
@@ -789,8 +848,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSIF g = Real32 THEN y^.typ := OPT.lrltyp
 					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
-			| String8:
+			| String8, String16:
 					IF g = Char8 THEN CharToString8(y); g := String8
+					ELSIF g = Char16 THEN CharToString16(y); g := String16
 					ELSE err(100); y^.typ := x^.typ; yval^ := xval^
 					END
 			| NilTyp:
@@ -897,11 +957,11 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END
 				ELSIF f = Set THEN
 					xval^.setval := xval^.setval + yval^.setval
-				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (f = String8) & (xval^.ext # NIL) & (yval^.ext # NIL) THEN
-					NEW(ext, LEN(xval^.ext^) + LEN(yval^.ext^));
-					i := 0; WHILE xval^.ext^[i] # 0X DO ext^[i] := xval^.ext^[i]; INC(i) END;
-					j := 0; WHILE yval^.ext^[j] # 0X DO ext^[i] := yval^.ext^[j]; INC(i); INC(j) END;
-					ext^[i] := 0X; xval^.ext := ext; INC(xval^.intval2, yval^.intval2 - 1)
+				ELSIF ((OPM.Lang = "C") OR (OPM.Lang = "3")) & (f IN {String8, String16}) & (xval.ext # NIL) & (yval.ext # NIL) THEN
+					NEW(ext, LEN(xval.ext^) + LEN(yval.ext^));
+					i := 0; WHILE xval.ext[i] # 0X DO ext[i] := xval.ext[i]; INC(i) END;
+					j := 0; WHILE yval.ext[j] # 0X DO ext[i] := yval.ext[j]; INC(i); INC(j) END;
+					ext[i] := 0X; xval.ext := ext; INC(xval.intval2, yval.intval2 - 1)
 				ELSIF f # Undef THEN err(105)
 				END
 		| minus:
@@ -965,9 +1025,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		VAR node: OPT.Node; f, g: INTEGER; k: LONGINT; r: REAL;
 	BEGIN f := x^.typ^.form; g := typ^.form;
 		IF x^.class = Nconst THEN
-			IF f = Set THEN
-				x^.conval^.intval := SetToInt(x^.conval^.setval); x^.conval^.realval := 0; x^.conval^.setval := {}
-			ELSIF f IN intSet THEN
+			IF f IN intSet THEN
 				IF g = Set THEN x^.conval^.setval := IntToSet(SHORT(x^.conval^.intval))
 				ELSIF g IN intSet THEN
 					IF f > g THEN SetIntType(x, TRUE);
@@ -987,8 +1045,18 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (r < MIN(LONGINT)) OR (r > MAX(LONGINT)) THEN err(203); r := 1 END;
 					x^.conval^.intval := ENTIER(r); SetIntType(x, FALSE)
 				END
+			ELSIF f = Set THEN
+				x^.conval^.intval := SetToInt(x^.conval^.setval); x^.conval^.realval := 0; x^.conval^.setval := {}
 			ELSIF g = String8 THEN
-				IF f = Char8 THEN CharToString8(x) ELSE typ := OPT.undftyp END
+				IF f = String16 THEN String16ToString8(x)
+				ELSIF f IN charSet THEN CharToString8(x)
+				ELSE typ := OPT.undftyp
+				END
+			ELSIF g = String16 THEN
+				IF f = String8 THEN String8ToString16(x)
+				ELSIF f IN charSet THEN CharToString16(x)
+				ELSE typ := OPT.undftyp
+				END
 			ELSE	(* (f IN {Char, Byte}) & (g IN intSet) OR (f = Undef) *)
 			END;
 			x^.obj := NIL
@@ -1020,10 +1088,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			ok := xCharArr & yCharArr;
 			IF ok THEN	(* replace ""-string compare with 0X-char compare, if possible *)
 				IF (f=String8) & (x^.conval^.intval2 = 1) THEN	(* y is array of char *)
-					x^.typ := OPT.chartyp; x^.conval^.intval := 0;
+					x^.typ := OPT.char8typ; x^.conval^.intval := 0;
 					Index(y, NewIntConst(0))
 				ELSIF (g=String8) & (y^.conval^.intval2 = 1) THEN	(* x is array of char *)
-					y^.typ := OPT.chartyp; y^.conval^.intval := 0;
+					y^.typ := OPT.char8typ; y^.conval^.intval := 0;
 					Index(x, NewIntConst(0))
 				END
 			END;
@@ -1051,10 +1119,12 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END
 				ELSE
 					f := z^.typ^.form; g := y^.typ^.form;
-					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Int8..Set})) THEN
+					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Int8..Set, Char16})) THEN
 						CASE f OF
 						  Char8:
 								IF z^.class = Nconst THEN CharToString8(z) ELSE err(100) END
+						| Char16:
+								IF z^.class = Nconst THEN CharToString16(z) ELSE err(100) END
 						| Int8:
 								IF g IN intSet + realSet THEN Convert(z, y^.typ)
 								ELSE err(100)
@@ -1092,6 +1162,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 								IF g # NilTyp THEN err(100) END
 						| String8:
 								IF (g = Char8) & (y^.class = Nconst) THEN CharToString8(y)
+								ELSE err(100)
+								END
+						| String16:
+								IF (g = Char16) & (y^.class = Nconst) THEN CharToString16(y)
 								ELSE err(100)
 								END
 						| Comp:
@@ -1194,29 +1268,29 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						ELSIF f # Undef THEN err(94); z^.typ := OPT.undftyp
 						END
 				| plus:
-						IF ~(f IN {Undef, Int8, Byte, Int16..Set, String8}) THEN err(105); typ := OPT.undftyp END;
+						IF ~(f IN {Undef, Int8, Byte, Int16..String8, String16}) THEN err(105); typ := OPT.undftyp END;
 						do := TRUE;
 						IF f IN intSet THEN
 							IF (z^.class = Nconst) & (z^.conval^.intval = 0) THEN do := FALSE; z := y END;
 							IF (y^.class = Nconst) & (y^.conval^.intval = 0) THEN do := FALSE END
-						ELSIF f = String8 THEN
+						ELSIF f IN {String8, String16} THEN
 							IF (OPM.Lang # "C") & (OPM.Lang # "3") THEN err(105); typ := OPT.undftyp; do := FALSE
 							ELSE
-								IF (z^.class = Nconst) & (z^.conval^.intval2 = 1) THEN do := FALSE; z := y END;
-								IF (y^.class = Nconst) & (y^.conval^.intval2 = 1) THEN do := FALSE END;
+								IF (z.class = Nconst) & (z.conval.intval2 = 1) THEN do := FALSE; z := y END;
+								IF (y.class = Nconst) & (y.conval.intval2 = 1) THEN do := FALSE END;
 								IF do THEN
-									IF z^.class = Ndop THEN
-										t := z; WHILE t^.right^.class = Ndop DO t := t^.right END;
-										IF (t^.right^.class = Nconst) & (y^.class = Nconst) THEN
-											ConstOp(op, t^.right, y); do := FALSE
-										ELSIF (t^.right^.class = Nconst) & (y^.class = Ndop) & (y^.left^.class = Nconst) THEN
-											ConstOp(op, t^.right, y^.left); y.left := t^.right; t^.right := y; do := FALSE
+									IF z.class = Ndop THEN
+										t := z; WHILE t.right.class = Ndop DO t := t.right END;
+										IF (t.right.class = Nconst) & (y.class = Nconst) THEN
+											ConstOp(op, t.right, y); do := FALSE
+										ELSIF (t.right.class = Nconst) & (y.class = Ndop) & (y.left.class = Nconst) THEN
+											ConstOp(op, t.right, y.left); y.left := t.right; t.right := y; do := FALSE
 										ELSE
-											NewOp(op, typ, t^.right, y); do := FALSE
+											NewOp(op, typ, t.right, y); do := FALSE
 										END
 									ELSE
-										IF (z^.class = Nconst) & (y^.class = Ndop) & (y^.left^.class = Nconst) THEN
-											ConstOp(op, z, y^.left); y^.left := z; z := y; do := FALSE
+										IF (z.class = Nconst) & (y.class = Ndop) & (y.left.class = Nconst) THEN
+											ConstOp(op, z, y.left); y.left := z; z := y; do := FALSE
 										END
 									END
 								END
@@ -1227,7 +1301,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						IF ~(f IN {Undef, Int8, Byte, Int16..Set}) THEN err(106); typ := OPT.undftyp END;
 						IF ~(f IN intSet) OR (y^.class # Nconst) OR (y^.conval^.intval # 0) THEN NewOp(op, typ, z, y) END
 				| min, max:
-						IF ~(f IN {Undef} + intSet + realSet + {Char8}) THEN err(111); typ := OPT.undftyp END;
+						IF ~(f IN {Undef} + intSet + realSet + charSet) THEN err(111); typ := OPT.undftyp END;
 						NewOp(op, typ, z, y)
 				| or:
 						IF f = Bool THEN
@@ -1241,12 +1315,12 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 						ELSIF f # Undef THEN err(95); z^.typ := OPT.undftyp
 						END
 				| eql, neq:
-						IF (f IN {Undef..Set, NilTyp, Pointer, ProcTyp}) OR strings(z, y) THEN typ := OPT.booltyp
+						IF (f IN {Undef..Set, NilTyp, Pointer, ProcTyp, Char16}) OR strings(z, y) THEN typ := OPT.booltyp
 						ELSE err(107); typ := OPT.undftyp
 						END;
 						NewOp(op, typ, z, y)
 				| lss, leq, gtr, geq:
-						IF (f IN {Undef, Int8, Char8..Real64}) OR strings(z, y) THEN typ := OPT.booltyp
+						IF (f IN {Undef, Int8, Char8..Real64, Char16}) OR strings(z, y) THEN typ := OPT.booltyp
 						ELSE err(108); typ := OPT.undftyp
 						END;
 						NewOp(op, typ, z, y)
@@ -1304,9 +1378,13 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		y := ynode^.typ; f := x^.form; g := y^.form;
 		IF (ynode^.class = Ntype) OR (ynode^.class = Nproc) & (f # ProcTyp) THEN err(126) END;
 		CASE f OF
-		  Undef, String8:
-		| Bool, Char8, Set:
+		  Undef, String8, String16:
+		| Bool, Set:
 				IF g # f THEN err(113) END
+		| Char8, Char16:
+			IF ~(g IN charSet) OR ~OPT.Includes(f, g) THEN err(113)
+			ELSIF ynode.class = Nconst THEN Convert(ynode, x)
+			END
 		| Byte:
 				IF g IN intSet THEN
 					IF ynode^.class = Nconst THEN
@@ -1359,22 +1437,32 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (x = y) & (x^.attribute = extAttr) & (OPM.Lang # "C") THEN (* ok *)
 					ELSIF ~OPT.EqualType(x, y) OR (x^.attribute # 0) THEN err(113)
 					END
-				ELSIF g IN {Char8, String8} THEN
-					CheckString(ynode, x, 113);
-					IF (x^.comp = Array) & (ynode^.class = Nconst) & (ynode^.conval^.intval2 > x^.n) THEN
+				ELSIF g IN {Char8, Char16, String8, String16} THEN
+					IF (x.BaseTyp.form = Char16) & (g = String8) THEN Convert(ynode, OPT.string16typ)
+				ELSE CheckString(ynode, x, 113);
+				END;
+					IF (x.comp = Array) & (ynode.class = Nconst) & (ynode.conval.intval2 > x.n) THEN
 						err(114)
 					END
 				ELSIF x^.comp = Array THEN
-					IF (ynode^.class = Nconst) & (g = Char8) THEN CharToString8(ynode); y := ynode^.typ; g := String8 END;
+					IF (ynode^.class = Nconst) & (g = Char8) THEN CharToString8(ynode); y := ynode^.typ; g := String8
+					ELSIF (ynode^.class = Nconst) & (g = Char16) THEN CharToString16(ynode); y := ynode^.typ; g := String16
+					END;
 					IF x = y THEN (* ok *)
 					ELSIF (OPM.Lang = "7") & (g = Comp) & (y^.comp = DynArr)
-					 & (y^.BaseTyp = OPT.chartyp) & (x^.BaseTyp = OPT.chartyp) THEN
+						& ((y^.BaseTyp = OPT.char8typ) & (x^.BaseTyp = OPT.char8typ)
+						OR (y^.BaseTyp = OPT.char16typ) & (x^.BaseTyp = OPT.char16typ))
+					THEN
 						StrDeref(ynode)
-					ELSIF (g = String8) & (x^.BaseTyp = OPT.chartyp) THEN (* check length of string *)
+					ELSIF (g = String8) & (x^.BaseTyp = OPT.char8typ)
+						OR (g = String16) & (x^.BaseTyp = OPT.char16typ)
+					THEN (* check length of string *)
 						IF ynode^.conval^.intval2 > x^.n THEN err(114) END
 					(* an array of characters is assigned to an array of characters *)
-					ELSIF (g = Comp) & (y^.comp = Array) & (y^.BaseTyp = OPT.chartyp)
-						& (x^.BaseTyp = OPT.chartyp) & (ynode^.left # NIL) & (ynode^.left^.obj # NIL)
+					ELSIF (g = Comp) & (y^.comp = Array)
+						& ((y^.BaseTyp = OPT.char8typ) & (x^.BaseTyp = OPT.char8typ)
+						OR (y^.BaseTyp = OPT.char16typ) & (x^.BaseTyp = OPT.char16typ))
+						& (ynode^.left # NIL) & (ynode^.left^.obj # NIL)
 						& (ynode^.left^.obj^.conval # NIL) & (ynode^.left^.obj^.conval^.arr # NIL) THEN
 						 	IF y^.n > x^.n THEN err(114) END
 					ELSE err(113)
@@ -1451,6 +1539,7 @@ avoid unnecessary intermediate variables in OFront
 					IF (OPM.Lang = "7") & (OPM.AdrSize # 2) THEN Convert(x, OPT.inttyp)
 					ELSE Convert(x, OPT.sinttyp)
 					END
+				ELSIF f = Char16 THEN Convert(x, OPT.inttyp)
 				ELSIF (f = Set) & (OPM.Lang # "1") & (OPM.Lang # "2") THEN
 					IF (OPM.Lang # "7") & (OPM.SetSize = 1) THEN Convert(x, OPT.bytetyp)
 					ELSE Convert(x, OPT.inttyp)
@@ -1483,7 +1572,8 @@ avoid unnecessary intermediate variables in OFront
 				IF x^.class = Ntype THEN
 					CASE f OF
 					  Bool:  x := NewBoolConst(FALSE)
-					| Char8:  x := NewIntConst(0); x^.typ := OPT.chartyp
+					| Char8:  x := NewIntConst(0); x^.typ := OPT.char8typ
+					| Char16:  x := NewIntConst(0); x^.typ := OPT.char16typ
 					| Byte: x := NewIntConst(0)
 					| Int8:  x := NewIntConst(MIN(BYTE))
 					| Int16:  x := NewIntConst(MIN(SHORTINT))
@@ -1496,14 +1586,15 @@ avoid unnecessary intermediate variables in OFront
 					END;
 					x^.hint := 1
 				ELSIF (OPM.Lang = "C") OR (OPM.Lang = "3") THEN
-					IF ~(f IN intSet + realSet + {Char8}) THEN err(111) END
+					IF ~(f IN intSet + realSet + charSet) THEN err(111) END
 				ELSE err(110)
 				END
 		| maxfn: (*MAX*)
 				IF x^.class = Ntype THEN
 					CASE f OF
 					  Bool:  x := NewBoolConst(TRUE)
-					| Char8:  x := NewIntConst(0FFH); x^.typ := OPT.chartyp
+					| Char8:  x := NewIntConst(0FFH); x^.typ := OPT.char8typ
+					| Char16:  x := NewIntConst(0FFFFH); x^.typ := OPT.char16typ
 					| Byte: x := NewIntConst(0FFH)
 					| Int8:  x := NewIntConst(MAX(BYTE))
 					| Int16:  x := NewIntConst(MAX(SHORTINT))
@@ -1516,26 +1607,31 @@ avoid unnecessary intermediate variables in OFront
 					END;
 					x^.hint := 1
 				ELSIF (OPM.Lang = "C") OR (OPM.Lang = "3") THEN
-					IF ~(f IN intSet + realSet + {Char8}) THEN err(111) END
+					IF ~(f IN intSet + realSet + charSet) THEN err(111) END
 				ELSE err(110)
 				END
 		| chrfn: (*CHR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN {Undef} + intSet THEN Convert(x, OPT.chartyp)
-				ELSE err(111); x^.typ := OPT.chartyp
+				ELSIF f IN {Undef} + intSet THEN Convert(x, OPT.char8typ)
+				ELSE err(111); x^.typ := OPT.char8typ
+				END
+		| lchrfn: (*LCHR*)
+				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
+				ELSIF f IN {Undef} + intSet THEN Convert(x, OPT.char16typ)
+				ELSE err(111); x^.typ := OPT.char16typ
 				END
 		| shortfn: (*SHORT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSE
-					IF (OPM.Lang = "C") & (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char8) THEN
+					IF (OPM.Lang = "C") & (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form IN charSet) THEN
 						StrDeref(x); f := x.typ.form
 					END;
 					IF f IN {Byte, Int16} THEN Convert(x, OPT.bytetyp)
 					ELSIF f = Int32 THEN Convert(x, OPT.sinttyp)
 					ELSIF f = Int64 THEN Convert(x, OPT.inttyp)
 					ELSIF f = Real64 THEN Convert(x, OPT.realtyp)
-					ELSIF (OPM.Lang = "C") & (f = Char8) & (x^.class # Nconst) THEN (* CHAR => SHORTCHAR *)
-					ELSIF (OPM.Lang = "C") & (f = String8) THEN
+					ELSIF f = Char16 THEN Convert(x, OPT.char8typ)
+					ELSIF f = String16 THEN Convert(x, OPT.string8typ)
 					ELSE err(111)
 					END
 				END
@@ -1547,15 +1643,15 @@ avoid unnecessary intermediate variables in OFront
 		| longfn: (*LONG*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
 				ELSE
-					IF (OPM.Lang = "C") & (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form = Char8) THEN
+					IF (OPM.Lang = "C") & (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form IN charSet) THEN
 						StrDeref(x); f := x.typ.form
 					END;
 					IF f = Int8 THEN Convert(x, OPT.sinttyp)
 					ELSIF f IN {Byte, Int16} THEN Convert(x, OPT.inttyp)
 					ELSIF f = Int32 THEN Convert(x, OPT.linttyp)
 					ELSIF f = Real32 THEN Convert(x, OPT.lrltyp)
-					ELSIF (OPM.Lang = "C") & (f = Char8) THEN (* SHORTCHAR => CHAR *)
-					ELSIF (OPM.Lang = "C") & (f = String8) THEN
+					ELSIF f = Char8 THEN Convert(x, OPT.char16typ)
+					ELSIF f = String8 THEN Convert(x, OPT.string16typ)
 					ELSE err(111)
 					END
 				END
@@ -1573,14 +1669,18 @@ avoid unnecessary intermediate variables in OFront
 				IF (* (x^.class = Ntype) OR *) (x^.class = Nproc) THEN err(126)	(* !!! *)
 				ELSE
 					IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN DeRef(x) END;
-					IF (x^.class = Nconst) & (x^.typ^.form = Char8) THEN CharToString8(x) END;
-					IF ~(x^.typ^.comp IN {DynArr, Array}) & ~(x^.typ^.form = String8) THEN err(131) END
+					IF (x^.class = Nconst) & (x^.typ^.form = Char8) THEN CharToString8(x)
+					ELSIF (x^.class = Nconst) & (x^.typ^.form = Char16) THEN CharToString16(x)
+					END;
+					IF ~(x^.typ^.comp IN {DynArr, Array}) & ~(x^.typ^.form IN {String8, String16}) THEN err(131) END
 				END
 		| copyfn: (*COPY*)
-				IF (x^.class = Nconst) & (f = Char8) THEN CharToString8(x); f := String8 END;
+				IF (x^.class = Nconst) & (f = Char8) THEN CharToString8(x); f := String8
+				ELSIF (x^.class = Nconst) & (f = Char16) THEN CharToString16(x); f := String16
+				END;
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF (~(x^.typ^.comp IN {DynArr, Array}) OR (x^.typ^.BaseTyp^.form # Char8))
-					 & (f # String8) THEN err(111)
+				ELSIF (~(x^.typ^.comp IN {DynArr, Array}) OR ~(x^.typ^.BaseTyp^.form IN charSet))
+					 & ~(f IN {String8, String16}) THEN err(111)
 				END
 		| ashfn, asrfn, lslfn, rorfn: (*ASH, ASR, LSL, ROR*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1603,7 +1703,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| sizefn: (*SIZE*)
 				IF x^.class # Ntype THEN err(110); x := NewIntConst(1)
-				ELSIF (f IN {Int8..Set, Pointer, ProcTyp}) OR (x^.typ^.comp IN {Array, Record}) THEN
+				ELSIF (f IN {Int8..Set, Byte, Char16, Pointer, ProcTyp}) OR (x^.typ^.comp IN {Array, Record}) THEN
 					typSize(x^.typ); x^.typ^.pvused := TRUE; x := NewIntConst(x^.typ^.size)
 				ELSE err(111); x := NewIntConst(1)
 				END
@@ -1622,7 +1722,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| lshfn, rotfn: (*SYSTEM.LSH, SYSTEM.ROT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF ~(f IN intSet + {Int8, Char8, Set}) THEN err(111)
+				ELSIF ~(f IN intSet + charSet + {Int8, Set}) THEN err(111)
 				END
 		| getfn, putfn, bitfn, movefn: (*SYSTEM.GET, SYSTEM.PUT, SYSTEM.BIT, SYSTEM.MOVE*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
@@ -1641,7 +1741,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| valfn: (*SYSTEM.VAL*)
 				IF x^.class # Ntype THEN err(110)
-				ELSIF (f IN {Undef, String8, NoTyp}) OR (x^.typ^.comp = DynArr) THEN err(111)
+				ELSIF (f IN {Undef, String8, String16, NoTyp, NilTyp}) OR (x^.typ^.comp = DynArr) THEN err(111)
 				END
 		| sysnewfn: (*SYSTEM.NEW*)
 				IF NotVar(x) THEN err(112)
@@ -1837,7 +1937,7 @@ avoid unnecessary intermediate variables in OFront
 				END
 		| getfn, putfn: (*SYSTEM.GET, SYSTEM.PUT*)
 				IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-				ELSIF f IN {Undef..Set, Pointer, Byte, ProcTyp} THEN
+				ELSIF f IN {Undef..Set, Byte, Char16, NilTyp, Pointer, ProcTyp} THEN
 					IF fctno = getfn THEN
 						IF NotVar(x) THEN err(112) END;
 						t := x; x := p; p := t
@@ -1856,7 +1956,7 @@ avoid unnecessary intermediate variables in OFront
 		| valfn: (*SYSTEM.VAL*)	(* type is changed without considering the byte ordering on the target machine *)
 				(* p (1st param): desired type *)
 				(* x (2nd param): constant or value to be converted to p *)
-				IF (x^.class = Ntype) OR (x^.class = Nproc) OR (f IN {Undef, String8, NoTyp}) OR
+				IF (x^.class = Ntype) OR (x^.class = Nproc) OR (f IN {Undef, String8, String16, NoTyp}) OR
 					(x^.typ^.comp = DynArr) & (x^.typ^.sysflag = 0) THEN err(126)
 				END;
 				(* Warn if the result type includes memory past the end of the source variable *)
@@ -1982,7 +2082,7 @@ avoid unnecessary intermediate variables in OFront
 				IF ((fctno = incfn) OR (fctno = decfn)) & (parno = 1) THEN (*INC, DEC*)
 					BindNodes(Nassign, OPT.notyp, p, NewIntConst(1)); p^.subcl := fctno; p^.right^.typ := p^.left^.typ
 				ELSIF (fctno = lenfn) & (parno = 1) THEN (*LEN*)
-					IF p^.typ^.form = String8 THEN
+					IF p^.typ^.form IN {String8, String16} THEN
 						IF p^.class = Nconst THEN p := NewIntConst(p^.conval^.intval2 - 1)
 						ELSIF (p^.class = Ndop) & (p^.subcl = plus) THEN	(* propagate to leaf nodes *)
 							StFct(p^.left, lenfn, 1); StFct(p^.right, lenfn, 1);
@@ -2096,7 +2196,7 @@ avoid unnecessary intermediate variables in OFront
 						IF ap^.readonly THEN err(76) END;
 					END;
 					IF fp.typ.comp = DynArr THEN
-						IF ap^.typ^.form IN {Char8, String8} THEN CheckString(ap, fp^.typ, 67)
+						IF ap^.typ^.form IN charSet + {String8, String16} THEN CheckString(ap, fp^.typ, 67)
 						ELSE DynArrParCheck(fp.typ, ap.typ, fp.vis # inPar) END
 					ELSIF (fp^.typ = OPT.sysptrtyp) & (ap^.typ^.form = Pointer) THEN (* ok *)
 					ELSIF (fp^.vis # outPar) & (fp^.typ^.comp = Record) & OPT.Extends(ap^.typ, fp^.typ) THEN (* ok *)
@@ -2106,8 +2206,12 @@ avoid unnecessary intermediate variables in OFront
 					END
 				END
 			ELSIF fp^.typ^.comp = DynArr THEN
-				IF (ap^.class = Nconst) & (ap^.typ^.form = Char8) THEN CharToString8(ap) END;
-				IF (ap^.typ^.form = String8) & (fp^.typ^.BaseTyp^.form = Char8) THEN (* ok *)
+				IF (ap^.class = Nconst) & (ap^.typ^.form = Char8) THEN CharToString8(ap)
+				ELSIF (ap^.class = Nconst) & (ap^.typ^.form = Char16) THEN CharToString16(ap)
+				END;
+				IF (ap^.typ^.form = String8) & (fp^.typ^.BaseTyp^.form = Char8)
+					OR (ap^.typ^.form = String16) & (fp^.typ^.BaseTyp^.form = Char16)
+				THEN (* ok *)
 				ELSIF ap^.class >= Nconst THEN err(59)
 				ELSE DynArrParCheck(fp^.typ, ap^.typ, FALSE)
 				END

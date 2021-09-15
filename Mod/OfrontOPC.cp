@@ -16,9 +16,10 @@
 
 	CONST
 		(* structure forms *)
-		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
+		Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		Char16 = 17; String16 = 18;
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -200,11 +201,12 @@
 			IF hashtab[h] >= 0 THEN
 				IF keytab[hashtab[h]] = obj^.name^ THEN OPM.Write(Underscore) END
 			END
-		ELSIF (mode = Typ) & (obj^.typ^.form IN {Byte..Set, UByte}) THEN
+		ELSIF (mode = Typ) & (obj^.typ^.form IN {Byte..Set, UByte, Char16}) THEN
 			CASE obj^.typ^.form OF
 				| Byte: OPM.WriteString("BYTE")
 				| Bool: OPM.WriteString("BOOLEAN")
-				| Char, UByte: OPM.WriteString("CHAR")
+				| Char8, UByte: OPM.WriteString("CHAR")
+				| Char16: OPM.WriteString("LONGCHAR")
 				| SInt: OPM.WriteString("SHORTINT")
 				| Int: OPM.WriteString("INTEGER")
 				| LInt: OPM.WriteString("LONGINT")
@@ -558,7 +560,7 @@
 	PROCEDURE DefineType(str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
-		IF (str^.comp = DynArr) OR (str^.form IN {Byte..Set, UByte}) THEN RETURN END;
+		IF (str^.comp = DynArr) OR (str^.form IN {Byte..Set, UByte, Char16}) THEN RETURN END;
 		IF (OPM.currFile = OPM.BodyFile) OR (str^.ref < OPM.MaxStruct (*for hidden exports*) ) THEN
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
@@ -581,7 +583,7 @@
 				ELSIF str^.comp IN {Array, DynArr} THEN
 					IF (str^.BaseTyp^.strobj # NIL) & (str^.BaseTyp^.strobj^.linkadr = ProcessingType) THEN (*cyclic base type*)
 						OPM.Mark(244, str^ .txtpos); str^.BaseTyp^.strobj^.linkadr := PredefinedType
-					END ;
+					END;
 					DefineType(str^.BaseTyp)
 				ELSIF str^.form = ProcTyp THEN
 					IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END ;
@@ -705,7 +707,7 @@
 		VAR p: OPT.Object;
 	BEGIN
 		IF check & (typ = initial) THEN
-		ELSIF typ.form IN {Bool, Char, Byte, SInt, Int, LInt, UByte, Set, Real, LReal} THEN
+		ELSIF typ.form IN {Bool, Char8, Char16, Byte, SInt, Int, LInt, UByte, Set, Real, LReal} THEN
 			IF typ.BaseTyp # OPT.undftyp THEN typ := typ.BaseTyp END;	(* basic type alias *)
 			OPM.WriteString(typ.strobj.name^)
 		ELSE
@@ -875,9 +877,10 @@
 		IF (curAlign < align) & (gap - (adr - off) >= align) THEN (* preserve alignment of the enclosing struct! *)
 			DEC(gap, (adr - off) + align);
 			BegStat;
-			IF align = OPT.sinttyp.size THEN OPM.WriteString("SHORTINT")
-			ELSIF align = OPT.inttyp.size THEN OPM.WriteString("INTEGER")
-			ELSIF align = OPT.linttyp.size THEN OPM.WriteString("LONGINT")
+			CASE align OF
+			| 2: OPM.WriteString("SHORTINT")
+			| 4: OPM.WriteString("INTEGER")
+			ELSE OPM.WriteString("LONGINT")
 			END;
 			Str1(" _prvt#", n); INC(n); EndStat;
 			curAlign := align
@@ -905,11 +908,15 @@
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
 				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, 0);
 				off := fld.adr + fld.typ.size; base := fld.typ; fld := fld.link;
-				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte}) THEN base := fld.typ END;
+				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte, Char16}) THEN
+					base := fld.typ
+				END;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.typ = base) & (fld.adr = off)
 (* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)) DO
 					OPM.WriteString(", "); DeclareObj(fld, 0); off := fld.adr + fld.typ.size; fld := fld.link;
-					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte}) THEN base := fld.typ END
+					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte, Char16}) THEN
+						base := fld.typ
+					END
 				END;
 				EndStat
 			END
@@ -947,8 +954,8 @@
 		(* выводит в листинг i-й элемент константного массива arr *)
 		BEGIN
 			CASE bt^.size OF
-				| 1: IF bt^.form IN {Char, UByte} THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
-				| 2: OPM.WriteInt(arr.val2[i])
+				| 1: IF bt^.form IN {Char8, UByte} THEN OPM.WriteInt(arr.val1[i] MOD 100H) ELSE OPM.WriteInt(arr.val1[i]) END
+				| 2: IF bt^.form = Char16 THEN OPM.WriteInt(arr.val1[i] MOD 10000H) ELSE OPM.WriteInt(arr.val2[i]) END
 				| 4: OPM.WriteInt(arr.val4[i])
 				| 8: OPM.WriteInt(arr.val8[i])
 			END
@@ -984,7 +991,9 @@
 			constarr := (obj^.conval # NIL) & (obj^.conval^.arr # NIL);
 			IF constarr & (vis # 0) & (obj^.vis # externalR) THEN	(* not exported in header *)
 			ELSIF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
-				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte}) THEN base := obj^.typ END;
+				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte, Char16}) THEN
+					base := obj^.typ 
+				END;
 				IF (obj^.typ # base) OR (obj^.vis # lastvis) OR constarr THEN	(* each const. array separately *)
 				(* new variable base type definition required *)
 					IF ~first THEN EndStat END ;
@@ -1001,7 +1010,7 @@
 						END
 					END;
 					IF constarr THEN OPM.WriteString("__CONSTARR ") END;
-					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("double")
+					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("REAL")
 					ELSE DeclareBase(obj)
 					END
 				ELSE OPM.Write(",");
@@ -1208,6 +1217,7 @@
 		IF ~ptrinit THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
 		IF dynlib THEN OPM.Write("d") END;
+		IF OPM.widetext IN OPM.opt THEN OPM.Write("w") END;
 		OPM.Write(OPM.Lang); IF OPM.for IN OPM.opt THEN OPM.Write("f") END;
 		OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
 		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
@@ -1601,14 +1611,16 @@
 		END;
 	END Cmp;
 
-	PROCEDURE WriteCharLiteral(ch: SHORTCHAR); (* with escape for special printable characters *)
+	PROCEDURE WriteCharLiteral (ch: CHAR; wide: BOOLEAN);
 	BEGIN
 		IF (ch >= " ") & (ch <= "~") THEN
 			OPM.Write(SingleQuote);
 			IF (ch = "\") OR (ch = "?") OR (ch = SingleQuote) OR (ch = Quotes) THEN OPM.Write("\") END;
-			OPM.Write(ch); OPM.Write(SingleQuote)
+			OPM.Write(SHORT(ch)); OPM.Write(SingleQuote)
+		ELSIF wide & (ch > 0FFX) THEN
+			OPM.WriteString("0x"); OPM.WriteHex(ORD(ch) DIV 256); OPM.WriteHex(ORD(ch) MOD 256)
 		ELSE
-			OPM.WriteString("0x"); OPM.WriteHex(ORD(ch))
+			ASSERT(ch <= 0FFX); OPM.WriteString("0x"); OPM.WriteHex(ORD(ch))
 		END
 	END WriteCharLiteral;
 
@@ -1640,8 +1652,8 @@
 	BEGIN
 		OPM.WriteString(CaseStat);
 		CASE form OF
-		|	Char:
-					WriteCharLiteral(SHORT(CHR(caseVal)))
+		|	Char8, Char16:
+					WriteCharLiteral(CHR(caseVal), form = Char16)
 		|	Byte, UByte, SInt, Int, LInt:
 					OPM.WriteInt(caseVal)
 		END;
@@ -1677,13 +1689,13 @@
 	END Len;
 
 	PROCEDURE Constant* (con: OPT.Const; form: SHORTINT);
-		VAR i: SHORTINT; s: SET; hex: INTEGER; skipLeading: BOOLEAN;
+		VAR i, x: INTEGER; s: SET; hex: INTEGER; skipLeading: BOOLEAN;
 	BEGIN
 		CASE form OF
 		|	Bool, Byte, UByte, SInt, Int, LInt:
 					OPM.WriteInt(con^.intval)
-		|	Char:
-					WriteCharLiteral(SHORT(CHR(con^.intval)))
+		|	Char8, Char16:
+					WriteCharLiteral(CHR(con^.intval), form = Char16)
 		|	Real:
 					IF con^.realval = INF THEN OPM.WriteString("__INFS")
 					ELSIF con^.realval = -INF THEN OPM.WriteString("-__INFS")
@@ -1710,8 +1722,15 @@
 						END
 					UNTIL i = 0;
 					IF skipLeading THEN OPM.Write("0") END
-		|	String:
+		|	String8:
 					WriteStringLiteral(con^.ext^, con^.intval2 - 1)
+		|	String16:
+					OPM.WriteString("((LONGCHAR[]){");
+					i := 0; OPM.GetUtf8(con^.ext, x, i);
+					WHILE x # 0 DO
+						OPM.WriteInt(x); OPM.WriteString(", "); OPM.GetUtf8(con^.ext, x, i)
+					END;
+					OPM.WriteString("0})")
 		|	NilTyp:
 					OPM.WriteString(NilConst)
 		END;

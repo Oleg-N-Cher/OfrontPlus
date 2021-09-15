@@ -75,7 +75,7 @@ MODULE Reals;
   BEGIN
     i := SHORT(ENTIER(x)); k := 0;
     WHILE k < n DO
-      d[k] := CHR(i MOD 10 + 48); i := i DIV 10; INC(k)
+      d[k] := SHORT(CHR(i MOD 10 + 48)); i := i DIV 10; INC(k)
     END
   END Convert;
   

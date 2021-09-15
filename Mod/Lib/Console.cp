@@ -36,8 +36,8 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
       END
     ELSE
       i1 := ABS(i);
-      s[0] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; k := 1;
-      WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END
+      s[0] := SHORT(CHR(i1 MOD 10 + ORD("0"))); i1 := i1 DIV 10; k := 1;
+      WHILE i1 > 0 DO s[k] := SHORT(CHR(i1 MOD 10 + ORD("0"))); i1 := i1 DIV 10; INC(k) END
     END ;
     IF i < 0 THEN s[k] := "-"; INC(k) END ;
     WHILE n > k DO Char(" "); DEC(n) END ;
@@ -53,8 +53,8 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
       END
     ELSE
       i1 := ABS(i);
-      s[0] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; k := 1;
-      WHILE i1 > 0 DO s[k] := CHR(i1 MOD 10 + ORD("0")); i1 := i1 DIV 10; INC(k) END
+      s[0] := SHORT(CHR(i1 MOD 10 + ORD("0"))); i1 := i1 DIV 10; k := 1;
+      WHILE i1 > 0 DO s[k] := SHORT(CHR(i1 MOD 10 + ORD("0"))); i1 := i1 DIV 10; INC(k) END
     END ;
     IF i < 0 THEN s[k] := "-"; INC(k) END ;
     WHILE n > k DO Char(" "); DEC(n) END ;
@@ -75,7 +75,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
     IF SIZE(INTEGER) = 4 THEN k := -28 ELSE k := -12 END;
     WHILE k <= 0 DO
       n := ASH(i, k) MOD 16;
-      IF n <= 9 THEN Char(CHR(ORD("0") + n)) ELSE Char(CHR(ORD("A") - 10 + n)) END ;
+      IF n <= 9 THEN Char(SHORT(CHR(ORD("0") + n))) ELSE Char(SHORT(CHR(ORD("A") - 10 + n))) END ;
       INC(k, 4)
     END
   END Hex;
@@ -86,7 +86,7 @@ MODULE Console;  (* J. Templ, 29-June-96 *)
     IF SIZE(LONGINT) = 8 THEN k := -60 ELSE k := -28 END;
     WHILE k <= 0 DO
       n := SHORT(ASH(i, k)) MOD 16;
-      IF n <= 9 THEN Char(CHR(ORD("0") + n)) ELSE Char(CHR(ORD("A") - 10 + n)) END ;
+      IF n <= 9 THEN Char(SHORT(CHR(ORD("0") + n))) ELSE Char(SHORT(CHR(ORD("A") - 10 + n))) END ;
       INC(k, 4)
     END
   END LongHex;

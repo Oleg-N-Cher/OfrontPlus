@@ -259,7 +259,7 @@ BEGIN
       out[j] := CHR(val DIV 64 + 192); INC(j);
       out[j] := CHR(val MOD 64 + 128); INC(j)
     ELSE
-      out[j] := CHR(val DIV 4096 + 224); INC(j); 
+      out[j] := CHR(val DIV 4096 + 224); INC(j);
       out[j] := CHR(val DIV 64 MOD 64 + 128); INC(j);
       out[j] := CHR(val MOD 64 + 128); INC(j)
     END;

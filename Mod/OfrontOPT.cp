@@ -74,14 +74,15 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	CONST
 		maxImps = 64;	(* must be <= MAX(SHORTINT) *)
 		maxStruct = OPM.MaxStruct;	(* must be < MAX(INTEGER) DIV 2 *)
-		FirstRef = 16;
+		FirstRef = 19;
 
 	VAR
 		typSize*: PROCEDURE(typ: Struct);
 		topScope*: Object;
-		undftyp*, bytetyp*, booltyp*, chartyp*, sinttyp*, inttyp*, linttyp*,
-		realtyp*, lrltyp*, settyp*, stringtyp*, niltyp*, notyp*, sysptrtyp*, ubytetyp*: Struct;
-		char8, int8, int16, int32, int64, adrint, byte, ubyte, real32, real64: Object;
+		undftyp*, bytetyp*, booltyp*, char8typ*, sinttyp*, inttyp*, linttyp*,
+		realtyp*, lrltyp*, settyp*, string8typ*, niltyp*, notyp*, sysptrtyp*, ubytetyp*,
+		char16typ*, string16typ*: Struct;
+		char8, int8, int16, int32, int64, adrint, byte, ubyte, real32, real64, char16: Object;
 		nofGmod*: BYTE;	(*nof imports*)
 		GlbMod*: ARRAY maxImps OF Object;	(* ^.right = first object, ^.name = module import name (not alias) *)
 		SelfName*: OPS.Name;	(* name of module being compiled *)
@@ -94,9 +95,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13; Attr = 20;
 
 		(* structure forms *)
-		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
+		Undef = 0; Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		Char16 = 17; String16 = 18;
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -105,15 +107,15 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		assign = 0;
 		haltfn = 0; newfn = 1; absfn = 2; capfn = 3; ordfn = 4;
 		entierfn = 5; oddfn = 6; minfn = 7; maxfn = 8; chrfn = 9;
-		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; sizefn = 14;
-		asrfn = 15; lslfn = 16; rorfn = 17; incfn = 18; decfn = 19;
-		inclfn = 20; exclfn = 21; lenfn = 22; copyfn = 23; ashfn = 24;
-		ushortfn = 25; packfn = 31; unpkfn = 32; assertfn = 37;
+		shortfn = 10; longfn = 11; bitsfn = 12; fltfn = 13; lchrfn = 14;
+		sizefn = 15; asrfn = 16; lslfn = 17; rorfn = 18; incfn = 19;
+		decfn = 20; inclfn = 21; exclfn = 22; lenfn = 23; copyfn = 24;
+		ashfn = 25; ushortfn = 26; packfn = 32; unpkfn = 33; assertfn = 38;
 
 		(*SYSTEM function number*)
-		adrfn = 26; lshfn = 27; rotfn = 28; getfn = 29; putfn = 30;
-		bitfn = 33; valfn = 34; sysnewfn = 35; movefn = 36;
-		typfn = 38; thisrecfn = 39; thisarrfn = 40;
+		adrfn = 27; lshfn = 28; rotfn = 29; getfn = 30; putfn = 31;
+		bitfn = 34; valfn = 35; sysnewfn = 36; movefn = 37;
+		typfn = 39; thisrecfn = 40; thisarrfn = 41;
 
 		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval) *)
 		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
@@ -211,7 +213,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		VAR i: SHORTINT;
 	BEGIN	(* garbage collection *)
 		CloseScope;
-		i := 0; WHILE i < maxImps DO GlbMod[i] := NIL; INC(i) END ;
+		i := 0; WHILE i < maxImps DO GlbMod[i] := NIL; INC(i) END;
 		i := FirstRef; WHILE i < maxStruct DO impCtxt.ref[i] := NIL; impCtxt.old[i] := NIL; INC(i) END
 	END Close;
 
@@ -253,6 +255,20 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END;
 		RETURN (x # NIL) & EqualType(x, y)
 	END Extends;
+
+	PROCEDURE Includes* (xform, yform: INTEGER): BOOLEAN;
+	BEGIN
+		CASE xform OF
+		| Char16: RETURN yform IN {Char8, Char16, Byte}
+		| SInt: RETURN yform IN {Char8, Byte, SInt}
+		| Int: RETURN yform IN {Char8, Char16, Byte, SInt, Int}
+		| LInt: RETURN yform IN {Char8, Char16, Byte, SInt, Int, LInt}
+		| Real: RETURN yform IN {Char8, Char16, Byte, SInt, Int, LInt, Real}
+		| LReal: RETURN yform IN {Char8, Char16, Byte, SInt, Int, LInt, Real, LReal}
+		| String16: RETURN yform IN {String8, String16}
+		ELSE RETURN xform = yform
+		END
+	END Includes;
 
 	PROCEDURE FindImport*(mod: Object; VAR res: Object);
 		VAR obj: Object;
@@ -470,7 +486,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF obj^.mode = Con THEN
 				f := obj^.typ^.form; OPM.FPrint(fprint, f);
 				CASE f OF
-				| Byte, Bool, Char, SInt, Int:
+				| Byte, Bool, Char8, Char16, SInt, Int:
 					OPM.FPrint(fprint, SHORT(obj^.conval^.intval))
 				| LInt:
 					OPM.FPrint(fprint, SHORT(obj^.conval^.intval));
@@ -481,7 +497,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 					rval := SHORT(obj^.conval^.realval); OPM.FPrintReal(fprint, rval)
 				| LReal:
 					OPM.FPrintLReal(fprint, obj^.conval^.realval)
-				| String:
+				| String8, String16:
 					FPrintName(fprint, obj^.conval^.ext^)
 				| NilTyp:
 				ELSE err(127)
@@ -591,13 +607,16 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InMod;
 
 	PROCEDURE InConstant(f: INTEGER; conval: Const);
-		VAR ch: SHORTCHAR; i: INTEGER; ext, t: ConstExt; rval: SHORTREAL; str: OPS.Name;
+		VAR ch: SHORTCHAR; i, x, y: INTEGER; ext, t: ConstExt; rval: SHORTREAL; str: OPS.Name;
 	BEGIN
 		CASE f OF
-		| Char, Bool:
+		| Char8, Bool:
 			OPM.SymRCh(ch); conval^.intval := ORD(ch)
 		| Byte, SInt, Int, LInt:
 			conval^.intval := OPM.SymRInt()
+		| Char16:
+			OPM.SymRCh(ch); conval.intval := ORD(ch);
+			OPM.SymRCh(ch); conval.intval := conval.intval + ORD(ch) * 256
 		| Set:
 			OPM.SymRSet(conval^.setval)
 		| Real:
@@ -606,7 +625,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		| LReal:
 			OPM.SymRLReal(conval^.realval);
 			conval^.intval := OPM.ConstNotAlloc
-		| String:
+		| String8, String16:
 			i := 0;
 			REPEAT
 				OPM.SymRCh(ch);
@@ -618,9 +637,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				INC(i)
 			UNTIL ch = 0X;
 			IF i < LEN(str) THEN NEW(ext, i); ext^ := str$ END;
-			conval.ext := ext;
-			conval^.intval2 := i;
-			conval^.intval := OPM.ConstNotAlloc
+			conval.ext := ext; conval^.intval := OPM.ConstNotAlloc;
+			IF f = String8 THEN conval^.intval2 := i
+			ELSE
+				i := 0; y := 0;
+				REPEAT OPM.GetUtf8(ext^, x, i); INC(y) UNTIL x = 0;
+				conval.intval2 := y
+			END
 		| NilTyp:
 			conval^.intval := OPM.nilval
 		END
@@ -826,7 +849,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF tag = Sentry THEN
 				InName(obj.entry); tag := SHORT(OPM.SymRInt())
 			END;
-			IF tag <= Pointer THEN	(* Constant *)
+			IF (tag <= Pointer) OR (tag = Char16) THEN	(* Constant *)
 				obj^.mode := Con; obj^.typ := impCtxt.ref[tag]; obj^.conval := NewConst(); InConstant(tag, obj^.conval)
 			ELSIF tag >= Sxpro THEN
 				obj^.conval := NewConst();
@@ -1059,8 +1082,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		f := obj^.typ^.form; OPM.SymWInt(f);
 		CASE f OF
-		| Bool, Char:
+		| Bool, Char8:
 			OPM.SymWCh(SHORT(CHR(obj^.conval^.intval)))
+		| Char16:
+			OPM.SymWCh(SHORT(CHR(obj.conval.intval MOD 256)));
+			OPM.SymWCh(SHORT(CHR(obj.conval.intval DIV 256)))
 		| Byte, SInt, Int, LInt:
 			OPM.SymWInt(obj^.conval^.intval)
 		| Set:
@@ -1069,7 +1095,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			rval := SHORT(obj^.conval^.realval); OPM.SymWReal(rval)
 		| LReal:
 			OPM.SymWLReal(obj^.conval^.realval)
-		| String:
+		| String8, String16:
 			OutName(obj^.conval^.ext^)
 		| NilTyp:
 		ELSE err(127)
@@ -1206,7 +1232,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 		InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
-		InitStruct(stringtyp, String); InitStruct(niltyp, NilTyp);
+		InitStruct(string8typ, String8); InitStruct(niltyp, NilTyp); niltyp.size := OPM.AdrSize;
+		InitStruct(string16typ, String16);
 		undftyp^.BaseTyp := undftyp;
 
 		(*initialization of module SYSTEM*)
@@ -1214,11 +1241,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF lang <= "3" THEN
 			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp)
 		END;
+		EnterTyp("CHAR8", "char8", Char8, 1, char8typ);
+		EnterTyp("CHAR16", "char16", Char16, 2, char16typ);
 		EnterTyp("REAL32", "real32", Real, 4, realtyp);
 		EnterTyp("REAL64", "real64", LReal, 8, lrltyp);
 		IF lang # "3" THEN
-			EnterTyp("CHAR8", "char8", Char, 1, chartyp);
-			EnterTypeAlias("CHAR16", "char16", char8, chartyp);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
@@ -1243,6 +1270,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterProc("THISARR", "thisarr", thisarrfn);
 		IF lang > "2" THEN
 			EnterProc("COPY", "copy", copyfn)
+		ELSE
+			EnterProc("LCHR", "lchr", lchrfn)
 		END;
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
@@ -1250,8 +1279,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterTyp("BOOLEAN", "boolean", Bool, 1, booltyp);
 		EnterTyp("SET", "set", Set, OPM.SetSize, settyp);
 		IF lang = "C" THEN
-			EnterTypeAlias("SHORTCHAR", "shortchar", char8, chartyp);
-			EnterTypeAlias("CHAR", "char", char8, chartyp);
+			EnterTypeAlias("SHORTCHAR", "shortchar", char8, char8typ);
+			EnterTypeAlias("CHAR", "char", char16, char16typ);
 			EnterTypeAlias("BYTE", "byte", int8, bytetyp);
 			EnterTypeAlias("SHORTINT", "shortint", int16, sinttyp);
 			EnterTypeAlias("INTEGER", "integer", int32, inttyp);
@@ -1260,8 +1289,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("REAL", "real", real64, lrltyp);
 			EnterTyp("UBYTE", "ubyte", UByte, 1, ubytetyp)
 		ELSIF lang = "3" THEN
-			EnterTyp("CHAR", "char", Char, 1, chartyp);
-			EnterTypeAlias("LONGCHAR", "longchar", char8, chartyp);
+			EnterTyp("CHAR", "char", Char8, 1, char8typ);
+			EnterTypeAlias("LONGCHAR", "longchar", char16, char16typ);
 			EnterTyp("INT8", "int8", Byte, 1, bytetyp);
 			EnterTyp("INT16", "int16", SInt, 2, sinttyp);
 			EnterTyp("INT32", "int32", Int, 4, inttyp);
@@ -1278,7 +1307,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			ELSE EnterTypeAlias("ADRINT", "adrint", adrint, linttyp)
 			END
 		ELSIF lang <= "2" THEN
-			EnterTypeAlias("CHAR", "char", char8, chartyp);
+			EnterTypeAlias("CHAR", "char", char8, char8typ);
 			EnterTypeAlias("SHORTINT", "shortint", int8, bytetyp);
 			EnterTypeAlias("INTEGER", "integer", int16, sinttyp);
 			EnterTypeAlias("LONGINT", "longint", int32, inttyp);
@@ -1287,7 +1316,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("LONGREAL", "longreal", real64, lrltyp);
 		ELSE (* "7" *)
 			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp);
-			EnterTypeAlias("CHAR", "char", char8, chartyp);
+			IF OPM.widetext IN OPM.opt THEN
+				EnterTypeAlias("CHAR", "char", char16, char16typ)
+			ELSE
+				EnterTypeAlias("CHAR", "char", char8, char8typ)
+			END;
 			IF OPM.AdrSize = 2 THEN
 				EnterTypeAlias("INTEGER", "integer", int16, sinttyp)
 			ELSE
@@ -1295,7 +1328,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			END;
 			EnterTypeAlias("REAL", "real", real32, realtyp)
 		END;
-		stringtyp.BaseTyp := chartyp;
+		string8typ.BaseTyp := char8typ;
+		string16typ.BaseTyp := char16typ;
 		EnterBoolConst("FALSE", "false", 0);	(* 0 and 1 are compiler internal representation only *)
 		EnterBoolConst("TRUE", "true",  1);
 		IF lang = "C" THEN
@@ -1315,17 +1349,27 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterProc("FLOOR", "floor", entierfn);
 			EnterProc("FLT", "flt", fltfn);
 			EnterProc("PACK", "pack", packfn);
-			EnterProc("UNPK", "unpk", unpkfn)
+			EnterProc("UNPK", "unpk", unpkfn);
+			IF OPM.widetext IN OPM.opt THEN
+				EnterProc("CHR", "chr", lchrfn)
+			ELSE
+				EnterProc("CHR", "chr", chrfn)
+			END
 		ELSE
 			EnterProc("ASH", "ash", ashfn);
 			EnterProc("ENTIER", "entier", entierfn);
 			EnterProc("MIN", "min", minfn);
 			EnterProc("MAX", "max", maxfn);
 			EnterProc("SHORT", "short", shortfn);
-			EnterProc("LONG", "long", longfn)
+			EnterProc("LONG", "long", longfn);
+			IF lang = "C" THEN EnterProc("CHR", "chr", lchrfn)
+			ELSE
+				IF lang = "3" THEN EnterProc("LCHR", "lchr", lchrfn) END;
+				EnterProc("CHR", "chr", chrfn)
+			END
 		END;
 		EnterProc("ODD", "odd", oddfn);
-		EnterProc("CHR", "chr", chrfn);
+
 		EnterProc("SIZE", "size", sizefn);
 		EnterProc("INC", "inc", incfn);
 		EnterProc("DEC", "dec", decfn);
@@ -1345,12 +1389,13 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		EnterAttr("EMPTY", "empty", empAttr);
 		EnterAttr("EXTENSIBLE", "extensible", extAttr);
 		impCtxt.ref[Undef] := undftyp; impCtxt.ref[Byte] := bytetyp;
-		impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char] := chartyp;
+		impCtxt.ref[Bool] := booltyp;  impCtxt.ref[Char8] := char8typ;
 		impCtxt.ref[SInt] := sinttyp;  impCtxt.ref[Int] := inttyp;
 		impCtxt.ref[LInt] := linttyp;  impCtxt.ref[Real] := realtyp;
 		impCtxt.ref[LReal] := lrltyp;  impCtxt.ref[Set] := settyp;
-		impCtxt.ref[String] := stringtyp; impCtxt.ref[NilTyp] := niltyp;
+		impCtxt.ref[String8] := string8typ; impCtxt.ref[NilTyp] := niltyp;
 		impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp;
+		impCtxt.ref[Char16] := char16typ; impCtxt.ref[String16] := string16typ;
 		impCtxt.ref[UByte] := ubytetyp
 	END InitScope;
 
@@ -1391,26 +1436,28 @@ Objects:
 
 		Structures:
 
-    form    comp  | n      BaseTyp   link     mno  txtpos   sysflag
-	----------------------------------------------------------------------------------
-    Undef   Basic |
-    Byte    Basic |
-    Bool    Basic |
-    Char    Basic |
-    SInt    Basic |
-    Int     Basic |
-    LInt    Basic |
-    Real    Basic |
-    LReal   Basic |
-    Set     Basic |
-    String  Basic |
-    NilTyp  Basic |
-    NoTyp   Basic |
-    Pointer Basic |        PBaseTyp           mno  txtpos   sysflag
-    ProcTyp Basic |        ResTyp    params   mno  txtpos   sysflag
-    Comp    Array | nofel  ElemTyp            mno  txtpos   sysflag
-    Comp    DynArr| dim    ElemTyp            mno  txtpos   sysflag
-    Comp    Record| nofmth RBaseTyp  fields   mno  txtpos   sysflag
+    form     comp  | n      BaseTyp   link     mno  txtpos   sysflag
+	--------------------------------------------------------------------------
+    Undef    Basic |
+    Byte     Basic |
+    Bool     Basic |
+    Char8    Basic |
+    SInt     Basic |
+    Int      Basic |
+    LInt     Basic |
+    Real     Basic |
+    LReal    Basic |
+    Set      Basic |
+    String8  Basic |
+    NilTyp   Basic |
+    NoTyp    Basic |
+    Pointer  Basic |        PBaseTyp           mno  txtpos   sysflag
+    ProcTyp  Basic |        ResTyp    params   mno  txtpos   sysflag
+    Comp     Array | nofel  ElemTyp            mno  txtpos   sysflag
+    Comp     DynArr| dim    ElemTyp            mno  txtpos   sysflag
+    Comp     Record| nofmth RBaseTyp  fields   mno  txtpos   sysflag
+    Char16   Basic |
+    String16 Basic |
 
 Nodes:
 

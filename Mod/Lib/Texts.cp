@@ -467,8 +467,8 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
         LOOP d[i] := ch; INC(i); Read(S, ch);
           IF ch < "0" THEN EXIT END;
           IF "9" < ch THEN
-            IF ("A" <= ch) & (ch <= "F") THEN hex := TRUE; ch := CHR(ORD(ch)-7)
-            ELSIF ("a" <= ch) & (ch <= "f") THEN hex := TRUE; ch := CHR(ORD(ch)-27H)
+            IF ("A" <= ch) & (ch <= "F") THEN hex := TRUE; ch := SHORT(CHR(ORD(ch)-7))
+            ELSIF ("a" <= ch) & (ch <= "f") THEN hex := TRUE; ch := SHORT(CHR(ORD(ch)-27H))
             ELSE EXIT
             END
           END
@@ -591,7 +591,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     ELSE x0 := x
     END;
     REPEAT
-      a[i] := CHR(x0 MOD 10 + 30H); x0 := x0 DIV 10; INC(i)
+      a[i] := SHORT(CHR(x0 MOD 10 + 30H)); x0 := x0 DIV 10; INC(i)
     UNTIL x0 = 0;
     WHILE n > i DO Write(W, " "); DEC(n) END;
     IF x < 0 THEN Write(W, "-") END;
@@ -616,7 +616,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
     ELSE x0 := x
     END;
     REPEAT
-      a[i] := CHR(x0 MOD 10 + 30H); x0 := x0 DIV 10; INC(i)
+      a[i] := SHORT(CHR(x0 MOD 10 + 30H)); x0 := x0 DIV 10; INC(i)
     UNTIL x0 = 0;
     WHILE n > i DO Write(W, " "); DEC(n) END;
     IF x < 0 THEN Write(W, "-") END;
@@ -628,7 +628,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       a: ARRAY 8 OF CHAR;
   BEGIN i := 0; Write(W, " ");
     REPEAT y := x MOD 10H;
-      IF y < 10 THEN a[i] := CHR(y + 30H) ELSE a[i] := CHR(y + 37H) END;
+      IF y < 10 THEN a[i] := SHORT(CHR(y + 30H)) ELSE a[i] := SHORT(CHR(y + 37H)) END;
       x := x DIV 10H; INC(i)
     UNTIL i = 8;
     REPEAT DEC(i); Write(W, a[i]) UNTIL i = 0
@@ -639,7 +639,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
       a: ARRAY 16 OF CHAR;
   BEGIN i := 0; Write(W, " ");
     REPEAT y := SHORT(x) MOD 10H;
-      IF y < 10 THEN a[i] := CHR(y + 30H) ELSE a[i] := CHR(y + 37H) END;
+      IF y < 10 THEN a[i] := SHORT(CHR(y + 30H)) ELSE a[i] := SHORT(CHR(y + 37H)) END;
       x := x DIV 10H; INC(i)
     UNTIL i = 16;
     REPEAT DEC(i); Write(W, a[i]) UNTIL i = 0
@@ -756,7 +756,7 @@ MODULE Texts;  (** CAS/HM 23.9.93 -- interface based on Texts by JG/NW 6.12.91**
 
     PROCEDURE WritePair(ch: CHAR; x: LONGINT);
     BEGIN Write(W, ch);
-      Write(W, CHR(x DIV 10 + 30H)); Write(W, CHR(x MOD 10 + 30H))
+      Write(W, SHORT(CHR(x DIV 10 + 30H))); Write(W, SHORT(CHR(x MOD 10 + 30H)))
     END WritePair;
 
   BEGIN

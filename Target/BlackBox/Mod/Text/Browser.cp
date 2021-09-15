@@ -10,9 +10,10 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		SProc = 8; CProc = 9; IProc = 10; Mod = 11; Head = 12; TProc = 13;
 
 		(* structure forms *)
-		Undef = 0; Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11; NoTyp = 12;
+		Undef = 0; Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		Char16 = 17; String16 = 18;
 
 		(* composite structure forms *)
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
@@ -42,6 +43,17 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN W.WriteChar(ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN W.WriteInt(i) END Wi;
 	PROCEDURE Wln; BEGIN W.WriteLn() END Wln;
+	PROCEDURE Whex(i: LONGINT);
+		VAR minWidth: INTEGER;
+	BEGIN
+		IF i > 9FFFH THEN minWidth := 5
+		ELSIF i > 9FFH THEN minWidth := 4
+		ELSIF i > 9FH THEN minWidth := 3
+		ELSIF i > 9H THEN minWidth := 2
+		ELSE minWidth := 1
+		END;
+		W.WriteIntForm(i, TextMappers.hexadecimal, minWidth, "0", FALSE)
+	END Whex;
 
 	PROCEDURE StringConst (IN s: ARRAY OF SHORTCHAR);
 		VAR ch: SHORTCHAR; i: INTEGER; quoted, first: BOOLEAN;
@@ -126,16 +138,12 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						CASE obj^.typ^.form OF
 						| Bool:
 								IF obj^.conval^.intval = 1 THEN Ws("TRUE") ELSE Ws("FALSE") END
-						| Char:
+						| Char8, Char16:
 								IF obj^.conval^.intval = 22H THEN Wch("'"); Wch('"'); Wch("'")
 								ELSIF (obj^.conval^.intval >= 32) & (obj^.conval^.intval <= 126) THEN
 									Wch(22X); Wch(SHORT(CHR(obj^.conval^.intval))); Wch(22X)
 								ELSE
-									i := SHORT(obj^.conval^.intval) DIV 16;
-									IF i > 9 THEN Wch(SHORT(CHR(55 + i))) ELSE Wch(SHORT(CHR(48 + i))) END ;
-									i := SHORT(obj^.conval^.intval) MOD 16;
-									IF i > 9 THEN Wch(SHORT(CHR(55 + i))) ELSE Wch(SHORT(CHR(48 + i))) END ;
-									Wch("X")
+									Whex(obj^.conval^.intval); Wch("X")
 								END
 						| Byte, SInt, Int, LInt:
 								Wi(obj^.conval^.intval)
@@ -152,7 +160,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 								W.WriteReal(SHORT(obj^.conval^.realval))
 						| LReal:
 								W.WriteReal(obj^.conval^.realval)
-						| String:
+						| String8, String16:
 								StringConst(obj^.conval^.ext^)
 						| NilTyp:
 								Ws("NIL")

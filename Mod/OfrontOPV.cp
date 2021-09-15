@@ -23,9 +23,11 @@
 		unsgn = 40; (* псевдооперация unsigned для div *)
 
 		(* structure forms *)
-		Byte = 1; Bool = 2; Char = 3; SInt = 4; Int = 5; LInt = 6;
-		Real = 7; LReal = 8; Set = 9; String = 10; NilTyp = 11;
+		Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		Char16 = 17; String16 = 18;
+		intSet = {Byte, UByte, SInt..LInt};
 
 		(* composite structure forms *)
 		Array = 2; DynArr = 3; Record = 4;
@@ -38,12 +40,12 @@
 		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30; Nraw = 31;
 
 		(*function number*)
-		assign = 0; newfn = 1; incfn = 18; decfn = 19;
-		inclfn = 20; exclfn = 21; copyfn = 23; packfn = 31; unpkfn = 32; assertfn = 37;
+		assign = 0; newfn = 1; incfn = 19; decfn = 20;
+		inclfn = 21; exclfn = 22; copyfn = 24; packfn = 32; unpkfn = 33; assertfn = 38;
 
 		(*SYSTEM function number*)
-		getfn = 29; putfn = 30; sysnewfn = 35; movefn = 36;
-		typfn = 38; thisrecfn = 39; thisarrfn = 40;
+		getfn = 30; putfn = 31; sysnewfn = 36; movefn = 37;
+		typfn = 39; thisrecfn = 40; thisarrfn = 41;
 
 		(*procedure flags*)
 		hasBody = 1; isRedef = 2; absAttr = 17; empAttr = 19; extAttr = 20;
@@ -272,7 +274,8 @@
 		Traverse(topScope^.right, topScope, TRUE);	(* first pass only on exported types and procedures	*)
 		Traverse(topScope^.right, topScope, FALSE);	(* second pass *)
 		(* mark basic types as predefined, OPC.Ident can avoid qualification*)
-		OPT.chartyp^.strobj^.linkadr := PredefinedType;
+		OPT.char8typ^.strobj^.linkadr := PredefinedType;
+		OPT.char16typ^.strobj^.linkadr := PredefinedType;
 		OPT.settyp^.strobj^.linkadr := PredefinedType;
 		OPT.realtyp^.strobj^.linkadr := PredefinedType;
 		OPT.inttyp^.strobj^.linkadr := PredefinedType;
@@ -346,15 +349,19 @@
 		VAR d: INTEGER; array: OPT.Struct;
 	BEGIN
 		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
-		IF n.typ.form = String THEN
+		IF n.typ.form IN {String8, String16} THEN
 			IF n^.class = Nconst THEN OPM.WriteInt(n^.conval^.intval2 * n^.typ^.BaseTyp^.size)
 			ELSIF (n^.class = Nderef) & (n^.left^.typ^.sysflag = 0) THEN
-				OPM.WriteString("__STRLEN("); expr(n, MinPrec);
+				OPM.WriteString("__STRLEN");
+				IF n.typ.form = String16 THEN OPM.Write("L") END;
+				OPM.Write("("); expr(n, MinPrec);
 				OPM.WriteString(Comma); Len(n^.left, dim, FALSE);
 				OPM.WriteString(Comma); OPM.WriteModPos; OPM.Write(CloseParen);
 				IF incl0x THEN OPM.WriteString(" + 1") END
 			ELSE
-				OPM.WriteString("__CSTRLEN("); expr(n, MinPrec); OPM.Write(CloseParen);
+				OPM.WriteString("__CSTRLEN");
+				IF n.typ.form = String16 THEN OPM.Write("L") END;
+				OPM.Write("("); expr(n, MinPrec); OPM.Write(CloseParen);
 				IF incl0x THEN OPM.WriteString(" + 1") END
 			END
 		ELSIF (n^.class = Nderef) & (n^.typ^.comp = DynArr) THEN d := dim; array := n^.typ;
@@ -371,19 +378,19 @@
 
 	PROCEDURE SameExp (n1, n2: OPT.Node): BOOLEAN;
 	BEGIN
-		IF (n2^.class = Nderef) & (n2^.typ^.form = String) THEN n2 := n2^.left END;
-		WHILE (n1^.class = n2^.class) & (n1^.typ = n2^.typ) DO
-			CASE n1^.class OF
-			| Nvar, Nvarpar, Nproc: RETURN n1^.obj = n2^.obj
-			| Nconst: RETURN (n1^.typ^.form IN {Byte, SInt..LInt}) & (n1^.conval^.intval = n2^.conval^.intval)
-			| Nfield: IF n1^.obj # n2^.obj THEN RETURN FALSE END
+		IF (n2^.class = Nderef) & (n2^.typ^.form IN {String8, String16}) THEN n2 := n2^.left END;
+		WHILE (n1.class = n2.class) & (n1.typ = n2.typ) DO
+			CASE n1.class OF
+			| Nvar, Nvarpar, Nproc: RETURN n1.obj = n2.obj
+			| Nconst: RETURN (n1.typ.form IN {Byte, SInt..LInt}) & (n1.conval.intval = n2.conval.intval)
+			| Nfield: IF n1.obj # n2.obj THEN RETURN FALSE END
 			| Nderef, Nguard:
-			| Nindex: IF ~SameExp(n1^.right, n2^.right) THEN RETURN FALSE END
-			| Nmop: IF (n1^.subcl # n2^.subcl) OR (n1^.subcl = is) THEN RETURN FALSE END
-			| Ndop: IF (n1^.subcl # n2^.subcl) OR ~SameExp(n1^.right, n2^.right) THEN RETURN FALSE END
+			| Nindex: IF ~SameExp(n1.right, n2.right) THEN RETURN FALSE END
+			| Nmop: IF (n1.subcl # n2.subcl) OR (n1.subcl = is) THEN RETURN FALSE END
+			| Ndop: IF (n1.subcl # n2.subcl) OR ~SameExp(n1.right, n2.right) THEN RETURN FALSE END
 			ELSE RETURN FALSE
 			END;
-			n1 := n1^.left; n2 := n2^.left
+			n1 := n1.left; n2 := n2.left
 		END;
 		RETURN FALSE
 	END SameExp;
@@ -393,11 +400,11 @@
 		IF (right^.class = Nderef) & (right^.typ^.comp # DynArr) & (right^.left^.typ^.sysflag = 0) THEN
 			right := right^.left
 		END;
-		IF (left^.typ^.form = String) OR (left^.typ^.sysflag # 0) THEN
+		IF (left^.typ^.form IN {String8, String16}) OR (left^.typ^.sysflag # 0) THEN
 			Len(right, 0, TRUE)
 		ELSIF (left^.typ^.comp = Array) & (right^.typ^.comp = Array) THEN
 			OPM.WriteInt(MIN(left^.typ^.n, right^.typ^.n))
-		ELSIF (right^.typ^.form = String) OR SameExp(left, right) THEN
+		ELSIF (right^.typ^.form IN {String8, String16}) OR SameExp(left, right) THEN
 			Len(left, 0, TRUE)
 		ELSE
 			OPM.WriteString("__MIN("); Len(left, 0, TRUE); OPM.WriteString(Comma);
@@ -461,12 +468,19 @@
 			END
 		| LInt:
 			IF from < LInt THEN OPM.WriteString("(LONGINT)") END; LEntier(n, 9)
-		| Char, UByte:
+		| Char8, UByte:
 			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
 				IF SideEffects(n) THEN OPM.Write("F") END;
 				OPM.Write(OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
 				OPM.WriteModPos; OPM.Write(CloseParen)
 			ELSE OPM.WriteString("(CHAR)"); Entier(n, 9)
+			END
+		| Char16:
+			IF OPM.ranchk IN OPM.opt THEN OPM.WriteString("__CHR");
+				IF SideEffects(n) THEN OPM.Write("F") END;
+				OPM.WriteString("L" + OpenParen); Entier(n, MinPrec); OPM.WriteString(Comma);
+				OPM.WriteModPos; OPM.Write(CloseParen)
+			ELSE OPM.WriteString("(LONGCHAR)"); Entier(n, 9)
 			END
 		| Set: OPM.WriteString("(SET)"); Entier(n, 9)
 		| Real: OPM.WriteString("(SHORTREAL)"); expr(n, prec)
@@ -617,7 +631,7 @@
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE n # NIL DO typ := fp^.typ;
-			IF (typ^.form = n^.typ^.form) & (typ^.form IN {Byte..Set}) THEN typ := n^.typ END;
+			IF (typ^.form = n^.typ^.form) & (typ^.form IN {Byte..Set, UByte, Char16}) THEN typ := n^.typ END;
 			comp := typ^.comp; form := typ^.form; mode := fp^.mode; prec := MinPrec;
 			IF (mode = VarPar) & ((n.subcl = thisarrfn) OR (n.subcl = thisrecfn)) THEN
 				OPM.WriteString("(void*)"); expr(n.left, MinPrec); OPM.WriteString(Comma);
@@ -634,16 +648,18 @@
 							OPM.Write("&")
 						END; prec := 9
 					ELSIF ansi THEN
-						IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN
-							OPM.WriteString("(CHAR*)")	(* force to unsigned char *)
+						IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN	(* force to unsigned char *)
+							IF n.typ.form = String8 THEN OPM.WriteString("(CHAR*)")
+							ELSE OPM.WriteString("(LONGCHAR*)")
+							END
 						ELSIF (form = Pointer) & (typ # n^.typ) & (n^.typ # OPT.niltyp) THEN
 							OPM.WriteString("(void*)")	(* type extension *)
 						ELSIF (comp = Record) & (n^.typ # typ) THEN (* record value projection *)
 							OPM.WriteString("*("); OPC.Andent(typ); OPM.WriteString("*)&"); prec := 9
 						END
 					ELSE
-						IF (form IN {Real, LReal}) & (n^.typ^.form IN {Byte, SInt, Int, LInt}) THEN (* real promotion *)
-							OPM.WriteString("(double)"); prec := 9
+						IF (form IN {Real, LReal}) & (n^.typ^.form IN intSet) THEN (* real promotion *)
+							OPM.WriteString("(REAL)"); prec := 9
 						ELSIF (form = LInt) & (n^.typ^.form < LInt) THEN (* integral promotion *)
 							OPM.WriteString("(LONGINT)"); prec := 9
 						END
@@ -698,6 +714,20 @@
 		RETURN obj
 	END SuperProc;
 
+	PROCEDURE StringModifier (n: OPT.Node);
+		VAR trunc: BOOLEAN;
+	BEGIN
+		trunc := FALSE;
+		WHILE (n.class = Nmop) & (n.subcl = conv) DO
+			IF n.typ.form = String8 THEN trunc := TRUE END;
+			n := n.left
+		END;
+		IF (n.typ.form = String8) OR (n.typ.form = Comp) & (n.typ.BaseTyp.form = Char8) THEN OPM.Write("C")
+		ELSIF trunc THEN OPM.Write("T")
+		ELSE OPM.Write("L")
+		END
+	END StringModifier;
+
 	PROCEDURE^ compStat (n: OPT.Node; exp: BOOLEAN);
 
 	PROCEDURE OpParentheses (ePrec, prec: SHORTINT): BOOLEAN;	(* to silence Clang warnings *)
@@ -744,7 +774,7 @@
 								OPC.Andent(typ); OPM.WriteString(Comma);
 								OPM.WriteInt(typ^.extlev); OPM.Write(")")
 					|	conv:
-								IF form = String THEN
+								IF form IN {String8, String16} THEN
 									expr(l, exprPrec)
 								ELSE
 									Convert(l, form, exprPrec)
@@ -771,7 +801,7 @@
 								IF l^.class = Ntype THEN TypeOf(l)
 								ELSIF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
-									IF (l^.typ^.form # String) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END;
+									IF ~(l^.typ^.form IN {String8, String16}) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END;
 									expr(l, exprPrec)
 								END
 					|	val: (*SYSTEM*)
@@ -891,10 +921,17 @@
 							END;
 							OPM.Write(CloseParen)
 					| eql .. geq:
-							IF l^.typ^.form IN {String, Comp} THEN
-								OPM.WriteString("__STRCMP(");
-								expr(l, MinPrec); OPM.WriteString(Comma); expr(r, MinPrec); OPM.Write(CloseParen);
-								OPC.Cmp(subclass); OPM.Write("0")
+							IF l^.typ^.form IN {String8, String16, Comp} THEN
+								OPM.WriteString("__STRCMP");
+								IF (r.class = Nmop) & (r.subcl = conv) THEN	(* converted must be first *)
+									StringModifier(r); StringModifier(l); OPM.Write("(");
+									expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec);
+									IF subclass >= lss THEN subclass := SHORT((subclass - gtr) MOD 4 + lss) END
+								ELSE
+									StringModifier(l); StringModifier(r); OPM.Write("(");
+									expr(l, MinPrec); OPM.WriteString(Comma); expr(r, MinPrec)
+								END;
+								OPM.Write(")"); OPC.Cmp(subclass); OPM.Write("0")
 							ELSE
 								expr(l, exprPrec); OPC.Cmp(subclass);
 								typ := l^.typ;
@@ -913,14 +950,14 @@
 						|	slash:
 									IF form = Set THEN OPM.WriteString(" ^ ")
 									ELSE OPM.WriteString(" / ");
-										IF (r^.obj = NIL) OR (r^.obj^.typ^.form IN {Byte, SInt, Int, LInt}) THEN
+										IF (r^.obj = NIL) OR (r^.obj^.typ^.form IN intSet) THEN
 											OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.Write(CloseParen)
 										END
 									END
 						|	and:
 									OPM.WriteString(" && ")
 						|	plus:
-									IF form = String THEN OPM.err(265)
+									IF form IN {String8, String16} THEN OPM.err(265)
 									ELSIF form = Set THEN OPM.WriteString(" | ")
 									ELSE OPM.WriteString(" + ")
 									END
@@ -1088,8 +1125,13 @@
 
 	PROCEDURE AddCopy (left, right: OPT.Node; first: BOOLEAN);
 	BEGIN
-		IF first THEN OPM.WriteString("__STRCOPY(") ELSE OPM.WriteString("__STRAPND(") END;
-		IF ansi & (right^.class = Nconst) THEN OPM.WriteString("(CHAR*)") END;
+		IF first THEN OPM.WriteString("__STRCOPY") ELSE OPM.WriteString("__STRAPND") END;
+		StringModifier(right); StringModifier(left); OPM.Write("(");
+		IF ansi & (right^.class = Nconst) THEN
+			IF right^.typ^.form = String8 THEN OPM.WriteString("(CHAR*)")
+			ELSE OPM.WriteString("(LONGCHAR*)")
+			END
+		END;
 		expr(right, MinPrec); OPM.WriteString(Comma);
 		IF ~first THEN
 			IF right^.class = Nderef THEN right := right^.left END;
@@ -1132,22 +1174,22 @@
 	BEGIN
 		WHILE (n # NIL) & OPM.noerr DO
 			IF ~exp THEN OPC.BegStat END;
-			ASSERT(n^.class = Nassign);
+			ASSERT(n.class = Nassign);
 			l := n^.left; r := n^.right;
 			IF n^.subcl = assign THEN
-				IF r^.typ^.form = String THEN
-					IF r^.class # Nconst THEN
+				IF r.typ.form IN {String8, String16} THEN
+					IF r.class # Nconst THEN
 						StringCopy(l, r, exp)
 					ELSE
 						OPM.WriteString(MoveFunc);
 						expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
-						OPM.WriteInt(r^.conval^.intval2 * r^.typ^.BaseTyp.size); OPM.Write(CloseParen)
+						OPM.WriteInt(r^.conval^.intval2 * r.typ.BaseTyp.size); OPM.Write(CloseParen)
 					END
-				ELSE ASSERT(l^.typ^.form IN {Pointer, Char});
+				ELSE ASSERT(l^.typ^.form IN {Pointer, Char8, Char16});
 					design(l, MinPrec); OPM.WriteString(" = "); expr(r, MinPrec)
 				END
-			ELSE ASSERT(n^.subcl = newfn);
-				ASSERT(l^.typ^.BaseTyp^.comp = DynArr);
+			ELSE ASSERT(n.subcl = newfn);
+				ASSERT(l.typ.BaseTyp.comp = DynArr);
 				NewArr(l, r)
 			END;
 			IF exp THEN OPM.WriteString(", "); OPM.WriteLn; OPC.BegStat; OPM.Write(9X) ELSE OPC.EndStat END;
@@ -1201,14 +1243,15 @@
 						assign:
 								l := n^.left; r := n^.right;
 								IF l^.typ^.comp IN {Array, DynArr} THEN
-									IF (r.typ.form = String) & (r.class # Nconst) THEN
+									IF (r.typ.form IN {String8, String16}) & (r.class # Nconst) THEN
 										StringCopy(l, r, FALSE)
-									ELSIF (r.typ.form = String) & (l.typ.sysflag = 0) & ~((l.typ.comp = Array) & (r.conval.intval2 <= l.typ.n)) THEN
+									ELSIF (r.typ.form IN {String8, String16}) & (l.typ.sysflag = 0) & ~((l.typ.comp = Array) & (r.conval.intval2 <= l.typ.n)) THEN
 										AddCopy(l, r, TRUE)
 									ELSE
 										OPM.WriteString(MoveFunc);
 										expr(r, MinPrec); OPM.WriteString(Comma); expr(l, MinPrec); OPM.WriteString(Comma);
-										IF r^.typ = OPT.stringtyp THEN OPM.WriteInt(r^.conval^.intval2)
+										IF r^.typ = OPT.string8typ THEN OPM.WriteInt(r^.conval^.intval2)
+										ELSIF r^.typ = OPT.string16typ THEN OPM.WriteInt(r^.conval^.intval2 * OPT.char16typ.size)
 										ELSE OPM.WriteInt(r^.typ^.size)
 										END;
 										OPM.Write(CloseParen)
@@ -1294,11 +1337,11 @@
 						DEC(exit.level)
 			|	Nrepeat:
 						INC(exit.level); OPM.WriteString("do "); OPC.BegBlk; stat(n^.left, outerProc); OPC.EndBlk0;
-						IF n^.right^.class = Nassign THEN (* цикл FOR *)
+						IF n^.right^.class = Nassign THEN (* FOR loop *)
 							OPM.WriteString(" while (");
 							ForUntil(n^.right^.left, n^.right^.subcl, n^.right^.right);
 							OPM.Write(")")
-						ELSE (* обычный REPEAT/UNTIL *)
+						ELSE (* normal REPEAT/UNTIL *)
 							OPM.WriteString(" while (!");  expr(n^.right, 9); OPM.Write(CloseParen)
 						END;
 						DEC(exit.level)
