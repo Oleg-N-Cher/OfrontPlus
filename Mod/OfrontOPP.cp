@@ -387,7 +387,8 @@
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
-			IF (sym = ident) & ((OPS.name = "stdcall") OR (OPS.name = "callback")) THEN OPS.Get(sym); sysflag := 1
+			IF (sym = ident) & (OPS.name = "ccall") THEN OPS.Get(sym); sysflag := 0
+			ELSIF (sym = ident) & ((OPS.name = "stdcall") OR (OPS.name = "callback")) THEN OPS.Get(sym); sysflag := 1
 			ELSIF (sym = ident) & (OPS.name = "fastcall") THEN OPS.Get(sym); sysflag := 2
 			ELSE OPS.Get(sym); err(178); sysflag := 0
 			END;
@@ -1071,12 +1072,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF (eql <= sym) & (sym <= geq) THEN
 			relation := sym; OPS.Get(sym); SimpleExpression(y);
 			pre := NIL; last := NIL;
-			(* IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form IN charSet) THEN
+			IF (x.typ.comp IN {Array, DynArr}) & (x.typ.BaseTyp.form IN charSet) THEN
 				OPB.StrDeref(x)
 			END;
 			IF (y.typ.comp IN {Array, DynArr}) & (y.typ.BaseTyp.form IN charSet) THEN
 				OPB.StrDeref(y)
-			END; *)
+			END;
 			OPB.CheckBuffering(x, NIL, NIL, pre, last);
 			OPB.CheckBuffering(y, NIL, NIL, pre, last);
 			OPB.Op(relation, x, y);

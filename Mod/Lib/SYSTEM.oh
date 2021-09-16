@@ -213,7 +213,7 @@ static inline void __STRCOPYLL (  // ldst := lsrc
   do { if (max_len-- == 0) __HALT(-8, mod, pos); } while ((*dst++ = *src++));
 }
 
-static inline void __STRCOPYSL (  // ldst := LONG(ssrc)
+static inline void __STRCOPYCL (  // ldst := LONG(ssrc)
   CHAR *src, LONGCHAR *dst, INTEGER max_len, CHAR *mod, INTEGER pos)
 {
   do { if (max_len-- == 0) __HALT(-8, mod, pos); } while ((*dst++ = *src++));
@@ -236,7 +236,7 @@ static inline void __STRAPNDCC (  // sdst := sdst + ssrc
   } while ((*dst++ = *src++));
 }
 
-static inline void __STRAPNDTS (  // sdst := sdst + SHORT(lsrc)
+static inline void __STRAPNDTC (  // sdst := sdst + SHORT(lsrc)
   LONGCHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
   do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
@@ -254,7 +254,7 @@ static inline void __STRAPNDLL (  // ldst := ldst + lsrc
   } while ((*dst++ = (CHAR)*src++));
 }
 
-static inline void __STRAPNDSL (  // ldst := ldst + LONG(ssrc)
+static inline void __STRAPNDCL (  // ldst := ldst + LONG(ssrc)
   CHAR *src, INTEGER src_len, LONGCHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
   do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;

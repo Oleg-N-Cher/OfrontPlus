@@ -405,7 +405,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	PROCEDURE NotVar (x: OPT.Node): BOOLEAN;
 	BEGIN
 		RETURN (x^.class >= Nconst) & ((x^.class # Nmop) OR (x^.subcl # val) OR NotVar(x^.left))
-			OR (x^.typ^.form = String8)
+			OR (x^.typ^.form IN {String8, String16})
 			OR (x^.class = Nguard) & NotVar(x^.left)
 	END NotVar;
 
@@ -636,7 +636,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					ELSIF z.class = Ntype THEN
 						IF (z.obj.typ.sysflag # 0) OR (typ.comp = Basic) & (f # Pointer) THEN err(111) END;
 						z := NewOp(op, typ, z)
-					ELSIF (z^.class < Nconst) OR (z.class = Nconst) & (f = String8) THEN
+					ELSIF (z^.class < Nconst) OR (z.class = Nconst) & (f IN {String8, String16}) THEN
 						z := NewOp(op, typ, z)
 					ELSE err(127)
 					END;
@@ -1078,26 +1078,6 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			node^.left := x; node^.right := y; x := node
 		END NewOp;
 
-		PROCEDURE strings (VAR x, y: OPT.Node): BOOLEAN;
-			VAR ok, xCharArr, yCharArr: BOOLEAN;
-		BEGIN
-			xCharArr := ((x^.typ^.comp IN {Array, DynArr}) & (x^.typ^.BaseTyp^.form=Char8)) OR (f=String8);
-			yCharArr := (((y^.typ^.comp IN {Array, DynArr}) & (y^.typ^.BaseTyp^.form=Char8)) OR (g=String8));
-			IF xCharArr & (g = Char8) & (y^.class = Nconst) THEN CharToString8(y); g := String8; yCharArr := TRUE END;
-			IF yCharArr & (f = Char8) & (x^.class = Nconst) THEN CharToString8(x); f := String8; xCharArr := TRUE END;
-			ok := xCharArr & yCharArr;
-			IF ok THEN	(* replace ""-string compare with 0X-char compare, if possible *)
-				IF (f=String8) & (x^.conval^.intval2 = 1) THEN	(* y is array of char *)
-					x^.typ := OPT.char8typ; x^.conval^.intval := 0;
-					Index(y, NewIntConst(0))
-				ELSIF (g=String8) & (y^.conval^.intval2 = 1) THEN	(* x is array of char *)
-					y^.typ := OPT.char8typ; y^.conval^.intval := 0;
-					Index(x, NewIntConst(0))
-				END
-			END;
-			RETURN ok
-		END strings;
-
 
 	BEGIN z := x;
 		IF (z^.class = Ntype) OR (y^.class = Ntype) THEN err(126)
@@ -1165,7 +1145,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 								ELSE err(100)
 								END
 						| String16:
-								IF (g = Char16) & (y^.class = Nconst) THEN CharToString16(y)
+								IF (g IN {Char8, Char16}) & (y^.class = Nconst) THEN CharToString16(y)
 								ELSE err(100)
 								END
 						| Comp:
@@ -1314,14 +1294,21 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 							END
 						ELSIF f # Undef THEN err(95); z^.typ := OPT.undftyp
 						END
-				| eql, neq:
-						IF (f IN {Undef..Set, NilTyp, Pointer, ProcTyp, Char16}) OR strings(z, y) THEN typ := OPT.booltyp
-						ELSE err(107); typ := OPT.undftyp
-						END;
-						NewOp(op, typ, z, y)
-				| lss, leq, gtr, geq:
-						IF (f IN {Undef, Int8, Char8..Real64, Char16}) OR strings(z, y) THEN typ := OPT.booltyp
-						ELSE err(108); typ := OPT.undftyp
+				| eql, neq, lss, leq, gtr, geq:
+						IF f IN {String8, String16} THEN
+							IF (f = String16) & (z.class = Nmop) & (z.subcl = conv) & (y.class = Nmop) & (y.subcl = conv) THEN
+								z := z.left; y := y.left	(* remove LONG on both sides *)
+							ELSIF (z.class = Nconst) & (z.conval.intval2 = 1) & (y.class = Nderef) THEN (* y$ = "" -> y[0] = 0X *)
+								y := y.left; Index(y, NewIntConst(0)); z.typ := y.typ; z.conval.intval := 0; z.obj := NIL
+							ELSIF (y.class = Nconst) & (y.conval.intval2 = 1) & (z.class = Nderef) THEN (* z$ = "" -> z[0] = 0X *)
+								z := z.left; Index(z, NewIntConst(0)); y.typ := z.typ; y.conval.intval := 0; y.obj := NIL
+							END;
+							typ := OPT.booltyp
+						ELSIF (f IN {Undef, Int8, Char8..Real64, Byte, Char16})
+								OR (op <= neq) & ((f IN {Bool, Set, NilTyp, Pointer, ProcTyp})) THEN typ := OPT.booltyp
+						ELSE
+							IF op <= neq THEN err(107) ELSE err(108) END;
+							typ := OPT.undftyp
 						END;
 						NewOp(op, typ, z, y)
 				END
@@ -1477,12 +1464,12 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 
 	PROCEDURE AssignString (VAR x: OPT.Node; str: OPT.Node);	(* x := str or x[0] := 0X *)
 	BEGIN
-		ASSERT((str^.class = Nconst) & (str^.typ^.form = String8));
-		IF (x^.typ^.comp IN {Array, DynArr}) & (str^.conval^.intval2 = 1) THEN	(* x := "" -> x[0] := 0X *)
+		ASSERT((str.class = Nconst) & (str.typ.form IN {String8, String16}));
+		IF (x.typ.comp IN {Array, DynArr}) & (str.conval.intval2 = 1) THEN	(* x := "" -> x[0] := 0X *)
 			Index(x, NewIntConst(0));
-			str^.typ := x^.typ; str^.conval^.intval := 0; str^.obj := NIL
+			str.typ := x.typ; str.conval.intval := 0; str.obj := NIL
 		END;
-		BindNodes(Nassign, OPT.notyp, x, str); x^.subcl := assign
+		BindNodes(Nassign, OPT.notyp, x, str); x.subcl := assign
 	END AssignString;
 
 	PROCEDURE CheckLeaf (x: OPT.Node; dynArrToo: BOOLEAN);
@@ -1821,7 +1808,7 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF (x^.class = Nderef) & (x^.typ^.sysflag # 0) & (x^.typ^.n = 0) THEN err(137)
 				ELSE
 					CheckString(p, x^.typ, 111); t := x; x := p; p := t;
-					IF (x^.class = Nconst) & (x^.typ^.form = String8) & (p^.typ^.comp = Array) & (x^.conval^.intval2 <= p^.typ^.n)
+					IF (x^.class = Nconst) & (x^.typ^.form IN {String8, String16}) & (p^.typ^.comp = Array) & (x^.conval^.intval2 <= p^.typ^.n)
 					THEN AssignString(p, x)
 					ELSE p := NewOp(Nassign, copyfn, p, x)
 					END
@@ -2267,10 +2254,10 @@ avoid unnecessary intermediate variables in OFront
 	PROCEDURE Assign* (VAR x: OPT.Node; y: OPT.Node);
 		VAR z: OPT.Node;
 	BEGIN
-		IF (x^.class >= Nconst) OR (x^.typ^.form = String8) THEN err(56) END;
+		IF (x^.class >= Nconst) OR (x^.typ^.form IN {String8, String16}) THEN err(56) END;
 		CheckAssign(x^.typ, y);
 		IF x^.readonly THEN err(76) END;
-		IF (y^.class = Nconst) & (y^.typ^.form = String8) & (x^.typ^.form # Pointer) THEN AssignString(x, y)
+		IF (y^.class = Nconst) & (y^.typ^.form IN {String8, String16}) & (x^.typ^.form # Pointer) THEN AssignString(x, y)
 		ELSE
 			IF x^.typ^.comp = Record THEN
 				IF x^.class = Nguard THEN z := x^.left ELSE z := x END;
@@ -2400,7 +2387,7 @@ avoid unnecessary intermediate variables in OFront
 	);
 		VAR length, x: OPT.Node; obj: OPT.Object; typ: OPT.Struct; len, xlen: INTEGER;
 	BEGIN
-		IF (n.typ.form = String8)
+		IF (n.typ.form IN {String8, String16})
 			& ((n.class = Ndop) & (n.subcl = plus) & ((left = NIL) OR Overlap(left, n.right))
 				OR (n.class = Nmop) & (n.subcl = conv) & (left = NIL)
 				OR (par # NIL) & (par.vis = inPar) & (par.typ.comp = Array)) THEN

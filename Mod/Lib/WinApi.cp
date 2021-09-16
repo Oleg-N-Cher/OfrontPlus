@@ -16,7 +16,6 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	TYPE (* base types *)
 		PtrVoid* = SYSTEM.ADRINT;	(* 32 or 64 bit *)
 		SIZE_T = SYSTEM.ADRINT; (* 32 or 64 bit *)
-		CHAR = SHORTINT; (* Temporary as 16-bit integer *)
 		PtrSTR* = POINTER TO ARRAY [untagged] OF SHORTCHAR;
 		PtrWSTR* = POINTER TO ARRAY [untagged] OF CHAR;
 		DATE* = REAL;

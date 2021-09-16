@@ -63,8 +63,8 @@ IF errorlevel 1 PAUSE
 
 :: BlackBox
 
-%CC% bbMath.c
+%CC% bbKernel.c bbMath.c bbStrings.c
 IF errorlevel 1 PAUSE
-%AR% bbMath.o
+%AR% bbKernel.o bbMath.o bbStrings.o
 
 DEL /Q *.o

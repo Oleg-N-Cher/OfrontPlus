@@ -50,14 +50,14 @@ ofront+ -sO2 -88 ^
   arConfiguration.ob2 arValue.ob2 arFormat.ob2 arJSON.ob2 %oef%
 IF errorlevel 1 PAUSE
 
-:: BlackBox
-
-ofront+ -sC -88 bbMath.cp %oef%
-IF errorlevel 1 PAUSE
-
 :: WinApi
 
-ofront+ -sC -88 WinApi.cp %oef%
+ofront+ -s -88 WinApi.cp %oef%
+IF errorlevel 1 PAUSE
+
+:: BlackBox
+
+ofront+ -sw -88 bbKernel.Windows.cp bbMath.cp bbStrings.cp %oef%
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
