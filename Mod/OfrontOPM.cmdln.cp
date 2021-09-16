@@ -28,7 +28,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
 		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
 		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
-		widechar* = 18;	(* UCS-2 encoded character format enabled *)
+		widechar* = 18;	(* UCS-2 encoded wide character format enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -237,7 +237,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			AdrSize := SIZE(SYSTEM.PTR); GetAlignment(Alignment)
 		END;
 		(* default characteristics *)
-		IF AdrSize = 2 THEN	(* Z80 and other 8 bit CPUs *)
+		IF AdrSize = 2 THEN	(* Z80 and other 8-bit CPUs *)
 			SetSize := 1; MaxSet := 7; IndexSize := 2; MaxIndex := MAX(SHORTINT)
 		ELSE
 			SetSize := 4; MaxSet := 31;
@@ -272,10 +272,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "G": opt := opt / {gpcp}
 			| "O": opt := opt / {oakwood}
 			(* target machine address size and alignment
-					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
-					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
-					"48": 32 bit addresses, 64 bit alignment (e.g. Windows 32 bit on x86, Linux 32 bit on ARM).
-					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
+					"21": 16-bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
+					"44": 32-bit addresses, 32-bit alignment (e.g. 32-bit Unix/Linux on x86).
+					"48": 32-bit addresses, 64-bit alignment (e.g. 32-bit Windows on x86, 32-bit Linux on ARM).
+					"88": 64-bit addresses, 64-bit alignment (e.g. 64-bit platforms).
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AdrSize := 2; Alignment := 1; INC(i)
@@ -325,13 +325,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('       "a": check assertions                                         (on)'); Console.Ln;
 			Console.String('       "p": pointer initialization                                   (on)'); Console.Ln;
 			Console.String('       "t": check type guards                                        (on)'); Console.Ln;
-			Console.String('       "f": allow "correct FOR" (concept by Oleg Komlev)            (off)'); Console.Ln;
+			Console.String('       "f": allow "proper FOR" (concept by Oleg Komlev)             (off)'); Console.Ln;
 			Console.String('       "d": translate a module into dynamic library (.dll/.so)      (off)'); Console.Ln;
+			Console.String('       "w": UCS-2 encoded wide character format enabled             (off)'); Console.Ln;
 			Console.String('  "1": Oberon "2": Oberon-2 "C": Component Pascal "7": Oberon-07 "3": Oberon-3'); Console.Ln;
-			Console.String('  "21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
-			Console.String('  "44": 32 bit addresses, 32 bit alignment (UNIX/Linux 32 bit on x86)'); Console.Ln;
-			Console.String('  "48": 32 bit addresses, 64 bit alignment (Windows 32 bit, Linux 32 bit/ARM)'); Console.Ln;
-			Console.String('  "88": 64 bit addresses, 64 bit alignment (64 bit platforms)'); Console.Ln
+			Console.String('  "21": 16-bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
+			Console.String('  "44": 32-bit addresses, 32-bit alignment (32-bit UNIX/Linux on x86)'); Console.Ln;
+			Console.String('  "48": 32-bit addresses, 64-bit alignment (32-bit Windows, 32-bit Linux/ARMv7)'); Console.Ln;
+			Console.String('  "88": 64-bit addresses, 64-bit alignment (64-bit platforms)'); Console.Ln
 		ELSE
 			(* set options to initial defaults *)
 			Lang := "C";	(* default input language: Component Pascal *)
