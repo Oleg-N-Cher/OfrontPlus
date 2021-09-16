@@ -232,19 +232,6 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
 }
 
 
-// String comparison
-
-int SYSTEM_STRCMP(CHAR *x, CHAR *y)
-{
-  int i = 0;
-  CHAR ch1, ch2;
-  do {ch1 = x[i]; ch2 = y[i]; i++;
-    if (!ch1) return -(int)ch2;
-  } while (ch1==ch2);
-  return (int)ch1 - (int)ch2;
-}
-
-
 typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32

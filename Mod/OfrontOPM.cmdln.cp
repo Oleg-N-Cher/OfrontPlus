@@ -28,7 +28,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
 		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
 		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
-		widetext* = 18;	(* UTF-16LE encoded text format enabled *)
+		widechar* = 18;	(* UCS-2 encoded character format enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -267,7 +267,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			| "d": opt := opt / {dynlib}
 			| "f": opt := opt / {for}
 			| "o": opt := opt / {oldc}
-			| "w": opt := opt / {widetext}
+			| "w": opt := opt / {widechar}
 			| "1", "3"(*undocumented*), "C", "7": Lang := s[i]
 			| "G": opt := opt / {gpcp}
 			| "O": opt := opt / {oakwood}
@@ -387,7 +387,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE Get* (OUT longch: CHAR);	(* read next character from source text, 0X if eof *)
 		VAR ch: SHORTCHAR;
 	BEGIN
-		IF ~(widetext IN opt) THEN Texts.Read(inR, ch); longch := ch
+		IF ~(widechar IN opt) THEN Texts.Read(inR, ch); longch := ch
 		ELSIF ~Texts.ReadLong(inR, longch) THEN err(3); longch := 0X
 		END;
 		IF longch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256

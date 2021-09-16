@@ -1316,7 +1316,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterTypeAlias("LONGREAL", "longreal", real64, lrltyp);
 		ELSE (* "7" *)
 			EnterTyp("BYTE", "byte", UByte, 1, ubytetyp);
-			IF OPM.widetext IN OPM.opt THEN
+			IF OPM.widechar IN OPM.opt THEN
 				EnterTypeAlias("CHAR", "char", char16, char16typ)
 			ELSE
 				EnterTypeAlias("CHAR", "char", char8, char8typ)
@@ -1350,7 +1350,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterProc("FLT", "flt", fltfn);
 			EnterProc("PACK", "pack", packfn);
 			EnterProc("UNPK", "unpk", unpkfn);
-			IF OPM.widetext IN OPM.opt THEN
+			IF OPM.widechar IN OPM.opt THEN
 				EnterProc("CHR", "chr", lchrfn)
 			ELSE
 				EnterProc("CHR", "chr", chrfn)

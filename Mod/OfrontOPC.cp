@@ -1217,7 +1217,7 @@
 		IF ~ptrinit THEN OPM.Write("p") END;
 		IF OPM.include0 IN OPM.opt THEN OPM.Write("i") END;
 		IF dynlib THEN OPM.Write("d") END;
-		IF OPM.widetext IN OPM.opt THEN OPM.Write("w") END;
+		IF OPM.widechar IN OPM.opt THEN OPM.Write("w") END;
 		OPM.Write(OPM.Lang); IF OPM.for IN OPM.opt THEN OPM.Write("f") END;
 		OPM.WriteString(" -"); OPM.WriteInt(OPM.AdrSize);
 		IF OPM.AdrSize # 2 THEN OPM.WriteInt(OPM.Alignment) ELSE OPM.WriteInt(OPM.SetSize) END;
