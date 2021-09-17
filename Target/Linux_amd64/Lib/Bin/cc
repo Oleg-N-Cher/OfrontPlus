@@ -61,7 +61,7 @@ $AR arC.o arCFormat.o arChar.o arCString.o arDir.o arMath.o \
 
 ## BlackBox
 
-$CC bbMath.c
+$CC bbKernel.c bbMath.c bbStrings.c
 if [ $? != 0 ]; then exit 1; fi
 $AR bbMath.o
 
