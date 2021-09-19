@@ -5,7 +5,7 @@ IMPORT SYSTEM;
    Improvements and Windows 9x compatibility by Oleg N. Cher, 2019-2020
 
    TODO:
-   Use Unicode APIs with manual UTF8 conversion and prepend "\\?\" to
+   Use Unicode APIs with manual UTF-8 conversion and prepend "\\?\" to
    file paths in order to get 32768 character path length limit (as
    opposed to 256 bytes. *)
 
