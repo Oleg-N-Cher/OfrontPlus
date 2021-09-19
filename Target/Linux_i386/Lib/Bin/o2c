@@ -1,7 +1,7 @@
 #!/bin/sh
 cd ../Obj
 PATH="../..:$PATH"
-OBERON=.:../Sym:../../../../Mod/Lib
+export OBERON=.:../Sym:../../../../Mod/Lib
 
 ## Ofront+
 
@@ -50,7 +50,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## BlackBox
 
-ofront+ -sC -44 bbMath.cp
+ofront+ -sw -44 bbLinLibc.cp bbLinLibW.cp bbKernel.Unix.cp bbMath.cp bbStrings.cp
 if [ $? != 0 ]; then exit 1; fi
 
 find . -type f -name "*.sym" -exec mv -f {} ../Sym \;

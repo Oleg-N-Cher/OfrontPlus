@@ -50,7 +50,7 @@ IF errorlevel 1 PAUSE
 
 :: BlackBox
 
-ofront+ -sC -48 bbMath.cp
+ofront+ -sw -48 bbLinLibc.cp bbLinLibW.cp bbKernel.Unix.cp bbMath.cp bbStrings.cp
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL
