@@ -1036,7 +1036,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					END
 				ELSIF g IN realSet THEN x^.conval^.realval := x^.conval^.intval; x^.conval^.intval := OPM.ConstNotAlloc
 				ELSE (*g = Char*) k := x^.conval^.intval;
-					IF (0 > k) OR (k > 0FFH) THEN err(220) END
+					IF (g = Char8) & (k >= 0) & (k <= 0FFH) THEN (* ok *)
+					ELSIF (g = Char16) & (k >= 0) & (k <= 0FFFFH) THEN (* ok *)
+					ELSE err(220)
+					END
 				END
 			ELSIF f IN realSet THEN
 				IF g IN realSet THEN CheckRealType(g, 203, x^.conval)
@@ -1369,9 +1372,13 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| Bool, Set:
 				IF g # f THEN err(113) END
 		| Char8, Char16:
-			IF ~(g IN charSet) OR ~OPT.Includes(f, g) THEN err(113)
-			ELSIF ynode.class = Nconst THEN Convert(ynode, x)
-			END
+				IF (OPM.Lang = "3") & (g IN charSet) & (ynode.class = Nconst) &
+					(ynode^.conval^.intval >= 0) & (ynode^.conval^.intval <= 0FFH)
+				THEN
+					Convert(ynode, x)
+				ELSIF ~(g IN charSet) OR ~OPT.Includes(f, g) THEN err(113)
+				ELSIF ynode.class = Nconst THEN Convert(ynode, x)
+				END
 		| Byte:
 				IF g IN intSet THEN
 					IF ynode^.class = Nconst THEN
