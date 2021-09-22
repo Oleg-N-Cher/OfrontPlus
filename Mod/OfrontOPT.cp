@@ -849,7 +849,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			IF tag = Sentry THEN
 				InName(obj.entry); tag := SHORT(OPM.SymRInt())
 			END;
-			IF tag IN {Byte..UByte, Char16, String16} THEN	(* Constant *)
+			IF (tag <= Pointer) OR (tag = Char16) OR (tag = String16) THEN	(* Constant *)
 				obj^.mode := Con; obj^.typ := impCtxt.ref[tag]; obj^.conval := NewConst(); InConstant(tag, obj^.conval)
 			ELSIF tag >= Sxpro THEN
 				obj^.conval := NewConst();

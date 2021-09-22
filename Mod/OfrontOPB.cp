@@ -2134,23 +2134,29 @@ avoid unnecessary intermediate variables in OFront
 		par0 := p
 	END StFct;
 
-	PROCEDURE DynArrParCheck (ftyp, atyp: OPT.Struct; fvarpar: BOOLEAN);	(* check array compatibility *)
-		VAR f: SHORTINT;
+	PROCEDURE DynArrParCheck (ftyp: OPT.Struct; VAR ap: OPT.Node; fvarpar: BOOLEAN);	(* check array compatibility *)
+		VAR atyp: OPT.Struct;
 	BEGIN (* ftyp^.comp = DynArr *)
-		IF ~ODD(ftyp^.sysflag) & ODD(atyp^.sysflag) & (atyp^.comp # Array) THEN err(137) END;
-		f := atyp^.comp; ftyp := ftyp^.BaseTyp; atyp := atyp^.BaseTyp;
-		IF fvarpar & (ftyp = OPT.ubytetyp) THEN (* ok, but ... *)
-			IF ~(f IN {Array, DynArr}) OR ~(atyp^.form IN {Int8..Char8, Byte}) THEN
+		atyp := ap.typ;
+		IF ~ODD(ftyp^.sysflag) & ODD(atyp^.sysflag) & (atyp^.comp # Array) THEN err(137)
+		ELSIF fvarpar & (ftyp = OPT.ubytetyp) THEN (* ok, but ... *)
+			IF ~(atyp^.comp IN {Array, DynArr}) OR ~(atyp^.form IN {Int8..Char8, Byte}) THEN
 				IF OPM.Lang > "2" THEN err(67) ELSE err(-301) END (* ... warning 301 *)
 			ELSIF ~OPT.EqualType(ftyp, atyp) THEN
 				IF OPM.Lang > "2" THEN err(66) ELSE err(-301) END
 			END
-		ELSIF f IN {Array, DynArr} THEN
-			IF ftyp^.comp = DynArr THEN DynArrParCheck(ftyp, atyp, fvarpar)
+		ELSIF atyp.form IN {Char8, Char16, String8, String16} THEN
+			IF ~fvarpar & (ftyp.BaseTyp.form = Char16) & (atyp.form = String8) THEN Convert(ap, OPT.string16typ)
+			ELSE CheckString(ap, ftyp, 67)
+			END
+		ELSE		
+			WHILE (ftyp.comp = DynArr) & ((atyp.comp IN {Array, DynArr}) OR (atyp.form IN {String8, String16})) DO
+				ftyp := ftyp.BaseTyp; atyp := atyp.BaseTyp
+			END;
+			IF ftyp.comp = DynArr THEN err(67)
 			ELSIF ~fvarpar & (ftyp.form = Pointer) & OPT.Extends(atyp, ftyp) THEN (* ok *)
 			ELSIF ~OPT.EqualType(ftyp, atyp) THEN err(66)
 			END
-		ELSE err(67)
 		END
 	END DynArrParCheck;
 
@@ -2172,44 +2178,35 @@ avoid unnecessary intermediate variables in OFront
 		END
 	END PrepCall;
 
-	PROCEDURE Param* (ap: OPT.Node; fp: OPT.Object); (* checks parameter compatibilty *)
+	PROCEDURE Param* (VAR ap: OPT.Node; fp: OPT.Object);	(* checks parameter compatibilty *)
+		VAR at, ft: OPT.Struct;
 	BEGIN
-		IF fp.typ.form # Undef THEN
-			IF fp^.mode = VarPar THEN
-				IF ODD(fp^.sysflag DIV nilBit) & (ap^.typ = OPT.niltyp) THEN (* ok *)
-				ELSIF (fp^.typ^.comp = Record) & (fp^.typ^.sysflag = 0) & (ap^.class = Ndop) & (ap.subcl = thisrecfn) THEN (* ok *)
-				ELSIF (fp^.typ^.comp = DynArr) & (fp^.typ^.sysflag = 0) & (fp^.typ^.n = 0) & (ap^.class = Ndop) & (ap.subcl = thisarrfn) THEN
+		at := ap.typ; ft := fp.typ;
+		IF ft.form # Undef THEN
+			IF (ap.class = Ntype) OR (ap.class = Nproc) & (ft.form # ProcTyp) THEN err(126) END;
+			IF fp.mode = VarPar THEN
+				IF ODD(fp.sysflag DIV nilBit) & (at = OPT.niltyp) THEN (* ok *)
+				ELSIF (ft.comp = Record) & (ft.sysflag = 0) & (ap.class = Ndop) & (ap.subcl = thisrecfn) THEN (* ok *)
+				ELSIF (ft.comp = DynArr) & (ft.sysflag = 0) & (ft.n = 0) & (ap.class = Ndop) & (ap.subcl = thisarrfn) THEN
 					(* ok *)
 				ELSE
-					IF fp^.vis = inPar THEN
+					IF fp.vis = inPar THEN
 						IF ~NotVar(ap) THEN CheckLeaf(ap, FALSE) END
 					ELSE
 						IF NotVar(ap) THEN err(122)
+						ELSIF ap.readonly THEN err(76)
 						ELSE CheckLeaf(ap, FALSE)
-						END;
-						IF ap^.readonly THEN err(76) END;
+						END
 					END;
-					IF fp.typ.comp = DynArr THEN
-						IF ap^.typ^.form IN charSet + {String8, String16} THEN CheckString(ap, fp^.typ, 67)
-						ELSE DynArrParCheck(fp.typ, ap.typ, fp.vis # inPar) END
-					ELSIF (fp^.typ = OPT.sysptrtyp) & (ap^.typ^.form = Pointer) THEN (* ok *)
-					ELSIF (fp^.vis # outPar) & (fp^.typ^.comp = Record) & OPT.Extends(ap^.typ, fp^.typ) THEN (* ok *)
-					ELSIF fp^.vis = inPar THEN CheckAssign(fp^.typ, ap)
-					ELSIF ~OPT.EqualType(fp^.typ, ap^.typ) THEN err(123)
-					ELSIF (fp^.typ^.form = Pointer) & (ap^.class = Nguard) THEN err(123)
+					IF ft.comp = DynArr THEN DynArrParCheck(ft, ap, fp.vis # inPar)
+					ELSIF (ft = OPT.sysptrtyp) & (at.form = Pointer) THEN (* ok *)
+					ELSIF (fp.vis # outPar) & (ft.comp = Record) & OPT.Extends(at, ft) THEN (* ok *)
+					ELSIF fp.vis = inPar THEN CheckAssign(ft, ap)
+					ELSIF ~OPT.EqualType(ft, at) THEN err(123)
 					END
 				END
-			ELSIF fp^.typ^.comp = DynArr THEN
-				IF (ap^.class = Nconst) & (ap^.typ^.form = Char8) THEN CharToString8(ap)
-				ELSIF (ap^.class = Nconst) & (ap^.typ^.form = Char16) THEN CharToString16(ap)
-				END;
-				IF (ap^.typ^.form = String8) & (fp^.typ^.BaseTyp^.form = Char8)
-					OR (ap^.typ^.form = String16) & (fp^.typ^.BaseTyp^.form = Char16)
-				THEN (* ok *)
-				ELSIF ap^.class >= Nconst THEN err(59)
-				ELSE DynArrParCheck(fp^.typ, ap^.typ, FALSE)
-				END
-			ELSE CheckAssign(fp^.typ, ap)
+			ELSIF ft.comp = DynArr THEN DynArrParCheck(ft, ap, FALSE)
+			ELSE CheckAssign(ft, ap)
 			END
 		END
 	END Param;
