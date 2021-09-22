@@ -1104,10 +1104,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					f := z^.typ^.form; g := y^.typ^.form;
 					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Int8..Set, Char16})) THEN
 						CASE f OF
-						  Char8:
-								IF z^.class = Nconst THEN CharToString8(z) ELSE err(100) END
-						| Char16:
-								IF z^.class = Nconst THEN CharToString16(z) ELSE err(100) END
+						  Char8, Char16:
+								IF z^.class = Nconst THEN CheckString(z, y^.typ, 100) END
 						| Int8:
 								IF g IN intSet + realSet THEN Convert(z, y^.typ)
 								ELSE err(100)
