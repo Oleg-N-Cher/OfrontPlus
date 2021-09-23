@@ -428,13 +428,13 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 	PROCEDURE StrDeref* (VAR x: OPT.Node);
 		VAR typ, btyp: OPT.Struct;
 	BEGIN
-		typ := x^.typ;
-		IF (x^.class = Nconst) OR (x^.class = Ntype) OR (x^.class = Nproc) THEN err(78)
-		ELSIF (typ^.comp IN {Array, DynArr}) & (typ^.BaseTyp^.form IN charSet) THEN
+		typ := x.typ;
+		IF (x.class = Nconst) OR (x.class = Ntype) OR (x.class = Nproc) THEN err(78)
+		ELSIF (typ.comp IN {Array, DynArr}) & (typ.BaseTyp.form IN charSet) THEN
 			IF (typ.BaseTyp # NIL) & (typ.BaseTyp.form = Char8) THEN btyp := OPT.string8typ
 			ELSE btyp := OPT.string16typ
 			END;
-			BindNodes(Nderef, btyp, x, NIL); x^.subcl := 1
+			BindNodes(Nderef, btyp, x, NIL); x.subcl := 1
 		ELSE err(90)
 		END
 	END StrDeref;
@@ -1147,7 +1147,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 								END
 						| String16:
 								IF (g IN {Char8, Char16}) & (y^.class = Nconst) THEN CharToString16(y)
-								ELSE err(100)
+								ELSIF f # String16 THEN err(100)
 								END
 						| Comp:
 								IF z^.typ^.comp = Record THEN err(100) END

@@ -350,7 +350,7 @@
 	BEGIN
 		WHILE (n^.class = Nindex) & (n^.typ^.comp = DynArr(*26.7.2002*)) DO INC(dim); n := n^.left END;
 		IF n.typ.form IN {String8, String16} THEN
-			IF n^.class = Nconst THEN OPM.WriteInt(n^.conval^.intval2 * n^.typ^.BaseTyp^.size)
+			IF n^.class = Nconst THEN OPM.WriteInt(n^.conval^.intval2)
 			ELSIF (n^.class = Nderef) & (n^.left^.typ^.sysflag = 0) THEN
 				OPM.WriteString("__STRLEN");
 				IF n.typ.form = String16 THEN OPM.Write("L") END;
