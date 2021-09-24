@@ -779,8 +779,9 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	BEGIN
 		inR.Read();
 		IF inR.eot THEN ch := 0X
-		ELSIF widechar IN opt THEN ch := inR.char
-		ELSE ch := WideCharToCP(inR.char); INC(curpos)
+		ELSE
+			IF widechar IN opt THEN ch := inR.char ELSE ch := WideCharToCP(inR.char) END;
+			INC(curpos)
 		END
 	END Get;
 
