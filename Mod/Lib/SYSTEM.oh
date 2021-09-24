@@ -230,7 +230,7 @@ static inline void __STRCOPYTL (  // ldst := LONG(SHORT(lsrc))
 static inline void __STRAPNDCC (  // sdst := sdst + ssrc
   CHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
-  do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
+  while (*dst) { dst++; if (dst_len-- == 0) __HALT(-8, mod, pos); }
   do {
     if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
   } while ((*dst++ = *src++));
@@ -239,7 +239,7 @@ static inline void __STRAPNDCC (  // sdst := sdst + ssrc
 static inline void __STRAPNDTC (  // sdst := sdst + SHORT(lsrc)
   LONGCHAR *src, INTEGER src_len, CHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
-  do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
+  while (*dst) { dst++; if (dst_len-- == 0) __HALT(-8, mod, pos); }
   do {
     if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
   } while ((*dst++ = *src++ & 0xff));
@@ -248,7 +248,7 @@ static inline void __STRAPNDTC (  // sdst := sdst + SHORT(lsrc)
 static inline void __STRAPNDLL (  // ldst := ldst + lsrc
   LONGCHAR *src, INTEGER src_len, LONGCHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
-  do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
+  while (*dst) { dst++; if (dst_len-- == 0) __HALT(-8, mod, pos); }
   do {
     if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
   } while ((*dst++ = (CHAR)*src++));
@@ -257,7 +257,7 @@ static inline void __STRAPNDLL (  // ldst := ldst + lsrc
 static inline void __STRAPNDCL (  // ldst := ldst + LONG(ssrc)
   CHAR *src, INTEGER src_len, LONGCHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
-  do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
+  while (*dst) { dst++; if (dst_len-- == 0) __HALT(-8, mod, pos); }
   do {
     if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
   } while ((*dst++ = (CHAR)*src++));
@@ -266,7 +266,7 @@ static inline void __STRAPNDCL (  // ldst := ldst + LONG(ssrc)
 static inline void __STRAPNDTL (  // ldst := ldst + LONG(SHORT(lsrc))
   LONGCHAR *src, INTEGER src_len, LONGCHAR *dst, INTEGER dst_len, CHAR *mod, INTEGER pos)
 {
-  do { if (dst_len-- == 0) __HALT(-8, mod, pos); } while (*dst++); dst--;
+  while (*dst) { dst++; if (dst_len-- == 0) __HALT(-8, mod, pos); }
   do {
     if (src_len-- == 0 || dst_len-- == 0) __HALT(-8, mod, pos);
   } while ((*dst++ = *src++ & 0xff));

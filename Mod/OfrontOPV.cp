@@ -1134,7 +1134,10 @@
 		END;
 		expr(right, MinPrec); OPM.WriteString(Comma);
 		IF ~first THEN
-			IF right^.class = Nderef THEN right := right^.left END;
+			IF (right^.typ^.form = String16) & (right^.class = Nmop) & (right^.subcl = conv) THEN
+				right := right^.left	(* Undo the implicit LONG *)
+			END;
+			IF right^.class = Nderef THEN right := right^.left END;	(* Undo "Array => String" *)
 			IF right^.typ^.sysflag # 0 THEN OPM.WriteString("-1") ELSE Len(right, 0, FALSE) END;
 			OPM.WriteString(Comma)
 		END;
