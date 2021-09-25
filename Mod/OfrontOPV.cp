@@ -1195,7 +1195,7 @@
 				ASSERT(l.typ.BaseTyp.comp = DynArr);
 				NewArr(l, r)
 			END;
-			IF exp THEN OPM.WriteString(", "); OPM.WriteLn; OPC.BegStat; OPM.Write(9X) ELSE OPC.EndStat END;
+			IF exp THEN OPM.WriteString(", "); OPM.WriteLn; OPC.BegStat; OPM.WriteTab ELSE OPC.EndStat END;
 			n := n^.link
 		END
 	END compStat;

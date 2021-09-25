@@ -940,12 +940,12 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 	(* ------------------------- Write Header & Body Files ------------------------- *)
 
-	PROCEDURE Write*(ch: SHORTCHAR);
+	PROCEDURE Write* (ch: SHORTCHAR);
 	BEGIN
 		R[currFile].WriteByte(SYSTEM.VAL(BYTE, ch))
 	END Write;
 
-	PROCEDURE WriteString*(IN s: ARRAY OF SHORTCHAR);
+	PROCEDURE WriteString* (IN s: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0; ch := s[0];
 	WHILE ch # 0X DO Write(ch); INC(i); ch := s[i] END
@@ -999,10 +999,15 @@ suffix does not work in K&R *)
 		END
 	END WriteReal;
 
-	PROCEDURE WriteLn* ();
+	PROCEDURE WriteLn*;
 	BEGIN
-		R[currFile].WriteByte(0DH); R[currFile].WriteByte(0AH);
+		R[currFile].WriteByte(0DH); R[currFile].WriteByte(0AH)
 	END WriteLn;
+
+	PROCEDURE WriteTab*;
+	BEGIN
+		WriteString("  ")
+	END WriteTab;
 
 	PROCEDURE WriteModPos*;
 	BEGIN

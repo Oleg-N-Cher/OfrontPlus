@@ -587,7 +587,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- Write Header & Body Files ------------------------- *)
 
-	PROCEDURE Write*(ch: SHORTCHAR);
+	PROCEDURE Write* (ch: SHORTCHAR);
 	BEGIN Files.WriteChar(R[currFile], ch)
 	END Write;
 
@@ -654,9 +654,14 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END WriteReal;
 
-	PROCEDURE WriteLn* ();
+	PROCEDURE WriteLn*;
 	BEGIN WriteString(Platform.NewLine)
 	END WriteLn;
+
+	PROCEDURE WriteTab*;
+	BEGIN
+		WriteString("  ")
+	END WriteTab;
 
 	PROCEDURE WriteModPos*;
 	BEGIN

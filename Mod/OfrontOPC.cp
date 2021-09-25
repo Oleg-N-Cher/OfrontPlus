@@ -76,7 +76,6 @@
 		Underscore = "_";
 		Quotes = 22X;
 		SingleQuote = 27X;
-		Tab = 9X;
 		Colon = ": ";
 		Semicolon = ";";
 		Comma = ", ";
@@ -95,7 +94,7 @@
 		CaseStat = "case ";
 
 	VAR
-		indentLevel: SHORTINT;
+		indentLevel: INTEGER;
 		ptrinit, mainprog, ansi, oldc, dynlib, windows: BOOLEAN;
 		hashtab: ARRAY 105 OF BYTE;
 		keytab: ARRAY 36, 9 OF SHORTCHAR;
@@ -127,9 +126,9 @@
 	END Indent;
 
 	PROCEDURE BegStat*;
-		VAR i: SHORTINT;
+		VAR i: INTEGER;
 	BEGIN i := indentLevel;
-		WHILE i > 0 DO OPM.Write(Tab); DEC (i) END
+		WHILE i > 0 DO OPM.WriteTab; DEC(i) END
 	END BegStat;
 
 	PROCEDURE EndStat*;
@@ -391,7 +390,7 @@
 	BEGIN
 		IF (typ^.form = Pointer) & (typ^.sysflag = 0) THEN
 			OPM.WriteInt(adr); OPM.WriteString(", "); INC(cnt);
-			IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
+			IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.WriteTab END
 		ELSIF (typ^.comp = Record) & (typ^.sysflag MOD 100H = 0) THEN
 			btyp := typ^.BaseTyp;
 			IF btyp # NIL THEN PutPtrOffsets(btyp, adr, cnt) END ;
@@ -400,7 +399,7 @@
 				IF fld^.name^ # OPM.HdPtrName THEN PutPtrOffsets(fld^.typ, adr + fld^.adr, cnt)
 				ELSE
 					OPM.WriteInt(adr + fld^.adr); OPM.WriteString(", "); INC(cnt);
-					IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.Write(Tab) END
+					IF cnt MOD 16 = 0 THEN OPM.WriteLn; OPM.WriteTab END
 				END ;
 				fld := fld^.link
 			END
@@ -593,7 +592,7 @@
 			END;
 			IF (obj # NIL) & (Undefined(obj) OR (obj^.linkadr = TemporaryType)) THEN
 				IF (obj^.linkadr # RecursiveType) OR (str.comp = Array) THEN
-					OPM.WriteString("typedef"); OPM.WriteLn; OPM.Write(Tab); Indent(1);
+					OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
 					obj^.linkadr := ProcessingType;
 					DeclareBase(obj); OPM.Write(Blank);
 					obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
@@ -636,7 +635,7 @@
 				IF ext # NIL THEN
 					IF (ext^[0] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN
 						OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
-						OPM.Write(Tab)
+						OPM.WriteTab
 					END;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
 				ELSE
@@ -1292,11 +1291,11 @@
 						OPM.WriteString("void EnumPtrs(void (*P)(void*))")
 					ELSE
 						OPM.WriteString("void EnumPtrs(P)"); OPM.WriteLn;
-						OPM.Write(Tab); OPM.WriteString("void (*P)();");
-					END ;
+						OPM.WriteTab; OPM.WriteString("void (*P)();")
+					END;
 					OPM.WriteLn;
 					BegBlk
-				END ;
+				END;
 				BegStat;
 				IF typ^.form = Pointer THEN
 					OPM.WriteString("P("); Ident(var); OPM.Write(")");
@@ -1312,11 +1311,11 @@
 						OPM.WriteString("__ENUMR("); Ident(var); OPM.WriteString(", ");
 						Andent(typ); OPM.WriteString(DynTypExt); Str1(", #", typ^.size); Str1(", #, P)", n)
 					END
-				END ;
+				END;
 				EndStat
-			END ;
+			END;
 			var := var^.link
-		END ;
+		END;
 		IF GlbPtrs THEN
 			EndBlk; OPM.WriteLn
 		END
@@ -1330,7 +1329,7 @@
 				OPM.WriteString("int main (int argc, char **argv)")
 			ELSE
 				OPM.WriteString("main (argc, argv)"); OPM.WriteLn;
-				OPM.Write(Tab); OPM.WriteString("int argc; char **argv;")
+				OPM.WriteTab; OPM.WriteString("int argc; char **argv;")
 			END
 		ELSE
 			IF mainprog THEN OPM.WriteString("__BEGIN void ")
@@ -1530,7 +1529,7 @@
 	BEGIN
 		indent := eoBlock;
 		IF implicitRet & (proc^.typ # OPT.notyp) THEN
-			OPM.Write(Tab); OPM.WriteString("__RETCHK("); OPM.WriteModPos; OPM.WriteString(");"); OPM.WriteLn
+			OPM.WriteTab; OPM.WriteString("__RETCHK("); OPM.WriteModPos; OPM.WriteString(");"); OPM.WriteLn
 		ELSIF ~eoBlock OR implicitRet THEN
 			IF ~proc^.scope^.leaf THEN
 				(* link scope pointer of nested proc back to previous scope *)
