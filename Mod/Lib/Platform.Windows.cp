@@ -162,7 +162,7 @@ END getEnv;
 
 PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 BEGIN
-  IF ~ getEnv(var, val) THEN val[0] := 0X END;
+  IF ~getEnv(var, val) THEN val[0] := 0X END
 END GetEnv;
 
 PROCEDURE -AAExternArgCount    "extern INTEGER SYSTEM_ArgCount;";

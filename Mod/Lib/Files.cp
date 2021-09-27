@@ -95,22 +95,20 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
     dest[i] := 0X
   END MakeFileName;
 
+  (* Make a file name in form of '/tmp/oberon.1.2345', where 1 is a sequential
+     number and 2345 is the current PID. The path is platform-dependent. *)
   PROCEDURE GetTempName(IN finalName: ARRAY OF SHORTCHAR; VAR name: ARRAY OF SHORTCHAR);
-    VAR n, i, j: INTEGER;
-  BEGIN
-    INC(tempno); n := tempno; i := 0;
-    IF finalName[0] # PathDelimiter THEN  (* relative pathname *)
-      WHILE Platform.CWD[i] # 0X DO name[i] := Platform.CWD[i]; INC(i) END;
-      IF Platform.CWD[i-1] # PathDelimiter THEN name[i] := PathDelimiter; INC(i) END
-    END;
-    j := 0;
-    WHILE finalName[j] # 0X DO name[i] := finalName[j]; INC(i); INC(j) END;
-    DEC(i);
-    WHILE name[i] # PathDelimiter DO DEC(i) END;
-    name[i+1] := "."; name[i+2] := "t"; name[i+3] := "m"; name[i+4] := "p"; name[i+5] := "."; INC(i, 6);
-    WHILE n > 0 DO name[i] := SHORT(CHR(n MOD 10 + ORD("0"))); n := n DIV 10; INC(i) END;
-    name[i] := "."; INC(i); n := Platform.PID;
-    WHILE n > 0 DO name[i] := SHORT(CHR(n MOD 10 + ORD("0")));  n := n DIV 10; INC(i) END;
+    VAR n, i: INTEGER;
+  BEGIN INC(tempno); Platform.GetTempPath(name);
+    i := 0; WHILE name[i] # 0X DO INC(i) END;
+
+    name[i] := 'o'; INC(i); name[i] := 'b'; INC(i); name[i] := 'e'; INC(i);
+    name[i] := 'r'; INC(i); name[i] := 'o'; INC(i); name[i] := 'n'; INC(i);
+    name[i] := '.'; INC(i); n := tempno;
+    REPEAT name[i] := SHORT(CHR(n MOD 10 + ORD('0'))); n := n DIV 10; INC(i) UNTIL n = 0;
+
+    name[i] := '.'; INC(i); n := Platform.PID;
+    REPEAT name[i] := SHORT(CHR(n MOD 10 + ORD('0'))); n := n DIV 10; INC(i) UNTIL n = 0;
     name[i] := 0X
   END GetTempName;
 
