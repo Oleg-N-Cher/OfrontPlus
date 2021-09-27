@@ -382,6 +382,11 @@ BEGIN
   RETURN 0
 END FileSize;
 
+PROCEDURE GetTempPath*(OUT path: ARRAY OF CHAR);
+BEGIN
+  path := '/tmp/' (*!FIXME*)
+END GetTempPath;
+
 
 PROCEDURE -readfile (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "read(fd, (void*)(p), l)";

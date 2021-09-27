@@ -397,6 +397,11 @@ BEGIN
   RETURN 0
 END FileSize;
 
+PROCEDURE GetTempPath*(OUT path: ARRAY OF CHAR);
+BEGIN
+  path := 'C:\Windows\Temp\' (*!FIXME*)
+END GetTempPath;
+
 
 PROCEDURE -readfile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
 "(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
