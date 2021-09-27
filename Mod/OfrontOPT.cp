@@ -74,7 +74,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	CONST
 		maxImps = 64;	(* must be <= MAX(SHORTINT) *)
 		maxStruct = OPM.MaxStruct;	(* must be < MAX(INTEGER) DIV 2 *)
-		FirstRef = 19;
+		FirstRef = 32;	(* this number affects the structure of .sym files *)
 
 	VAR
 		typSize*: PROCEDURE(typ: Struct);
