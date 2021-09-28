@@ -151,7 +151,7 @@ END getEnv;
 
 PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 BEGIN
-  IF ~ getEnv(var, val) THEN val[0] := 0X END;
+  IF ~getEnv(var, val) THEN val[0] := 0X END
 END GetEnv;
 
 PROCEDURE -AAExternArgCount    "extern INTEGER SYSTEM_ArgCount;";
@@ -382,11 +382,20 @@ BEGIN
   RETURN 0
 END FileSize;
 
+(* Returns path for temporary files specified by the current OS. Path will end
+   with a path delimiter. If the parameter path has no space for the whole
+   path, the default /tmp/ path is used, empty string is never returned. *)
 PROCEDURE GetTempPath*(OUT path: ARRAY OF CHAR);
+VAR s: ARRAY 1024 OF CHAR;
+  i: INTEGER;
 BEGIN
-  path := '/tmp/' (*!FIXME*)
+  GetEnv('TMPDIR', s);
+  i := 0; WHILE s[i] # 0X DO INC(i) END;
+  IF (i # 0) & (s[i - 1] # PathDelimiter) THEN
+    s[i] := PathDelimiter; INC(i); s[i] := 0X
+  END;
+  IF (i # 0) & (i < LEN(path)) THEN path := s$ ELSE path := '/tmp/' END
 END GetTempPath;
-
 
 PROCEDURE -readfile (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "read(fd, (void*)(p), l)";
