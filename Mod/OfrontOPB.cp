@@ -1105,7 +1105,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Int8..Set, Char16})) THEN
 						CASE f OF
 						  Char8, Char16:
-								IF z^.class = Nconst THEN CheckString(z, y^.typ, 100) END
+								IF (f = Char8) & (g = Char16) THEN Convert(z, y^.typ)
+								ELSIF z^.class = Nconst THEN CheckString(z, y^.typ, 100)
+								END
 						| Int8:
 								IF g IN intSet + realSet THEN Convert(z, y^.typ)
 								ELSE err(100)
