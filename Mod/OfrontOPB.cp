@@ -690,7 +690,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 			END;
 			IF g # new^.form THEN Convert(right, new) END;
 			IF f # new^.form THEN Convert(left, new) END
-		ELSIF (OPM.Lang # "7") & (f IN charSet + {String8, String16}) THEN
+		ELSIF f IN charSet + {String8, String16} THEN
 			IF g IN charSet + {String8, String16} THEN
 				IF (f = String16) OR (g = String16) OR (f = Char16) & (g = String8) OR (f = String8) & (g = Char16) THEN
 					new := OPT.string16typ
@@ -1105,9 +1105,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (z^.typ # y^.typ) & ~((f = g) & (f IN {Int8..Set, Char16})) THEN
 						CASE f OF
 						  Char8, Char16:
-								IF (f = Char8) & (g = Char16) THEN Convert(z, y^.typ)
-								ELSIF z^.class = Nconst THEN CheckString(z, y^.typ, 100)
-								END
+								IF z^.class = Nconst THEN CheckString(z, y^.typ, 100) END
 						| Int8:
 								IF g IN intSet + realSet THEN Convert(z, y^.typ)
 								ELSE err(100)
@@ -1143,14 +1141,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 								CheckPtr(z, y)
 						| ProcTyp:
 								IF g # NilTyp THEN err(100) END
-						| String8:
-								IF (g = Char8) & (y^.class = Nconst) THEN CharToString8(y)
-								ELSE err(100)
-								END
-						| String16:
-								IF (g IN {Char8, Char16}) & (y^.class = Nconst) THEN CharToString16(y)
-								ELSIF f # String16 THEN err(100)
-								END
+						| String8, String16:
 						| Comp:
 								IF z^.typ^.comp = Record THEN err(100) END
 						ELSE err(100)
