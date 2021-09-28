@@ -1012,7 +1012,7 @@
 					IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.WriteString("REAL")
 					ELSE DeclareBase(obj)
 					END
-				ELSE OPM.Write(",");
+				ELSE OPM.Write(",")
 				END;
 				OPM.Write(Blank);
 				IF (vis = 2) & (obj^.mode = Var) & (base^.form = Real) THEN OPM.Write("_") END ;
@@ -1556,7 +1556,7 @@
 		END
 	END ExitProc;
 
-	PROCEDURE CompleteIdent*(obj: OPT.Object);
+	PROCEDURE CompleteIdent* (obj: OPT.Object);
 		VAR comp, level: SHORTINT;
 	BEGIN
 		(* obj^.mode IN {Var, VarPar} *)
@@ -1575,6 +1575,15 @@
 			Ident(obj)
 		END
 	END CompleteIdent;
+
+	PROCEDURE CompleteIdentAdr* (obj: OPT.Object);
+	BEGIN
+		IF (obj^.adr = 1) & (obj^.typ^.comp # Record) THEN	(* WITH-variable *)
+			OPM.Write("("); Ident(obj^.typ^.strobj); OPM.WriteString("*)&"); Ident(obj)
+		ELSE
+			OPM.Write("&"); CompleteIdent(obj)
+		END
+	END CompleteIdentAdr;
 
 	PROCEDURE TypeOf*(ap: OPT.Object);
 	BEGIN

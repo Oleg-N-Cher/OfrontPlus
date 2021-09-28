@@ -342,8 +342,8 @@
 	END Precedence;
 
 	PROCEDURE^ expr (n: OPT.Node; prec: SHORTINT);
-	PROCEDURE^ design(n: OPT.Node; prec: SHORTINT);
-
+	PROCEDURE^ design (n: OPT.Node; prec: SHORTINT);
+	PROCEDURE^ design_adr (n: OPT.Node; prec: SHORTINT; adr: BOOLEAN);
 
 	PROCEDURE Len(n: OPT.Node; dim: INTEGER; incl0x: BOOLEAN);
 		VAR d: INTEGER; array: OPT.Struct;
@@ -522,12 +522,23 @@
 		END
 	END Index;
 
-	PROCEDURE design(n: OPT.Node; prec: SHORTINT);
+	PROCEDURE Adr (n: OPT.Node; prec: SHORTINT; cast_adr: BOOLEAN);
+	BEGIN
+		IF n^.typ^.form IN {String8, String16} THEN expr(n, prec)
+		ELSIF (n.class = Nderef) & (n.subcl = 0) & ~(n.typ.comp IN {Array, DynArr}) THEN expr(n.left, prec)
+		ELSIF (n.class = Nvarpar) & ~(n.typ.comp IN {Array, DynArr}) THEN OPC.CompleteIdent(n.obj)
+		ELSIF cast_adr THEN design_adr(n, prec, TRUE)
+		ELSE OPM.Write("&"); expr(n, prec)
+		END
+	END Adr;
+
+	PROCEDURE design_adr (n: OPT.Node; prec: SHORTINT; adr: BOOLEAN);
 		VAR obj: OPT.Object; typ: OPT.Struct;
 			class, designPrec, comp: SHORTINT;
 			d, x: OPT.Node; dims, i: SHORTINT;
 	BEGIN
 		comp := n^.typ^.comp; obj := n^.obj; class := n^.class;
+		IF adr & (class # Nvar) THEN OPM.Write("&") END;
 		designPrec := Precedence(class, n^.subcl, n^.typ^.form, comp);
 		IF (class = Nvar) & (obj^.mnolev > 0) & (obj^.mnolev # OPM.level) & (prec = 10) THEN designPrec := 9 END ;
 		IF prec > designPrec THEN OPM.Write(OpenParen) END;
@@ -536,7 +547,7 @@
 			Nproc:
 					OPC.Ident(n^.obj)
 		|	Nvar:
-					OPC.CompleteIdent(n^.obj)
+					IF adr THEN OPC.CompleteIdentAdr(n^.obj) ELSE OPC.CompleteIdent(n^.obj) END
 		|	Nvarpar:
 					IF ~(comp IN {Array, DynArr}) THEN OPM.Write(Deref) END; (* deref var parameter *)
 					OPC.CompleteIdent(n^.obj)
@@ -559,9 +570,8 @@
 		|	Nindex:
 					d := n^.left;
 					IF d^.typ^.comp = DynArr THEN dims := 0;
-						WHILE d^.class = Nindex DO d := d^.left; INC(dims) END ;
-						IF n^.typ^.comp = DynArr THEN OPM.Write("&") END ;
-						design(d, designPrec);
+						WHILE d^.class = Nindex DO d := d^.left; INC(dims) END;
+						IF n^.typ^.comp = DynArr THEN Adr(d, designPrec, FALSE) ELSE design(d, designPrec) END;
 						OPM.Write(OpenBracket);
 						IF n^.typ^.comp = DynArr THEN OPM.Write("(") END ;
 						i := dims; x := n;
@@ -624,29 +634,36 @@
 					IF n^.subcl = val THEN design(n^.left, prec) END
 		END ;
 		IF prec > designPrec THEN OPM.Write(CloseParen) END
+	END design_adr;
+
+	PROCEDURE design(n: OPT.Node; prec: SHORTINT);
+	BEGIN
+		design_adr(n, prec, FALSE)
 	END design;
 
 	PROCEDURE ActualPar(n: OPT.Node; fp: OPT.Object);
 		VAR typ, aptyp: OPT.Struct; comp, form, mode, prec, dim: SHORTINT;
+			useAdr: BOOLEAN; n1: OPT.Node;
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE n # NIL DO typ := fp^.typ;
 			IF (typ^.form = n^.typ^.form) & (typ^.form IN {Byte..Set, UByte, Char16}) THEN typ := n^.typ END;
 			comp := typ^.comp; form := typ^.form; mode := fp^.mode; prec := MinPrec;
-			IF (mode = VarPar) & ((n.subcl = thisarrfn) OR (n.subcl = thisrecfn)) THEN
+			IF (mode = VarPar) & (n.typ = OPT.niltyp) THEN
+				OPM.WriteString("NIL")
+			ELSIF (mode = VarPar) & ((n.subcl = thisarrfn) OR (n.subcl = thisrecfn)) THEN
 				OPM.WriteString("(void*)"); expr(n.left, MinPrec); OPM.WriteString(Comma);
 				IF n.subcl = thisrecfn THEN OPM.WriteString("(void*)") END;
 				expr(n.right, MinPrec)
 			ELSE
+				useAdr := FALSE;
 				IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN	(* avoid cast in lvalue *)
 					OPM.Write(OpenParen); OPC.Ident(n^.typ^.strobj); OPM.WriteString("*)"); prec := 10
 				END;
 				IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
-					IF (mode = VarPar) & ~((comp IN {Array, DynArr}) & (n^.class = Nconst)) THEN
-						IF n^.typ^.form # NilTyp THEN
-							IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
-							OPM.Write("&")
-						END; prec := 9
+					IF mode = VarPar THEN
+						IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
+						useAdr := TRUE; prec := 9
 					ELSIF ansi THEN
 						IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN	(* force to unsigned char *)
 							IF n.typ.form = String8 THEN OPM.WriteString("(CHAR*)")
@@ -670,9 +687,9 @@
 						OPM.WriteString("(void*)")
 					END
 				END;
-				IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN expr(n^.left, prec)	(* avoid cast in lvalue *)
-				ELSE expr(n, prec)
-				END;
+				n1 := n;
+				IF (mode = VarPar) & (n^.class = Nmop) & (n^.subcl = val) THEN n1 := n.left END;	(* avoid cast in lvalue *)
+				IF useAdr THEN Adr(n1, prec, TRUE) ELSE expr(n1, prec) END;
 				IF (form = LInt) & (n^.class = Nconst)
 				& (n^.conval^.intval <= MAX(INTEGER)) & (n^.conval^.intval >= MIN(INTEGER)) THEN
 					OPM.PromoteIntConstToLInt()
@@ -801,8 +818,9 @@
 								IF l^.class = Ntype THEN TypeOf(l)
 								ELSIF l^.class = Nvarpar THEN OPC.CompleteIdent(l^.obj)
 								ELSE
-									IF ~(l^.typ^.form IN {String8, String16}) & ~(l^.typ^.comp IN {Array, DynArr}) THEN OPM.Write("&") END;
-									expr(l, exprPrec)
+									IF ~(l^.typ^.form IN {String8, String16}) & ~(l^.typ^.comp IN {Array, DynArr}) THEN Adr(l, exprPrec, TRUE)
+									ELSE expr(l, exprPrec)
+									END
 								END
 					|	val: (*SYSTEM*)
 								IF ~lvalue & ~(n^.typ^.form IN {Real, LReal, Comp})
@@ -1272,7 +1290,7 @@
 									ELSIF (l^.typ^.form = Pointer) & (r^.typ^.form # NilTyp) & (l^.typ^.strobj # NIL) THEN
 										OPM.Write("("); OPC.Ident(l^.typ^.strobj); OPM.Write(")"); expr(r, MinPrec)
 									ELSIF l^.typ^.comp = Record THEN
-										OPM.WriteString("*("); OPC.Andent(l^.typ); OPM.WriteString("*)&"); expr(r, 9)
+										OPM.WriteString("*("); OPC.Andent(l^.typ); OPM.WriteString("*)"); Adr(r, 9, FALSE)
 									ELSE expr(r, MinPrec)
 									END
 								END
