@@ -1393,9 +1393,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| Real32:
 				IF (ynode^.class = Nconst) & (g = Real64) & ((OPM.Lang = "C") OR (OPM.Lang = "3")) THEN
 					IF ABS(ynode^.conval^.realval) > OPM.MaxReal32 THEN err(203); ynode^.conval^.realval := 0 END
-				ELSIF ~(g IN {Int8, Byte, Int16..Real32}) THEN err(113) END
+				ELSIF OPM.Lang = "7" THEN
+					IF ~(g IN realSet) THEN err(113) END
+				ELSIF ~(g IN {Int8, Byte, Int16..Real32}) THEN err(113)
+				END
 		| Real64:
-				IF ~(g IN {Int8, Byte, Int16..Real64}) THEN err(113) END
+				IF OPM.Lang = "7" THEN
+					IF ~(g IN realSet) THEN err(113) END
+				ELSIF ~(g IN {Int8, Byte, Int16..Real64}) THEN err(113)
+				END
 		| Pointer:
 				b := x^.BaseTyp;
 				IF OPT.Extends(y, x) OR (g = NilTyp) OR (x = OPT.sysptrtyp) & (g = Pointer) THEN (* ok *)
