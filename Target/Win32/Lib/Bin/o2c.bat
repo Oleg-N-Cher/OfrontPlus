@@ -4,7 +4,7 @@ SET PATH=..\..;%PATH%
 SET OBERON=.;..\Sym;..\..\..\..\Mod\Lib
 
 SET oef=
-IF EXIST ..\..\oef.exe SET oef=^| oef
+::IF EXIST ..\..\oef.exe SET oef=^| oef
 
 :: Ofront+
 

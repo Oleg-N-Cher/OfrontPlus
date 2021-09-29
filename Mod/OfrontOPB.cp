@@ -1363,11 +1363,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		| Bool, Set:
 				IF g # f THEN err(113) END
 		| Char8, Char16:
-				IF (OPM.Lang = "3") & (g IN charSet) & (ynode.class = Nconst) &
-					(ynode^.conval^.intval >= 0) & (ynode^.conval^.intval <= 0FFH)
-				THEN
-					Convert(ynode, x)
-				ELSIF ~(g IN charSet) OR ~OPT.Includes(f, g) THEN err(113)
+				IF ~(g IN charSet) OR ~OPT.Includes(f, g) THEN err(113)
 				ELSIF ynode.class = Nconst THEN Convert(ynode, x)
 				END
 		| Byte:
