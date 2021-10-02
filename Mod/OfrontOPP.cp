@@ -1508,7 +1508,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				ELSE
 					idtyp := id^.typ;
 					ASSERT(idtyp # NIL);
-					IF apar^.typ^.form = UByte THEN apar^.typ := OPT.bytetyp END;
+					IF apar^.typ = OPT.ubytetyp THEN apar^.typ := OPT.bytetyp END;
 					OPB.Assign(apar, z)
 				 END;
 				 apar^.subcl := SHORT(SHORT(ABS(cond)))
@@ -1535,7 +1535,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
 					(* apar = "A" *)
 					CheckSym(to); Expression(y); pos := OPM.errpos;	(* далее д б ТО выражение (В) *)
-					IF id^.typ^.form = UByte THEN y^.typ := OPT.ubytetyp END;
+					IF id^.typ = OPT.ubytetyp THEN y^.typ := OPT.ubytetyp END;
 					IF sym = by THEN	(* если далее задан шаг BY Step,*)
 						OPS.Get(sym); ConstExpression(z)	(* то читаем его как константное выражение*)
 					ELSE
@@ -1606,7 +1606,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF t # id THEN	(* create an auxiliary variable *)
 							name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
 							t^.mode := Var;
-							IF x^.left^.typ^.form = UByte THEN t^.typ := OPT.bytetyp ELSE t^.typ := x^.left^.typ END;
+							IF x^.left^.typ = OPT.ubytetyp THEN t^.typ := OPT.bytetyp ELSE t^.typ := x^.left^.typ END;
 							fpar := OPT.topScope^.scope;
 							IF fpar = NIL THEN OPT.topScope^.scope := t
 							ELSE
@@ -1636,7 +1636,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 								END;
 								pos := OPM.errpos;
 								x := OPB.NewLeaf(id);
-								IF x^.typ^.form = UByte THEN x^.typ := OPT.bytetyp END;
+								IF x^.typ = OPT.ubytetyp THEN x^.typ := OPT.bytetyp END;
 								IF y^.class = Nconst THEN s := OPB.NewIntConst(y^.conval^.intval)
 								ELSIF y^.class = Nassign THEN s := OPB.NewLeaf(t)
 								ELSE s := y
@@ -1705,7 +1705,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF obj = NIL (* the loop body may not be executed even once *) THEN (* need IF *)
 							IF y^.class = Nassign THEN y := OPB.NewLeaf(t) END;	(* assigned t := B *)
 							s := OPB.NewLeaf(id);
-							IF id^.typ^.form = UByte THEN OPB.MOp(unsgn, y) END;
+							IF id^.typ = OPT.ubytetyp THEN OPB.MOp(unsgn, y) END;
 							IF z^.conval^.intval > 0 THEN OPB.Op(leq, s, y) ELSE OPB.Op(geq, s, y) END;
 							OPB.Construct(Nif, s, x); SetPos(s); lastif := s;	(* build IF id <= B THEN ... *)
 							OPB.Construct(Nifelse, s, NIL);	(* no ELSE branch *)
