@@ -1493,13 +1493,13 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF ((cond = null) OR (cond = gtr)) & (Sign(Nlast) = Sign(Step)) &
 				 (sgnPredLast # Sign(Nlast)) THEN
 					CASE Sign(Nlast) OF
-					|-1: cond := -lss;
-					| 0: cond := -eql;
-					| 1: IF sgnPredLast = 0 THEN cond := -gtr ELSE cond := -geq END;
+					|-1: cond := -lss
+					| 0: cond := -eql
+					| 1: IF sgnPredLast = 0 THEN cond := -gtr ELSE cond := -geq END
 					END
 				END;
 			IF cond # null THEN
-			(* вспомогательная переменная не нужна *)
+			(* auxiliary variable is unnecessary *)
 				t := id;
 				apar := OPB.NewLeaf(id);
 				IF cond < 0 THEN
@@ -1508,11 +1508,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				ELSE
 					idtyp := id^.typ;
 					ASSERT(idtyp # NIL);
-					 OPB.Assign(apar, z)
+					IF apar^.typ^.form = UByte THEN apar^.typ := OPT.bytetyp END;
+					OPB.Assign(apar, z)
 				 END;
 				 apar^.subcl := SHORT(SHORT(ABS(cond)))
 			ELSE
-				t := NIL; (* нужна вспомогательная переменная *)
+				t := NIL	(* auxiliary variable is needed *)
 			END;
 			(* если t=id то можно обойтись без вспомогательной переменной, применив
 			либо REPEAT INC(id,Step); тело цикла; UNTIL id cond 0	(при idtyp=NIL)
@@ -1534,6 +1535,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
 					(* apar = "A" *)
 					CheckSym(to); Expression(y); pos := OPM.errpos;	(* далее д б ТО выражение (В) *)
+					IF id^.typ^.form = UByte THEN y^.typ := OPT.ubytetyp END;
 					IF sym = by THEN	(* если далее задан шаг BY Step,*)
 						OPS.Get(sym); ConstExpression(z)	(* то читаем его как константное выражение*)
 					ELSE
@@ -1630,11 +1632,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 									pos := SHORT(y^.conval^.intval); (* восстановим позицию *)
 									x := OPB.NewLeaf(t); OPB.Assign(x, y); SetPos(x); (* t:=B *)
 									OPB.Link(stat, last, x); (* добавим в дерево t:= B *)
-									y := x;
+									y := x
 								END;
 								pos := OPM.errpos;
 								x := OPB.NewLeaf(id);
-								IF y^.class = Nconst	THEN s := OPB.NewIntConst(y^.conval^.intval)
+								IF x^.typ^.form = UByte THEN x^.typ := OPT.bytetyp END;
+								IF y^.class = Nconst THEN s := OPB.NewIntConst(y^.conval^.intval)
 								ELSIF y^.class = Nassign THEN s := OPB.NewLeaf(t)
 								ELSE s := y
 								END;
@@ -1648,8 +1651,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 									OPB.MOp(unsgn, x);
 									OPB.Op(div, x, OPB.NewIntConst( -z^.conval^.intval));	(* (x-B) div Step *)
 									OPB.Op(plus, x, OPB.NewIntConst(1));	(* (x-B) div Step +1 *)
-									s := x;
-								END;
+									s := x
+								END
 							END;
 							x := OPB.NewLeaf(t); OPB.Assign(x, s); SetPos(x);(* строим узел х=«t:= колво итераций*)
 						ELSE	(* фиктивный узел id=0 *)
@@ -1775,7 +1778,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END ;
 				OPB.Construct(Nrepeat, x, y)
 			ELSIF sym = for THEN
-				IF (OPM.Lang = "3") = (OPM.for IN OPM.opt) THEN ForOriginal ELSE ForImproved END
+				IF OPM.for IN OPM.opt THEN ForImproved ELSE ForOriginal END
 			ELSIF sym = loop THEN
 				OPS.Get(sym); INC(LoopLevel); StatSeq(x); DEC(LoopLevel);
 				OPB.Construct(Nloop, x, NIL); CheckSym(end); pos := OPM.errpos
