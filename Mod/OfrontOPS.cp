@@ -6,7 +6,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	IMPORT OPM := OfrontOPM;
 
 	CONST
-		MaxIdLen = 40;
+		MaxIdLen = 48;
 
 	TYPE
 		Name* = ARRAY MaxIdLen OF SHORTCHAR;
