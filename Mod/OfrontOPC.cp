@@ -618,9 +618,9 @@
 	END DefineType;
 
 	PROCEDURE Prefixed(x: OPT.ConstExt; IN y: ARRAY OF SHORTCHAR): BOOLEAN;
-		VAR i: SHORTINT;
+		VAR i: INTEGER;
 	BEGIN i := 0;
-		WHILE x[i] = y[i] DO INC(i) END ;
+		WHILE (i < LEN(x)) & (x[i] = y[i]) DO INC(i) END;
 		RETURN y[i] = 0X
 	END Prefixed;
 
