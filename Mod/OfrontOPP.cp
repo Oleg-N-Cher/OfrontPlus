@@ -328,7 +328,7 @@
 			IF ((OPM.Lang = "1") OR (OPM.Lang = "7")) & (sym = minus) THEN err(48)
 			ELSIF (level > 0) OR ~(obj^.mode IN {Var, Fld}) & (sym = minus) THEN err(48)
 			END;
-			IF (sym = times) & ~((OPM.Lang = "7") & (obj^.mode IN {Var, Fld})) THEN obj^.vis := external
+			IF (sym = times) & ~((OPM.Lang = "7") & (obj^.mode = Var)) THEN obj^.vis := external
 			ELSE obj^.vis := externalR
 			END;
 			OPS.Get(sym)
@@ -629,10 +629,12 @@
 				(* untagged open array not allowed as value parameter *)
 				ELSIF (mode = Var) & (typ^.comp = DynArr) & ODD(typ^.sysflag) THEN OPM.err(145)
 				END;
-				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Lang = "3") OR (OPM.Lang = "7")) THEN
+				IF (mode = Var) & (typ^.form = Comp)
+					& ((OPM.Lang = "3") OR (OPM.Lang = "7")) & ~(OPM.foreign IN OPM.opt)
+				THEN
 					par := first;
 					WHILE par # NIL DO
-						par^.mode := VarPar; par^.vis := inPar; (* read only array or record *)
+						par^.mode := VarPar; par^.vis := inPar;	(* r/o array or record *)
 						par := par^.link
 					END
 				END;
