@@ -1145,11 +1145,6 @@
 	BEGIN
 		IF first THEN OPM.WriteString("__STRCOPY") ELSE OPM.WriteString("__STRAPND") END;
 		StringModifier(right); StringModifier(left); OPM.Write("(");
-		IF ansi & (right^.class = Nconst) THEN
-			IF right^.typ^.form = String8 THEN OPM.WriteString("(CHAR*)")
-			ELSE OPM.WriteString("(LONGCHAR*)")
-			END
-		END;
 		expr(right, MinPrec); OPM.WriteString(Comma);
 		IF ~first THEN
 			IF (right^.typ^.form = String16) & (right^.class = Nmop) & (right^.subcl = conv) THEN

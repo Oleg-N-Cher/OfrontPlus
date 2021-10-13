@@ -1632,7 +1632,7 @@
 		END
 	END WriteCharLiteral;
 
-	PROCEDURE WriteStringLiteral(IN str: ARRAY OF SHORTCHAR; len: INTEGER);
+	PROCEDURE WriteStringLiteral (IN str: ARRAY OF SHORTCHAR; len: INTEGER);
 		VAR ch: SHORTCHAR; i: INTEGER;
 	BEGIN
 		OPM.Write(Quotes);
@@ -1731,6 +1731,7 @@
 					UNTIL i = 0;
 					IF skipLeading THEN OPM.Write("0") END
 		|	String8:
+					IF ansi THEN OPM.WriteString("(CHAR*)") END;
 					WriteStringLiteral(con^.ext^, con^.intval2 - 1)
 		|	String16:
 					OPM.WriteString("((LONGCHAR[]){");
