@@ -569,10 +569,9 @@ MODULE [foreign] bbLinLibc;
 				_st: ARRAY [untagged] 8 OF fpreg;
 				status*: INTEGER; (* unsigned long int *)
 			END;
-
+(*
 	VAR
 		timezone*: INTEGER; (* seconds from GMT *)
-(*
 		stdin*, stdout*, stderr* : PtrFILE;
 *)
 
