@@ -662,14 +662,10 @@
 				END;
 				IF ~(n^.typ^.comp IN {Array, DynArr}) THEN
 					IF mode = VarPar THEN
-						IF ansi & (typ # n^.typ) THEN OPM.WriteString("(void*)") END;
+						IF ansi & (typ # n^.typ) & (n^.class # Nconst) THEN OPM.WriteString("(void*)") END;
 						useAdr := TRUE; prec := 9
 					ELSIF ansi THEN
-						IF (comp IN {Array, DynArr}) & (n^.class = Nconst) THEN	(* force to unsigned char *)
-							IF n.typ.form = String8 THEN OPM.WriteString("(CHAR*)")
-							ELSE OPM.WriteString("(LONGCHAR*)")
-							END
-						ELSIF (form = Pointer) & (typ # n^.typ) & (n^.typ # OPT.niltyp) THEN
+						IF (form = Pointer) & (typ # n^.typ) & (n^.typ # OPT.niltyp) & (n^.class # Nconst) THEN
 							OPM.WriteString("(void*)")	(* type extension *)
 						ELSIF (comp = Record) & (n^.typ # typ) THEN (* record value projection *)
 							OPM.WriteString("*("); OPC.Andent(typ); OPM.WriteString("*)&"); prec := 9

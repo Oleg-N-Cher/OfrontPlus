@@ -1731,7 +1731,7 @@
 					UNTIL i = 0;
 					IF skipLeading THEN OPM.Write("0") END
 		|	String8:
-					IF ansi THEN OPM.WriteString("(CHAR*)") END;
+					IF ansi THEN OPM.WriteString("(CHAR*)") END; (* force to unsigned char *)
 					WriteStringLiteral(con^.ext^, con^.intval2 - 1)
 		|	String16:
 					OPM.WriteString("((LONGCHAR[]){");
