@@ -341,7 +341,10 @@
 		ELSIF (obj # NIL) & ~Undefined(obj) THEN	(* named type, already declared *)
 			Ident(obj)
 		ELSIF typ^.comp = Record THEN
-			OPM.WriteString(Struct); Andent(typ);
+			OPM.WriteString(Struct);
+			IF (obj = NIL) OR (obj.name # OPT.null) THEN Andent(typ)
+			ELSE OPM.WriteString("/* "); Andent(typ); OPM.WriteString(" */")
+			END;
 			IF (prev.form # Pointer) & ((obj # NIL) OR (dcl.name = OPT.null)) THEN
 				(* named record type not yet declared OR anonymous record with empty name *)
 				IF (typ^.BaseTyp # NIL) & (typ^.BaseTyp^.strobj.vis # internal) THEN
