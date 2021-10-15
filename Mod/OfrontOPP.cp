@@ -1856,7 +1856,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 
 	BEGIN
 		IF ((sym < begin) OR (sym > var))
-			& (sym # procedure) & (sym # end) & (sym # close) & (sym # return) THEN err(33) END;
+			& (sym # procedure) & (sym # end) & (sym # close) & (sym # return) & (sym # raw) THEN err(33) END;
 		first := NIL; last := NIL; userList := NIL; recList := NIL;
 		LOOP
 			IF sym = const THEN
