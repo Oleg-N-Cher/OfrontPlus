@@ -169,25 +169,27 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 						IF (lang # "7") & (obj^.vis = externalR) THEN Ws("-: ") ELSE Ws(": ") END;
 						Wtype(obj^.typ); Wch(";"); Wln
 				| XProc, CProc, IProc:
-						Indent(1); Ws("PROCEDURE");
-						IF obj^.mode = IProc THEN Wch("+")
-						ELSIF obj^.mode = CProc THEN Wch("-")
-						END;
-						Wch(" ");
-						IF obj^.sysflag = 1 THEN Ws("[stdcall] ")
-						ELSIF obj^.sysflag = 2 THEN Ws("[fastcall] ")
-						END;
-						Ws(obj^.name^);
-						Wsign(obj^.typ, obj^.link);
-						IF obj^.mode = CProc THEN ext := obj^.conval^.ext;
-							IF ext # NIL THEN m := LEN(ext^); i := 0; Ws(' "');
-								WHILE i < m DO Wch(ext^[i]); INC(i) END;
-								Wch('"')
-							END
-						END;
-						Wch(";"); Wln
+						IF (obj^.mode # CProc) OR (obj^.sysflag >= 0) THEN
+							Indent(1); Ws("PROCEDURE");
+							IF obj^.mode = IProc THEN Wch("+")
+							ELSIF (option = "x") & (obj^.mode = CProc) THEN Wch("-")
+							END;
+							Wch(" ");
+							IF obj^.sysflag = 1 THEN Ws("[stdcall] ")
+							ELSIF obj^.sysflag = 2 THEN Ws("[fastcall] ")
+							END;
+							Ws(obj^.name^);
+							Wsign(obj^.typ, obj^.link);
+							IF obj^.mode = CProc THEN ext := obj^.conval^.ext;
+								IF (option = "x") & (ext # NIL) THEN m := LEN(ext^); i := 0; Ws(' "');
+									WHILE i < m DO Wch(ext^[i]); INC(i) END;
+									Wch('"')
+								END
+							END;
+							Wch(";"); Wln
+						END
 				END
-			END ;
+			END;
 			Objects(obj^.right, mode)
 		END
 	END Objects;

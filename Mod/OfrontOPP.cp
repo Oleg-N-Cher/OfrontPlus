@@ -325,7 +325,8 @@
 	PROCEDURE CheckMark(obj: OPT.Object);	(* !!! *)
 	BEGIN OPS.Get(sym);
 		IF (sym = times) OR (sym = minus) THEN
-			IF ((OPM.Lang = "1") OR (OPM.Lang = "7")) & (sym = minus) THEN err(48)
+			IF (sym = minus) & OPT.SYSimported & (obj^.mode = CProc) THEN obj^.sysflag := -1
+			ELSIF ((OPM.Lang = "1") OR (OPM.Lang = "7")) & (sym = minus) THEN err(48)
 			ELSIF (level > 0) OR ~(obj^.mode IN {Var, Fld}) & (sym = minus) THEN err(48)
 			END;
 			IF (sym = times) & ~((OPM.Lang = "7") & (obj^.mode = Var)) THEN obj^.vis := external
@@ -1155,7 +1156,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				ELSE EXIT
 				END
 			END;
-			IF n # 0 THEN NEW(ext, n); i := 0; IF sys # 0 THEN err(127) END;
+			IF n # 0 THEN NEW(ext, n); i := 0; IF sys > 0 THEN err(127) END;
 				WHILE i < n DO ext^[i] := s^[i]; INC(i) END;
 			ELSE ext := NIL
 			END;
@@ -1292,7 +1293,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF fwd # NIL THEN err(1); fwd := NIL END;
 				OPT.Insert(name, proc);
 				proc^.mode := mode; proc^.conval := OPT.NewConst();
-				CheckMark(proc)
+				CheckMark(proc);
+				IF mode = CProc THEN IF sys > 0 THEN err(127) END; sys := proc^.sysflag END
 			END;
 			IF (proc^.vis # internal) & (mode = LProc) THEN mode := XProc END;
 			IF (mode # LProc) & (level > 0) THEN err(73) END;
