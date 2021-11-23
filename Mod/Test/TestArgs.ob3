@@ -1,0 +1,38 @@
+MODULE TestArgs;
+
+IMPORT Args, Write := Console;
+
+VAR
+  i, n: INTEGER; arg, env: ARRAY 1024 OF CHAR;
+
+PROCEDURE Length (str: ARRAY OF CHAR): INTEGER;
+VAR
+  len: INTEGER;
+BEGIN
+  len := 0;
+  WHILE (len < LEN(str)) & (str[len] # 0X) DO INC(len) END;
+  RETURN len
+END Length;
+
+BEGIN
+  Write.String("Args.argc = "); Write.Int(Args.argc, 0); Write.Ln; Write.Ln;
+  FOR n := 1 TO Args.argc - 1 DO
+    Args.Get(n, @arg);
+    Write.Int(n, 0); Write.Char(":"); Write.String(arg); Write.Ln;
+    FOR i := 0 TO Length(arg) - 1 DO
+      Write.Int(ORD(arg[i]), 0); Write.Char(",");
+    END;
+    Write.Ln;
+  END;
+
+  Args.GetEnv("OBERON", @env); Write.Ln;
+  IF env # "" THEN Write.String("OBERON="); Write.String(env); Write.Ln END;
+  env := "";
+  Args.GetEnv("PATH", @env); Write.Ln;
+  IF env # "" THEN Write.String("PATH="); Write.String(env); Write.Ln END;
+  env := "";
+  Args.GetEnv("HOME", @env); Write.Ln;
+  IF env # "" THEN Write.String("HOME="); Write.String(env); Write.Ln END;
+  env := "";
+
+END TestArgs.
