@@ -53,8 +53,6 @@ VAR
   PID-:             DWORD;  (* Note: Must be updated by Fork implementation *)
   CWD-:             ARRAY MAX_PATH OF CHAR;
 
-  TimeStart:        DWORD;  (* milliseconds *)
-
   SeekSet-:         INTEGER;
   SeekCur-:         INTEGER;
   SeekEnd-:         INTEGER;
@@ -64,71 +62,64 @@ VAR
   StdErr-:          FileHandle;
 
 
-(* Some unsigned arithmetic *)
-
-PROCEDURE -ToBYTE*(s: SHORTINT): BYTE "((BYTE)(s))";
-PROCEDURE -ToSHORT*(i: INTEGER): SHORTINT "((SHORTINT)(i))";
-PROCEDURE -ToINT*(l: LONGINT): INTEGER "((INTEGER)(l))";
-
-
-PROCEDURE -AAincludeWindowsWrapper '#include "_windows.h"';
+PROCEDURE- AAincludeWindowsWrapper '#include "_windows.h"';
 
 
 (* Error code tests *)
 
-PROCEDURE -ERRORCALLNOTIMPLEMENTED(): ErrorCode "ERROR_CALL_NOT_IMPLEMENTED";
-PROCEDURE -ERRORTOOMANYOPENFILES():   ErrorCode "ERROR_TOO_MANY_OPEN_FILES";
-PROCEDURE -ERRORPATHNOTFOUND():       ErrorCode "ERROR_PATH_NOT_FOUND";
-PROCEDURE -ERRORFILENOTFOUND():       ErrorCode "ERROR_FILE_NOT_FOUND";
-PROCEDURE -ERRORNOTSAMEDEVICE():      ErrorCode "ERROR_NOT_SAME_DEVICE";
-PROCEDURE -ERRORACCESSDENIED():       ErrorCode "ERROR_ACCESS_DENIED";
-PROCEDURE -ERRORWRITEPROTECT():       ErrorCode "ERROR_WRITE_PROTECT";
-PROCEDURE -ERRORSHARINGVIOLATION():   ErrorCode "ERROR_SHARING_VIOLATION";
-PROCEDURE -ERRORNOTREADY():           ErrorCode "ERROR_NOT_READY";
-PROCEDURE -ETIMEDOUT():               ErrorCode "WSAETIMEDOUT";
-PROCEDURE -ECONNREFUSED():            ErrorCode "WSAECONNREFUSED";
-PROCEDURE -ECONNABORTED():            ErrorCode "WSAECONNABORTED";
-PROCEDURE -ENETUNREACH():             ErrorCode "WSAENETUNREACH";
-PROCEDURE -EHOSTUNREACH():            ErrorCode "WSAEHOSTUNREACH";
-PROCEDURE -INVALIDFILEATTRIBUTES():   ErrorCode "INVALID_FILE_ATTRIBUTES";
-PROCEDURE -INVALIDSETFILEPOINTER():   ErrorCode "INVALID_SET_FILE_POINTER";
-PROCEDURE -INVALIDFILESIZE():         ErrorCode "INVALID_FILE_SIZE";
-PROCEDURE -NOERROR():                 ErrorCode "NO_ERROR";
+PROCEDURE- ERRORCALLNOTIMPLEMENTED (): ErrorCode "ERROR_CALL_NOT_IMPLEMENTED";
+PROCEDURE- ERRORTOOMANYOPENFILES ():   ErrorCode "ERROR_TOO_MANY_OPEN_FILES";
+PROCEDURE- ERRORPATHNOTFOUND ():       ErrorCode "ERROR_PATH_NOT_FOUND";
+PROCEDURE- ERRORFILENOTFOUND ():       ErrorCode "ERROR_FILE_NOT_FOUND";
+PROCEDURE- ERRORNOTSAMEDEVICE ():      ErrorCode "ERROR_NOT_SAME_DEVICE";
+PROCEDURE- ERRORACCESSDENIED ():       ErrorCode "ERROR_ACCESS_DENIED";
+PROCEDURE- ERRORWRITEPROTECT ():       ErrorCode "ERROR_WRITE_PROTECT";
+PROCEDURE- ERRORSHARINGVIOLATION ():   ErrorCode "ERROR_SHARING_VIOLATION";
+PROCEDURE- ERRORNOTREADY ():           ErrorCode "ERROR_NOT_READY";
+PROCEDURE- ETIMEDOUT ():               ErrorCode "WSAETIMEDOUT";
+PROCEDURE- ECONNREFUSED ():            ErrorCode "WSAECONNREFUSED";
+PROCEDURE- ECONNABORTED ():            ErrorCode "WSAECONNABORTED";
+PROCEDURE- ENETUNREACH ():             ErrorCode "WSAENETUNREACH";
+PROCEDURE- EHOSTUNREACH ():            ErrorCode "WSAEHOSTUNREACH";
+PROCEDURE- INVALIDFILEATTRIBUTES ():   ErrorCode "INVALID_FILE_ATTRIBUTES";
+PROCEDURE- INVALIDSETFILEPOINTER ():   ErrorCode "INVALID_SET_FILE_POINTER";
+PROCEDURE- INVALIDFILESIZE ():         ErrorCode "INVALID_FILE_SIZE";
+PROCEDURE- NOERROR ():                 ErrorCode "NO_ERROR";
 
 
-PROCEDURE TooManyFiles*(e: ErrorCode): BOOLEAN;
+PROCEDURE TooManyFiles* (e: ErrorCode): BOOLEAN;
 BEGIN RETURN e = ERRORTOOMANYOPENFILES() END TooManyFiles;
 
-PROCEDURE NoSuchDirectory*(e: ErrorCode): BOOLEAN;
+PROCEDURE NoSuchDirectory* (e: ErrorCode): BOOLEAN;
 BEGIN RETURN e = ERRORPATHNOTFOUND() END NoSuchDirectory;
 
-PROCEDURE DifferentFilesystems*(e: ErrorCode): BOOLEAN;
+PROCEDURE DifferentFilesystems* (e: ErrorCode): BOOLEAN;
 BEGIN RETURN e = ERRORNOTSAMEDEVICE() END DifferentFilesystems;
 
-PROCEDURE Inaccessible*(e: ErrorCode): BOOLEAN;
+PROCEDURE Inaccessible* (e: ErrorCode): BOOLEAN;
 BEGIN
   RETURN (e = ERRORACCESSDENIED()) OR (e = ERRORWRITEPROTECT())
       OR (e = ERRORNOTREADY())     OR (e = ERRORSHARINGVIOLATION());
 END Inaccessible;
 
-PROCEDURE Absent*(e: ErrorCode): BOOLEAN;
+PROCEDURE Absent* (e: ErrorCode): BOOLEAN;
 BEGIN RETURN (e = ERRORFILENOTFOUND()) OR (e = ERRORPATHNOTFOUND()) END Absent;
 
-PROCEDURE TimedOut*(e: ErrorCode): BOOLEAN;
+PROCEDURE TimedOut* (e: ErrorCode): BOOLEAN;
 BEGIN RETURN (e = ETIMEDOUT()) END TimedOut;
 
-PROCEDURE ConnectionFailed*(e: ErrorCode): BOOLEAN;
+PROCEDURE ConnectionFailed* (e: ErrorCode): BOOLEAN;
 BEGIN RETURN (e = ECONNREFUSED()) OR (e = ECONNABORTED())
           OR (e = ENETUNREACH())  OR (e = EHOSTUNREACH()) END ConnectionFailed;
 
 
 (* OS memory allocaton *)
 
-PROCEDURE -allocate(size: ADRINT): ADRINT "((SYSTEM_ADRINT)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
+PROCEDURE- allocate (size: ADRINT): ADRINT "((SYSTEM_ADRINT)HeapAlloc(GetProcessHeap(), 0, (size_t)(size)))";
 
-PROCEDURE -SystemHalt(code: INTEGER; mod: ARRAY OF SHORTCHAR; pos: INTEGER) "__HALT(code, mod, pos)";
+PROCEDURE- SystemHalt (code: INTEGER; mod: ARRAY OF SHORTCHAR; pos: INTEGER) "__HALT(code, mod, pos)";
 
-PROCEDURE OSAllocate*(size: ADRINT): ADRINT;
+PROCEDURE OSAllocate* (size: ADRINT): ADRINT;
 BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* If the function HeapAlloc fails and you have not specified HEAP_GENERATE_EXCEPTIONS, the return value is NULL. *)
@@ -136,17 +127,17 @@ BEGIN
   SystemHalt(-25, "Platform.Mod", 133); RETURN 0 (* To remove __RETCHK *)
 END OSAllocate;
 
-PROCEDURE -free(address: ADRINT) "HeapFree(GetProcessHeap(), 0, (void*)address)";
+PROCEDURE- free (address: ADRINT) "HeapFree(GetProcessHeap(), 0, (void*)address)";
 
-PROCEDURE OSFree*(address: ADRINT); BEGIN free(address) END OSFree;
+PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 
 (* Program arguments and environmet access *)
 
-PROCEDURE -getenv(name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
+PROCEDURE- getenv (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
   "(INTEGER)GetEnvironmentVariable((char*)name, (char*)buf, buf__len)";
 
-PROCEDURE getEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE getEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
   VAR
     buf: ARRAY 4096 OF CHAR;
     res: INTEGER;
@@ -160,24 +151,24 @@ BEGIN
   END
 END getEnv;
 
-PROCEDURE GetEnv*(IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 BEGIN
   IF ~getEnv(var, val) THEN val[0] := 0X END
 END GetEnv;
 
-PROCEDURE -AAExternArgCount    "extern INTEGER SYSTEM_ArgCount;";
-PROCEDURE -AAExternArgVector   "extern void *SYSTEM_ArgVector;";
-PROCEDURE -ArgCount(): INTEGER "SYSTEM_ArgCount";
-PROCEDURE -ArgVector(): ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
+PROCEDURE- AAExternArgCount     "extern INTEGER SYSTEM_ArgCount;";
+PROCEDURE- AAExternArgVector    "extern void *SYSTEM_ArgVector;";
+PROCEDURE- ArgCount (): INTEGER "SYSTEM_ArgCount";
+PROCEDURE- ArgVector (): ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
 
-PROCEDURE GetArg*(n: INTEGER; VAR val: ARRAY OF CHAR);
+PROCEDURE GetArg* (n: INTEGER; VAR val: ARRAY OF CHAR);
 VAR
   av: ArgVec;
 BEGIN
   IF n < ArgCount() THEN av := ArgVector(); val := av[n]^$ END
 END GetArg;
 
-PROCEDURE GetIntArg*(n: INTEGER; VAR val: INTEGER);
+PROCEDURE GetIntArg* (n: INTEGER; VAR val: INTEGER);
   VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
 BEGIN
   s := ""; GetArg(n, s); i := 0;
@@ -188,7 +179,7 @@ BEGIN
   IF i > 0 THEN val := k END
 END GetIntArg;
 
-PROCEDURE ArgPos*(IN s: ARRAY OF CHAR): INTEGER;
+PROCEDURE ArgPos* (IN s: ARRAY OF CHAR): INTEGER;
   VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
 BEGIN
   i := 0; GetArg(i, arg);
@@ -199,38 +190,36 @@ END ArgPos;
 
 (* Time of day *)
 
-PROCEDURE -getLocalTime  "SYSTEMTIME st; GetLocalTime(&st)";
-PROCEDURE -stsec():  INTEGER  "(INTEGER)st.wSecond";
-PROCEDURE -stmin():  INTEGER  "(INTEGER)st.wMinute";
-PROCEDURE -sthour(): INTEGER  "(INTEGER)st.wHour";
-PROCEDURE -stmday(): INTEGER  "(INTEGER)st.wDay";
-PROCEDURE -stmon():  INTEGER  "(INTEGER)st.wMonth";
-PROCEDURE -styear(): INTEGER  "(INTEGER)st.wYear";
+PROCEDURE- getLocalTime  "SYSTEMTIME st; GetLocalTime(&st)";
+PROCEDURE- stsec ():  INTEGER  "(INTEGER)st.wSecond";
+PROCEDURE- stmin ():  INTEGER  "(INTEGER)st.wMinute";
+PROCEDURE- sthour (): INTEGER  "(INTEGER)st.wHour";
+PROCEDURE- stmday (): INTEGER  "(INTEGER)st.wDay";
+PROCEDURE- stmon ():  INTEGER  "(INTEGER)st.wMonth";
+PROCEDURE- styear (): INTEGER  "(INTEGER)st.wYear";
 
-PROCEDURE YMDHMStoClock(ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
+PROCEDURE YMDHMStoClock (ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
   d := ASH(ye MOD 100, 9) + ASH(mo+1, 5) + da;
   t := ASH(ho, 12)        + ASH(mi, 6)   + se;
 END YMDHMStoClock;
 
-PROCEDURE GetClock*(VAR t, d: INTEGER);
+PROCEDURE GetClock* (VAR t, d: INTEGER);
 BEGIN
   getLocalTime;
   YMDHMStoClock(styear(), stmon(), stmday(), sthour(), stmin(), stsec(), t, d);
 END GetClock;
 
-PROCEDURE -GetTickCount(): DWORD "(INTEGER)GetTickCount()";
+PROCEDURE- GetTickCount (): DWORD "(INTEGER)GetTickCount()";
 
-PROCEDURE Time*(): INTEGER;
-VAR ms: DWORD;
+PROCEDURE Time* (): INTEGER;
 BEGIN
-  ms := GetTickCount();
-  RETURN (ms - TimeStart) MOD 7FFFFFFFH
+  RETURN GetTickCount() MOD 7FFFFFFFH
 END Time;
 
-PROCEDURE -sleep(ms: INTEGER) "Sleep((DWORD)ms)";
+PROCEDURE- sleep (ms: INTEGER) "Sleep((DWORD)ms)";
 
-PROCEDURE Delay*(ms: INTEGER);
+PROCEDURE Delay* (ms: INTEGER);
 BEGIN
   WHILE ms > 30000 DO sleep(30000); ms := ms-30000 END;
   IF ms > 0 THEN sleep(ms) END;
@@ -239,15 +228,15 @@ END Delay;
 
 (* System call *)
 
-PROCEDURE -startupInfo                                "STARTUPINFO si = {0}; si.cb = sizeof(si);";
-PROCEDURE -processInfo                                "PROCESS_INFORMATION pi = {0};";
-PROCEDURE -createProcess(str: ARRAY OF CHAR): BOOL    "(INTEGER)CreateProcess(0, (char*)str, 0,0,0,0,0,0,&si,&pi)";
-PROCEDURE -waitForProcess(): DWORD                    "(INTEGER)WaitForSingleObject(pi.hProcess, INFINITE)";
-PROCEDURE -getExitCodeProcess(VAR exitcode: INTEGER)  "GetExitCodeProcess(pi.hProcess, (DWORD*)exitcode);";
-PROCEDURE -cleanupProcess                             "CloseHandle(pi.hProcess); CloseHandle(pi.hThread);";
-PROCEDURE -err(): DWORD                               "(INTEGER)GetLastError()";
+PROCEDURE- startupInfo                                "STARTUPINFO si = {0}; si.cb = sizeof(si);";
+PROCEDURE- processInfo                                "PROCESS_INFORMATION pi = {0};";
+PROCEDURE- createProcess (str: ARRAY OF CHAR): BOOL   "(INTEGER)CreateProcess(0, (char*)str, 0,0,0,0,0,0,&si,&pi)";
+PROCEDURE- waitForProcess (): DWORD                   "(INTEGER)WaitForSingleObject(pi.hProcess, INFINITE)";
+PROCEDURE- getExitCodeProcess (VAR exitcode: INTEGER) "GetExitCodeProcess(pi.hProcess, (DWORD*)exitcode);";
+PROCEDURE- cleanupProcess                             "CloseHandle(pi.hProcess); CloseHandle(pi.hThread);";
+PROCEDURE- err(): DWORD                               "(INTEGER)GetLastError()";
 
-PROCEDURE System*(IN cmd : ARRAY OF CHAR): INTEGER;
+PROCEDURE System* (IN cmd : ARRAY OF CHAR): INTEGER;
 VAR
   result: INTEGER;
 BEGIN
@@ -260,64 +249,64 @@ BEGIN
   RETURN result * 256
 END System;
 
-PROCEDURE Error*(): ErrorCode; BEGIN RETURN err() END Error;
+PROCEDURE Error* (): ErrorCode; BEGIN RETURN err() END Error;
 
 
 (* Expose file and path name length limits (same on Windows) *)
 
-PROCEDURE -MAXPATH(): INTEGER 'MAX_PATH';
+PROCEDURE- MAXPATH (): INTEGER 'MAX_PATH';
 
-PROCEDURE MaxNameLength*(): INTEGER; BEGIN RETURN MAXPATH() END MaxNameLength;
-PROCEDURE MaxPathLength*(): INTEGER; BEGIN RETURN MAXPATH() END MaxPathLength; 
+PROCEDURE MaxNameLength* (): INTEGER; BEGIN RETURN MAXPATH() END MaxNameLength;
+PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN MAXPATH() END MaxPathLength; 
 
 
 (* File system *)
 
-PROCEDURE -InvalidHandleValue*(): FileHandle "(-1)";
+PROCEDURE- InvalidHandleValue* (): FileHandle "(-1)";
 
-PROCEDURE -openrw (n: ARRAY OF CHAR): FileHandle
+PROCEDURE- openrw (n: ARRAY OF CHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
-PROCEDURE -openro (n: ARRAY OF CHAR): FileHandle
+PROCEDURE- openro (n: ARRAY OF CHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ              , FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
-PROCEDURE -opennew(n: ARRAY OF CHAR): FileHandle
+PROCEDURE- opennew (n: ARRAY OF CHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
 
-PROCEDURE -createDirectory(lpPathName: ARRAY OF CHAR): BOOL
+PROCEDURE- createDirectory (lpPathName: ARRAY OF CHAR): BOOL
 "CreateDirectory((char*)lpPathName, (LPSECURITY_ATTRIBUTES)0)";
 
 
 (* File APIs *)
 
-PROCEDURE OldRO*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile*(IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir*(IN pathname: ARRAY OF CHAR): ErrorCode;
+PROCEDURE NewDir* (IN pathname: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF createDirectory(pathname) = 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
 
 
-PROCEDURE -closeHandle(h: FileHandle): BOOL "(INTEGER)CloseHandle((HANDLE)h)";
+PROCEDURE- closeHandle (h: FileHandle): BOOL "(INTEGER)CloseHandle((HANDLE)h)";
 
 PROCEDURE CloseFile*(h: FileHandle): ErrorCode;
 BEGIN
@@ -325,16 +314,16 @@ BEGIN
 END CloseFile;
 
 
-PROCEDURE -byHandleFileInformation "BY_HANDLE_FILE_INFORMATION bhfi";
-PROCEDURE -getFileInformationByHandle(h: FileHandle): BOOL "(INTEGER)GetFileInformationByHandle((HANDLE)h, &bhfi)";
-PROCEDURE -bhfiMtimeHigh(): DWORD "(INTEGER)bhfi.ftLastWriteTime.dwHighDateTime";
-PROCEDURE -bhfiMtimeLow():  DWORD "(INTEGER)bhfi.ftLastWriteTime.dwLowDateTime";
-PROCEDURE -bhfiVsn():       DWORD "(INTEGER)bhfi.dwVolumeSerialNumber";
-PROCEDURE -bhfiIndexHigh(): DWORD "(INTEGER)bhfi.nFileIndexHigh";
-PROCEDURE -bhfiIndexLow():  DWORD "(INTEGER)bhfi.nFileIndexLow";
+PROCEDURE- byHandleFileInformation "BY_HANDLE_FILE_INFORMATION bhfi";
+PROCEDURE- getFileInformationByHandle (h: FileHandle): BOOL "(INTEGER)GetFileInformationByHandle((HANDLE)h, &bhfi)";
+PROCEDURE- bhfiMtimeHigh (): DWORD "(INTEGER)bhfi.ftLastWriteTime.dwHighDateTime";
+PROCEDURE- bhfiMtimeLow ():  DWORD "(INTEGER)bhfi.ftLastWriteTime.dwLowDateTime";
+PROCEDURE- bhfiVsn ():       DWORD "(INTEGER)bhfi.dwVolumeSerialNumber";
+PROCEDURE- bhfiIndexHigh (): DWORD "(INTEGER)bhfi.nFileIndexHigh";
+PROCEDURE- bhfiIndexLow ():  DWORD "(INTEGER)bhfi.nFileIndexLow";
 
 
-PROCEDURE Identify*(h: FileHandle; VAR identity: FileIdentity): ErrorCode;
+PROCEDURE Identify* (h: FileHandle; VAR identity: FileIdentity): ErrorCode;
 BEGIN
   byHandleFileInformation;
   IF getFileInformationByHandle(h) = 0 THEN RETURN err() END;
@@ -346,7 +335,7 @@ BEGIN
   RETURN 0
 END Identify;
 
-PROCEDURE IdentifyByName*(IN n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
+PROCEDURE IdentifyByName* (IN n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
 VAR
   h:   FileHandle;
   e,i: ErrorCode;
@@ -359,34 +348,33 @@ BEGIN
 END IdentifyByName;
 
 
-PROCEDURE SameFile*(i1, i2: FileIdentity): BOOLEAN;
+PROCEDURE SameFile* (i1, i2: FileIdentity): BOOLEAN;
 BEGIN RETURN (i1.indexhigh = i2.indexhigh) & (i1.indexlow = i2.indexlow) & (i1.volume = i2.volume)
 END SameFile;
 
-PROCEDURE SameFileTime*(i1, i2: FileIdentity): BOOLEAN;
+PROCEDURE SameFileTime* (i1, i2: FileIdentity): BOOLEAN;
 BEGIN RETURN (i1.mtimehigh = i2.mtimehigh) & (i1.mtimelow = i2.mtimelow)
 END SameFileTime;
 
-PROCEDURE SetMTime*(VAR target: FileIdentity; source: FileIdentity);
+PROCEDURE SetMTime* (VAR target: FileIdentity; source: FileIdentity);
 BEGIN target.mtimehigh := source.mtimehigh;  target.mtimelow := source.mtimelow;
 END SetMTime;
 
-PROCEDURE -identityToFileTime(i: FileIdentity)
+PROCEDURE- identityToFileTime (i: FileIdentity)
 "FILETIME ft; ft.dwHighDateTime = i.mtimehigh; ft.dwLowDateTime = i.mtimelow";
 
-PROCEDURE -fileTimeToSysTime
-"SYSTEMTIME st; FileTimeToSystemTime(&ft, &st)";
+PROCEDURE- fileTimeToSysTime "SYSTEMTIME st; FileTimeToSystemTime(&ft, &st)";
 
-PROCEDURE MTimeAsClock*(i: FileIdentity; VAR t, d: INTEGER);
+PROCEDURE MTimeAsClock* (i: FileIdentity; VAR t, d: INTEGER);
 BEGIN
   identityToFileTime(i); fileTimeToSysTime;
   YMDHMStoClock(styear(), stmon(), stmday(), sthour(), stmin(), stsec(), t, d);
 END MTimeAsClock;
 
 
-PROCEDURE -getFileSize(h: FileHandle; VAR sizehigh: DWORD): DWORD "(INTEGER)GetFileSize((HANDLE)h, (LPDWORD)sizehigh)";
+PROCEDURE- getFileSize (h: FileHandle; VAR sizehigh: DWORD): DWORD "(INTEGER)GetFileSize((HANDLE)h, (LPDWORD)sizehigh)";
 
-PROCEDURE FileSize*(h: FileHandle; VAR len: LONGINT): ErrorCode;
+PROCEDURE FileSize* (h: FileHandle; VAR len: LONGINT): ErrorCode;
 VAR size: RECORD [notag] low, high: DWORD END; error: ErrorCode;
 BEGIN
   size.low := getFileSize(h, size.high);
@@ -397,16 +385,16 @@ BEGIN
   RETURN 0
 END FileSize;
 
-PROCEDURE GetTempPath*(OUT path: ARRAY OF CHAR);
+PROCEDURE GetTempPath* (OUT path: ARRAY OF CHAR);
 BEGIN
   path := 'C:\Windows\Temp\' (*!FIXME*)
 END GetTempPath;
 
 
-PROCEDURE -readfile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
+PROCEDURE- readfile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
 "(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
 
-PROCEDURE Read*(h: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): ErrorCode;
+PROCEDURE Read* (h: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): ErrorCode;
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
@@ -414,7 +402,7 @@ BEGIN
   IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END Read;
 
-PROCEDURE ReadBuf*(h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCode;
+PROCEDURE ReadBuf* (h: FileHandle; VAR b: ARRAY OF BYTE; VAR n: INTEGER): ErrorCode;
 VAR result: INTEGER;
 BEGIN
   n := 0;  (* Clear n because readfile takes a INTEGER but only updates the bottom 32 bits *)
@@ -423,32 +411,32 @@ BEGIN
 END ReadBuf;
 
 
-PROCEDURE -writefile(fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
+PROCEDURE- writefile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
 "(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)dummy, 0)";
 
-PROCEDURE Write*(h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
+PROCEDURE Write* (h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
 VAR dummy: DWORD;
 BEGIN
   IF writefile(h, p, l, dummy) = 0 THEN RETURN err() ELSE RETURN 0 END
 END Write;
 
 
-PROCEDURE -flushFileBuffers(h: FileHandle): BOOL "(INTEGER)FlushFileBuffers((HANDLE)h)";
+PROCEDURE- flushFileBuffers (h: FileHandle): BOOL "(INTEGER)FlushFileBuffers((HANDLE)h)";
 
-PROCEDURE Sync*(h: FileHandle): ErrorCode;
+PROCEDURE Sync* (h: FileHandle): ErrorCode;
 BEGIN
   IF flushFileBuffers(h) = 0 THEN RETURN err() ELSE RETURN 0 END
 END Sync;
 
 
-PROCEDURE -setFilePointer(hFile: FileHandle; lDistanceToMove: INTEGER;
+PROCEDURE- setFilePointer (hFile: FileHandle; lDistanceToMove: INTEGER;
   VAR lpDistanceToMoveHigh: INTEGER; dwMoveMethod: DWORD): DWORD "(INTEGER)SetFilePointer((HANDLE)hFile, (LONG)lDistanceToMove, (PLONG)lpDistanceToMoveHigh, (DWORD)dwMoveMethod)";
 
-PROCEDURE -seekset(): INTEGER "FILE_BEGIN";
-PROCEDURE -seekcur(): INTEGER "FILE_CURRENT";
-PROCEDURE -seekend(): INTEGER "FILE_END";
+PROCEDURE- seekset (): INTEGER "FILE_BEGIN";
+PROCEDURE- seekcur (): INTEGER "FILE_CURRENT";
+PROCEDURE- seekend (): INTEGER "FILE_END";
 
-PROCEDURE Seek*(h: FileHandle; offset: LONGINT; r: INTEGER): ErrorCode;
+PROCEDURE Seek* (h: FileHandle; offset: LONGINT; r: INTEGER): ErrorCode;
 VAR pos: LARGE_INTEGER; error: ErrorCode;
 BEGIN
   pos := SYSTEM.VAL(LARGE_INTEGER, offset);
@@ -459,9 +447,9 @@ BEGIN
 END Seek;
 
 
-PROCEDURE -setEndOfFile(h: FileHandle): BOOL "(INTEGER)SetEndOfFile((HANDLE)h)";
+PROCEDURE- setEndOfFile (h: FileHandle): BOOL "(INTEGER)SetEndOfFile((HANDLE)h)";
 
-PROCEDURE GetFilePos(h: FileHandle; VAR r: LONGINT): ErrorCode;
+PROCEDURE GetFilePos (h: FileHandle; VAR r: LONGINT): ErrorCode;
 VAR pos: LARGE_INTEGER; error: ErrorCode;
 BEGIN
   pos.high := 0;
@@ -473,7 +461,7 @@ BEGIN
   RETURN 0
 END GetFilePos;
 
-PROCEDURE TruncateFile*(h: FileHandle; limit: LONGINT): ErrorCode;
+PROCEDURE TruncateFile* (h: FileHandle; limit: LONGINT): ErrorCode;
 VAR pos: LARGE_INTEGER; oldpos: LONGINT; error: ErrorCode;
 BEGIN
   error := GetFilePos(h, oldpos);
@@ -493,18 +481,18 @@ BEGIN
 END TruncateFile;
 
 
-PROCEDURE -deleteFile(n: ARRAY OF CHAR): BOOL "(INTEGER)DeleteFile((char*)n)";
+PROCEDURE- deleteFile (n: ARRAY OF CHAR): BOOL "(INTEGER)DeleteFile((char*)n)";
 
-PROCEDURE DeleteFile*(IN n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE DeleteFile* (IN n: ARRAY OF CHAR): ErrorCode;
 BEGIN
   IF deleteFile(n) = 0 THEN RETURN err() ELSE RETURN 0 END
 END DeleteFile;
 
 
-PROCEDURE -setCurrentDirectory(n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
-PROCEDURE -getCurrentDirectory(VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
+PROCEDURE- setCurrentDirectory (n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
+PROCEDURE- getCurrentDirectory (VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
 
-PROCEDURE ChDir*(IN n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE ChDir* (IN n: ARRAY OF CHAR): ErrorCode;
   VAR r: BOOL;
 BEGIN
   r := setCurrentDirectory(n);
@@ -513,7 +501,7 @@ BEGIN
   RETURN 0
 END ChDir;
 
-PROCEDURE -getModuleFileName(hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
+PROCEDURE- getModuleFileName (hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
 "(INTEGER)GetModuleFileNameA((HMODULE)hModule, (LPTSTR)lpFilename, nSize)";
 
 PROCEDURE GetStartDir* (VAR dir: ARRAY MAX_PATH OF CHAR); (* get the start directory with ending "\" *)
@@ -526,11 +514,11 @@ BEGIN
 END GetStartDir;
 
 
-PROCEDURE -getFileAttributes(name: ARRAY OF CHAR): DWORD
+PROCEDURE- getFileAttributes (name: ARRAY OF CHAR): DWORD
 "(INTEGER)GetFileAttributes((LPCTSTR)name)";
-PROCEDURE -FILEATTRIBUTEDIRECTORY(): SET "(SET)FILE_ATTRIBUTE_DIRECTORY";
+PROCEDURE- FILEATTRIBUTEDIRECTORY (): SET "(SET)FILE_ATTRIBUTE_DIRECTORY";
 
-PROCEDURE FileExists*(IN name: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE FileExists* (IN name: ARRAY OF CHAR): BOOLEAN;
 VAR
   dwAttrib: DWORD;
 BEGIN
@@ -539,7 +527,7 @@ BEGIN
     & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() = {})
 END FileExists;
 
-PROCEDURE DirExists*(IN name: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE DirExists* (IN name: ARRAY OF CHAR): BOOLEAN;
 VAR
   dwAttrib: DWORD;
 BEGIN
@@ -548,15 +536,15 @@ BEGIN
     & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() # {})
 END DirExists;
 
-PROCEDURE -moveFileEx(src, dest: ARRAY OF CHAR): BOOL
+PROCEDURE- moveFileEx (src, dest: ARRAY OF CHAR): BOOL
   "(INTEGER)MoveFileEx((LPCTSTR)src, (LPCTSTR)dest, MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)";
-PROCEDURE -copyFile(src, dest: ARRAY OF CHAR): BOOL
+PROCEDURE- copyFile (src, dest: ARRAY OF CHAR): BOOL
   "(INTEGER)CopyFile((LPCTSTR)src, (LPCTSTR)dest, FALSE)";
 
 (* This version of RenameFile requires a closed file,
    as FILE_SHARE_DELETE cannot be used due to compatibility issues.
 *)
-PROCEDURE RenameFile*(IN src, dest: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile* (IN src, dest: ARRAY OF CHAR): ErrorCode;
 VAR
   src_id, dest_id: FileIdentity; error: ErrorCode;
 BEGIN
@@ -578,14 +566,14 @@ END RenameFile;
 
 (* Process termination *)
 
-PROCEDURE -exit(code: INTEGER) "ExitProcess((UINT)code)";
-PROCEDURE ExitOS*(code: INTEGER);
+PROCEDURE- exit (code: INTEGER) "ExitProcess((UINT)code)";
+PROCEDURE ExitOS* (code: INTEGER);
 BEGIN exit(code) END ExitOS;
 
 
-PROCEDURE -getConsoleMode(h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
+PROCEDURE- getConsoleMode (h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
 
-PROCEDURE IsConsole*(h: FileHandle): BOOLEAN;
+PROCEDURE IsConsole* (h: FileHandle): BOOLEAN;
 VAR mode: INTEGER;
 BEGIN RETURN getConsoleMode(StdOut, mode)
 END IsConsole;
@@ -596,22 +584,18 @@ PROCEDURE TestLittleEndian;
  BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
 
 
-PROCEDURE -getstdinhandle():  FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_INPUT_HANDLE)";
-PROCEDURE -getstdouthandle(): FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_OUTPUT_HANDLE)";
-PROCEDURE -getstderrhandle(): FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_ERROR_HANDLE)";
-PROCEDURE -getpid():          DWORD      "(INTEGER)GetCurrentProcessId()";
+PROCEDURE- getstdinhandle ():  FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_INPUT_HANDLE)";
+PROCEDURE- getstdouthandle (): FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_OUTPUT_HANDLE)";
+PROCEDURE- getstderrhandle (): FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_ERROR_HANDLE)";
+PROCEDURE- getpid ():          DWORD      "(INTEGER)GetCurrentProcessId()";
 
 BEGIN
   TestLittleEndian;
-
-  TimeStart := 0;  TimeStart := Time();  (* Time() uses TimeStart *)
-  CWD       := "";  getCurrentDirectory(CWD);
-  PID       := getpid();
-
+  CWD := ""; getCurrentDirectory(CWD);
+  PID := getpid();
   SeekSet := seekset();
   SeekCur := seekcur();
   SeekEnd := seekend();
-
   StdIn  := getstdinhandle();
   StdOut := getstdouthandle();
   StdErr := getstderrhandle();
