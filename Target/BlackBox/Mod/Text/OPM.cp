@@ -411,6 +411,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AdrSize := 2; Alignment := 1; INC(i)
+				ELSIF s[i+1] = "2" THEN AdrSize := 2; Alignment := 2; INC(i)
 				ELSE Lang := "2"
 				END
 			| "4":

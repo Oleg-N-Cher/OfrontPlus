@@ -279,6 +279,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AdrSize := 2; Alignment := 1; INC(i)
+				ELSIF s[i+1] = "2" THEN AdrSize := 2; Alignment := 2; INC(i)
 				ELSE Lang := "2"
 				END
 			| "4":
