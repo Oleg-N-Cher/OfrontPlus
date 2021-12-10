@@ -1302,7 +1302,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			proc^.link := NIL; GetParams;	(* may change proc := fwd !!! *)
 			IF mode = CProc THEN GetCode
 			ELSIF proc^.entry # NIL THEN INCL(proc^.conval^.setval, hasBody)
-			ELSIF ~forward THEN Body
+			ELSIF ~forward THEN Body; proc.adr := 0
+			ELSE proc.adr := OPM.errpos
 			END;
 			DEC(level); OPT.CloseScope
 		ELSE err(ident)
