@@ -369,8 +369,9 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			AdrSize := SIZE(SYSTEM.PTR); GetAlignment(Alignment)
 		END;
 		(* default characteristics *)
-		IF AdrSize = 2 THEN	(* Z80 and other 8 bit CPUs *)
-			SetSize := 1; MaxSet := 7; IndexSize := 2; MaxIndex := MAX(SHORTINT)
+		IF AdrSize = 2 THEN	(* Z80 and other 8 bit / 16-bit CPUs *)
+			SetSize := Alignment; MaxSet := SHORT(SetSize*8 - 1);
+			IndexSize := 2; MaxIndex := MAX(SHORTINT)
 		ELSE
 			SetSize := 4; MaxSet := 31;
 			IndexSize := 4;	(* size of the type of array index, see also SYSTEM_ARRLEN *)
