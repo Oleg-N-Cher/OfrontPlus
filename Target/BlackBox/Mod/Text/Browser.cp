@@ -38,11 +38,16 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		lang, option: SHORTCHAR;
 		W: TextMappers.Formatter;
 		hex: ARRAY 17 OF SHORTCHAR;
+		global: RECORD
+			level: INTEGER;	(* current indentation level *)
+			gap: BOOLEAN	(* request for lazy Ln, issued with next Indent *)
+		END;
 
 	PROCEDURE Ws(IN s: ARRAY OF SHORTCHAR); BEGIN W.WriteSString(s) END Ws;
 	PROCEDURE Wch(ch: SHORTCHAR); BEGIN W.WriteChar(ch) END Wch;
 	PROCEDURE Wi(i: LONGINT); BEGIN W.WriteInt(i) END Wi;
-	PROCEDURE Wln; BEGIN W.WriteLn() END Wln;
+	PROCEDURE Wtab; BEGIN W.WriteTab END Wtab;
+	PROCEDURE Wln; BEGIN W.WriteLn END Wln;
 	PROCEDURE Whex(i: LONGINT);
 		VAR minWidth: INTEGER;
 	BEGIN
@@ -90,8 +95,10 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		END
 	END StringConst;
 
-	PROCEDURE Indent(i: SHORTINT);
-	BEGIN WHILE i > 0 DO Wch(" "); Wch(" "); DEC(i) END
+	PROCEDURE Indent (i: INTEGER);
+	BEGIN
+		IF global.gap THEN global.gap := FALSE; Wln END;
+		WHILE i > 0 DO Wtab; DEC(i) END
 	END Indent;
 
 	PROCEDURE ^Wtype(typ: OPT.Struct);
@@ -210,7 +217,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		IF obj # NIL THEN
 			Wmthd(obj^.left);
 			IF obj^.mode = TProc THEN
-				Indent(3); Wch("(");
+				Wln; INC(global.level); Indent(global.level); Wch("(");
 				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN
 						IF lang = "C" THEN
@@ -220,7 +227,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						IF ODD(obj^.link^.sysflag DIV nilBit) THEN Ws("[nil] ") END
 					END;
 					Ws(obj^.link^.name^); Ws(": "); Wtype(obj^.link^.typ)
-				END ;
+				END;
 				Ws(") "); Ws(obj^.name^);
 				Wsign(obj^.typ, obj^.link^.link);
 				IF lang = "C" THEN
@@ -233,33 +240,56 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				Wch(";");
 				IF option = "x" THEN Indent(1);
 					Ws("(* methno: "); Wi(obj^.adr DIV 10000H);  Ws(" *)")
-				END ;
-				Wln;
-			END ;
+				END;
+				Wln; DEC(global.level)
+			END;
 			Wmthd(obj^.right)
 		END
 	END Wmthd;
 
-	PROCEDURE ^ Wtype(typ: OPT.Struct);
+	PROCEDURE Wflds (typ: OPT.Struct; VAR cont: BOOLEAN);
+		VAR fld: OPT.Object;
+	BEGIN
+		fld := typ^.link;
+		WHILE (fld # NIL) & (fld^.mode = Fld) DO
+			IF (option = "x") OR (fld^.name[0] # "@") THEN
+				IF cont THEN Wch(";") END;
+				Wln;
+				Indent(global.level);
+				IF option = "x" THEN Wi(fld^.adr); Wch(" ") END;
+				Ws(fld^.name^);
+				WHILE (fld.link # NIL) & (fld.link.typ = fld.typ) & (fld.link.name # NIL) DO
+					IF fld.vis = externalR THEN Wch("-") END;
+					fld := fld.link; Ws(", "); Ws(fld.name^)
+				END;
+				IF fld.vis = externalR THEN Wch("-") END;
+				Ws(": "); Wtype(fld^.typ);
+				cont := TRUE
+			END;
+			fld := fld.link
+		END
+	END Wflds;
 
 	PROCEDURE Wstruct(typ: OPT.Struct);
-		VAR fld: OPT.Object;
+		VAR cont: BOOLEAN;
 
 		PROCEDURE SysFlag;
 		BEGIN
 			IF (option = "x") & (typ^.sysflag # 0) THEN
 				Ws(" ["); Wi(typ^.sysflag); Wch("]")
-			ELSIF ODD(typ^.sysflag) THEN
-				Ws(" [notag]")
+			ELSE
+				CASE typ^.sysflag MOD 100H OF 1: Ws(" [notag]") | 3: Ws(" [union]") ELSE END
 			END
 		END SysFlag;
 
 	BEGIN
+		INC(global.level);
 		CASE typ^.form OF
 		| Undef:
 				Ws("Undef")
 		| Pointer:
-				Ws("POINTER"); SysFlag; Ws(" TO "); Wtype(typ^.BaseTyp)
+				Ws("POINTER"); SysFlag; Ws(" TO ");
+				DEC(global.level); Wtype(typ^.BaseTyp); INC(global.level)
 		| ProcTyp:
 				Ws("PROCEDURE");
 				IF typ^.sysflag = 1 THEN Ws(" [stdcall]")
@@ -280,20 +310,11 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 							END
 						END;
 						Ws("RECORD"); SysFlag;
+						cont := FALSE;
 						IF typ^.BaseTyp # NIL THEN Ws(" ("); Wtype(typ^.BaseTyp); Wch(")") END;
-						Wln; fld := typ^.link;
-						WHILE (fld # NIL) & (fld^.mode = Fld) DO
-							IF (option = "x") OR (fld^.name[0] # "@") THEN Indent(3);
-								IF option = "x" THEN Wi(fld^.adr); Wch(" ") END;
-								Ws(fld^.name^);
-								IF fld^.vis = externalR THEN Wch("-") END;
-								Ws(": "); Wtype(fld^.typ); Wch(";");
-								Wln
-							END;
-							fld := fld^.link
-						END;
-						Wmthd(typ^.link);
-						Indent(2); Ws("END");
+						Wflds(typ, cont); Wmthd(typ^.link);
+						IF cont THEN Wln; Indent(global.level - 1) ELSE Wch(" ") END;
+						Ws("END");
 						IF option = "x" THEN Indent(1);
 							Ws("(* size: "); Wi(typ^.size); Ws(" align: "); Wi(typ^.align);
 							Ws(" nofm: "); Wi(typ^.n); Ws(" *)")
@@ -301,7 +322,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				END
 		ELSE
 			IF typ^.BaseTyp # OPT.undftyp THEN Wtype(typ^.BaseTyp) END	(* alias structures *)
-		END
+		END;
+		DEC(global.level)
 	END Wstruct;
 
 	PROCEDURE Wtype(typ: OPT.Struct);
@@ -368,21 +390,18 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		END
 	END Wtype;
 
-	PROCEDURE WModule(IN name: OPS.Name; T: TextModels.Model; VAR done: BOOLEAN);
-		VAR i: SHORTINT;
-			beg, end: INTEGER; first: BOOLEAN;
-			lname: ARRAY 128 OF CHAR;
+	PROCEDURE WModule (IN name: OPS.Name; T: TextModels.Model; VAR done: BOOLEAN);
+		VAR i, beg, end: INTEGER; first: BOOLEAN;
 
-		PROCEDURE Header(IN s: ARRAY OF SHORTCHAR);
+		PROCEDURE Header (IN s: ARRAY OF SHORTCHAR);
 		BEGIN
-			beg := T.Length(); Indent(1); Ws(s); Wln; end := T.Length()
+			beg := T.Length(); Indent(1); Ws(s); Wln; end := T.Length(); global.level := 2
 		END Header;
 
 		PROCEDURE CheckHeader;
 		BEGIN
-			IF end = T.Length() THEN T.Delete(beg, end)
-			ELSE Wln
-			END
+			global.gap := TRUE;
+			IF end = T.Length() THEN T.Delete(beg, end) END
 		END CheckHeader;
 
 	BEGIN
@@ -396,7 +415,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			| "C": Ws("Component Pascal")
 			| "3": Ws("Oberon-3")
 			END;
-			Ws(" *)"); Wln; Wln;
+			Ws(" *)"); Wln; global.gap := TRUE;
 			Header("IMPORT"); i := 1; first := TRUE;
 			WHILE i < OPT.nofGmod DO
 				IF first THEN first := FALSE; Indent(2) ELSE Ws(", ") END;
@@ -412,8 +431,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			Wln;
 			Ws("END "); Ws(name); Wch("."); Wln
 		ELSE
-			lname := name$;
-			Dialog.ShowParamStatus("#ofront:symNotFound", lname, "", "")
+			Dialog.ShowParamStatus("#ofront:symNotFound", name$, "", "")
 		END
 	END WModule;
 
@@ -452,7 +470,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		GetArgs(S);
 		IF S.type = TextMappers.string THEN
 			Ident(S.string, name); vname := name$;
-			Append(vname, ".Def");
+			Append(vname, ".def");
 			T := TextModels.dir.New();
 			W.ConnectTo(T); W.SetPos(0);
 			OPM.OpenPar(FALSE); OPM.InitOptions;

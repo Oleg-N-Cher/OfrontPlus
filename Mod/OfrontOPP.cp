@@ -352,13 +352,15 @@
 		END
 	END CheckMark;
 
-	PROCEDURE CheckSysFlag(VAR sysflag: SHORTINT; default: SHORTINT);
+	PROCEDURE CheckSysFlag (VAR sysflag: SHORTINT; default: SHORTINT; union: BOOLEAN);
 		VAR x: OPT.Node; sf: LONGINT;
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 			IF (sym = ident) & ((OPS.name = "notag") OR (OPS.name = "untagged")) THEN
 				OPS.Get(sym); sysflag := 1
+			ELSIF union & (sym = ident) & (OPS.name = "union") THEN
+				OPS.Get(sym); sysflag := 3	(* must be odd *)
 			ELSE
 				ConstExpression(x);
 				IF x^.typ^.form IN intSet THEN sf := x^.conval^.intval;
@@ -372,7 +374,7 @@
 		END
 	END CheckSysFlag;
 
-	PROCEDURE CheckSysFlagVarPar(VAR sysflag: SHORTINT);
+	PROCEDURE CheckSysFlagVarPar (VAR sysflag: SHORTINT);
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
@@ -384,7 +386,7 @@
 		END
 	END CheckSysFlagVarPar;
 
-	PROCEDURE CheckSysFlagProc(VAR sysflag: SHORTINT);
+	PROCEDURE CheckSysFlagProc (VAR sysflag: SHORTINT);
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
@@ -482,7 +484,7 @@
 		VAR fld, first, last: OPT.Object; r: Elem; ftyp: OPT.Struct; name: OPS.String;
 	BEGIN typ := OPT.NewStr(Comp, Record); typ^.BaseTyp := NIL;
 		IF OPM.Lang # "C" THEN typ^.attribute := extAttr END;
-		CheckSysFlag(typ^.sysflag, 0);
+		CheckSysFlag(typ^.sysflag, 0, TRUE);
 		IF attr # NIL THEN
 			IF (OPM.Lang = "C") & (attr^.adr # empAttr) THEN typ^.attribute := SHORT(SHORT(attr.adr))
 			ELSE err(178)
@@ -549,7 +551,7 @@
 
 	PROCEDURE ArrayType(VAR typ: OPT.Struct);
 		VAR x: OPT.Node; n: LONGINT; sysflag: SHORTINT; name: OPS.String;
-	BEGIN CheckSysFlag(sysflag, 0);
+	BEGIN CheckSysFlag(sysflag, 0, FALSE);
 		IF sym = of THEN	(*dynamic array*)
 			typ := OPT.NewStr(Comp, DynArr); typ^.mno := 0; typ^.sysflag := sysflag;
 			OPS.Get(sym); Type(typ^.BaseTyp, name); SetType(typ, NIL, typ^.BaseTyp, name);
@@ -577,7 +579,7 @@
 
 	PROCEDURE PointerType(VAR typ: OPT.Struct);
 		VAR name: OPS.String;
-	BEGIN typ := OPT.NewStr(Pointer, Basic); CheckSysFlag(typ^.sysflag, 0);
+	BEGIN typ := OPT.NewStr(Pointer, Basic); CheckSysFlag(typ^.sysflag, 0, FALSE);
 		CheckSym(to);
 		Type(typ^.BaseTyp, name); SetType(typ, NIL, typ^.BaseTyp, name);
 		IF (typ^.BaseTyp # OPT.undftyp) & (typ^.BaseTyp^.comp = Basic) THEN

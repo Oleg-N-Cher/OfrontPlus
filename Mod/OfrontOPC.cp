@@ -58,6 +58,7 @@
 		FASTCALL = "__FASTCALL ";	(* fastcall calling convention *)
 		STDCALL = "__STDCALL ";	(* stdcall calling convention *)
 		Struct = "struct ";
+		Union = "union ";
 		LocalScope = "_s"; (* name of a local intermediate scope (variable name) *)
 		GlobalScope = "_s"; (* pointer to current scope extension *)
 		LinkName = "lnk"; (* pointer to previous scope field *)
@@ -341,7 +342,7 @@
 		ELSIF (obj # NIL) & ~Undefined(obj) THEN	(* named type, already declared *)
 			Ident(obj)
 		ELSIF typ^.comp = Record THEN
-			OPM.WriteString(Struct);
+			IF typ^.sysflag MOD 100H = 3 THEN OPM.WriteString(Union) ELSE OPM.WriteString(Struct) END;
 			IF (obj = NIL) OR (obj.name # OPT.null) THEN Andent(typ)
 			ELSE OPM.WriteString("/* "); Andent(typ); OPM.WriteString(" */")
 			END;
@@ -441,7 +442,7 @@
 	PROCEDURE LenList(par: OPT.Object; ansiDefine, showParamName: BOOLEAN);
 		VAR typ: OPT.Struct; dim: SHORTINT;
 	BEGIN
-		IF showParamName THEN Ident(par); OPM.WriteString(LenExt) END ;
+		IF showParamName THEN Ident(par); OPM.WriteString(LenExt) END;
 		dim := 1; typ := par^.typ^.BaseTyp;
 		WHILE (typ^.comp = DynArr) & ~ODD(typ^.sysflag) DO
 			IF ansiDefine THEN
@@ -451,8 +452,8 @@
 				ELSE OPM.WriteString(", LONGINT ")
 				END
 			ELSE OPM.WriteString(Comma)
-			END ;
-			IF showParamName THEN Ident(par); OPM.WriteString(LenExt); OPM.WriteInt(dim) END ;
+			END;
+			IF showParamName THEN Ident(par); OPM.WriteString(LenExt); OPM.WriteInt(dim) END;
 			typ := typ^.BaseTyp; INC(dim)
 		END
 	END LenList;
