@@ -212,12 +212,13 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		END
 	END Objects;
 
-	PROCEDURE Wmthd(obj: OPT.Object);
+	PROCEDURE Wmthd (obj: OPT.Object; VAR cont: BOOLEAN);
 	BEGIN
 		IF obj # NIL THEN
-			Wmthd(obj^.left);
+			Wmthd(obj^.left, cont);
 			IF obj^.mode = TProc THEN
-				Wln; INC(global.level); Indent(global.level); Wch("(");
+				IF cont THEN Wch(";") END;
+				Wln; Indent(global.level); INC(global.level); Wch("(");
 				IF obj^.name^ # OPM.HdTProcName THEN
 					IF obj^.link^.mode = VarPar THEN
 						IF lang = "C" THEN
@@ -237,13 +238,13 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 					ELSIF extAttr IN BITS(obj^.link^.typ^.attribute) THEN Ws(", EXTENSIBLE")
 					END
 				END;
-				Wch(";");
+				cont := TRUE;
 				IF option = "x" THEN Indent(1);
 					Ws("(* methno: "); Wi(obj^.adr DIV 10000H);  Ws(" *)")
 				END;
-				Wln; DEC(global.level)
+				DEC(global.level)
 			END;
-			Wmthd(obj^.right)
+			Wmthd(obj^.right, cont)
 		END
 	END Wmthd;
 
@@ -278,7 +279,12 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			IF (option = "x") & (typ^.sysflag # 0) THEN
 				Ws(" ["); Wi(typ^.sysflag); Wch("]")
 			ELSE
-				CASE typ^.sysflag MOD 100H OF 1: Ws(" [notag]") | 3: Ws(" [union]") ELSE END
+				CASE typ^.sysflag MOD 100H OF
+					| 0:
+					| 1: Ws(" [notag]")
+					| 3: Ws(" [union]")
+					ELSE Ws(" ["); Wi(typ^.sysflag MOD 100H); Wch("]")
+				END
 			END
 		END SysFlag;
 
@@ -312,7 +318,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 						Ws("RECORD"); SysFlag;
 						cont := FALSE;
 						IF typ^.BaseTyp # NIL THEN Ws(" ("); Wtype(typ^.BaseTyp); Wch(")") END;
-						Wflds(typ, cont); Wmthd(typ^.link);
+						Wflds(typ, cont); Wmthd(typ^.link, cont);
 						IF cont THEN Wln; Indent(global.level - 1) ELSE Wch(" ") END;
 						Ws("END");
 						IF option = "x" THEN Indent(1);

@@ -480,13 +480,13 @@
 		proc.conval.setval := attr
 	END GetAttributes;
 
-	PROCEDURE RecordType(VAR typ: OPT.Struct; attr: OPT.Object);
+	PROCEDURE RecordType (VAR typ: OPT.Struct; attr: OPT.Object);
 		VAR fld, first, last: OPT.Object; r: Elem; ftyp: OPT.Struct; name: OPS.String;
 	BEGIN typ := OPT.NewStr(Comp, Record); typ^.BaseTyp := NIL;
 		IF OPM.Lang # "C" THEN typ^.attribute := extAttr END;
 		CheckSysFlag(typ^.sysflag, 0, TRUE);
 		IF attr # NIL THEN
-			IF (OPM.Lang = "C") & (attr^.adr # empAttr) THEN typ^.attribute := SHORT(SHORT(attr.adr))
+			IF (OPM.Lang = "C") & (attr.adr # empAttr) THEN typ.attribute := SHORT(SHORT(attr.adr))
 			ELSE err(178)
 			END
 		END;
@@ -494,19 +494,20 @@
 			OPS.Get(sym); (*record extension*)
 			IF sym = ident THEN
 				Type(ftyp, name);
-				IF ftyp^.form = Pointer THEN ftyp := ftyp^.BaseTyp END;
+				IF ftyp.form = Pointer THEN ftyp := ftyp.BaseTyp END;
 				SetType(typ, NIL, ftyp, name);
-				IF (ftyp^.comp = Record) (* & (ftyp # OPT.anytyp) *) THEN
-					ftyp^.pvused := TRUE; typ^.extlev := SHORT(SHORT(ftyp^.extlev + 1));
-					IF (ftyp^.attribute = 0) OR (ftyp^.attribute = limAttr) & (ftyp^.mno # 0) THEN err(181)
-					ELSIF (typ^.attribute = absAttr) & (ftyp^.attribute # absAttr) THEN err(191)
-					ELSIF (ftyp^.attribute = limAttr) & (typ^.attribute # limAttr) THEN err(197)
+				IF (ftyp.comp = Record) (* & (ftyp # OPT.anytyp) *) THEN
+					ftyp.pvused := TRUE; typ^.extlev := SHORT(SHORT(ftyp.extlev + 1));
+					typ.sysflag := ftyp.sysflag;
+					IF (ftyp.attribute = 0) OR (ftyp.attribute = limAttr) & (ftyp.mno # 0) THEN err(181)
+					ELSIF (typ.attribute = absAttr) & (ftyp.attribute # absAttr) THEN err(191)
+					ELSIF (ftyp.attribute = limAttr) & (typ.attribute # limAttr) THEN err(197)
 					END
 				ELSIF ftyp # OPT.undftyp THEN err(53)
 				END
 			ELSE err(ident)
 			END;
-			IF typ^.attribute # absAttr THEN	(* save typ for unimplemented method check *)
+			IF typ.attribute # absAttr THEN	(* save typ for unimplemented method check *)
 				NEW(r); r.struct := typ; r.pos := OPM.errpos; r.next := recList; recList := r
 			END;
 			CheckSym(rparen)
@@ -517,7 +518,7 @@
 			IF sym = ident THEN
 				LOOP
 					IF sym = ident THEN
-						IF (typ^.BaseTyp # NIL) & (typ^.BaseTyp # OPT.undftyp) THEN
+						IF (typ^.BaseTyp # NIL) & (typ.BaseTyp # OPT.undftyp) THEN
 							OPT.FindField(OPS.name, typ^.BaseTyp, fld);
 							IF fld # NIL THEN err(1) END
 						END;
