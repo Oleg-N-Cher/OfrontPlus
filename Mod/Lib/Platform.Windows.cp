@@ -372,7 +372,8 @@ BEGIN
 END MTimeAsClock;
 
 
-PROCEDURE- getFileSize (h: FileHandle; VAR sizehigh: DWORD): DWORD "(INTEGER)GetFileSize((HANDLE)h, (LPDWORD)sizehigh)";
+PROCEDURE- getFileSize (h: FileHandle; VAR sizehigh: DWORD): DWORD
+  "(INTEGER)GetFileSize((HANDLE)h, (LPDWORD)sizehigh)";
 
 PROCEDURE FileSize* (h: FileHandle; VAR len: LONGINT): ErrorCode;
 VAR size: RECORD [notag] low, high: DWORD END; error: ErrorCode;
@@ -385,14 +386,18 @@ BEGIN
   RETURN 0
 END FileSize;
 
+
+PROCEDURE- getTempPath (nBufferLengt: DWORD; VAR lpBuffer: CHAR): DWORD
+  "(INTEGER)GetTempPathA((DWORD)nBufferLengt, (LPTSTR)lpBuffer)";
+
 PROCEDURE GetTempPath* (OUT path: ARRAY OF CHAR);
 BEGIN
-  path := 'C:\Windows\Temp\' (*!FIXME*)
+  IF getTempPath(LEN(path), path[0]) = 0 THEN path := "C:\Windows\Temp\" END
 END GetTempPath;
 
 
 PROCEDURE- readfile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
-"(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
+  "(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
 
 PROCEDURE Read* (h: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): ErrorCode;
 VAR result: INTEGER;
@@ -412,7 +417,7 @@ END ReadBuf;
 
 
 PROCEDURE- writefile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
-"(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)dummy, 0)";
+  "(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)dummy, 0)";
 
 PROCEDURE Write* (h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
 VAR dummy: DWORD;
@@ -540,6 +545,7 @@ PROCEDURE- moveFileEx (src, dest: ARRAY OF CHAR): BOOL
   "(INTEGER)MoveFileEx((LPCTSTR)src, (LPCTSTR)dest, MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)";
 PROCEDURE- copyFile (src, dest: ARRAY OF CHAR): BOOL
   "(INTEGER)CopyFile((LPCTSTR)src, (LPCTSTR)dest, FALSE)";
+
 
 (* This version of RenameFile requires a closed file,
    as FILE_SHARE_DELETE cannot be used due to compatibility issues.

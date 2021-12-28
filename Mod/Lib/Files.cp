@@ -97,7 +97,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
 
   (* Make a file name in form of '/tmp/oberon.1.2345', where 1 is a sequential
      number and 2345 is the current PID. The path is platform-dependent. *)
-  PROCEDURE GetTempName(IN finalName: ARRAY OF SHORTCHAR; VAR name: ARRAY OF SHORTCHAR);
+  PROCEDURE GetTempName (OUT name: ARRAY OF SHORTCHAR);
     VAR n, i: INTEGER;
   BEGIN INC(tempno); Platform.GetTempPath(name);
     i := 0; WHILE name[i] # 0X DO INC(i) END;
@@ -121,11 +121,9 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
      a real Oberon system, where registering the new file has the effect of
      unregistering the old file. To simulate this we need to change the old
      Files.File back to a temp file. *)
-  PROCEDURE Deregister(IN name: ARRAY OF SHORTCHAR);
+  PROCEDURE Deregister (IN name: ARRAY OF SHORTCHAR);
   VAR
-    identity: Platform.FileIdentity;
-    osfile:   File;
-    error:    Platform.ErrorCode;
+    identity: Platform.FileIdentity; osfile: File; error: Platform.ErrorCode;
   BEGIN
     IF Platform.IdentifyByName(name, identity) = 0 THEN
       (* The name we are registering is an already existing file. *)
@@ -136,11 +134,11 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
            to register. Turn it into a temporary file. *)
         ASSERT(~osfile.tempFile); ASSERT(osfile.fd >= 0);
         osfile.registerName := osfile.workName;
-        GetTempName(osfile.registerName, osfile.workName);
+        GetTempName(osfile.workName);
         osfile.tempFile := TRUE;
         error := Platform.CloseFile(osfile.fd);
         osfile.state := close;
-        error := Platform.RenameFile(osfile.registerName, osfile.workName);
+        error := Platform.RenameFile(name, osfile.workName);
         IF error # 0 THEN
           Err("Couldn't rename previous version of file being registered", osfile, error)
         END
@@ -160,7 +158,7 @@ MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files 
       IF f.state = create THEN
         (* New file with enough data written to exceed buffers, so we need to
            create a temporary file to back it. *) 
-        GetTempName(f.registerName, f.workName); f.tempFile := TRUE
+        GetTempName(f.workName); f.tempFile := TRUE
       ELSE
         ASSERT(f.state = close);
         (* New file with all data in buffers being registered. No need for a
