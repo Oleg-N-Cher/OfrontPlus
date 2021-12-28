@@ -1,4 +1,4 @@
-MODULE arDir;
+MODULE [noinit] arDir;
 
 IMPORT 
 	C := arC,
@@ -15,7 +15,7 @@ TYPE
 	END;
 
 
-PROCEDURE -AAincludeDirent* "#include <dirent.h>";
+PROCEDURE -AAincludeDirent- "#include <dirent.h>";
 PROCEDURE -opendir(name : ARRAY OF CHAR) : DIR "(SYSTEM_ADRINT) opendir((const char *)name)";
 PROCEDURE -closedir(dir : DIR) "closedir((DIR*) dir)";
 PROCEDURE -readdir(dir : DIR) : DIRENT "(SYSTEM_ADRINT) readdir((DIR*) dir)";

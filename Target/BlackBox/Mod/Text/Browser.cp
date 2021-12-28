@@ -25,7 +25,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 		internal = 0; external = 1; externalR = 2; inPar = 3; outPar = 4;
 
 		(* sysflags *)
-		nilBit = 1;
+		nilBit = 1; notag = 1; union = 7; (* must be odd *)
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -281,8 +281,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 			ELSE
 				CASE typ^.sysflag MOD 100H OF
 					| 0:
-					| 1: Ws(" [notag]")
-					| 3: Ws(" [union]")
+					| notag: Ws(" [notag]")
+					| union: Ws(" [union]")
 					ELSE Ws(" ["); Wi(typ^.sysflag MOD 100H); Wch("]")
 				END
 			END

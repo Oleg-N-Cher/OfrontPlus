@@ -48,7 +48,13 @@
 		typfn = 39; thisrecfn = 40; thisarrfn = 41;
 
 		(*procedure flags*)
-		hasBody = 1; isRedef = 2; absAttr = 17; empAttr = 19; extAttr = 20;
+		hasBody = 1; isRedef = 2;
+
+		(* attribute flags (attr.adr, struct.attribute, proc.conval.setval) *)
+		absAttr = 17; empAttr = 19; extAttr = 20;
+
+		(* sysflag *)
+		union = 7; (* must be odd *)
 
 		super = 1;
 
@@ -127,9 +133,14 @@
 				WHILE (fld # NIL) & (fld^.mode = Fld) DO
 					btyp := fld^.typ; TypSize(btyp);
 					size := btyp^.size; fbase := OPC.BaseAlignment(btyp);
-					OPC.Align(offset, fbase);
-					fld^.adr := offset; INC(offset, size);
-					IF fbase > base THEN base := fbase END ;
+					IF typ.sysflag = union THEN
+						fld^.adr := 0;
+						IF size > offset THEN offset := size END
+					ELSE
+						OPC.Align(offset, fbase);
+						fld^.adr := offset; INC(offset, size)
+					END;
+					IF fbase > base THEN base := fbase END;
 					fld := fld^.link
 				END;
 				(* base is now the largest alignment of any field *)
@@ -153,7 +164,7 @@
 				typ^.size := OPM.AdrSize;
 			ELSIF c = DynArr THEN
 				btyp := typ^.BaseTyp; TypSize(btyp);
-				IF ODD(typ^.sysflag) THEN typ^.size := 4
+				IF ODD(typ.sysflag) THEN typ^.size := 4
 				ELSIF btyp^.comp = DynArr THEN typ^.size := btyp^.size + 4	(* describes dim not size *)
 				ELSE typ^.size := 8
 				END

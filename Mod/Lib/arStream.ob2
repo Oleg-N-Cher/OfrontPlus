@@ -21,7 +21,7 @@ VAR
 	out* : Text.StreamWriter;
 	err* : Text.StreamWriter;
 
-PROCEDURE -AAincludeStdio* "#include <stdio.h>";
+PROCEDURE -AAincludeStdio- "#include <stdio.h>";
 PROCEDURE -getStdOut():FILE "(arStream_FILE) stdout";
 PROCEDURE -getStdErr():FILE "(arStream_FILE) stderr";
 PROCEDURE -fputc(file : FILE; ch : CHAR) "fputc(ch,(FILE *)file)";

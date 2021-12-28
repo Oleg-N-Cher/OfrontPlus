@@ -182,6 +182,7 @@ BEGIN
   | 195: Log.String("empty procedures may not have out parameters or return a value")
   | 196: Log.String("procedure is implement-only exported")
   | 197: Log.String("extension of limited type must be limited")
+  | 198: Log.String("field/extension of untagged type must be untagged")
 
 (*
     2. Limitations of implementation

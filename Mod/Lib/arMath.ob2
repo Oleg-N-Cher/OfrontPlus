@@ -1,6 +1,6 @@
 (* Fast Math using math.h *)
 
-MODULE arMath;
+MODULE [noinit] arMath;
 
 	(* OMAKE LINK "m" *)
 
@@ -12,7 +12,7 @@ CONST
 	PI* = 3.14159265358979323846264338327950288;
 	E* = 2.71828182845904523536028747135266250;
 
-PROCEDURE -includeMath* "#include <math.h>";
+PROCEDURE -includeMath- "#include <math.h>";
 
 PROCEDURE -sin*(x : C.double) : C.double "sin((double)x)";
 PROCEDURE -cos*(x : C.double) : C.double "cos((double)x)";

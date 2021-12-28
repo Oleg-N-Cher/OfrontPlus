@@ -1,13 +1,13 @@
 (* Utility functions to handle C strings *)
 
-MODULE arCString;
+MODULE [noinit] arCString;
 
 IMPORT SYSTEM, C := arC;
 
 TYPE
 	String* = POINTER TO ARRAY OF CHAR;
 
-PROCEDURE -includeString* "#include <string.h>";
+PROCEDURE -includeString- "#include <string.h>";
 
 PROCEDURE -strlen(argStr : C.string) : C.int
 	"strlen((const char *)argStr)";

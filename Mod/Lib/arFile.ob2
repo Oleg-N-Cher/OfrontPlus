@@ -29,8 +29,8 @@ VAR
 	out* : File;	(* standard output *)
 	err* : File;	(* standard error *)
 
-PROCEDURE -AAincludeStdio* "#include <stdio.h>";
-PROCEDURE -AAincludeErrno* "#include <errno.h>";
+PROCEDURE -AAincludeStdio- "#include <stdio.h>";
+PROCEDURE -AAincludeErrno- "#include <errno.h>";
 PROCEDURE -getStdOut() : FILE "(arFile_FILE) stdout";
 PROCEDURE -getStdErr() : FILE "(arFile_FILE) stderr";
 
@@ -149,4 +149,3 @@ BEGIN
 	out := NewFile(getStdOut());
 	err := NewFile(getStdErr());
 END arFile.
-

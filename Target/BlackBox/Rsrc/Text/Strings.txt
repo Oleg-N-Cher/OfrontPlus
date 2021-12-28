@@ -160,6 +160,7 @@ insertMarkers	Insert Markers
 195	empty procedures may not have out parameters or return a value
 196	procedure is implement-only exported
 197	extension of limited type must be limited
+198	field/extension of untagged type must be untagged
 200	not yet implemented
 201	lower bound of set range greater than higher bound
 202	set element greater than MAX(SET) or less than 0

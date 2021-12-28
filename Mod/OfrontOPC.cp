@@ -40,6 +40,9 @@
 		(* module visibility of objects *)
 		internal = 0; external = 1; externalR = 2; outPar = 4;
 
+		(* sysflag *)
+		union = 7; (* must be odd *)
+
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
 		PredefinedType = 2; (* for all predefined types *)
@@ -342,7 +345,9 @@
 		ELSIF (obj # NIL) & ~Undefined(obj) THEN	(* named type, already declared *)
 			Ident(obj)
 		ELSIF typ^.comp = Record THEN
-			IF typ^.sysflag MOD 100H = 3 THEN OPM.WriteString(Union) ELSE OPM.WriteString(Struct) END;
+			IF typ^.sysflag MOD 100H = union THEN OPM.WriteString(Union)
+			ELSE OPM.WriteString(Struct)
+			END;
 			IF (obj = NIL) OR (obj.name # OPT.null) THEN Andent(typ)
 			ELSE OPM.WriteString("/* "); Andent(typ); OPM.WriteString(" */")
 			END;

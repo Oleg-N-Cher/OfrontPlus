@@ -4,13 +4,13 @@ snprintf is safe, since we pass the array size. We can't check if the
 format matches the argument, so use with caution. However, the C compiler
 should emit a warning if the wrong format is used. *)
 
-MODULE arCFormat;
+MODULE [noinit] arCFormat;
 
 IMPORT 
 	SYSTEM, 
 	C := arC;
 
-PROCEDURE -includeStdio* "#include <stdio.h>";
+PROCEDURE -includeStdio- "#include <stdio.h>";
 
 PROCEDURE -IntToString*(VAR result : ARRAY OF CHAR; format : ARRAY OF CHAR; value : C.int)
 	"snprintf(result, result__len, (const char *)format, value)";

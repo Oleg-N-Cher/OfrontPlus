@@ -68,7 +68,7 @@
 		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
 
 		(* sysflags *)
-		nilBit = 1;
+		nilBit = 1; union = 7; (* must be odd *)
 
 	TYPE
 		Elem = POINTER TO RECORD
@@ -352,15 +352,15 @@
 		END
 	END CheckMark;
 
-	PROCEDURE CheckSysFlag (VAR sysflag: SHORTINT; default: SHORTINT; union: BOOLEAN);
+	PROCEDURE CheckSysFlag (VAR sysflag: SHORTINT; default: SHORTINT; record: BOOLEAN);
 		VAR x: OPT.Node; sf: LONGINT;
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 			IF (sym = ident) & ((OPS.name = "notag") OR (OPS.name = "untagged")) THEN
 				OPS.Get(sym); sysflag := 1
-			ELSIF union & (sym = ident) & (OPS.name = "union") THEN
-				OPS.Get(sym); sysflag := 3	(* must be odd *)
+			ELSIF record & (sym = ident) & (OPS.name = "union") THEN
+				OPS.Get(sym); sysflag := union
 			ELSE
 				ConstExpression(x);
 				IF x^.typ^.form IN intSet THEN sf := x^.conval^.intval;
@@ -498,7 +498,7 @@
 				SetType(typ, NIL, ftyp, name);
 				IF (ftyp.comp = Record) (* & (ftyp # OPT.anytyp) *) THEN
 					ftyp.pvused := TRUE; typ^.extlev := SHORT(SHORT(ftyp.extlev + 1));
-					typ.sysflag := ftyp.sysflag;
+					IF ODD(ftyp.sysflag) & ~ODD(typ.sysflag) THEN err(198) END;
 					IF (ftyp.attribute = 0) OR (ftyp.attribute = limAttr) & (ftyp.mno # 0) THEN err(181)
 					ELSIF (typ.attribute = absAttr) & (ftyp.attribute # absAttr) THEN err(191)
 					ELSIF (ftyp.attribute = limAttr) & (typ.attribute # limAttr) THEN err(197)
@@ -536,6 +536,7 @@
 					END
 				END;
 				CheckSym(colon); Type(ftyp, name);
+				IF (ftyp.form = Comp) & (ftyp.comp = Record) & ~ODD(ftyp.sysflag) & ODD(typ.sysflag) THEN err(198) END;
 				CheckAlloc(ftyp, FALSE, OPM.errpos);
 				WHILE first # NIL DO
 					SetType(typ, first, ftyp, name); first := first^.link
