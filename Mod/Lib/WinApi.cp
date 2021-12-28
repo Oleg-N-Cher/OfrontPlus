@@ -6460,7 +6460,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			SegSs*: INTEGER;
 		END;
 		PtrCONTEXT* = POINTER TO CONTEXT;
-		(*LDT_ENTRY* = RECORD [untagged]
+		LDT_ENTRY* = RECORD [untagged]
 			LimitLow*: SHORTINT;
 			BaseLow*: SHORTINT;
 			HighWord*: RECORD [union]
@@ -6485,7 +6485,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 				END;
 			END;
 		END;
-		PtrLDT_ENTRY* = POINTER TO LDT_ENTRY;*)
+		PtrLDT_ENTRY* = POINTER TO LDT_ENTRY;
 		PtrEXCEPTION_RECORD* = POINTER TO EXCEPTION_RECORD;
 		EXCEPTION_RECORD* = RECORD [untagged]
 			ExceptionCode*: INTEGER;
@@ -6502,7 +6502,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrEXCEPTION_POINTERS* = POINTER TO EXCEPTION_POINTERS;
 		_EXCEPTION_REGISTRATION_RECORD* = RECORD [untagged] (*i*) END; 
 		Ptr_EXCEPTION_REGISTRATION_RECORD* = POINTER TO _EXCEPTION_REGISTRATION_RECORD;
-		(*PtrNT_TIB* = POINTER TO NT_TIB;
+		PtrNT_TIB* = POINTER TO NT_TIB;
 		NT_TIB* = RECORD [untagged]
 			ExceptionList*: Ptr_EXCEPTION_REGISTRATION_RECORD;
 			StackBase*: PtrVoid;
@@ -6515,7 +6515,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			ArbitraryUserPointer*: PtrVoid;
 			Self*: PtrNT_TIB;
 		END;
-		QUOTA_LIMITS* = RECORD [align8]
+		QUOTA_LIMITS* = RECORD [untagged] (*[align8]*)
 			PagedPoolLimit*: INTEGER;
 			NonPagedPoolLimit*: INTEGER;
 			MinimumWorkingSetSize*: INTEGER;
@@ -6523,7 +6523,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			PagefileLimit*: INTEGER;
 			TimeLimit*: LONGINT;
 		END;
-		PtrQUOTA_LIMITS* = POINTER TO QUOTA_LIMITS;*)
+		PtrQUOTA_LIMITS* = POINTER TO QUOTA_LIMITS;
 		MEMORY_BASIC_INFORMATION* = RECORD [untagged]
 			BaseAddress*: PtrVoid;
 			AllocationBase*: PtrVoid;
@@ -6680,12 +6680,12 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			DefaultDacl*: PtrACL;
 		END;
 		PtrTOKEN_DEFAULT_DACL* = POINTER TO TOKEN_DEFAULT_DACL;
-		(*TOKEN_SOURCE* = RECORD [align8]
+		TOKEN_SOURCE* = RECORD [untagged] (*[align8]*)
 			SourceName*: ARRAY [untagged] 8 OF SHORTCHAR;
 			SourceIdentifier*: LUID;
 		END;
 		PtrTOKEN_SOURCE* = POINTER TO TOKEN_SOURCE;
-		TOKEN_STATISTICS* = RECORD [align8]
+		TOKEN_STATISTICS* = RECORD [untagged] (*[align8]*)
 			TokenId*: LUID;
 			AuthenticationId*: LUID;
 			ExpirationTime*: LONGINT;
@@ -6698,13 +6698,13 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			ModifiedId*: LUID;
 		END;
 		PtrTOKEN_STATISTICS* = POINTER TO TOKEN_STATISTICS;
-		TOKEN_CONTROL* = RECORD [align8]
+		TOKEN_CONTROL* = RECORD [untagged] (*[align8]*)
 			TokenId*: LUID;
 			AuthenticationId*: LUID;
 			ModifiedId*: LUID;
 			TokenSource*: TOKEN_SOURCE;
 		END;
-		PtrTOKEN_CONTROL* = POINTER TO TOKEN_CONTROL;*)
+		PtrTOKEN_CONTROL* = POINTER TO TOKEN_CONTROL;
 		SECURITY_CONTEXT_TRACKING_MODE* = BOOLEAN;
 		SECURITY_QUALITY_OF_SERVICE* = RECORD [untagged]
 			Length*: INTEGER;
@@ -6720,7 +6720,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Level*: SECURITY_IMPERSONATION_LEVEL;
 		END;
 		PtrSE_IMPERSONATION_STATE* = POINTER TO SE_IMPERSONATION_STATE;
-		(*IMAGE_DOS_HEADER* = RECORD [noalign]
+		IMAGE_DOS_HEADER* = RECORD [untagged] (*[noalign]*)
 			e_magic*: SHORTINT;
 			e_cblp*: SHORTINT;
 			e_cp*: SHORTINT;
@@ -6742,7 +6742,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			e_lfanew*: INTEGER;
 		END;
 		PtrIMAGE_DOS_HEADER* = POINTER TO IMAGE_DOS_HEADER;
-		IMAGE_OS2_HEADER* = RECORD [noalign]
+		IMAGE_OS2_HEADER* = RECORD [untagged] (*[noalign]*)
 			ne_magic*: SHORTINT;
 			ne_ver*: SHORTCHAR;
 			ne_rev*: SHORTCHAR;
@@ -6775,7 +6775,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			ne_expver*: SHORTINT;
 		END;
 		PtrIMAGE_OS2_HEADER* = POINTER TO IMAGE_OS2_HEADER;
-		IMAGE_VXD_HEADER* = RECORD [noalign]
+		IMAGE_VXD_HEADER* = RECORD [untagged] (*[noalign]*)
 			e32_magic*: SHORTINT;
 			e32_border*: SHORTCHAR;
 			e32_worder*: SHORTCHAR;
@@ -6829,7 +6829,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			e32_ddkver*: SHORTINT;
 		END;
 		PtrIMAGE_VXD_HEADER* = POINTER TO IMAGE_VXD_HEADER;
-		IMAGE_FILE_HEADER* = RECORD [noalign]
+		IMAGE_FILE_HEADER* = RECORD [untagged] (*[noalign]*)
 			Machine*: SHORTINT;
 			NumberOfSections*: SHORTINT;
 			TimeDateStamp*: INTEGER;
@@ -6839,12 +6839,12 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Characteristics*: SHORTINT;
 		END;
 		PtrIMAGE_FILE_HEADER* = POINTER TO IMAGE_FILE_HEADER;
-		IMAGE_DATA_DIRECTORY* = RECORD [noalign]
+		IMAGE_DATA_DIRECTORY* = RECORD [untagged] (*[noalign]*)
 			VirtualAddress*: INTEGER;
 			Size*: INTEGER;
 		END;
 		PtrIMAGE_DATA_DIRECTORY* = POINTER TO IMAGE_DATA_DIRECTORY;
-		IMAGE_OPTIONAL_HEADER* = RECORD [noalign]
+		IMAGE_OPTIONAL_HEADER* = RECORD [untagged] (*[noalign]*)
 			Magic*: SHORTINT;
 			MajorLinkerVersion*: SHORTCHAR;
 			MinorLinkerVersion*: SHORTCHAR;
@@ -6878,7 +6878,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			DataDirectory*: ARRAY [untagged] 16 OF IMAGE_DATA_DIRECTORY;
 		END;
 		PtrIMAGE_OPTIONAL_HEADER* = POINTER TO IMAGE_OPTIONAL_HEADER;
-		IMAGE_ROM_OPTIONAL_HEADER* = RECORD [noalign]
+		IMAGE_ROM_OPTIONAL_HEADER* = RECORD [untagged] (*[noalign]*)
 			Magic*: SHORTINT;
 			MajorLinkerVersion*: SHORTCHAR;
 			MinorLinkerVersion*: SHORTCHAR;
@@ -6894,7 +6894,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			GpValue*: INTEGER;
 		END;
 		PtrIMAGE_ROM_OPTIONAL_HEADER* = POINTER TO IMAGE_ROM_OPTIONAL_HEADER;
-		IMAGE_NT_HEADERS* = RECORD [noalign]
+		IMAGE_NT_HEADERS* = RECORD [untagged] (*[noalign]*)
 			Signature*: INTEGER;
 			FileHeader*: IMAGE_FILE_HEADER;
 			OptionalHeader*: IMAGE_OPTIONAL_HEADER;
@@ -6905,7 +6905,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			OptionalHeader*: IMAGE_ROM_OPTIONAL_HEADER;
 		END;
 		PtrIMAGE_ROM_HEADERS* = POINTER TO IMAGE_ROM_HEADERS;
-		IMAGE_SECTION_HEADER* = RECORD [noalign]
+		IMAGE_SECTION_HEADER* = RECORD [untagged] (*[noalign]*)
 			Name*: ARRAY [untagged] 8 OF SHORTCHAR;
 			Misc*: RECORD [union]
 				PhysicalAddress*: INTEGER;
@@ -6921,10 +6921,10 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Characteristics*: INTEGER;
 		END;
 		PtrIMAGE_SECTION_HEADER* = POINTER TO IMAGE_SECTION_HEADER;
-		IMAGE_SYMBOL* = RECORD [noalign]
+		IMAGE_SYMBOL* = RECORD [untagged] (*[noalign]*)
 			N*: RECORD [union]
 				ShortName*: ARRAY [untagged] 8 OF SHORTCHAR;
-				Name*: RECORD [noalign]
+				Name*: RECORD [untagged] (*[noalign]*)
 					Short*: INTEGER;
 					Long*: INTEGER;
 				END;
@@ -6938,21 +6938,21 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		END;
 		PtrIMAGE_SYMBOL* = POINTER TO IMAGE_SYMBOL;
 		IMAGE_AUX_SYMBOL* = RECORD [union]
-			Sym*: RECORD [noalign]
+			Sym*: RECORD [untagged] (*[noalign]*)
 				TagIndex*: INTEGER;
 				Misc*: RECORD [union]
-					LnSz*: RECORD [noalign]
+					LnSz*: RECORD [untagged] (*[noalign]*)
 						Linenumber*: SHORTINT;
 						Size*: SHORTINT;
 					END;
 					TotalSize*: INTEGER;
 				END;
 				FcnAry*: RECORD [union]
-					Function*: RECORD [noalign]
+					Function*: RECORD [untagged] (*[noalign]*)
 						PointerToLinenumber*: INTEGER;
 						PointerToNextFunction*: INTEGER;
 					END;
-					Array*: RECORD [noalign]
+					Array*: RECORD [untagged] (*[noalign]*)
 						Dimension*: ARRAY [untagged] 4 OF SHORTINT;
 					END;
 				END;
@@ -6961,7 +6961,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			File*: RECORD [untagged]
 				Name*: ARRAY [untagged] 18 OF SHORTCHAR;
 			END;
-			Section*: RECORD [noalign]
+			Section*: RECORD [untagged] (*[noalign]*)
 				Length*: INTEGER;
 				NumberOfRelocations*: SHORTINT;
 				NumberOfLinenumbers*: SHORTINT;
@@ -6971,7 +6971,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			END;
 		END;
 		PtrIMAGE_AUX_SYMBOL* = POINTER TO IMAGE_AUX_SYMBOL;
-		IMAGE_RELOCATION* = RECORD [noalign]
+		IMAGE_RELOCATION* = RECORD [untagged] (*[noalign]*)
 			u*: RECORD [union]
 				VirtualAddress*: INTEGER;
 				RelocCount*: INTEGER;
@@ -6980,19 +6980,19 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Type*: SHORTINT;
 		END;
 		PtrIMAGE_RELOCATION* = POINTER TO IMAGE_RELOCATION;
-		IMAGE_BASE_RELOCATION* = RECORD [noalign]
+		IMAGE_BASE_RELOCATION* = RECORD [untagged] (*[noalign]*)
 			VirtualAddress*: INTEGER;
 			SizeOfBlock*: INTEGER;
 		END;
 		PtrIMAGE_BASE_RELOCATION* = POINTER TO IMAGE_BASE_RELOCATION;
-		IMAGE_LINENUMBER* = RECORD [noalign]
+		IMAGE_LINENUMBER* = RECORD [untagged] (*[noalign]*)
 			Type*: RECORD [union]
 				SymbolTableIndex*: INTEGER;
 				VirtualAddress*: INTEGER;
 			END;
 			Linenumber*: SHORTINT;
 		END;
-		PtrIMAGE_LINENUMBER* = POINTER TO IMAGE_LINENUMBER;*)
+		PtrIMAGE_LINENUMBER* = POINTER TO IMAGE_LINENUMBER;
 		IMAGE_ARCHIVE_MEMBER_HEADER* = RECORD [untagged]
 			Name*: ARRAY [untagged] 16 OF SHORTCHAR;
 			Date*: ARRAY [untagged] 12 OF SHORTCHAR;
@@ -7003,7 +7003,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			EndHeader*: ARRAY [untagged] 2 OF SHORTCHAR;
 		END;
 		PtrIMAGE_ARCHIVE_MEMBER_HEADER* = POINTER TO IMAGE_ARCHIVE_MEMBER_HEADER;
-		(*IMAGE_EXPORT_DIRECTORY* = RECORD [noalign]
+		IMAGE_EXPORT_DIRECTORY* = RECORD [untagged] (*[noalign]*)
 			Characteristics*: INTEGER;
 			TimeDateStamp*: INTEGER;
 			MajorVersion*: SHORTINT;
@@ -7017,7 +7017,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			AddressOfNameOrdinals*: POINTER TO (*?*) ARRAY [untagged] OF POINTER TO (*?*) ARRAY [untagged] OF SHORTINT;
 		END;
 		PtrIMAGE_EXPORT_DIRECTORY* = POINTER TO IMAGE_EXPORT_DIRECTORY;
-		IMAGE_IMPORT_BY_NAME* = RECORD [noalign]
+		IMAGE_IMPORT_BY_NAME* = RECORD [untagged] (*[noalign]*)
 			Hint*: SHORTINT;
 			Name*: ARRAY [untagged] 1 OF SHORTCHAR;
 		END;
@@ -7031,7 +7031,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			END;
 		END;
 		PtrIMAGE_THUNK_DATA* = POINTER TO IMAGE_THUNK_DATA;
-		IMAGE_IMPORT_DESCRIPTOR* = RECORD [noalign]
+		IMAGE_IMPORT_DESCRIPTOR* = RECORD [untagged] (*[noalign]*)
 			u*: RECORD [union]
 				Characteristics*: INTEGER;
 				OriginalFirstThunk*: PtrIMAGE_THUNK_DATA;
@@ -7042,20 +7042,20 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			FirstThunk*: PtrIMAGE_THUNK_DATA;
 		END;
 		PtrIMAGE_IMPORT_DESCRIPTOR* = POINTER TO IMAGE_IMPORT_DESCRIPTOR;
-		IMAGE_BOUND_IMPORT_DESCRIPTOR* = RECORD [noalign]
+		IMAGE_BOUND_IMPORT_DESCRIPTOR* = RECORD [untagged] (*[noalign]*)
 			TimeDateStamp*: INTEGER;
 			OffsetModuleName*: SHORTINT;
 			NumberOfModuleForwarderRefs*: SHORTINT;
 		END;
 		PtrIMAGE_BOUND_IMPORT_DESCRIPTOR* = POINTER TO IMAGE_BOUND_IMPORT_DESCRIPTOR;
-		IMAGE_BOUND_FORWARDER_REF* = RECORD [noalign]
+		IMAGE_BOUND_FORWARDER_REF* = RECORD [untagged] (*[noalign]*)
 			TimeDateStamp*: INTEGER;
 			OffsetModuleName*: SHORTINT;
 			Reserved*: SHORTINT;
 		END;
 		PtrIMAGE_BOUND_FORWARDER_REF* = POINTER TO IMAGE_BOUND_FORWARDER_REF;
 		IMAGE_TLS_CALLBACK* = PROCEDURE [stdcall] (DllHandle: PtrVoid; Reason: INTEGER; Reserved: PtrVoid);
-		IMAGE_TLS_DIRECTORY* = RECORD [noalign]
+		IMAGE_TLS_DIRECTORY* = RECORD [untagged] (*[noalign]*)
 			StartAddressOfRawData*: INTEGER;
 			EndAddressOfRawData*: INTEGER;
 			AddressOfIndex*: POINTER TO (*?*) ARRAY [untagged] OF INTEGER;
@@ -7064,7 +7064,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Characteristics*: INTEGER;
 		END;
 		PtrIMAGE_TLS_DIRECTORY* = POINTER TO IMAGE_TLS_DIRECTORY;
-		IMAGE_RESOURCE_DIRECTORY* = RECORD [noalign]
+		IMAGE_RESOURCE_DIRECTORY* = RECORD [untagged] (*[noalign]*)
 			Characteristics*: INTEGER;
 			TimeDateStamp*: INTEGER;
 			MajorVersion*: SHORTINT;
@@ -7075,7 +7075,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrIMAGE_RESOURCE_DIRECTORY* = POINTER TO IMAGE_RESOURCE_DIRECTORY;
 		IMAGE_RESOURCE_DIRECTORY_ENTRY* = RECORD [untagged]
 			u*: RECORD [union]
-				r*: RECORD [noalign]
+				r*: RECORD [untagged] (*[noalign]*)
 					fBits0*: SET;
 					(* NameOffset*: LONGINT; (31 bits) *)
 					(* NameIsString*: LONGINT; (1 bits) *)
@@ -7085,7 +7085,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			END;
 			u1*: RECORD [union]
 				OffsetToData*: INTEGER;
-				r*: RECORD [noalign]
+				r*: RECORD [untagged] (*[noalign]*)
 					fBits0*: SET;
 					(* OffsetToDirectory*: LONGINT; (31 bits) *)
 					(* DataIsDirectory*: LONGINT; (1 bits) *)
@@ -7093,24 +7093,24 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			END;
 		END;
 		PtrIMAGE_RESOURCE_DIRECTORY_ENTRY* = POINTER TO IMAGE_RESOURCE_DIRECTORY_ENTRY;
-		IMAGE_RESOURCE_DIRECTORY_STRING* = RECORD [noalign]
+		IMAGE_RESOURCE_DIRECTORY_STRING* = RECORD [untagged] (*[noalign]*)
 			Length*: SHORTINT;
 			NameString*: ARRAY [untagged] 1 OF SHORTCHAR;
 		END;
 		PtrIMAGE_RESOURCE_DIRECTORY_STRING* = POINTER TO IMAGE_RESOURCE_DIRECTORY_STRING;
-		IMAGE_RESOURCE_DIR_STRING_U* = RECORD [noalign]
+		IMAGE_RESOURCE_DIR_STRING_U* = RECORD [untagged] (*[noalign]*)
 			Length*: SHORTINT;
 			NameString*: ARRAY [untagged] 1 OF CHAR;
 		END;
 		PtrIMAGE_RESOURCE_DIR_STRING_U* = POINTER TO IMAGE_RESOURCE_DIR_STRING_U;
-		IMAGE_RESOURCE_DATA_ENTRY* = RECORD [noalign]
+		IMAGE_RESOURCE_DATA_ENTRY* = RECORD [untagged] (*[noalign]*)
 			OffsetToData*: INTEGER;
 			Size*: INTEGER;
 			CodePage*: INTEGER;
 			Reserved*: INTEGER;
 		END;
 		PtrIMAGE_RESOURCE_DATA_ENTRY* = POINTER TO IMAGE_RESOURCE_DATA_ENTRY;
-		IMAGE_LOAD_CONFIG_DIRECTORY* = RECORD [noalign]
+		IMAGE_LOAD_CONFIG_DIRECTORY* = RECORD [untagged] (*[noalign]*)
 			Characteristics*: INTEGER;
 			TimeDateStamp*: INTEGER;
 			MajorVersion*: SHORTINT;
@@ -7127,7 +7127,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Reserved*: ARRAY [untagged] 4 OF INTEGER;
 		END;
 		PtrIMAGE_LOAD_CONFIG_DIRECTORY* = POINTER TO IMAGE_LOAD_CONFIG_DIRECTORY;
-		IMAGE_RUNTIME_FUNCTION_ENTRY* = RECORD [noalign]
+		IMAGE_RUNTIME_FUNCTION_ENTRY* = RECORD [untagged] (*[noalign]*)
 			BeginAddress*: INTEGER;
 			EndAddress*: INTEGER;
 			ExceptionHandler*: PtrVoid;
@@ -7135,7 +7135,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			PrologEndAddress*: INTEGER;
 		END;
 		PtrIMAGE_RUNTIME_FUNCTION_ENTRY* = POINTER TO IMAGE_RUNTIME_FUNCTION_ENTRY;
-		IMAGE_DEBUG_DIRECTORY* = RECORD [noalign]
+		IMAGE_DEBUG_DIRECTORY* = RECORD [untagged] (*[noalign]*)
 			Characteristics*: INTEGER;
 			TimeDateStamp*: INTEGER;
 			MajorVersion*: SHORTINT;
@@ -7146,7 +7146,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			PointerToRawData*: INTEGER;
 		END;
 		PtrIMAGE_DEBUG_DIRECTORY* = POINTER TO IMAGE_DEBUG_DIRECTORY;
-		IMAGE_COFF_SYMBOLS_HEADER* = RECORD [noalign]
+		IMAGE_COFF_SYMBOLS_HEADER* = RECORD [untagged] (*[noalign]*)
 			NumberOfSymbols*: INTEGER;
 			LvaToFirstSymbol*: INTEGER;
 			NumberOfLinenumbers*: INTEGER;
@@ -7157,7 +7157,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			RvaToLastByteOfData*: INTEGER;
 		END;
 		PtrIMAGE_COFF_SYMBOLS_HEADER* = POINTER TO IMAGE_COFF_SYMBOLS_HEADER;
-		FPO_DATA* = RECORD [noalign]
+		FPO_DATA* = RECORD [untagged] (*[noalign]*)
 			ulOffStart*: INTEGER;
 			cbProcSize*: INTEGER;
 			cdwLocals*: INTEGER;
@@ -7171,7 +7171,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			(* cbFrame*: INTEGER; (2 bits) *)
 		END;
 		PtrFPO_DATA* = POINTER TO FPO_DATA;
-		IMAGE_DEBUG_MISC* = RECORD [noalign]
+		IMAGE_DEBUG_MISC* = RECORD [untagged] (*[noalign]*)
 			DataType*: INTEGER;
 			Length*: INTEGER;
 			Unicode*: BOOLEAN;
@@ -7179,13 +7179,13 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Data*: ARRAY [untagged] 1 OF SHORTCHAR;
 		END;
 		PtrIMAGE_DEBUG_MISC* = POINTER TO IMAGE_DEBUG_MISC;
-		IMAGE_FUNCTION_ENTRY* = RECORD [noalign]
+		IMAGE_FUNCTION_ENTRY* = RECORD [untagged] (*[noalign]*)
 			StartingAddress*: INTEGER;
 			EndingAddress*: INTEGER;
 			EndOfPrologue*: INTEGER;
 		END;
 		PtrIMAGE_FUNCTION_ENTRY* = POINTER TO IMAGE_FUNCTION_ENTRY;
-		IMAGE_SEPARATE_DEBUG_HEADER* = RECORD [noalign]
+		IMAGE_SEPARATE_DEBUG_HEADER* = RECORD [untagged] (*[noalign]*)
 			Signature*: SHORTINT;
 			Flags*: SHORTINT;
 			Machine*: SHORTINT;
@@ -7199,7 +7199,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			DebugDirectorySize*: INTEGER;
 			Reserved*: ARRAY [untagged] 3 OF INTEGER;
 		END;
-		PtrIMAGE_SEPARATE_DEBUG_HEADER* = POINTER TO IMAGE_SEPARATE_DEBUG_HEADER;*)
+		PtrIMAGE_SEPARATE_DEBUG_HEADER* = POINTER TO IMAGE_SEPARATE_DEBUG_HEADER;
 		MESSAGE_RESOURCE_ENTRY* = RECORD [untagged]
 			Length*: SHORTINT;
 			Flags*: SHORTINT;
@@ -7273,20 +7273,20 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Count*: INTEGER;
 			Immediate*: BOOLEAN;
 		END;
-		(*PtrTAPE_WRITE_MARKS* = POINTER TO TAPE_WRITE_MARKS;
-		TAPE_GET_POSITION* = RECORD [align8]
+		PtrTAPE_WRITE_MARKS* = POINTER TO TAPE_WRITE_MARKS;
+		TAPE_GET_POSITION* = RECORD [untagged] (*[align8]*)
 			Type*: INTEGER;
 			Partition*: INTEGER;
 			Offset*: LONGINT;
 		END;
 		PtrTAPE_GET_POSITION* = POINTER TO TAPE_GET_POSITION;
-		TAPE_SET_POSITION* = RECORD [align8]
+		TAPE_SET_POSITION* = RECORD [untagged] (*[align8]*)
 			Method*: INTEGER;
 			Partition*: INTEGER;
 			Offset*: LONGINT;
 			Immediate*: BOOLEAN;
 		END;
-		PtrTAPE_SET_POSITION* = POINTER TO TAPE_SET_POSITION;*)
+		PtrTAPE_SET_POSITION* = POINTER TO TAPE_SET_POSITION;
 		TAPE_GET_DRIVE_PARAMETERS* = RECORD [untagged]
 			ECC*: BOOLEAN;
 			Compression*: BOOLEAN;
@@ -7309,14 +7309,14 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			EOTWarningZoneSize*: INTEGER;
 		END;
 		PtrTAPE_SET_DRIVE_PARAMETERS* = POINTER TO TAPE_SET_DRIVE_PARAMETERS;
-		(*TAPE_GET_MEDIA_PARAMETERS* = RECORD [align8]
+		TAPE_GET_MEDIA_PARAMETERS* = RECORD [untagged] (*[align8]*)
 			Capacity*: LONGINT;
 			Remaining*: LONGINT;
 			BlockSize*: INTEGER;
 			PartitionCount*: INTEGER;
 			WriteProtected*: BOOLEAN;
 		END;
-		PtrTAPE_GET_MEDIA_PARAMETERS* = POINTER TO TAPE_GET_MEDIA_PARAMETERS;*)
+		PtrTAPE_GET_MEDIA_PARAMETERS* = POINTER TO TAPE_GET_MEDIA_PARAMETERS;
 		TAPE_SET_MEDIA_PARAMETERS* = RECORD [untagged]
 			BlockSize*: INTEGER;
 		END;
@@ -7528,7 +7528,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			wcProviderData*: ARRAY [untagged] 1 OF CHAR;
 		END;
 		PtrCOMMCONFIG* = POINTER TO COMMCONFIG;
-		(*SYSTEM_INFO* = RECORD [untagged]
+		SYSTEM_INFO* = RECORD [untagged]
 			u*: RECORD [union]
 				dwOemId*: INTEGER;
 				r*: RECORD [untagged]
@@ -7546,7 +7546,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			wProcessorLevel*: SHORTINT;
 			wProcessorRevision*: SHORTINT;
 		END;
-		PtrSYSTEM_INFO* = POINTER TO SYSTEM_INFO;*)
+		PtrSYSTEM_INFO* = POINTER TO SYSTEM_INFO;
 		MEMORYSTATUS* = RECORD [untagged]
 			dwLength*: INTEGER;
 			dwMemoryLoad*: INTEGER;
@@ -7614,7 +7614,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			dwType*: INTEGER;
 		END;
 		PtrRIP_INFO* = POINTER TO RIP_INFO;
-		(*DEBUG_EVENT* = RECORD [untagged]
+		DEBUG_EVENT* = RECORD [untagged]
 			dwDebugEventCode*: INTEGER;
 			dwProcessId*: INTEGER;
 			dwThreadId*: INTEGER;
@@ -7630,7 +7630,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 				RipInfo*: RIP_INFO;
 			END;
 		END;
-		PtrDEBUG_EVENT* = POINTER TO DEBUG_EVENT;*)
+		PtrDEBUG_EVENT* = POINTER TO DEBUG_EVENT;
 		OFSTRUCT* = RECORD [untagged]
 			cBytes*: SHORTCHAR;
 			fFixedDisk*: SHORTCHAR;
@@ -7640,7 +7640,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			szPathName*: ARRAY [untagged] 128 OF SHORTCHAR;
 		END;
 		PtrOFSTRUCT* = POINTER TO OFSTRUCT;
-		(*PROCESS_HEAP_ENTRY* = RECORD [untagged]
+		PROCESS_HEAP_ENTRY* = RECORD [untagged]
 			lpData*: PtrVoid;
 			cbData*: INTEGER;
 			cbOverhead*: SHORTCHAR;
@@ -7659,10 +7659,10 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 				END;
 			END;
 		END;
-		PtrPROCESS_HEAP_ENTRY* = POINTER TO PROCESS_HEAP_ENTRY;*)
+		PtrPROCESS_HEAP_ENTRY* = POINTER TO PROCESS_HEAP_ENTRY;
 		TOP_LEVEL_EXCEPTION_FILTER* = PROCEDURE [stdcall] (VAR [nil] ExceptionInfo: EXCEPTION_POINTERS): INTEGER;
 		APCFUNC* = PROCEDURE [stdcall] (dwParam: INTEGER);
-		(*BY_HANDLE_FILE_INFORMATION* = RECORD [align8]
+		BY_HANDLE_FILE_INFORMATION* = RECORD [untagged] (*[align8]*)
 			dwFileAttributes*: SET;
 			ftCreationTime*: FILETIME;
 			ftLastAccessTime*: FILETIME;
@@ -7674,7 +7674,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			nFileIndexHigh*: INTEGER;
 			nFileIndexLow*: INTEGER;
 		END;
-		PtrBY_HANDLE_FILE_INFORMATION* = POINTER TO BY_HANDLE_FILE_INFORMATION;*)
+		PtrBY_HANDLE_FILE_INFORMATION* = POINTER TO BY_HANDLE_FILE_INFORMATION;
 		TIME_ZONE_INFORMATION* = RECORD [untagged]
 			Bias*: INTEGER;
 			StandardName*: ARRAY [untagged] 32 OF CHAR;
@@ -7686,14 +7686,14 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		END;
 		PtrTIME_ZONE_INFORMATION* = POINTER TO TIME_ZONE_INFORMATION;
 		OVERLAPPED_COMPLETION_ROUTINE* = PROCEDURE [stdcall] (dwErrorCode: INTEGER; dwNumberOfBytesTransfered: INTEGER; VAR [nil] lpOverlapped: OVERLAPPED);
-		(*WIN32_STREAM_ID* = RECORD [align8]
+		WIN32_STREAM_ID* = RECORD [untagged] (*[align8]*)
 			dwStreamId*: INTEGER;
 			dwStreamAttributes*: SET;
 			Size*: LONGINT;
 			dwStreamNameSize*: INTEGER;
 			cStreamName*: ARRAY [untagged] 1 OF CHAR;
 		END;
-		PtrWIN32_STREAM_ID* = POINTER TO WIN32_STREAM_ID;*)
+		PtrWIN32_STREAM_ID* = POINTER TO WIN32_STREAM_ID;
 		STARTUPINFOA* = RECORD [untagged]
 			cb*: INTEGER;
 			lpReserved*: PtrSTR;
@@ -7738,7 +7738,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrSTARTUPINFOW* = POINTER TO STARTUPINFOW;
 		STARTUPINFO* = STARTUPINFOA;
 		PtrSTARTUPINFO* = PtrSTARTUPINFOA;
-		(*WIN32_FIND_DATAA* = RECORD [align8]
+		WIN32_FIND_DATAA* = RECORD [untagged] (*[align8]*)
 			dwFileAttributes*: SET;
 			ftCreationTime*: FILETIME;
 			ftLastAccessTime*: FILETIME;
@@ -7751,7 +7751,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			cAlternateFileName*: ARRAY [untagged] 14 OF SHORTCHAR;
 		END;
 		PtrWIN32_FIND_DATAA* = POINTER TO WIN32_FIND_DATAA;
-		WIN32_FIND_DATAW* = RECORD [align8]
+		WIN32_FIND_DATAW* = RECORD [untagged] (*[align8]*)
 			dwFileAttributes*: SET;
 			ftCreationTime*: FILETIME;
 			ftLastAccessTime*: FILETIME;
@@ -7766,7 +7766,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrWIN32_FIND_DATAW* = POINTER TO WIN32_FIND_DATAW;
 		WIN32_FIND_DATA* = WIN32_FIND_DATAA;
 		PtrWIN32_FIND_DATA* = PtrWIN32_FIND_DATAA;
-		WIN32_FILE_ATTRIBUTE_DATA* = RECORD [align8]
+		WIN32_FILE_ATTRIBUTE_DATA* = RECORD [untagged] (*[align8]*)
 			dwFileAttributes*: SET;
 			ftCreationTime*: FILETIME;
 			ftLastAccessTime*: FILETIME;
@@ -7774,7 +7774,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			nFileSizeHigh*: INTEGER;
 			nFileSizeLow*: INTEGER;
 		END;
-		PtrWIN32_FILE_ATTRIBUTE_DATA* = POINTER TO WIN32_FILE_ATTRIBUTE_DATA;*)
+		PtrWIN32_FILE_ATTRIBUTE_DATA* = POINTER TO WIN32_FILE_ATTRIBUTE_DATA;
 		TIMERAPCROUTINE* = PROCEDURE [stdcall] (lpArgToCompletionRoutine: PtrVoid; dwTimerLowValue: INTEGER; dwTimerHighValue: INTEGER);
 		ENUMRESTYPEPROC* = PROCEDURE [stdcall] (): INTEGER;
 		ENUMRESNAMEPROC* = PROCEDURE [stdcall] (): INTEGER;
@@ -7985,14 +7985,14 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			bmciColors*: ARRAY [untagged] 1 OF RGBTRIPLE;
 		END;
 		PtrBITMAPCOREINFO* = POINTER TO BITMAPCOREINFO;
-		(*BITMAPFILEHEADER* = RECORD [align2]
+		BITMAPFILEHEADER* = RECORD [untagged] (*[align2]*)
 			bfType*: SHORTINT;
 			bfSize*: INTEGER;
 			bfReserved1*: SHORTINT;
 			bfReserved2*: SHORTINT;
 			bfOffBits*: INTEGER;
 		END;
-		PtrBITMAPFILEHEADER* = POINTER TO BITMAPFILEHEADER;*)
+		PtrBITMAPFILEHEADER* = POINTER TO BITMAPFILEHEADER;
 		FONTSIGNATURE* = RECORD [untagged]
 			fsUsb*: ARRAY [untagged] 4 OF INTEGER;
 			fsCsb*: ARRAY [untagged] 2 OF INTEGER;
@@ -8027,7 +8027,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			hMF*: HMETAFILE;
 		END;
 		PtrMETAFILEPICT* = POINTER TO METAFILEPICT;
-		(*METAHEADER* = RECORD [align2]
+		METAHEADER* = RECORD [untagged] (*[align2]*)
 			mtType*: SHORTINT;
 			mtHeaderSize*: SHORTINT;
 			mtVersion*: SHORTINT;
@@ -8036,7 +8036,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			mtMaxRecord*: INTEGER;
 			mtNoParameters*: SHORTINT;
 		END;
-		PtrMETAHEADER* = POINTER TO METAHEADER;*)
+		PtrMETAHEADER* = POINTER TO METAHEADER;
 		ENHMETARECORD* = RECORD [untagged]
 			iType*: INTEGER;
 			nSize*: INTEGER;
@@ -9318,7 +9318,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		LPMENUTEMPLATEW* = PtrVoid;
 		LPMENUTEMPLATE* = LPMENUTEMPLATEA;
 		WNDPROC* = PROCEDURE [stdcall] (p0: HWND; p1: INTEGER; p2: WPARAM; p3: LPARAM): LRESULT;
-		DLGPROC* = PROCEDURE [stdcall] (p0: HWND; p1: INTEGER; p2: WPARAM; p3: LPARAM): SIZE_T;
+		DLGPROC* = PROCEDURE [stdcall] (): INTEGER;
 		TIMERPROC* = PROCEDURE [stdcall] (): INTEGER;
 		GRAYSTRINGPROC* = PROCEDURE [stdcall] (): INTEGER;
 		WNDENUMPROC* = PROCEDURE [stdcall] (): INTEGER;
@@ -9627,7 +9627,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			lParam*: LPARAM;
 		END;
 		PtrBROADCASTSYSMSG* = POINTER TO BROADCASTSYSMSG;
-		(*DLGTEMPLATE* = RECORD [align2]
+		DLGTEMPLATE* = RECORD [untagged] (*[align2]*)
 			style*: SET;
 			dwExtendedStyle*: SET;
 			cdit*: SHORTINT;
@@ -9637,7 +9637,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			cy*: SHORTINT;
 		END;
 		PtrDLGTEMPLATE* = POINTER TO DLGTEMPLATE;
-		DLGITEMTEMPLATE* = RECORD [align2]
+		DLGITEMTEMPLATE* = RECORD [untagged] (*[align2]*)
 			style*: SET;
 			dwExtendedStyle*: SET;
 			x*: SHORTINT;
@@ -9646,7 +9646,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			cy*: SHORTINT;
 			id*: SHORTINT;
 		END;
-		PtrDLGITEMTEMPLATE* = POINTER TO DLGITEMTEMPLATE;*)
+		PtrDLGITEMTEMPLATE* = POINTER TO DLGITEMTEMPLATE;
 		TPMPARAMS* = RECORD [untagged]
 			cbSize*: INTEGER;
 			rcExclude*: RECT;
@@ -10091,7 +10091,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Bottom*: SHORTINT;
 		END;
 		PtrSMALL_RECT* = POINTER TO SMALL_RECT;
-		(*KEY_EVENT_RECORD* = RECORD [untagged]
+		KEY_EVENT_RECORD* = RECORD [untagged]
 			bKeyDown*: BOOL;
 			wRepeatCount*: SHORTINT;
 			wVirtualKeyCode*: SHORTINT;
@@ -10102,7 +10102,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			END;
 			dwControlKeyState*: SET;
 		END;
-		PtrKEY_EVENT_RECORD* = POINTER TO KEY_EVENT_RECORD;*)
+		PtrKEY_EVENT_RECORD* = POINTER TO KEY_EVENT_RECORD;
 		MOUSE_EVENT_RECORD* = RECORD [untagged]
 			dwMousePosition*: COORD;
 			dwButtonState*: SET;
@@ -10122,7 +10122,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			bSetFocus*: BOOL;
 		END;
 		PtrFOCUS_EVENT_RECORD* = POINTER TO FOCUS_EVENT_RECORD;
-		(*INPUT_RECORD* = RECORD [untagged]
+		INPUT_RECORD* = RECORD [untagged]
 			EventType*: SHORTINT;
 			Event*: RECORD [union]
 				KeyEvent*: KEY_EVENT_RECORD;
@@ -10140,7 +10140,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			END;
 			Attributes*: SHORTINT;
 		END;
-		PtrCHAR_INFO* = POINTER TO CHAR_INFO;*)
+		PtrCHAR_INFO* = POINTER TO CHAR_INFO;
 		CONSOLE_SCREEN_BUFFER_INFO* = RECORD [untagged]
 			dwSize*: COORD;
 			dwCursorPosition*: COORD;
@@ -10399,7 +10399,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		END;
 		PtrMONCONVSTRUCT* = POINTER TO MONCONVSTRUCT;
 		HDROP* = HANDLE;
-		(*DRAGINFOA* = RECORD [noalign]
+		DRAGINFOA* = RECORD [untagged] (*[noalign]*)
 			uSize*: INTEGER;
 			pt*: POINT;
 			fNC*: BOOL;
@@ -10407,7 +10407,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			grfKeyState*: SET;
 		END;
 		PtrDRAGINFOA* = POINTER TO DRAGINFOA;
-		DRAGINFOW* = RECORD [noalign]
+		DRAGINFOW* = RECORD [untagged] (*[noalign]*)
 			uSize*: INTEGER;
 			pt*: POINT;
 			fNC*: BOOL;
@@ -10417,7 +10417,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrDRAGINFOW* = POINTER TO DRAGINFOW;
 		DRAGINFO* = DRAGINFOA;
 		PtrDRAGINFO* = PtrDRAGINFOA;
-		APPBARDATA* = RECORD [noalign]
+		APPBARDATA* = RECORD [untagged] (*[noalign]*)
 			cbSize*: INTEGER;
 			hWnd*: HWND;
 			uCallbackMessage*: INTEGER;
@@ -10428,7 +10428,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrAPPBARDATA* = POINTER TO APPBARDATA;
 		FILEOP_FLAGS* = SHORTINT;
 		PRINTEROP_FLAGS* = SHORTINT;
-		SHFILEOPSTRUCTA* = RECORD [noalign]
+		SHFILEOPSTRUCTA* = RECORD [untagged] (*[noalign]*)
 			hwnd*: HWND;
 			wFunc*: INTEGER;
 			pFrom*: PtrSTR;
@@ -10439,7 +10439,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			lpszProgressTitle*: PtrSTR;
 		END;
 		PtrSHFILEOPSTRUCTA* = POINTER TO SHFILEOPSTRUCTA;
-		SHFILEOPSTRUCTW* = RECORD [noalign]
+		SHFILEOPSTRUCTW* = RECORD [untagged] (*[noalign]*)
 			hwnd*: HWND;
 			wFunc*: INTEGER;
 			pFrom*: PtrWSTR;
@@ -10452,14 +10452,14 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrSHFILEOPSTRUCTW* = POINTER TO SHFILEOPSTRUCTW;
 		SHFILEOPSTRUCT* = SHFILEOPSTRUCTA;
 		PtrSHFILEOPSTRUCT* = PtrSHFILEOPSTRUCTA;
-		SHNAMEMAPPINGA* = RECORD [noalign]
+		SHNAMEMAPPINGA* = RECORD [untagged] (*[noalign]*)
 			pszOldPath*: PtrSTR;
 			pszNewPath*: PtrSTR;
 			cchOldPath*: INTEGER;
 			cchNewPath*: INTEGER;
 		END;
 		PtrSHNAMEMAPPINGA* = POINTER TO SHNAMEMAPPINGA;
-		SHNAMEMAPPINGW* = RECORD [noalign]
+		SHNAMEMAPPINGW* = RECORD [untagged] (*[noalign]*)
 			pszOldPath*: PtrWSTR;
 			pszNewPath*: PtrWSTR;
 			cchOldPath*: INTEGER;
@@ -10468,7 +10468,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrSHNAMEMAPPINGW* = POINTER TO SHNAMEMAPPINGW;
 		SHNAMEMAPPING* = SHNAMEMAPPINGA;
 		PtrSHNAMEMAPPING* = PtrSHNAMEMAPPINGA;
-		SHELLEXECUTEINFOA* = RECORD [noalign]
+		SHELLEXECUTEINFOA* = RECORD [untagged] (*[noalign]*)
 			cbSize*: INTEGER;
 			fMask*: SET;
 			hwnd*: HWND;
@@ -10486,7 +10486,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			hProcess*: HANDLE;
 		END;
 		PtrSHELLEXECUTEINFOA* = POINTER TO SHELLEXECUTEINFOA;
-		SHELLEXECUTEINFOW* = RECORD [noalign]
+		SHELLEXECUTEINFOW* = RECORD [untagged] (*[noalign]*)
 			cbSize*: INTEGER;
 			fMask*: SET;
 			hwnd*: HWND;
@@ -10506,7 +10506,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrSHELLEXECUTEINFOW* = POINTER TO SHELLEXECUTEINFOW;
 		SHELLEXECUTEINFO* = SHELLEXECUTEINFOA;
 		PtrSHELLEXECUTEINFO* = PtrSHELLEXECUTEINFOA;
-		NOTIFYICONDATAA* = RECORD [noalign]
+		NOTIFYICONDATAA* = RECORD [untagged] (*[noalign]*)
 			cbSize*: INTEGER;
 			hWnd*: HWND;
 			uID*: INTEGER;
@@ -10516,7 +10516,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			szTip*: ARRAY [untagged] 64 OF SHORTCHAR;
 		END;
 		PtrNOTIFYICONDATAA* = POINTER TO NOTIFYICONDATAA;
-		NOTIFYICONDATAW* = RECORD [noalign]
+		NOTIFYICONDATAW* = RECORD [untagged] (*[noalign]*)
 			cbSize*: INTEGER;
 			hWnd*: HWND;
 			uID*: INTEGER;
@@ -10528,7 +10528,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrNOTIFYICONDATAW* = POINTER TO NOTIFYICONDATAW;
 		NOTIFYICONDATA* = NOTIFYICONDATAA;
 		PtrNOTIFYICONDATA* = PtrNOTIFYICONDATAA;
-		SHFILEINFOA* = RECORD [noalign]
+		SHFILEINFOA* = RECORD [untagged] (*[noalign]*)
 			hIcon*: HICON;
 			iIcon*: INTEGER;
 			dwAttributes*: SET;
@@ -10536,7 +10536,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			szTypeName*: ARRAY [untagged] 80 OF SHORTCHAR;
 		END;
 		PtrSHFILEINFOA* = POINTER TO SHFILEINFOA;
-		SHFILEINFOW* = RECORD [noalign]
+		SHFILEINFOW* = RECORD [untagged] (*[noalign]*)
 			hIcon*: HICON;
 			iIcon*: INTEGER;
 			dwAttributes*: SET;
@@ -10549,8 +10549,8 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PtrPROPSHEETPAGEA* = POINTER TO PROPSHEETPAGEA;
 		FNPSPCALLBACKA* = PROCEDURE [stdcall] (hwnd: HWND; uMsg: INTEGER; ppsp: PtrPROPSHEETPAGEA): INTEGER;
 		PtrPROPSHEETPAGEW* = POINTER TO PROPSHEETPAGEW;
-		FNPSPCALLBACKW* = PROCEDURE [stdcall] (hwnd: HWND; uMsg: INTEGER; ppsp: PtrPROPSHEETPAGEW): INTEGER;*)
-		(*PROPSHEETPAGEA* = RECORD [untagged]
+		FNPSPCALLBACKW* = PROCEDURE [stdcall] (hwnd: HWND; uMsg: INTEGER; ppsp: PtrPROPSHEETPAGEW): INTEGER;
+		PROPSHEETPAGEA* = RECORD [untagged]
 			dwSize*: INTEGER;
 			dwFlags*: SET;
 			hInstance*: HINSTANCE;
@@ -10638,7 +10638,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 		PROPSHEETHEADER* = PROPSHEETHEADERA; (*m*)
 		PtrPROPSHEETHEADER* = PtrPROPSHEETHEADERA;
 		FNADDPROPSHEETPAGE* = PROCEDURE [stdcall] (p0: Ptr_PSP; p1: LPARAM): BOOL;
-		FNADDPROPSHEETPAGES* = PROCEDURE [stdcall] (p0: PtrVoid; p1: FNADDPROPSHEETPAGE; p2: LPARAM): BOOL;*)
+		FNADDPROPSHEETPAGES* = PROCEDURE [stdcall] (p0: PtrVoid; p1: FNADDPROPSHEETPAGE; p2: LPARAM): BOOL;
 		PSHNOTIFY* = RECORD [untagged]
 			hdr*: NMHDR;
 			lParam*: LPARAM;
@@ -11058,7 +11058,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			pTypes*: PtrPRINTER_NOTIFY_OPTIONS_TYPE;
 		END;
 		PtrPRINTER_NOTIFY_OPTIONS* = POINTER TO PRINTER_NOTIFY_OPTIONS;
-		(*PRINTER_NOTIFY_INFO_DATA* = RECORD [untagged]
+		PRINTER_NOTIFY_INFO_DATA* = RECORD [untagged]
 			Type*: SHORTINT;
 			Field*: SHORTINT;
 			Reserved*: INTEGER;
@@ -11078,7 +11078,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			Count*: INTEGER;
 			aData*: ARRAY [untagged] 1 OF PRINTER_NOTIFY_INFO_DATA;
 		END;
-		PtrPRINTER_NOTIFY_INFO* = POINTER TO PRINTER_NOTIFY_INFO;*)
+		PtrPRINTER_NOTIFY_INFO* = POINTER TO PRINTER_NOTIFY_INFO;
 		PROVIDOR_INFO_1A* = RECORD [untagged]
 			pName*: PtrSTR;
 			pEnvironment*: PtrSTR;
@@ -11239,7 +11239,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 			wParamL*: SHORTINT;
 			wParamH*: SHORTINT;
 		END;
-		(*PtrINPUT* = POINTER TO INPUT;
+		PtrINPUT* = POINTER TO INPUT;
 		INPUT* = RECORD [untagged]
 			type*: INTEGER; (* INPUT_XXX *)
 			u*: RECORD [union]
@@ -11247,7 +11247,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 				ki*: KEYBDINPUT;
 				hi*: HARDWAREINPUT;
 			END;
-		END;*)
+		END;
 
 	PROCEDURE [stdcall] InterlockedIncrement* (VAR [nil] lpAddend: INTEGER): INTEGER;
 	(*END InterlockedIncrement;*)
@@ -11417,7 +11417,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] HeapUnlock* (hHeap: HANDLE): BOOL;
 	(*END HeapUnlock;*)
 
-	(*PROCEDURE [stdcall] HeapWalk* (hHeap: HANDLE; VAR [nil] lpEntry: PROCESS_HEAP_ENTRY): BOOL;*)
+	PROCEDURE [stdcall] HeapWalk* (hHeap: HANDLE; VAR [nil] lpEntry: PROCESS_HEAP_ENTRY): BOOL;
 	(*END HeapWalk;*)
 
 	PROCEDURE [stdcall] GetBinaryTypeA* (lpApplicationName: PtrSTR; VAR [nil] lpBinaryType: INTEGER): BOOL;
@@ -11562,7 +11562,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] GetExitCodeThread* (hThread: HANDLE; VAR [nil] lpExitCode: INTEGER): BOOL;
 	(*END GetExitCodeThread;*)
 
-	(*PROCEDURE [stdcall] GetThreadSelectorEntry* (hThread: HANDLE; dwSelector: INTEGER; VAR [nil] lpSelectorEntry: LDT_ENTRY): BOOL;*)
+	PROCEDURE [stdcall] GetThreadSelectorEntry* (hThread: HANDLE; dwSelector: INTEGER; VAR [nil] lpSelectorEntry: LDT_ENTRY): BOOL;
 	(*END GetThreadSelectorEntry;*)
 
 	PROCEDURE [stdcall] GetLastError* (): INTEGER;
@@ -11613,7 +11613,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] DebugBreakProcess* (hProcess: HANDLE): BOOL;
 	(*END DebugBreakProcess;*)
 
-	(*PROCEDURE [stdcall] WaitForDebugEvent* (VAR [nil] lpDebugEvent: DEBUG_EVENT; dwMilliseconds: INTEGER): BOOL;*)
+	PROCEDURE [stdcall] WaitForDebugEvent* (VAR [nil] lpDebugEvent: DEBUG_EVENT; dwMilliseconds: INTEGER): BOOL;
 	(*END WaitForDebugEvent;*)
 
 	PROCEDURE [stdcall] ContinueDebugEvent* (dwProcessId: INTEGER; dwThreadId: INTEGER; dwContinueStatus: SET): BOOL;
@@ -11703,7 +11703,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] UnlockFileEx* (hFile: HANDLE; dwReserved: INTEGER; nNumberOfBytesToUnlockLow: INTEGER; nNumberOfBytesToUnlockHigh: INTEGER; VAR [nil] lpOverlapped: OVERLAPPED): BOOL;
 	(*END UnlockFileEx;*)
 
-	(*PROCEDURE [stdcall] GetFileInformationByHandle* (hFile: HANDLE; VAR [nil] lpFileInformation: BY_HANDLE_FILE_INFORMATION): BOOL;*)
+	PROCEDURE [stdcall] GetFileInformationByHandle* (hFile: HANDLE; VAR [nil] lpFileInformation: BY_HANDLE_FILE_INFORMATION): BOOL;
 	(*END GetFileInformationByHandle;*)
 
 	PROCEDURE [stdcall] GetFileType* (hFile: HANDLE): INTEGER;
@@ -11871,7 +11871,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] SetLocalTime* (VAR [nil] lpSystemTime: SYSTEMTIME): BOOL;
 	(*END SetLocalTime;*)
 
-	(*PROCEDURE [stdcall] GetSystemInfo* (VAR [nil] lpSystemInfo: SYSTEM_INFO);*)
+	PROCEDURE [stdcall] GetSystemInfo* (VAR [nil] lpSystemInfo: SYSTEM_INFO);
 	(*END GetSystemInfo;*)
 
 	PROCEDURE [stdcall] SystemTimeToTzSpecificLocalTime* (VAR [nil] lpTimeZoneInformation: TIME_ZONE_INFORMATION; VAR [nil] lpUniversalTime: SYSTEMTIME; VAR [nil] lpLocalTime: SYSTEMTIME): BOOL;
@@ -12735,7 +12735,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] FindFirstFileEx* ["FindFirstFileExA"] (lpFileName: PtrSTR; fInfoLevelId: FINDEX_INFO_LEVELS; lpFindFileData: PtrVoid; fSearchOp: FINDEX_SEARCH_OPS; lpSearchFilter: PtrVoid; dwAdditionalFlags: INTEGER): HANDLE;
 	(*END FindFirstFileEx;*)
 
-	(*PROCEDURE [stdcall] FindFirstFileA* (lpFileName: PtrSTR; VAR [nil] lpFindFileData: WIN32_FIND_DATAA): HANDLE;
+	PROCEDURE [stdcall] FindFirstFileA* (lpFileName: PtrSTR; VAR [nil] lpFindFileData: WIN32_FIND_DATAA): HANDLE;
 	(*END FindFirstFileA;*)
 
 	PROCEDURE [stdcall] FindFirstFileW* (lpFileName: PtrWSTR; VAR [nil] lpFindFileData: WIN32_FIND_DATAW): HANDLE;
@@ -12750,7 +12750,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] FindNextFileW* (hFindFile: HANDLE; VAR [nil] lpFindFileData: WIN32_FIND_DATAW): BOOL;
 	(*END FindNextFileW;*)
 
-	PROCEDURE [stdcall] FindNextFile* ["FindNextFileA"] (hFindFile: HANDLE; VAR [nil] lpFindFileData: WIN32_FIND_DATAA): BOOL;*)
+	PROCEDURE [stdcall] FindNextFile* ["FindNextFileA"] (hFindFile: HANDLE; VAR [nil] lpFindFileData: WIN32_FIND_DATAA): BOOL;
 	(*END FindNextFile;*)
 
 	PROCEDURE [stdcall] SearchPathA* (lpPath: PtrSTR; lpFileName: PtrSTR; lpExtension: PtrSTR; nBufferLength: INTEGER; lpBuffer: PtrSTR; VAR [nil] lpFilePart: PtrSTR): INTEGER;
@@ -15006,13 +15006,13 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] CreateDialogParam* ["CreateDialogParamA"] (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;
 	(*END CreateDialogParam;*)
 
-	(*PROCEDURE [stdcall] CreateDialogIndirectParamA* (hInstance: HINSTANCE; VAR [nil] lpTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;
+	PROCEDURE [stdcall] CreateDialogIndirectParamA* (hInstance: HINSTANCE; VAR [nil] lpTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;
 	(*END CreateDialogIndirectParamA;*)
 
 	PROCEDURE [stdcall] CreateDialogIndirectParamW* (hInstance: HINSTANCE; VAR [nil] lpTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;
 	(*END CreateDialogIndirectParamW;*)
 
-	PROCEDURE [stdcall] CreateDialogIndirectParam* ["CreateDialogIndirectParamA"] (hInstance: HINSTANCE; VAR [nil] lpTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;*)
+	PROCEDURE [stdcall] CreateDialogIndirectParam* ["CreateDialogIndirectParamA"] (hInstance: HINSTANCE; VAR [nil] lpTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;
 	(*END CreateDialogIndirectParam;*)
 
 	PROCEDURE [stdcall] DialogBoxParamA* (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
@@ -15024,13 +15024,13 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] DialogBoxParam* ["DialogBoxParamA"] (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxParam;*)
 
-	(*PROCEDURE [stdcall] DialogBoxIndirectParamA* (hInstance: HINSTANCE; VAR [nil] hDialogTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
+	PROCEDURE [stdcall] DialogBoxIndirectParamA* (hInstance: HINSTANCE; VAR [nil] hDialogTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxIndirectParamA;*)
 
 	PROCEDURE [stdcall] DialogBoxIndirectParamW* (hInstance: HINSTANCE; VAR [nil] hDialogTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxIndirectParamW;*)
 
-	PROCEDURE [stdcall] DialogBoxIndirectParam* ["DialogBoxIndirectParamA"] (hInstance: HINSTANCE; VAR [nil] hDialogTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;*)
+	PROCEDURE [stdcall] DialogBoxIndirectParam* ["DialogBoxIndirectParamA"] (hInstance: HINSTANCE; VAR [nil] hDialogTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxIndirectParam;*)
 
 	PROCEDURE [stdcall] EndDialog* (hDlg: HWND; nResult: INTEGER): BOOL;
@@ -16620,7 +16620,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] EnumSystemCodePages* ["EnumSystemCodePagesA"] (lpCodePageEnumProc: CODEPAGE_ENUMPROCA; dwFlags: SET): BOOL;
 	(*END EnumSystemCodePages;*)
 
-	(*PROCEDURE [stdcall] PeekConsoleInputA* (hConsoleInput: HANDLE; VAR [nil] lpBuffer: INPUT_RECORD; nLength: INTEGER; VAR [nil] lpNumberOfEventsRead: INTEGER): BOOL;
+	PROCEDURE [stdcall] PeekConsoleInputA* (hConsoleInput: HANDLE; VAR [nil] lpBuffer: INPUT_RECORD; nLength: INTEGER; VAR [nil] lpNumberOfEventsRead: INTEGER): BOOL;
 	(*END PeekConsoleInputA;*)
 
 	PROCEDURE [stdcall] PeekConsoleInputW* (hConsoleInput: HANDLE; VAR [nil] lpBuffer: INPUT_RECORD; nLength: INTEGER; VAR [nil] lpNumberOfEventsRead: INTEGER): BOOL;
@@ -16662,7 +16662,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] WriteConsoleOutputW* (hConsoleOutput: HANDLE; VAR [nil] lpBuffer: CHAR_INFO; dwBufferSize: COORD; dwBufferCoord: COORD; VAR [nil] lpWriteRegion: SMALL_RECT): BOOL;
 	(*END WriteConsoleOutputW;*)
 
-	PROCEDURE [stdcall] WriteConsoleOutput* ["WriteConsoleOutputA"] (hConsoleOutput: HANDLE; VAR [nil] lpBuffer: CHAR_INFO; dwBufferSize: COORD; dwBufferCoord: COORD; VAR [nil] lpWriteRegion: SMALL_RECT): BOOL;*)
+	PROCEDURE [stdcall] WriteConsoleOutput* ["WriteConsoleOutputA"] (hConsoleOutput: HANDLE; VAR [nil] lpBuffer: CHAR_INFO; dwBufferSize: COORD; dwBufferCoord: COORD; VAR [nil] lpWriteRegion: SMALL_RECT): BOOL;
 	(*END WriteConsoleOutput;*)
 
 	PROCEDURE [stdcall] ReadConsoleOutputCharacterA* (hConsoleOutput: HANDLE; lpCharacter: PtrSTR; nLength: INTEGER; dwReadCoord: COORD; VAR [nil] lpNumberOfCharsRead: INTEGER): BOOL;
@@ -16737,13 +16737,13 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] SetConsoleCursorInfo* (hConsoleOutput: HANDLE; VAR [nil] lpConsoleCursorInfo: CONSOLE_CURSOR_INFO): BOOL;
 	(*END SetConsoleCursorInfo;*)
 
-	(*PROCEDURE [stdcall] ScrollConsoleScreenBufferA* (hConsoleOutput: HANDLE; VAR [nil] lpScrollRectangle: SMALL_RECT; VAR [nil] lpClipRectangle: SMALL_RECT; dwDestinationOrigin: COORD; VAR [nil] lpFill: CHAR_INFO): BOOL;
+	PROCEDURE [stdcall] ScrollConsoleScreenBufferA* (hConsoleOutput: HANDLE; VAR [nil] lpScrollRectangle: SMALL_RECT; VAR [nil] lpClipRectangle: SMALL_RECT; dwDestinationOrigin: COORD; VAR [nil] lpFill: CHAR_INFO): BOOL;
 	(*END ScrollConsoleScreenBufferA;*)
 
 	PROCEDURE [stdcall] ScrollConsoleScreenBufferW* (hConsoleOutput: HANDLE; VAR [nil] lpScrollRectangle: SMALL_RECT; VAR [nil] lpClipRectangle: SMALL_RECT; dwDestinationOrigin: COORD; VAR [nil] lpFill: CHAR_INFO): BOOL;
 	(*END ScrollConsoleScreenBufferW;*)
 
-	PROCEDURE [stdcall] ScrollConsoleScreenBuffer* ["ScrollConsoleScreenBufferA"] (hConsoleOutput: HANDLE; VAR [nil] lpScrollRectangle: SMALL_RECT; VAR [nil] lpClipRectangle: SMALL_RECT; dwDestinationOrigin: COORD; VAR [nil] lpFill: CHAR_INFO): BOOL;*)
+	PROCEDURE [stdcall] ScrollConsoleScreenBuffer* ["ScrollConsoleScreenBufferA"] (hConsoleOutput: HANDLE; VAR [nil] lpScrollRectangle: SMALL_RECT; VAR [nil] lpClipRectangle: SMALL_RECT; dwDestinationOrigin: COORD; VAR [nil] lpFill: CHAR_INFO): BOOL;
 	(*END ScrollConsoleScreenBuffer;*)
 
 	PROCEDURE [stdcall] SetConsoleWindowInfo* (hConsoleOutput: HANDLE; bAbsolute: BOOL; VAR [nil] lpConsoleWindow: SMALL_RECT): BOOL;
@@ -17211,7 +17211,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] DdeCmpStringHandles* (hsz1: HSZ; hsz2: HSZ): INTEGER;
 	(*END DdeCmpStringHandles;*)
 		
-	(*PROCEDURE [stdcall] SendInput* (nInputs: INTEGER; pInputs: POINTER TO ARRAY [untagged] OF INPUT; cbSize: INTEGER): INTEGER;*)
+	PROCEDURE [stdcall] SendInput* (nInputs: INTEGER; pInputs: POINTER TO ARRAY [untagged] OF INPUT; cbSize: INTEGER): INTEGER;
 	(*END SendInput;*)
 
 	PROCEDURE [stdcall] LZStart* (): INTEGER;
@@ -17325,7 +17325,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] ExtractIcon* ["ExtractIconA"] (hInst: HINSTANCE; lpszExeFileName: PtrSTR; nIconIndex: INTEGER): HICON;
 	(*END ExtractIcon;*)
 
-	(*PROCEDURE [stdcall] SHAppBarMessage* (dwMessage: INTEGER; VAR [nil] pData: APPBARDATA): INTEGER;*)
+	PROCEDURE [stdcall] SHAppBarMessage* (dwMessage: INTEGER; VAR [nil] pData: APPBARDATA): INTEGER;
 	(*END SHAppBarMessage;*)
 
 	PROCEDURE [stdcall] DoEnvironmentSubstA* (szString: PtrSTR; cbString: INTEGER): INTEGER;
@@ -17346,19 +17346,19 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] ExtractIconEx* ["ExtractIconExA"] (lpszFile: PtrSTR; nIconIndex: INTEGER; VAR [nil] phiconLarge: HICON; VAR [nil] phiconSmall: HICON; nIcons: INTEGER): INTEGER;
 	(*END ExtractIconEx;*)
 
-	(*PROCEDURE [stdcall] SHFileOperationA* (VAR [nil] lpFileOp: SHFILEOPSTRUCTA): INTEGER;
+	PROCEDURE [stdcall] SHFileOperationA* (VAR [nil] lpFileOp: SHFILEOPSTRUCTA): INTEGER;
 	(*END SHFileOperationA;*)
 
 	PROCEDURE [stdcall] SHFileOperationW* (VAR [nil] lpFileOp: SHFILEOPSTRUCTW): INTEGER;
 	(*END SHFileOperationW;*)
 
-	PROCEDURE [stdcall] SHFileOperation* ["SHFileOperationA"] (VAR [nil] lpFileOp: SHFILEOPSTRUCTA): INTEGER;*)
+	PROCEDURE [stdcall] SHFileOperation* ["SHFileOperationA"] (VAR [nil] lpFileOp: SHFILEOPSTRUCTA): INTEGER;
 	(*END SHFileOperation;*)
 
 	PROCEDURE [stdcall] SHFreeNameMappings* (hNameMappings: HANDLE);
 	(*END SHFreeNameMappings;*)
 
-	(*PROCEDURE [stdcall] ShellExecuteExA* (VAR [nil] lpExecInfo: SHELLEXECUTEINFOA): BOOL;
+	PROCEDURE [stdcall] ShellExecuteExA* (VAR [nil] lpExecInfo: SHELLEXECUTEINFOA): BOOL;
 	(*END ShellExecuteExA;*)
 
 	PROCEDURE [stdcall] ShellExecuteExW* (VAR [nil] lpExecInfo: SHELLEXECUTEINFOW): BOOL;
@@ -17382,7 +17382,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] SHGetFileInfoW* (pszPath: PtrWSTR; dwFileAttributes: SET; VAR [nil] psfi: SHFILEINFOW; cbFileInfo: INTEGER; uFlags: SET): INTEGER;
 	(*END SHGetFileInfoW;*)
 
-	PROCEDURE [stdcall] SHGetFileInfo* ["SHGetFileInfoA"] (pszPath: PtrSTR; dwFileAttributes: SET; VAR [nil] psfi: SHFILEINFOA; cbFileInfo: INTEGER; uFlags: SET): INTEGER;*)
+	PROCEDURE [stdcall] SHGetFileInfo* ["SHGetFileInfoA"] (pszPath: PtrSTR; dwFileAttributes: SET; VAR [nil] psfi: SHFILEINFOA; cbFileInfo: INTEGER; uFlags: SET): INTEGER;
 	(*END SHGetFileInfo;*)
 
 	PROCEDURE [stdcall] SHGetNewLinkInfoA* (pszLinkTo: PtrSTR; pszDir: PtrSTR; pszName: PtrSTR; VAR [nil] pfMustCopy: BOOL; uFlags: SET): BOOL;
@@ -17394,7 +17394,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] SHGetNewLinkInfo* ["SHGetNewLinkInfoA"] (pszLinkTo: PtrSTR; pszDir: PtrSTR; pszName: PtrSTR; VAR [nil] pfMustCopy: BOOL; uFlags: SET): BOOL;
 	(*END SHGetNewLinkInfo;*)
 
-	(*PROCEDURE [stdcall] CreatePropertySheetPageA* (VAR [nil] p0: PROPSHEETPAGEA): Ptr_PSP;
+	PROCEDURE [stdcall] CreatePropertySheetPageA* (VAR [nil] p0: PROPSHEETPAGEA): Ptr_PSP;
 	(*END CreatePropertySheetPageA;*)
 
 	PROCEDURE [stdcall] CreatePropertySheetPageW* (VAR [nil] p0: PROPSHEETPAGEW): Ptr_PSP;
@@ -17412,7 +17412,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] CreatePropertySheetPage* ["CreatePropertySheetPageA"] (VAR [nil] p0: PROPSHEETPAGEA): Ptr_PSP;
 	(*END CreatePropertySheetPage;*)
 
-	PROCEDURE [stdcall] PropertySheet* ["PropertySheetA"] (VAR [nil] p0: PROPSHEETHEADERA): INTEGER;*)
+	PROCEDURE [stdcall] PropertySheet* ["PropertySheetA"] (VAR [nil] p0: PROPSHEETHEADERA): INTEGER;
 	(*END PropertySheet;*)
 
 	PROCEDURE [stdcall] EnumPrintersA* (Flags: SET; Name: PtrSTR; Level: INTEGER; VAR [nil] pPrinterEnum: SHORTCHAR; cbBuf: INTEGER; VAR [nil] pcbNeeded: INTEGER; VAR [nil] pcReturned: INTEGER): BOOL;
@@ -17676,7 +17676,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] FindNextPrinterChangeNotification* (hChange: HANDLE; VAR [nil] pdwChange: INTEGER; pvReserved: PtrVoid; ppPrinterNotifyInfo: POINTER TO (*?*) ARRAY [untagged] OF PtrVoid): BOOL;
 	(*END FindNextPrinterChangeNotification;*)
 
-	(*PROCEDURE [stdcall] FreePrinterNotifyInfo* (VAR [nil] pPrinterNotifyInfo: PRINTER_NOTIFY_INFO): BOOL;*)
+	PROCEDURE [stdcall] FreePrinterNotifyInfo* (VAR [nil] pPrinterNotifyInfo: PRINTER_NOTIFY_INFO): BOOL;
 	(*END FreePrinterNotifyInfo;*)
 
 	PROCEDURE [stdcall] FindClosePrinterChangeNotification* (hChange: HANDLE): BOOL;
@@ -17990,6 +17990,8 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 
 	PROCEDURE [stdcall] RtlUnwind* (targetFrame: PtrVoid; targetIp: INTEGER; excpRec: PtrEXCEPTION_RECORD; retVal: INTEGER);
 	(*END RtlUnwind;*)
+
+	PROCEDURE [stdcall] PathIsDirectoryW* (path: PtrWSTR): BOOL;
 
 	PROCEDURE- Instance* (): HINSTANCE "__hInstance";
 	PROCEDURE- PrevInstance* (): HINSTANCE "__hPrevInstance";
