@@ -86,7 +86,7 @@ TYPE
 		value- : BaseSet;
 	END;
 
-	ListElement* = POINTER TO  RECORD
+	ListElement* = POINTER TO RECORD
 		value- : Object;
 		next- : ListElement;
 	END;

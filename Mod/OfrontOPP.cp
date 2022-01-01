@@ -498,7 +498,6 @@
 				SetType(typ, NIL, ftyp, name);
 				IF (ftyp.comp = Record) (* & (ftyp # OPT.anytyp) *) THEN
 					ftyp.pvused := TRUE; typ^.extlev := SHORT(SHORT(ftyp.extlev + 1));
-					IF ODD(ftyp.sysflag) & ~ODD(typ.sysflag) THEN err(198) END;
 					IF (ftyp.attribute = 0) OR (ftyp.attribute = limAttr) & (ftyp.mno # 0) THEN err(181)
 					ELSIF (typ.attribute = absAttr) & (ftyp.attribute # absAttr) THEN err(191)
 					ELSIF (ftyp.attribute = limAttr) & (typ.attribute # limAttr) THEN err(197)
@@ -536,7 +535,6 @@
 					END
 				END;
 				CheckSym(colon); Type(ftyp, name);
-				IF (ftyp.form = Comp) & (ftyp.comp = Record) & ~ODD(ftyp.sysflag) & ODD(typ.sysflag) THEN err(198) END;
 				CheckAlloc(ftyp, FALSE, OPM.errpos);
 				WHILE first # NIL DO
 					SetType(typ, first, ftyp, name); first := first^.link
