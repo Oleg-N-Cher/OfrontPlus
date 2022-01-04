@@ -2140,9 +2140,9 @@ avoid unnecessary intermediate variables in OFront
 			END
 		ELSIF atyp.form IN {Char8, Char16, String8, String16} THEN
 			IF ~fvarpar & (ftyp.BaseTyp.form = Char16) & (atyp.form = String8) THEN Convert(ap, OPT.string16typ)
-			ELSE CheckString(ap, ftyp, 67)
+			ELSE CheckString(ap, ftyp, 66)
 			END
-		ELSE		
+		ELSE
 			WHILE (ftyp.comp = DynArr) & ((atyp.comp IN {Array, DynArr}) OR (atyp.form IN {String8, String16})) DO
 				ftyp := ftyp.BaseTyp; atyp := atyp.BaseTyp
 			END;
