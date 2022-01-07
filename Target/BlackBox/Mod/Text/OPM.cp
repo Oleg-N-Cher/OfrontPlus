@@ -89,7 +89,7 @@
 		maxErrors = 64;
 
 	VAR
-		LEHost-: BOOLEAN;	(* little or big endian host *)
+		LEHost: BOOLEAN;	(* little or big endian host *)
 		MinReal32-, MaxReal32-, InfReal-, MinReal64-, MaxReal64-: REAL;
 		SetSize-, IndexSize-, MaxSet-: SHORTINT; MaxIndex-: LONGINT;
 
@@ -247,6 +247,41 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	BEGIN
 		RETURN Math.IntPower(x, n)
 	END IntPower;
+
+	PROCEDURE ChkSum (VAR fp: INTEGER; val: INTEGER);	(* symbolfile checksum *)
+	BEGIN
+		(* same as FPrint, 8 bit only *)
+		fp := ORD(BITS(fp * 256) / BITS(crc32tab[ORD(BITS(fp DIV 1000000H) / BITS(val)) MOD 256]))
+	END ChkSum;
+
+	PROCEDURE LoWord (r: REAL): INTEGER;
+		VAR x: INTEGER;
+	BEGIN
+		x := SYSTEM.ADR(r);
+		IF ~LEHost THEN INC(x, 4) END;
+		SYSTEM.GET(x, x);
+		RETURN x
+	END LoWord;
+
+	PROCEDURE HiWord (r: REAL): INTEGER;
+		VAR x: INTEGER;
+	BEGIN
+		x := SYSTEM.ADR(r);
+		IF LEHost THEN INC(x, 4) END;
+		SYSTEM.GET(x, x);
+		RETURN x
+	END HiWord;
+
+	PROCEDURE Compound (lo, hi: INTEGER): REAL;
+		VAR r: REAL;
+	BEGIN
+		IF LEHost THEN
+			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
+		ELSE
+			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
+		END;
+		RETURN r
+	END Compound;
 
 	(* -------------------------  lookup with search path ------------------------- *)
 
@@ -814,7 +849,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		END
 	END InitCrcTab;
 
-	PROCEDURE FPrint*(VAR fp: INTEGER; val: INTEGER);
+	PROCEDURE FPrint* (VAR fp: INTEGER; val: INTEGER);
 		VAR c: INTEGER;
 	BEGIN
 		(* CRC32, high bit first, pre & post inverted *)
@@ -824,54 +859,18 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		fp := ORD(BITS(c * 256) / BITS(crc32tab[ORD(BITS(c DIV 1000000H) / BITS(val)) MOD 256]))
 	END FPrint;
 
-	PROCEDURE FPrintSet*(VAR fp: INTEGER; set: SET);
+	PROCEDURE FPrintSet* (VAR fp: INTEGER; set: SET);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, set))
 	END FPrintSet;
 
-	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: SHORTREAL);
+	PROCEDURE FPrintReal* (VAR fp: INTEGER; real: SHORTREAL);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, real))
 	END FPrintReal;
 
-	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: REAL);
-		VAR li: LONGINT;
-	BEGIN li := SYSTEM.VAL(LONGINT, lr);
-		FPrint(fp, SHORT(li)); FPrint(fp, SHORT(ASH(li, -32)))
+	PROCEDURE FPrintLReal* (VAR fp: INTEGER; lr: REAL);
+	BEGIN
+		FPrint(fp, LoWord(lr)); FPrint(fp, HiWord(lr))
 	END FPrintLReal;
-
-	PROCEDURE ChkSum (VAR fp: INTEGER; val: INTEGER);	(* symbolfile checksum *)
-	BEGIN
-		(* same as FPrint, 8 bit only *)
-		fp := ORD(BITS(fp * 256) / BITS(crc32tab[ORD(BITS(fp DIV 1000000H) / BITS(val)) MOD 256]))
-	END ChkSum;
-
-	PROCEDURE LoWord (r: REAL): INTEGER;
-		VAR x: INTEGER;
-	BEGIN
-		x := SYSTEM.ADR(r);
-		IF ~LEHost THEN INC(x, 4) END;
-		SYSTEM.GET(x, x);
-		RETURN x
-	END LoWord;
-
-	PROCEDURE HiWord (r: REAL): INTEGER;
-		VAR x: INTEGER;
-	BEGIN
-		x := SYSTEM.ADR(r);
-		IF LEHost THEN INC(x, 4) END;
-		SYSTEM.GET(x, x);
-		RETURN x
-	END HiWord;
-
-	PROCEDURE Compound (lo, hi: INTEGER): REAL;
-		VAR r: REAL;
-	BEGIN
-		IF LEHost THEN
-			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
-		ELSE
-			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
-		END;
-		RETURN r
-	END Compound;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
 
@@ -889,8 +888,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	END ReadInt32;
 
 	PROCEDURE SymRCh* (VAR ch: SHORTCHAR);
-	BEGIN
-		oldSF.ReadSChar(ch);
+	BEGIN oldSF.ReadSChar(ch);
 		ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
 	END SymRCh;
 

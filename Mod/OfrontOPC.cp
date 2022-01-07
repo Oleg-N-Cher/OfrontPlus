@@ -1279,7 +1279,7 @@
 	BEGIN
 		IF obj # NIL THEN
 			InitImports(obj^.left);
-			IF (obj^.mode = Mod) & (obj^.mnolev # 0) THEN
+			IF (obj^.mode = Mod) & (obj^.mnolev # 0) & ~ODD(OPT.GlbMod[-obj^.mnolev].sysflag) THEN
 				BegStat; OPM.WriteString("__IMPORT(");
 				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init");
 				OPM.Write(CloseParen); EndStat

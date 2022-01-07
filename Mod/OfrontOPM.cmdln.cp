@@ -100,6 +100,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		pc-, entno-: INTEGER;  (* entry number *)
 		modName-: ARRAY 32 OF SHORTCHAR;
 		objname*: ARRAY 64 OF SHORTCHAR;
+		checksum*: INTEGER;	(* symbol file checksum *)
 
 		opt*, glbopt: SET;
 		GlobalLang, Lang-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
@@ -172,6 +173,41 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END;
 		RETURN y
 	END IntPower;
+
+	PROCEDURE ChkSum (VAR fp: INTEGER; val: INTEGER);	(* symbolfile checksum *)
+	BEGIN
+		(* same as FPrint, 8 bit only *)
+		fp := ORD(BITS(fp * 256) / BITS(crc32tab[ORD(BITS(fp DIV 1000000H) / BITS(val)) MOD 256]))
+	END ChkSum;
+
+	PROCEDURE LoWord (r: REAL): INTEGER;
+		VAR x: INTEGER; adr: SYSTEM.ADRINT;
+	BEGIN
+		adr := SYSTEM.ADR(r);
+		IF ~LEHost THEN INC(adr, 4) END;
+		SYSTEM.GET(adr, x);
+		RETURN x
+	END LoWord;
+
+	PROCEDURE HiWord (r: REAL): INTEGER;
+		VAR x: INTEGER; adr: SYSTEM.ADRINT;
+	BEGIN
+		adr := SYSTEM.ADR(r);
+		IF LEHost THEN INC(adr, 4) END;
+		SYSTEM.GET(adr, x);
+		RETURN x
+	END HiWord;
+
+	PROCEDURE Compound (lo, hi: INTEGER): REAL;
+		VAR r: REAL;
+	BEGIN
+		IF LEHost THEN
+			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
+		ELSE
+			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
+		END;
+		RETURN r
+	END Compound;
 
 	(* utf8 strings *)
 
@@ -481,7 +517,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		END
 	END InitCrcTab;
 
-	PROCEDURE FPrint*(VAR fp: INTEGER; val: INTEGER);
+	PROCEDURE FPrint* (VAR fp: INTEGER; val: INTEGER);
 		VAR c: INTEGER;
 	BEGIN
 		(* CRC32, high bit first, pre & post inverted *)
@@ -491,42 +527,64 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		fp := ORD(BITS(c * 256) / BITS(crc32tab[ORD(BITS(c DIV 1000000H) / BITS(val)) MOD 256]))
 	END FPrint;
 
-	PROCEDURE FPrintSet*(VAR fp: INTEGER; set: SET);
+	PROCEDURE FPrintSet* (VAR fp: INTEGER; set: SET);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, set))
 	END FPrintSet;
 
-	PROCEDURE FPrintReal*(VAR fp: INTEGER; real: SHORTREAL);
+	PROCEDURE FPrintReal* (VAR fp: INTEGER; real: SHORTREAL);
 	BEGIN FPrint(fp, SYSTEM.VAL(INTEGER, real))
 	END FPrintReal;
 
-	PROCEDURE FPrintLReal*(VAR fp: INTEGER; lr: REAL);
-		VAR li: LONGINT;
-	BEGIN li := SYSTEM.VAL(LONGINT, lr);
-		FPrint(fp, SHORT(li)); FPrint(fp, SHORT(ASH(li, -32)))
+	PROCEDURE FPrintLReal* (VAR fp: INTEGER; lr: REAL);
+	BEGIN
+		FPrint(fp, LoWord(lr)); FPrint(fp, HiWord(lr))
 	END FPrintLReal;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
 
-	PROCEDURE SymRCh*(VAR ch: SHORTCHAR);
-	BEGIN Files.ReadChar(oldSF, ch)
+	PROCEDURE ReadInt32 (VAR i: INTEGER);
+		VAR b: BYTE; x: INTEGER;
+	BEGIN
+		Files.ReadByte(oldSF, b); x := b MOD 256;
+		ChkSum(checksum, b);
+		Files.ReadByte(oldSF, b); x := x + 100H * (b MOD 256);
+		ChkSum(checksum, b);
+		Files.ReadByte(oldSF, b); x := x + 10000H * (b MOD 256);
+		ChkSum(checksum, b);
+		Files.ReadByte(oldSF, b); i := x + 1000000H * b;
+		ChkSum(checksum, b)
+	END ReadInt32;
+
+	PROCEDURE SymRCh* (VAR ch: SHORTCHAR);
+	BEGIN Files.ReadChar(oldSF, ch);
+		ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
 	END SymRCh;
 
-	PROCEDURE SymRInt*(): LONGINT;
-		VAR k: LONGINT;
-	BEGIN Files.ReadNum(oldSF, k); RETURN k
+	PROCEDURE SymRInt* (): LONGINT;
+		VAR b: BYTE; s: INTEGER; n: LONGINT;
+	BEGIN s := 0; n := 0; Files.ReadByte(oldSF, b);
+		IF ~oldSF.eof THEN ChkSum(checksum, b) END;
+		WHILE b < 0 DO INC(n, ASH(b + 128, s)); INC(s, 7);
+			Files.ReadByte(oldSF, b); ChkSum(checksum, b)
+		END;
+		INC(n, ASH((b + 64) MOD 128 - 64, s));
+		RETURN n
 	END SymRInt;
 
-	PROCEDURE SymRSet*(VAR s: SET);
-		VAR k: LONGINT;
-	BEGIN Files.ReadNum(oldSF, k); s := SYSTEM.VAL(SET, SHORT(k))
+	PROCEDURE SymRSet* (VAR s: SET);
+	BEGIN
+		s := SYSTEM.VAL(SET, SHORT(SymRInt()))
 	END SymRSet;
 
-	PROCEDURE SymRReal*(VAR r: SHORTREAL);
-	BEGIN Files.ReadReal(oldSF, r)
+	PROCEDURE SymRReal* (VAR r: SHORTREAL);
+	BEGIN
+		ReadInt32(SYSTEM.VAL(INTEGER, r))
 	END SymRReal;
 
-	PROCEDURE SymRLReal*(VAR lr: REAL);
-	BEGIN Files.ReadLReal(oldSF, lr)
+	PROCEDURE SymRLReal* (VAR lr: REAL);
+		VAR h, l: INTEGER;
+	BEGIN
+		ReadInt32(l); ReadInt32(h); lr := Compound(l, h)
 	END SymRLReal;
 
 	PROCEDURE CloseOldSym*;
@@ -550,24 +608,47 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- Write Symbol File ------------------------- *)
 
-	PROCEDURE SymWCh*(ch: SHORTCHAR);
-	BEGIN Files.WriteChar(newSF, ch)
+	PROCEDURE WriteInt32 (i: INTEGER);
+	BEGIN
+		ChkSum(checksum, i);
+		Files.WriteByte(newSF, SHORT(SHORT(i MOD 256))); i := i DIV 256;
+		ChkSum(checksum, i);
+		Files.WriteByte(newSF, SHORT(SHORT(i MOD 256))); i := i DIV 256;
+		ChkSum(checksum, i);
+		Files.WriteByte(newSF, SHORT(SHORT(i MOD 256))); i := i DIV 256;
+		ChkSum(checksum, i);
+		Files.WriteByte(newSF, SHORT(SHORT(i MOD 256)))
+	END WriteInt32;
+
+	PROCEDURE SymWCh* (ch: SHORTCHAR);
+	BEGIN ChkSum(checksum, ORD(ch));
+		Files.WriteChar(newSF, ch)
 	END SymWCh;
 
-	PROCEDURE SymWInt*(i: LONGINT);
-	BEGIN Files.WriteNum(newSF, i)
+	PROCEDURE SymWInt* (x: LONGINT);
+	BEGIN
+		WHILE (x < - 64) OR (x > 63) DO
+			ChkSum(checksum, SHORT(x) MOD 128 - 128);
+			Files.WriteByte(newSF, SHORT(SHORT(SHORT(x) MOD 128 - 128)));
+			x := x DIV 128
+		END;
+		ChkSum(checksum, SHORT(x) MOD 128);
+		Files.WriteByte(newSF, SHORT(SHORT(SHORT(x) MOD 128)))
 	END SymWInt;
 
-	PROCEDURE SymWSet*(s: SET);
-	BEGIN Files.WriteNum(newSF, SYSTEM.VAL(INTEGER, s))
+	PROCEDURE SymWSet* (s: SET);
+	BEGIN
+		SymWInt(SYSTEM.VAL(INTEGER, s))
 	END SymWSet;
 
-	PROCEDURE SymWReal*(r: SHORTREAL);
-	BEGIN Files.WriteReal(newSF, r)
+	PROCEDURE SymWReal* (r: SHORTREAL);
+	BEGIN
+		WriteInt32(SYSTEM.VAL(INTEGER, r))
 	END SymWReal;
 
-	PROCEDURE SymWLReal*(lr: REAL);
-	BEGIN Files.WriteLReal(newSF, lr)
+	PROCEDURE SymWLReal* (lr: REAL);
+	BEGIN
+		WriteInt32(LoWord(lr)); WriteInt32(HiWord(lr))
 	END SymWLReal;
 
 	PROCEDURE RegisterNewSym*;
@@ -748,17 +829,6 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		*)
 		IF ~(ansi IN opt) THEN Write("L") END
 	END PromoteIntConstToLInt;
-
-	PROCEDURE Compound (lo, hi: INTEGER): REAL;
-		VAR r: REAL;
-	BEGIN
-		IF LEHost THEN
-			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
-		ELSE
-			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
-		END;
-		RETURN r
-	END Compound;
 
 	PROCEDURE InitHost;
 		VAR test: SHORTINT; lo: SHORTCHAR;

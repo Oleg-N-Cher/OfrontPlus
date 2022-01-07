@@ -127,7 +127,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		inserted = 0; same = 1; pbmodified = 2; pvmodified = 3; removed = 4; inconsistent = 5;
 
 		(* sysflags *)
-		inBit = 2; outBit = 4;
+		noInit = 1; inBit = 2; outBit = 4;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -580,25 +580,32 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END InName;
 
 	PROCEDURE InMod(VAR mno: BYTE);	(* mno is global *)
-		VAR head: Object; name: OPS.String; mn: INTEGER; i: BYTE;
+		VAR head: Object; name: OPS.String; mn: INTEGER; i, sysflag: BYTE;
 	BEGIN
 		mn := SHORT(OPM.SymRInt());
 		IF mn = 0 THEN mno := impCtxt.glbmno[0]
 		ELSE
+			IF mn = Ssys THEN
+				sysflag := SHORT(SHORT(SHORT(OPM.SymRInt())));
+				mn := SHORT(OPM.SymRInt())
+			ELSE
+				sysflag := 0
+			END;
 			IF mn = Smname THEN
 				InName(name);
-				IF (name^ = SelfName) & ~impCtxt.self THEN err(154) END ;
+				IF (name^ = SelfName) & ~impCtxt.self THEN err(154) END;
 				i := 0;
-				WHILE (i < nofGmod) & (name^ # GlbMod[i].name^) DO INC(i) END ;
+				WHILE (i < nofGmod) & (name^ # GlbMod[i].name^) DO INC(i) END;
 				IF i < nofGmod THEN mno := i	(*module already present*)
 				ELSE
 					head := NewObj(); head^.mode := Head; head^.name := name;
+					head^.sysflag := sysflag;
 					mno := nofGmod; head^.mnolev := SHORT(SHORT(-mno));
 					IF nofGmod < maxImps THEN
 						GlbMod[mno] := head; INC(nofGmod)
 					ELSE err(227)
 					END
-				END ;
+				END;
 				impCtxt.glbmno[impCtxt.nofm] := mno; INC(impCtxt.nofm)
 			ELSE
 				mno := impCtxt.glbmno[-mn]
@@ -917,6 +924,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			impCtxt.self := aliasName = "@self"; impCtxt.reffp := 0;
 			OPM.OldSym(name, done);
 			IF done THEN
+				OPM.checksum := 0;	(* start checksum here to avoid problems with proc id fixup *)
 				InMod(mno);
 				impCtxt.nextTag := SHORT(OPM.SymRInt());
 				WHILE ~OPM.eofSF() DO
@@ -1154,19 +1162,24 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	END OutObj;
 
 	PROCEDURE Export*(VAR ext, new: BOOLEAN);
-			VAR i: SHORTINT; nofmod: BYTE; done: BOOLEAN;
+			VAR i: SHORTINT; nofmod: BYTE; done: BOOLEAN; oldCSum: INTEGER;
 	BEGIN
 		symExtended := FALSE; symNew := FALSE; nofmod := nofGmod;
 		Import("@self", SelfName, done); nofGmod := nofmod;
+		oldCSum := OPM.checksum;
 		IF OPM.noerr THEN	(* ~OPM.noerr => ~done *)
 			OPM.NewSym(SelfName);
 			IF OPM.noerr THEN
+				OPM.checksum := 0;	(* start checksum here to avoid problems with proc id fixup *)
+				IF {OPM.foreign, OPM.noinit} * OPM.opt # {} THEN
+					OPM.SymWInt(Ssys); OPM.SymWInt(noInit)
+				END;
 				OPM.SymWInt(Smname); OutName(SelfName);
 				expCtxt.reffp := 0; expCtxt.ref := FirstRef;
 				expCtxt.nofm := 1; expCtxt.locmno[0] := 0;
 				i := 1; WHILE i < maxImps DO expCtxt.locmno[i] := -1; INC(i) END ;
 				OutObj(topScope^.right);
-				ext := sfpresent & symExtended; new := ~sfpresent OR symNew;
+				ext := sfpresent & symExtended; new := ~sfpresent OR symNew OR (OPM.checksum # oldCSum);
 				IF OPM.noerr & sfpresent & (impCtxt.reffp # expCtxt.reffp) THEN
 					new := TRUE;
 					IF ~extsf THEN err(155) END
