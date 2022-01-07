@@ -89,7 +89,7 @@
 		maxErrors = 64;
 
 	VAR
-		LEHost: BOOLEAN;	(* little or big endian host *)
+		LEHost-: BOOLEAN;	(* little or big endian host *)
 		MinReal32-, MaxReal32-, InfReal-, MinReal64-, MaxReal64-: REAL;
 		SetSize-, IndexSize-, MaxSet-: SHORTINT; MaxIndex-: LONGINT;
 
@@ -102,6 +102,7 @@
 		pc-, entno-: INTEGER;  (* entry number *)
 		modName-: ARRAY 32 OF SHORTCHAR;
 		objname*: ARRAY 64 OF SHORTCHAR;
+		checksum*: INTEGER;	(* symbol file checksum *)
 
 		opt*, glbopt: SET;
 		GlobalLang, Lang-: SHORTCHAR; (* "1", "2": S8/I16/L32 | "C", "3": S16/I32/L64 *)
@@ -837,36 +838,87 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		FPrint(fp, SHORT(li)); FPrint(fp, SHORT(ASH(li, -32)))
 	END FPrintLReal;
 
+	PROCEDURE ChkSum (VAR fp: INTEGER; val: INTEGER);	(* symbolfile checksum *)
+	BEGIN
+		(* same as FPrint, 8 bit only *)
+		fp := ORD(BITS(fp * 256) / BITS(crc32tab[ORD(BITS(fp DIV 1000000H) / BITS(val)) MOD 256]))
+	END ChkSum;
+
+	PROCEDURE LoWord (r: REAL): INTEGER;
+		VAR x: INTEGER;
+	BEGIN
+		x := SYSTEM.ADR(r);
+		IF ~LEHost THEN INC(x, 4) END;
+		SYSTEM.GET(x, x);
+		RETURN x
+	END LoWord;
+
+	PROCEDURE HiWord (r: REAL): INTEGER;
+		VAR x: INTEGER;
+	BEGIN
+		x := SYSTEM.ADR(r);
+		IF LEHost THEN INC(x, 4) END;
+		SYSTEM.GET(x, x);
+		RETURN x
+	END HiWord;
+
+	PROCEDURE Compound (lo, hi: INTEGER): REAL;
+		VAR r: REAL;
+	BEGIN
+		IF LEHost THEN
+			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
+		ELSE
+			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
+		END;
+		RETURN r
+	END Compound;
+
 	(* ------------------------- Read Symbol File ------------------------- *)
 
-	PROCEDURE SymRCh*(VAR ch: SHORTCHAR);
+	PROCEDURE ReadInt32 (VAR i: INTEGER);
+		VAR b: BYTE; x: INTEGER;
 	BEGIN
-		oldSF.ReadSChar(ch)
+		oldSF.ReadByte(b); x := b MOD 256;
+		ChkSum(checksum, b);
+		oldSF.ReadByte(b); x := x + 100H * (b MOD 256);
+		ChkSum(checksum, b);
+		oldSF.ReadByte(b); x := x + 10000H * (b MOD 256);
+		ChkSum(checksum, b);
+		oldSF.ReadByte(b); i := x + 1000000H * b;
+		ChkSum(checksum, b)
+	END ReadInt32;
+
+	PROCEDURE SymRCh* (VAR ch: SHORTCHAR);
+	BEGIN
+		oldSF.ReadSChar(ch);
+		ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
 	END SymRCh;
 
 	PROCEDURE SymRInt* (): LONGINT;
-		VAR s, byte: BYTE; ch: SHORTCHAR; n: LONGINT;
-	BEGIN s := 0; n := 0; oldSF.ReadByte(byte); ch := SHORT(CHR(byte));
-		WHILE ORD(ch) >= 128 DO INC(n, ASH(LONG(ORD(ch) - 128), s) ); INC(s, 7);
-			oldSF.ReadByte(byte); ch := SHORT(CHR(byte))
+		VAR b: BYTE; s: INTEGER; n: LONGINT;
+	BEGIN s := 0; n := 0; oldSF.ReadByte(b);
+		IF ~oldSF.rider.eof THEN ChkSum(checksum, b) END;
+		WHILE b < 0 DO INC(n, ASH(b + 128, s)); INC(s, 7);
+			oldSF.ReadByte(b); ChkSum(checksum, b)
 		END;
-		INC(n, ASH(LONG(ORD(ch) MOD 64 - ORD(ch) DIV 64 * 64), s) );
+		INC(n, ASH((b + 64) MOD 128 - 64, s));
 		RETURN n
 	END SymRInt;
 
-	PROCEDURE SymRSet*(VAR s: SET);
+	PROCEDURE SymRSet* (VAR s: SET);
 	BEGIN
 		s := SYSTEM.VAL(SET, SHORT(SymRInt()))
 	END SymRSet;
 
-	PROCEDURE SymRReal*(VAR r: SHORTREAL);
+	PROCEDURE SymRReal* (VAR r: SHORTREAL);
 	BEGIN
-		oldSF.ReadSReal(r)
+		ReadInt32(SYSTEM.VAL(INTEGER, r))
 	END SymRReal;
 
-	PROCEDURE SymRLReal*(VAR lr: REAL);
+	PROCEDURE SymRLReal* (VAR lr: REAL);
+		VAR h, l: INTEGER;
 	BEGIN
-		oldSF.ReadReal(lr)
+		ReadInt32(l); ReadInt32(h); lr := Compound(l, h)
 	END SymRLReal;
 
 	PROCEDURE CloseOldSym*;
@@ -892,30 +944,48 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 	(* ------------------------- Write Symbol File ------------------------- *)
 
-	PROCEDURE SymWCh*(ch: SHORTCHAR);
+	PROCEDURE WriteInt32 (i: INTEGER);
 	BEGIN
+		ChkSum(checksum, i);
+		newSF.WriteByte(SHORT(SHORT(i MOD 256))); i := i DIV 256;
+		ChkSum(checksum, i);
+		newSF.WriteByte(SHORT(SHORT(i MOD 256))); i := i DIV 256;
+		ChkSum(checksum, i);
+		newSF.WriteByte(SHORT(SHORT(i MOD 256))); i := i DIV 256;
+		ChkSum(checksum, i);
+		newSF.WriteByte(SHORT(SHORT(i MOD 256)))
+	END WriteInt32;
+
+	PROCEDURE SymWCh* (ch: SHORTCHAR);
+	BEGIN
+		ChkSum(checksum, ORD(ch));
 		newSF.WriteSChar(ch)
 	END SymWCh;
 
 	PROCEDURE SymWInt* (x: LONGINT);
 	BEGIN
-		WHILE (x < - 64) OR (x > 63) DO newSF.WriteByte(SHORT(SHORT(SHORT(x) MOD 128 + 128))); x := x DIV 128 END;
+		WHILE (x < - 64) OR (x > 63) DO
+			ChkSum(checksum, SHORT(x) MOD 128 - 128);
+			newSF.WriteByte(SHORT(SHORT(SHORT(x) MOD 128 - 128)));
+			x := x DIV 128
+		END;
+		ChkSum(checksum, SHORT(x) MOD 128);
 		newSF.WriteByte(SHORT(SHORT(SHORT(x) MOD 128)))
 	END SymWInt;
 
-	PROCEDURE SymWSet*(s: SET);
+	PROCEDURE SymWSet* (s: SET);
 	BEGIN
 		SymWInt(SYSTEM.VAL(INTEGER, s))
 	END SymWSet;
 
-	PROCEDURE SymWReal*(r: SHORTREAL);
+	PROCEDURE SymWReal* (r: SHORTREAL);
 	BEGIN
-		newSF.WriteSReal(r)
+		WriteInt32(SYSTEM.VAL(INTEGER, r))
 	END SymWReal;
 
-	PROCEDURE SymWLReal*(lr: REAL);
+	PROCEDURE SymWLReal* (lr: REAL);
 	BEGIN
-		newSF.WriteReal(lr)
+		WriteInt32(LoWord(lr)); WriteInt32(HiWord(lr))
 	END SymWLReal;
 
 	PROCEDURE RegisterNewSym*;
@@ -1134,17 +1204,6 @@ suffix does not work in K&R *)
 		IF useObj THEN CFsubdir := "/Obj" + addTo END;
 		IF useSym THEN SFsubdir := "/Sym" + addTo ELSIF useObj THEN SFsubdir := "/Obj" + addTo END;
 	END SetWorkDir;
-
-	PROCEDURE Compound (lo, hi: INTEGER): REAL;
-		VAR r: REAL;
-	BEGIN
-		IF LEHost THEN
-			SYSTEM.PUT(SYSTEM.ADR(r), lo); SYSTEM.PUT(SYSTEM.ADR(r) + 4, hi)
-		ELSE
-			SYSTEM.PUT(SYSTEM.ADR(r) + 4, lo); SYSTEM.PUT(SYSTEM.ADR(r), hi)
-		END;
-		RETURN r
-	END Compound;
 
 	PROCEDURE InitHost;
 		VAR test: SHORTINT; lo: SHORTCHAR;
