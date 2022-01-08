@@ -180,7 +180,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		fp := ORD(BITS(fp * 256) / BITS(crc32tab[ORD(BITS(fp DIV 1000000H) / BITS(val)) MOD 256]))
 	END ChkSum;
 
-	PROCEDURE LoWord (r: REAL): INTEGER;
+	(* VAR is necessary here to avoid problems with GCC optimizer *)
+	PROCEDURE LoWord (VAR r: REAL): INTEGER;
 		VAR x: INTEGER; adr: SYSTEM.ADRINT;
 	BEGIN
 		adr := SYSTEM.ADR(r);
@@ -189,7 +190,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		RETURN x
 	END LoWord;
 
-	PROCEDURE HiWord (r: REAL): INTEGER;
+	(* VAR is necessary here to avoid problems with GCC optimizer *)
+	PROCEDURE HiWord (VAR r: REAL): INTEGER;
 		VAR x: INTEGER; adr: SYSTEM.ADRINT;
 	BEGIN
 		adr := SYSTEM.ADR(r);
