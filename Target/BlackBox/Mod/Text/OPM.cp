@@ -371,24 +371,20 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 	(* ------------------------- Log Output ------------------------- *)
 
-	PROCEDURE LogW*(ch: CHAR);
-	BEGIN
-		Out.Char(ch)
+	PROCEDURE LogW* (ch: CHAR);
+	BEGIN Out.Char(ch)
 	END LogW;
 
-	PROCEDURE LogWStr*(IN s: ARRAY OF SHORTCHAR);
-	BEGIN
-		Out.String(LONG(s));
+	PROCEDURE LogWStr* (IN s: ARRAY OF SHORTCHAR);
+	BEGIN Out.String(LONG(s))
 	END LogWStr;
 
-	PROCEDURE LogWNum*(i, len: INTEGER);
-	BEGIN
-		Out.Int(i, len)
+	PROCEDURE LogWNum* (i, len: INTEGER);
+	BEGIN Out.Int(i, len)
 	END LogWNum;
 
 	PROCEDURE LogWLn*;
-	BEGIN
-		Out.Ln
+	BEGIN Out.Ln
 	END LogWLn;
 
 
@@ -868,8 +864,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	END FPrintReal;
 
 	PROCEDURE FPrintLReal* (VAR fp: INTEGER; lr: REAL);
-	BEGIN
-		FPrint(fp, LoWord(lr)); FPrint(fp, HiWord(lr))
+	BEGIN FPrint(fp, LoWord(lr)); FPrint(fp, HiWord(lr))
 	END FPrintLReal;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
@@ -888,8 +883,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	END ReadInt32;
 
 	PROCEDURE SymRCh* (VAR ch: SHORTCHAR);
-	BEGIN oldSF.ReadSChar(ch);
-		ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
+	BEGIN oldSF.ReadSChar(ch); ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
 	END SymRCh;
 
 	PROCEDURE SymRInt* (): LONGINT;
@@ -904,13 +898,11 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	END SymRInt;
 
 	PROCEDURE SymRSet* (VAR s: SET);
-	BEGIN
-		s := SYSTEM.VAL(SET, SHORT(SymRInt()))
+	BEGIN s := SYSTEM.VAL(SET, SHORT(SymRInt()))
 	END SymRSet;
 
 	PROCEDURE SymRReal* (VAR r: SHORTREAL);
-	BEGIN
-		ReadInt32(SYSTEM.VAL(INTEGER, r))
+	BEGIN ReadInt32(SYSTEM.VAL(INTEGER, r))
 	END SymRReal;
 
 	PROCEDURE SymRLReal* (VAR lr: REAL);
@@ -956,8 +948,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 	PROCEDURE SymWCh* (ch: SHORTCHAR);
 	BEGIN
-		ChkSum(checksum, ORD(ch));
-		newSF.WriteSChar(ch)
+		ChkSum(checksum, ORD(ch)); newSF.WriteSChar(ch)
 	END SymWCh;
 
 	PROCEDURE SymWInt* (x: LONGINT);
@@ -972,18 +963,15 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	END SymWInt;
 
 	PROCEDURE SymWSet* (s: SET);
-	BEGIN
-		SymWInt(SYSTEM.VAL(INTEGER, s))
+	BEGIN SymWInt(SYSTEM.VAL(INTEGER, s))
 	END SymWSet;
 
 	PROCEDURE SymWReal* (r: SHORTREAL);
-	BEGIN
-		WriteInt32(SYSTEM.VAL(INTEGER, r))
+	BEGIN WriteInt32(SYSTEM.VAL(INTEGER, r))
 	END SymWReal;
 
 	PROCEDURE SymWLReal* (lr: REAL);
-	BEGIN
-		WriteInt32(LoWord(lr)); WriteInt32(HiWord(lr))
+	BEGIN WriteInt32(LoWord(lr)); WriteInt32(HiWord(lr))
 	END SymWLReal;
 
 	PROCEDURE RegisterNewSym*;

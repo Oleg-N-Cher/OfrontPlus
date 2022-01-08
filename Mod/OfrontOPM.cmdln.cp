@@ -244,15 +244,15 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 
 	(* ------------------------- Log Output ------------------------- *)
 
-	PROCEDURE LogW*(ch: SHORTCHAR);
+	PROCEDURE LogW* (ch: SHORTCHAR);
 	BEGIN Console.Char(ch)
 	END LogW;
 
-	PROCEDURE LogWStr*(IN s: ARRAY OF SHORTCHAR);
+	PROCEDURE LogWStr* (IN s: ARRAY OF SHORTCHAR);
 	BEGIN Console.String(s)
 	END LogWStr;
 
-	PROCEDURE LogWNum*(i, len: INTEGER);
+	PROCEDURE LogWNum* (i, len: INTEGER);
 	BEGIN Console.Int(i, len)
 	END LogWNum;
 
@@ -536,8 +536,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END FPrintReal;
 
 	PROCEDURE FPrintLReal* (VAR fp: INTEGER; lr: REAL);
-	BEGIN
-		FPrint(fp, LoWord(lr)); FPrint(fp, HiWord(lr))
+	BEGIN FPrint(fp, LoWord(lr)); FPrint(fp, HiWord(lr))
 	END FPrintLReal;
 
 	(* ------------------------- Read Symbol File ------------------------- *)
@@ -556,8 +555,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END ReadInt32;
 
 	PROCEDURE SymRCh* (VAR ch: SHORTCHAR);
-	BEGIN Files.ReadChar(oldSF, ch);
-		ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
+	BEGIN Files.ReadChar(oldSF, ch); ChkSum(checksum, SYSTEM.VAL(BYTE, ch))
 	END SymRCh;
 
 	PROCEDURE SymRInt* (): LONGINT;
@@ -572,13 +570,11 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END SymRInt;
 
 	PROCEDURE SymRSet* (VAR s: SET);
-	BEGIN
-		s := SYSTEM.VAL(SET, SHORT(SymRInt()))
+	BEGIN s := SYSTEM.VAL(SET, SHORT(SymRInt()))
 	END SymRSet;
 
 	PROCEDURE SymRReal* (VAR r: SHORTREAL);
-	BEGIN
-		ReadInt32(SYSTEM.VAL(INTEGER, r))
+	BEGIN ReadInt32(SYSTEM.VAL(INTEGER, r))
 	END SymRReal;
 
 	PROCEDURE SymRLReal* (VAR lr: REAL);
@@ -621,8 +617,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END WriteInt32;
 
 	PROCEDURE SymWCh* (ch: SHORTCHAR);
-	BEGIN ChkSum(checksum, ORD(ch));
-		Files.WriteChar(newSF, ch)
+	BEGIN ChkSum(checksum, ORD(ch)); Files.WriteChar(newSF, ch)
 	END SymWCh;
 
 	PROCEDURE SymWInt* (x: LONGINT);
@@ -637,18 +632,15 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END SymWInt;
 
 	PROCEDURE SymWSet* (s: SET);
-	BEGIN
-		SymWInt(SYSTEM.VAL(INTEGER, s))
+	BEGIN SymWInt(SYSTEM.VAL(INTEGER, s))
 	END SymWSet;
 
 	PROCEDURE SymWReal* (r: SHORTREAL);
-	BEGIN
-		WriteInt32(SYSTEM.VAL(INTEGER, r))
+	BEGIN WriteInt32(SYSTEM.VAL(INTEGER, r))
 	END SymWReal;
 
 	PROCEDURE SymWLReal* (lr: REAL);
-	BEGIN
-		WriteInt32(LoWord(lr)); WriteInt32(HiWord(lr))
+	BEGIN WriteInt32(LoWord(lr)); WriteInt32(HiWord(lr))
 	END SymWLReal;
 
 	PROCEDURE RegisterNewSym*;
