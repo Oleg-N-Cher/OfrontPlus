@@ -254,7 +254,8 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		fp := ORD(BITS(fp * 256) / BITS(crc32tab[ORD(BITS(fp DIV 1000000H) / BITS(val)) MOD 256]))
 	END ChkSum;
 
-	PROCEDURE LoWord (r: REAL): INTEGER;
+	(* VAR is necessary here to avoid problems with GCC optimizer *)
+	PROCEDURE LoWord (VAR r: REAL): INTEGER;
 		VAR x: INTEGER;
 	BEGIN
 		x := SYSTEM.ADR(r);
@@ -263,7 +264,8 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		RETURN x
 	END LoWord;
 
-	PROCEDURE HiWord (r: REAL): INTEGER;
+	(* VAR is necessary here to avoid problems with GCC optimizer *)
+	PROCEDURE HiWord (VAR r: REAL): INTEGER;
 		VAR x: INTEGER;
 	BEGIN
 		x := SYSTEM.ADR(r);
