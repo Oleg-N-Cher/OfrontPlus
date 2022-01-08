@@ -1194,10 +1194,7 @@
 		IdentList(OPT.topScope^.scope, 1); OPM.WriteLn;
 		GenDynTypes(n, external); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 1);
-		IF OPM.noinit IN OPM.opt THEN
-			OPM.WriteString("#define "); OPM.WriteString(OPM.modName); OPM.WriteString("__init()");
-			OPM.WriteLn
-		ELSE
+		IF ~(OPM.noinit IN OPM.opt) THEN
 			IF dynlib THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
 			OPM.WriteString("void *");
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
