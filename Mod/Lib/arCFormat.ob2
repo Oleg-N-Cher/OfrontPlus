@@ -4,7 +4,7 @@ snprintf is safe, since we pass the array size. We can't check if the
 format matches the argument, so use with caution. However, the C compiler
 should emit a warning if the wrong format is used. *)
 
-MODULE [noinit] arCFormat;
+MODULE [foreign] arCFormat;
 
 IMPORT 
 	SYSTEM, 

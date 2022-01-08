@@ -1,6 +1,6 @@
 (* Fast Math using math.h *)
 
-MODULE [noinit] arMath;
+MODULE [foreign] arMath;
 
 	(* OMAKE LINK "m" *)
 

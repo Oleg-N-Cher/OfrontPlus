@@ -1,6 +1,6 @@
 (* Definitions for C types - Should be available in SYSTEM? *)
 
-MODULE [noinit] arC;
+MODULE [foreign] arC;
 
 IMPORT SYSTEM;
 
