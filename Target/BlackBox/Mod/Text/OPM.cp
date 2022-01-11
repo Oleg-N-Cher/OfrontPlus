@@ -808,7 +808,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			IF ch = CP[n] THEN RETURN SHORT(CHR(n + 80H)) END
 		END;
 		Mark(3, curpos + 1);
-		RETURN " " (* Replace an unknown character to " " *)
+		RETURN "?" (* Replace an unknown character to "?" *)
 	END WideCharToCP;
 
 	PROCEDURE Get* (OUT ch: CHAR);	(* read next character from source text, 0X if eof *)

@@ -429,7 +429,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		VAR ch: SHORTCHAR;
 	BEGIN
 		IF ~(widechar IN opt) THEN Texts.Read(inR, ch); longch := ch
-		ELSIF ~Texts.ReadLong(inR, longch) THEN err(3); longch := 0X
+		ELSIF ~Texts.ReadLong(inR, longch) THEN err(-3); longch := "?"
 		END;
 		IF longch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
 		ELSIF curpos MOD 256 # 255 THEN INC(curpos)
