@@ -8,7 +8,7 @@ SET oef=
 
 :: Ofront+
 
-ofront+ -sC -88 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx Args.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
+ofront+ -sC -88 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Windows.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Eco

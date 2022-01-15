@@ -10,7 +10,7 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 
 	*)
 
-	IMPORT Args, Console, Files, Texts;
+	IMPORT CmdArgs, Console, Files, Texts;
 
 	CONST TAB = 09X; CR = 0DX; LF = 0AX;
 
@@ -19,8 +19,8 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 			T: Texts.Text; R: Texts.Reader; ch: SHORTCHAR;
 	BEGIN
 		optTab := FALSE; path := ""; arg := 1; NEW(T);
-		Args.Get(1, path);
-		IF path = "-t" THEN optTab := TRUE; arg := 2; path := ""; Args.Get(2, path) END ;
+		CmdArgs.Get(1, path);
+		IF path = "-t" THEN optTab := TRUE; arg := 2; path := ""; CmdArgs.Get(2, path) END;
 		WHILE path # "" DO
 			IF Files.Old(path) # NIL THEN
 				Texts.Open(T, path);
@@ -30,15 +30,15 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 					ELSIF ch = TAB THEN
 						IF optTab THEN Console.Char(TAB) ELSE Console.String("  ") END
 					ELSIF ch = CR THEN Console.Char(LF)
-					END ;
+					END;
 					Texts.Read(R, ch)
 				END
 			ELSE
 				Console.String("OCat: cannot open "); Console.String(path); Console.Ln
-			END ;
+			END;
 			INC(arg); path := "";
-			Args.Get(arg, path)
-		END ;
+			CmdArgs.Get(arg, path)
+		END;
 		Console.Flush
 	END Cat;
 

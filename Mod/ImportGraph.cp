@@ -5,7 +5,7 @@ MODULE ImportGraph;
  * 2019, adapted for Ofront+ by Oleg N. Cher
  * ------------------------------------------------------------------------ *)
 
-IMPORT Out := Console, CmdLine := Args, Files, Str := Strings, Platform;
+IMPORT Out := Console, CmdArgs, Files, Str := Strings, Platform;
 
 (** -----------------------------------------------------------------------
   * This console program outputs a module import graph starting from a given
@@ -478,8 +478,8 @@ VAR i: INTEGER; m: Module; tmp: ModuleRef;
 BEGIN
    InitScanner;
    i := 1; NEW (first); first.name [0] := 0X;
-   WHILE i < CmdLine.argc DO
-			CmdLine.Get(i, arg);
+   WHILE i <= CmdArgs.Count DO
+			CmdArgs.Get(i, arg);
 			IF arg = "-r" THEN reduced := ~reduced;
 			ELSE tmp := EnlistModule (arg);
 			END;
@@ -515,7 +515,7 @@ END DumpList;
 *)
 
 BEGIN
-   IF CmdLine.argc # 1 THEN
+   IF CmdArgs.Count # 0 THEN
       Files.SetSearchPath(".");
       Out.String ("strict digraph G{");
       Out.Ln;

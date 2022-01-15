@@ -13,7 +13,7 @@
     не умеет включать текст из складок (folds) и селекторов.
 *)
 
-IMPORT Files, Out := Console, CmdLine := Args, Platform;
+IMPORT Files, Out := Console, CmdArgs, Platform;
 
 TYPE
   Text16 = POINTER TO ARRAY OF INT16;
@@ -69,7 +69,7 @@ BEGIN
   WHILE ch # 0X DO
     IF ch = "#" THEN Out.Int(n, 0) ELSE Out.Char(ch) END;
     INC(i);
-    ch := msg[i];
+    ch := msg[i]
   END;
   Out.Ln; HALT(1)
 END HaltMsg;
@@ -81,7 +81,7 @@ BEGIN
   WHILE ch # 0X DO
     IF ch = "#" THEN Out.String(str) ELSE Out.Char(ch) END;
     INC(i);
-    ch := msg[i];
+    ch := msg[i]
   END;
   Out.Ln; HALT(1)
 END HaltStr;
@@ -166,11 +166,11 @@ BEGIN
             text^[txtlen] := ch16; INC(txtlen); INC(len, 2)
           END
         ELSE  (* view *)
-          ReadInt(@x); ReadInt(@x); Files.ReadByte(@in1, @b);  (* ignore *)
+          ReadInt(@x); ReadInt(@x); Files.ReadByte(@in1, @b)  (* ignore *)
         END;
         IF next = SHORT(Files.Pos(@in)) THEN ReadHead(@next, @down, @end); Files.Set(@in, f, end) END;  (* skip view data *)
-        Files.ReadByte(@in, @b);
-      END;
+        Files.ReadByte(@in, @b)
+      END
       (*text^[txtlen] := 0*)
     (*END*)
   END
@@ -203,7 +203,7 @@ BEGIN
         ELSE
           HaltMsg("Unknown .odc format. Code = ", b)
         END;
-        Files.ReadByte(@in, @b);
+        Files.ReadByte(@in, @b)
       END;
       text^[i] := 0
     (*END*)
@@ -217,9 +217,9 @@ VAR
 BEGIN
   IF ch <= 07FH THEN RETURN CHR(ch) END;
   FOR n := 7FH TO 0 BY -1 DO
-    IF ch = Cp1251[n] THEN RETURN CHR(SHORT(n + 80H)) END;
+    IF ch = Cp1251[n] THEN RETURN CHR(SHORT(n + 80H)) END
   END;
-  Out.String("Can't convert character ["); Out.Int(ch, 0); Out.Char("]"); Out.Ln;
+  Out.String("Can't convert character ["); Out.Int(ch, 0); Out.Char("]"); Out.Ln
   RETURN "?" (* Replace an unknown character to "?" *)
 END WideCharToCP1251;
 
@@ -235,7 +235,7 @@ BEGIN
       WHILE n < textlen DO
         ch16 := text16^[n];
         IF ch16 # CR THEN Out.Char(WideCharToCP1251(ch16)) ELSE Out.Ln END;
-        INC(n);
+        INC(n)
       END
     ELSE
       HaltStr("Couldn't read " + '"#"', pathname)
@@ -262,7 +262,7 @@ BEGIN
       out[j] := CHR(val DIV 4096 + 224); INC(j);
       out[j] := CHR(val DIV 64 MOD 64 + 128); INC(j);
       out[j] := CHR(val MOD 64 + 128); INC(j)
-    END;
+    END
   END;
   out[j] := 0X;
   IF in[i] = 0 THEN res := 0 (*ok*) ELSE res :=  1 (*truncated*) END
@@ -281,10 +281,10 @@ VAR
       IF src.eof THEN emit := TRUE
       ELSE
         Files.ReadChar(@src, @in);
-        IF in # ch THEN emit := TRUE END;
-      END;
+        IF in # ch THEN emit := TRUE END
+      END
     END;
-    Files.WriteChar(@wr, ch);
+    Files.WriteChar(@wr, ch)
   END Emit;
 
 BEGIN
@@ -306,12 +306,12 @@ BEGIN
             IF byte # CHR(CR) THEN Emit(byte);
             ELSE
               IF crlf THEN Emit(CHR(CR)) END;
-              Emit(CHR(LF));
+              Emit(CHR(LF))
             END;
-            INC(res); byte:= utf8text^[res];
+            INC(res); byte:= utf8text^[res]
           END;
           IF ~emit THEN
-            Files.ReadChar(@src, @byte); emit := ~src.eof OR (byte # 0X);
+            Files.ReadChar(@src, @byte); emit := ~src.eof OR (byte # 0X)
           END;
           IF f # NIL THEN Files.Close(f) END;
           IF emit THEN
@@ -320,8 +320,8 @@ BEGIN
             Files.Rename(tempname, utf8name, @res);
             IF res # 0 THEN
               HaltStr("Couldn't save " + '"#"', utf8name)
-            END;
-          END;
+            END
+          END
         ELSE
           HaltStr("Couldn't create " + '"#"', utf8name)
         END
@@ -338,14 +338,14 @@ END OdcToUtf8;
 
 BEGIN
   Files.SetSearchPath(".");
-  CASE CmdLine.argc OF
+  CASE CmdArgs.Count OF
+  | 1:
+    CmdArgs.Get(1, @pathname); OdcTo1251(pathname);
   | 2:
-    CmdLine.Get(1, @pathname); OdcTo1251(pathname);
-  | 3:
-    CmdLine.Get(1, @pathname); CmdLine.Get(2, @utf8name); OdcToUtf8(pathname, utf8name, TRUE)
+    CmdArgs.Get(1, @pathname); CmdArgs.Get(2, @utf8name); OdcToUtf8(pathname, utf8name, TRUE)
   ELSE
     Out.String(".odc to text Converter v1.0 (c) VEDAsoft Oberon Club"); Out.Ln; Out.Ln; 
     Out.String("  to UTF-8 (BOM, CRLF): odc2txt file.odc file.txt"); Out.Ln;
-    Out.String("  to 1251 (Windows): odc2txt file.odc > file.txt"); Out.Ln;
-  END;
+    Out.String("  to 1251 (Windows): odc2txt file.odc > file.txt"); Out.Ln
+  END
 END OdcToText.

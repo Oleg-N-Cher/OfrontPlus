@@ -1,13 +1,5 @@
-int argc; char **argv;
+extern int _main (void *stktop);
 
-__declspec(dllimport) void __stdcall ExitProcess (int);
-__declspec(dllimport) int __getmainargs (int*, char***, char**, int, void*);
-extern int _WinMain (int argc, char **argv, void *stktop);
-
-void WinMain (void) {
-  char* tmp;
-  __getmainargs(&argc, &argv, &tmp, 0, &tmp);
-  ExitProcess(
-    _WinMain(argc, argv, __builtin_frame_address(0))
-  );
+int WinMain (void) {
+  return _main(__builtin_frame_address(0));
 } //WinMain

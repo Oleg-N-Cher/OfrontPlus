@@ -1,6 +1,6 @@
 MODULE TestArgs;
 
-IMPORT Args, Write := Console;
+IMPORT CmdArgs, Write := Console;
 
 VAR
   i, n: INTEGER; arg, env: ARRAY 1024 OF CHAR;
@@ -15,9 +15,9 @@ BEGIN
 END Length;
 
 BEGIN
-  Write.String("Args.argc = "); Write.Int(Args.argc, 0); Write.Ln; Write.Ln;
-  FOR n := 1 TO Args.argc - 1 DO
-    Args.Get(n, @arg);
+  Write.String("CmdArgs.Count = "); Write.Int(CmdArgs.Count, 0); Write.Ln; Write.Ln;
+  FOR n := 1 TO CmdArgs.Count DO
+    CmdArgs.Get(n, @arg);
     Write.Int(n, 0); Write.Char(":"); Write.String(arg); Write.Ln;
     FOR i := 0 TO Length(arg) - 1 DO
       Write.Int(ORD(arg[i]), 0); Write.Char(",");
@@ -25,13 +25,13 @@ BEGIN
     Write.Ln;
   END;
 
-  Args.GetEnv("OBERON", @env); Write.Ln;
+  CmdArgs.GetEnv("OBERON", @env); Write.Ln;
   IF env # "" THEN Write.String("OBERON="); Write.String(env); Write.Ln END;
   env := "";
-  Args.GetEnv("PATH", @env); Write.Ln;
+  CmdArgs.GetEnv("PATH", @env); Write.Ln;
   IF env # "" THEN Write.String("PATH="); Write.String(env); Write.Ln END;
   env := "";
-  Args.GetEnv("HOME", @env); Write.Ln;
+  CmdArgs.GetEnv("HOME", @env); Write.Ln;
   IF env # "" THEN Write.String("HOME="); Write.String(env); Write.Ln END;
   env := "";
 

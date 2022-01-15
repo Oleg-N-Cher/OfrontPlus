@@ -629,6 +629,7 @@
 				(* IN only allowed for records and arrays *)
 				ELSIF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
+				ELSIF ODD(sys) & ((typ.comp = Record) OR (typ.comp = DynArr)) & ~ODD(typ.sysflag) THEN err(142)
 				(* untagged open array not allowed as value parameter *)
 				ELSIF (mode = Var) & (typ^.comp = DynArr) & ODD(typ^.sysflag) THEN OPM.err(145)
 				END;

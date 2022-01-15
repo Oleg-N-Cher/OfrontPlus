@@ -47,7 +47,7 @@
 		MaxCases* = 256;
 		MaxCaseRange* = 512;
 
-		MaxStruct* = 1432;
+		MaxStruct* = 1434;
 
 		(* maximal number of pointer fields in a record: *)
 		MaxPtr* = MAX(INTEGER);

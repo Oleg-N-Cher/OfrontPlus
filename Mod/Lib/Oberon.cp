@@ -2,7 +2,7 @@ MODULE Oberon;
 
 (* this version should not have dependency on graphics -- noch *)
 
-  IMPORT s := SYSTEM, Platform, Texts, Args, Console;
+  IMPORT s := SYSTEM, Platform, Texts, CmdArgs, Console;
 
   TYPE
     INTEGER = s.INT16; LONGINT = s.INT32; CHAR = s.CHAR8;
@@ -46,13 +46,13 @@ MODULE Oberon;
     Texts.OpenWriter(W);
 
     REPEAT
-    IF i < Args.argc THEN
-       Args.Get(i, str);
+    IF i <= CmdArgs.Count THEN
+       CmdArgs.Get(i, str);
        Texts.WriteString(W, str);
        Texts.WriteString(W, " ");
     END;
     INC(i)
-    UNTIL i >= Args.argc;
+    UNTIL i > CmdArgs.Count;
 
     Texts.Append (Par^.text, W.buf);
 

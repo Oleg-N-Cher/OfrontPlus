@@ -4,7 +4,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	31.1.2007 jt synchronized with BlackBox version, in particular PromoteIntConstToLInt added
 *)
 
-	IMPORT SYSTEM, Texts, Files, Strings, Platform, Args, Console, OfrontErrors;
+	IMPORT SYSTEM, Texts, Files, Strings, Platform, CmdArgs, Console, OfrontErrors;
 
 	CONST
 		OptionChar* = "-";
@@ -44,7 +44,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MaxCases* = 256;
 		MaxCaseRange* = 512;
 
-		MaxStruct* = 1432;
+		MaxStruct* = 1434;
 
 		(* maximal number of pointer fields in a record: *)
 		MaxPtr* = MAX(INTEGER);
@@ -348,7 +348,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	PROCEDURE OpenPar*(IN title, cmd: ARRAY OF SHORTCHAR);	(* prepare for a sequence of translations *)
 		VAR s: ARRAY 256 OF SHORTCHAR;
 	BEGIN
-		IF Args.argc = 1 THEN stop := TRUE;
+		IF CmdArgs.Count = 0 THEN stop := TRUE;
 			Console.Ln;
 			Console.String(title); Console.Ln;
 			Console.String("Copyright (c) Software Templ OG, 1995-2020 & VEDAsoft Oberon Club, 2013-2021"); Console.Ln; Console.Ln;
@@ -378,8 +378,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Lang := "C";	(* default input language: Component Pascal *)
 			AdrSize := -1;	(* undefined *)
 			glbopt := defopt; S := 1; s := "";
-			Args.Get(1, s); stop := FALSE;
-			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; Args.Get(S, s) END;
+			CmdArgs.Get(1, s); stop := FALSE;
+			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; CmdArgs.Get(S, s) END;
 			(* Record global option settings for this command line *)
 			GlobalAdrSize := AdrSize; GlobalAlignment := Alignment;	GlobalLang := Lang
 		END
@@ -390,8 +390,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		Alignment := GlobalAlignment; AdrSize := GlobalAdrSize;
 		opt := glbopt;
-		s := ""; Args.Get(S, s);
-		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; Args.Get(S, s) END;
+		s := ""; CmdArgs.Get(S, s);
+		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; CmdArgs.Get(S, s) END;
 		curpos := 256; errpos := curpos; lasterrpos := curpos - 10;
 		GetProperties
 	END InitOptions;
@@ -401,8 +401,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		VAR T: Texts.Text; endpos: INTEGER; s: ARRAY 256 OF SHORTCHAR;
 	BEGIN
 		done := FALSE; curpos := 0;
-		IF stop OR (S >= Args.argc) THEN noerr := TRUE; RETURN END;
-		s := ""; Args.Get(S, s);
+		IF stop OR (S > CmdArgs.Count) THEN noerr := TRUE; RETURN END;
+		s := ""; CmdArgs.Get(S, s);
 		endpos := LEN(s$) - 4;
 		IF    Strings.Pos(".ob1", s, 1) = endpos THEN Lang := "1"
 		ELSIF Strings.Pos(".ob2", s, 1) = endpos THEN Lang := "2"

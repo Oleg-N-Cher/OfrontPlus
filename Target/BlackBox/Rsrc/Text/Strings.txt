@@ -130,6 +130,7 @@ insertMarkers	Insert Markers
 139	test applied to untagged record
 140	operand type inapplicable to DIV0
 141	operand type inapplicable to REM0
+142	tagged structures not allowed for NIL compatible var parameters
 145	untagged open array not allowed as value parameter
 150	key inconsistency of imported module
 151	incorrect symbol file

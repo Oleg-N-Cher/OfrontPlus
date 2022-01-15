@@ -2,7 +2,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 
 	IMPORT
 		OPM := OfrontOPM, OPS := OfrontOPS, OPT := OfrontOPT, OPV := OfrontOPV,
-		Texts, Console, Args;
+		Texts, Console, CmdArgs;
 
 	CONST
 		OptionChar = "-";
@@ -448,14 +448,14 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 		VAR T, dummyT: Texts.Text; S, vname, name: OPS.Name; R: Texts.Reader; ch: SHORTCHAR;
 			s: ARRAY 1024 OF SHORTCHAR; i: SHORTINT;
 	BEGIN
-		option := 0X; Args.Get(1, S);
-		IF Args.argc > 2 THEN
-			IF S[0] = OptionChar THEN option := S[1]; Args.Get(2, S)
-			ELSE Args.Get(2, vname); option := vname[1]
+		option := 0X; CmdArgs.Get(1, S);
+		IF CmdArgs.Count > 1 THEN
+			IF S[0] = OptionChar THEN option := S[1]; CmdArgs.Get(2, S)
+			ELSE CmdArgs.Get(2, vname); option := vname[1]
 			END
 		END;
 		CASE option OF "1".."3", "7": lang := option; ELSE lang := "C" END;
-		IF Args.argc >= 2 THEN
+		IF CmdArgs.Count >= 1 THEN
 			Ident(S, name);
 			NEW(T); Texts.Open(T, "");
 			OPT.Init(name, lang, {}); OPT.SelfName := "AvoidErr154"; WModule(name, T); OPT.Close;
@@ -473,7 +473,7 @@ MODULE BrowserCmd;	(* RC 29.10.93 *)	(* object model 4.12.93, command line versi
 BEGIN
 	hex := "0123456789ABCDEF";
 	OPT.typSize := OPV.TypSize; Texts.OpenWriter(W);
-	IF Args.argc > 1 THEN ShowDef
+	IF CmdArgs.Count # 0 THEN ShowDef
 	ELSE
 		Console.String("Ofront+ (TM) Show Definition (Browser) Tool v1.0"); Console.Ln;
 		Console.String("Copyright (c) Software Templ OG, 1995-2020 & VEDAsoft Oberon Club, 2013-2020"); Console.Ln; Console.Ln;

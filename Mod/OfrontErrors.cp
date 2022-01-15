@@ -151,6 +151,7 @@ BEGIN
   | 139: Log.String("test applied to untagged record")
   | 140: Log.String("operand type inapplicable to DIV0")
   | 141: Log.String("operand type inapplicable to REM0")
+  | 142: Log.String("tagged structures not allowed for NIL compatible var parameters")
   | 145: Log.String("untagged open array not allowed as value parameter")
 
   | 150: Log.String("key inconsistency of imported module")

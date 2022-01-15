@@ -22,12 +22,12 @@
 
 LONGINT SYSTEM_INF = 0x7FF0000000000000L;
 INTEGER SYSTEM_INFS = 0x7F800000;
-
-
-INTEGER SYSTEM_ArgCount;
-void *SYSTEM_ArgVector;
-void (*SYSTEM_AssertFailHandler)(INTEGER n, CHAR *mod, INTEGER pos);
-void (*SYSTEM_HaltHandler)(INTEGER n, CHAR *mod, INTEGER pos);
+#ifndef _WIN32
+  INTEGER SYSTEM_ArgCount;
+  void *SYSTEM_ArgVector;
+#endif
+void (*SYSTEM_AssertFailHandler) (INTEGER n, CHAR *mod, INTEGER pos);
+void (*SYSTEM_HaltHandler) (INTEGER n, CHAR *mod, INTEGER pos);
 void *SYSTEM_MainStackFrame; // adr of main proc stack frame, used for stack collection
 
 
@@ -157,11 +157,9 @@ extern void Heap_Unlock();
 
 extern void Heap_InitHeap();
 
-void SYSTEM_INIT(INTEGER argc, void *argv, void *stktop)
+void SYSTEM_INIT (void *stktop)
 {
   SYSTEM_MainStackFrame = stktop; // MUST be aligned
-  SYSTEM_ArgCount = argc;
-  SYSTEM_ArgVector = argv;
   SYSTEM_AssertFailHandler = 0;
   SYSTEM_HaltHandler = 0;
   // This function (SYSTEM_INIT) is called at program startup BEFORE any

@@ -14184,7 +14184,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] GetDIBColorTable* (p0: HDC; p1: INTEGER; p2: INTEGER; VAR [nil] p3: RGBQUAD): INTEGER;
 	(*END GetDIBColorTable;*)
 
-	PROCEDURE [stdcall] SetDIBColorTable* (p0: HDC; p1: INTEGER; p2: INTEGER; VAR [nil] p3: ARRAY OF RGBQUAD): INTEGER;
+	PROCEDURE [stdcall] SetDIBColorTable* (p0: HDC; p1: INTEGER; p2: INTEGER; p3: POINTER TO ARRAY [untagged] OF RGBQUAD): INTEGER;
 	(*END SetDIBColorTable;*)
 
 	PROCEDURE [stdcall] SetColorAdjustment* (p0: HDC; VAR [nil] p1: COLORADJUSTMENT): BOOL;
@@ -15015,13 +15015,13 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] CreateDialogIndirectParam* ["CreateDialogIndirectParamA"] (hInstance: HINSTANCE; VAR [nil] lpTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): HWND;
 	(*END CreateDialogIndirectParam;*)
 
-	PROCEDURE [stdcall] DialogBoxParamA* (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
+	PROCEDURE [stdcall] DialogBoxParamA* (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: WNDPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxParamA;*)
 
-	PROCEDURE [stdcall] DialogBoxParamW* (hInstance: HINSTANCE; lpTemplateName: PtrWSTR; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
+	PROCEDURE [stdcall] DialogBoxParamW* (hInstance: HINSTANCE; lpTemplateName: PtrWSTR; hWndParent: HWND; lpDialogFunc: WNDPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxParamW;*)
 
-	PROCEDURE [stdcall] DialogBoxParam* ["DialogBoxParamA"] (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;
+	PROCEDURE [stdcall] DialogBoxParam* ["DialogBoxParamA"] (hInstance: HINSTANCE; lpTemplateName: PtrSTR; hWndParent: HWND; lpDialogFunc: WNDPROC; dwInitParam: LPARAM): INTEGER;
 	(*END DialogBoxParam;*)
 
 	PROCEDURE [stdcall] DialogBoxIndirectParamA* (hInstance: HINSTANCE; VAR [nil] hDialogTemplate: DLGTEMPLATE; hWndParent: HWND; lpDialogFunc: DLGPROC; dwInitParam: LPARAM): INTEGER;

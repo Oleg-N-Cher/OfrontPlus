@@ -137,10 +137,8 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 PROCEDURE- getenv (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
   "(INTEGER)GetEnvironmentVariable((char*)name, (char*)buf, buf__len)";
 
-PROCEDURE getEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
-  VAR
-    buf: ARRAY 4096 OF CHAR;
-    res: INTEGER;
+PROCEDURE getEnv (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
+  VAR buf: ARRAY 4096 OF CHAR; res: INTEGER;
 BEGIN
   res := getenv(var, buf);
   IF (res > 0) & (res < LEN(buf)) THEN
@@ -155,37 +153,6 @@ PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
 BEGIN
   IF ~getEnv(var, val) THEN val[0] := 0X END
 END GetEnv;
-
-PROCEDURE- AAExternArgCount     "extern INTEGER SYSTEM_ArgCount;";
-PROCEDURE- AAExternArgVector    "extern void *SYSTEM_ArgVector;";
-PROCEDURE- ArgCount (): INTEGER "SYSTEM_ArgCount";
-PROCEDURE- ArgVector (): ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
-
-PROCEDURE GetArg* (n: INTEGER; VAR val: ARRAY OF CHAR);
-VAR
-  av: ArgVec;
-BEGIN
-  IF n < ArgCount() THEN av := ArgVector(); val := av[n]^$ END
-END GetArg;
-
-PROCEDURE GetIntArg* (n: INTEGER; VAR val: INTEGER);
-  VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
-BEGIN
-  s := ""; GetArg(n, s); i := 0;
-  IF s[0] = "-" THEN i := 1 END ;
-  k := 0; d := ORD(s[i]) - ORD("0");
-  WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
-  IF s[0] = "-" THEN k := -k; DEC(i) END ;
-  IF i > 0 THEN val := k END
-END GetIntArg;
-
-PROCEDURE ArgPos* (IN s: ARRAY OF CHAR): INTEGER;
-  VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
-BEGIN
-  i := 0; GetArg(i, arg);
-  WHILE (i < ArgCount()) & (s # arg) DO INC(i); GetArg(i, arg) END;
-  RETURN i
-END ArgPos;
 
 
 (* Time of day *)
