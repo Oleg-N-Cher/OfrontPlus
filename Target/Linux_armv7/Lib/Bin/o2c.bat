@@ -5,7 +5,7 @@ SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\..\Mod\Lib
 
 :: Ofront+
 
-ofront+ -sC -48 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx Args.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
+ofront+ -sC -48 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
 IF errorlevel 1 PAUSE
 
 :: Eco

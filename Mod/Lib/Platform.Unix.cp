@@ -43,8 +43,6 @@ TYPE
   END;
 
   EnvPtr  = POINTER [notag] TO ARRAY 1024 OF CHAR;
-  ArgPtr* = POINTER [notag] TO ARRAY 1024 OF CHAR;
-  ArgVec* = POINTER [notag] TO ARRAY 1024 OF ArgPtr;
 
 
 VAR
@@ -132,7 +130,7 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 PROCEDURE- getenv (var: ARRAY OF CHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
 
-PROCEDURE getEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE getEnv (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
   VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
@@ -140,41 +138,10 @@ BEGIN
   RETURN p # NIL
 END getEnv;
 
-PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
 BEGIN
-  IF ~getEnv(var, val) THEN val[0] := 0X END
+  IF ~getEnv(var, val) THEN val := "" END
 END GetEnv;
-
-PROCEDURE- AAExternArgCount    "extern INTEGER SYSTEM_ArgCount;";
-PROCEDURE- AAExternArgVector   "extern void *SYSTEM_ArgVector;";
-PROCEDURE- ArgCount (): INTEGER "SYSTEM_ArgCount";
-PROCEDURE- ArgVector (): ArgVec "(Platform_ArgVec)SYSTEM_ArgVector";
-
-PROCEDURE GetArg* (n: INTEGER; VAR val: ARRAY OF CHAR);
-VAR
-  av: ArgVec;
-BEGIN
-  IF n < ArgCount() THEN av := ArgVector(); val := av[n]^$ END
-END GetArg;
-
-PROCEDURE GetIntArg* (n: INTEGER; VAR val: INTEGER);
-  VAR s: ARRAY 64 OF CHAR; k, d, i: INTEGER;
-BEGIN
-  s := ""; GetArg(n, s); i := 0;
-  IF s[0] = "-" THEN i := 1 END ;
-  k := 0; d := ORD(s[i]) - ORD("0");
-  WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
-  IF s[0] = "-" THEN k := -k; DEC(i) END ;
-  IF i > 0 THEN val := k END
-END GetIntArg;
-
-PROCEDURE ArgPos* (IN s: ARRAY OF CHAR): INTEGER;
-  VAR i: INTEGER; arg: ARRAY 256 OF CHAR;
-BEGIN
-  i := 0; GetArg(i, arg);
-  WHILE (i < ArgCount()) & (s # arg) DO INC(i); GetArg(i, arg) END ;
-  RETURN i
-END ArgPos;
 
 
 (* Time of day *)

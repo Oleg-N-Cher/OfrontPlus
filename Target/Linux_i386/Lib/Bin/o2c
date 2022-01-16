@@ -5,7 +5,7 @@ export OBERON=.:../Sym:../../../../Mod/Lib
 
 ## Ofront+
 
-ofront+ -sC -44 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx Args.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
+ofront+ -sC -44 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
 if [ $? != 0 ]; then exit 1; fi
 
 ## Eco

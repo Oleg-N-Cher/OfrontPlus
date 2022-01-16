@@ -473,11 +473,11 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 
 
 #ifndef _WIN32
-   extern INTEGER SYSTEM_ArgCount;
-   extern void *SYSTEM_ArgVector;
+   extern INTEGER SYSTEM_argc;
+   extern void *SYSTEM_argv;
 #  define main(__argc, __argv) _main (void *stktop); \
      int main (__argc, __argv) { \
-       SYSTEM_ArgCount = argc; SYSTEM_ArgVector = argv; return _main(&argv); } \
+       SYSTEM_argc = argc; SYSTEM_argv = argv; return _main(&argv); } \
      int __attribute__ ((noinline)) _main (void *stktop)
 #else
 #  define main(__argc, __argv) _main (void *stktop)

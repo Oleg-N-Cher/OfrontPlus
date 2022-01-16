@@ -44,9 +44,6 @@ TYPE
     mtimelow:  DWORD;  (* File modification time, value is system dependent *)
   END;
 
-  ArgPtr* = POINTER [notag] TO ARRAY 1024 OF CHAR;
-  ArgVec* = POINTER [notag] TO ARRAY 1024 OF ArgPtr;
-
 
 VAR
   LittleEndian-:    BOOLEAN;
@@ -149,9 +146,9 @@ BEGIN
   END
 END getEnv;
 
-PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR);
+PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
 BEGIN
-  IF ~getEnv(var, val) THEN val[0] := 0X END
+  IF ~getEnv(var, val) THEN val := "" END
 END GetEnv;
 
 

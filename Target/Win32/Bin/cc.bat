@@ -1,7 +1,7 @@
 @ECHO OFF
 IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW\bin
 CD ..\Obj
-SET StripExe=-nostartfiles ..\..\..\Mod\Lib\crt1.c -Wl,-e_WinMain -D_WINMAIN
+SET StripExe=-nostartfiles ..\..\..\Mod\Lib\crt1.c -Wl,-e_WinMain
 SET CC=gcc.exe %StripExe% -I..\Lib\Obj -I..\..\..\Mod\Lib -m32 -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -Wl,--gc-sections -Wfatal-errors
 
 %CC% -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c

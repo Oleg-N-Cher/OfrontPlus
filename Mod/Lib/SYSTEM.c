@@ -23,8 +23,8 @@
 LONGINT SYSTEM_INF = 0x7FF0000000000000L;
 INTEGER SYSTEM_INFS = 0x7F800000;
 #ifndef _WIN32
-  INTEGER SYSTEM_ArgCount;
-  void *SYSTEM_ArgVector;
+  INTEGER SYSTEM_argc;
+  void *SYSTEM_argv;
 #endif
 void (*SYSTEM_AssertFailHandler) (INTEGER n, CHAR *mod, INTEGER pos);
 void (*SYSTEM_HaltHandler) (INTEGER n, CHAR *mod, INTEGER pos);

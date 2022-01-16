@@ -2,7 +2,7 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
 
   IMPORT SYSTEM;
 
-  TYPE PtrSTR = POINTER [untagged] TO ARRAY [untagged] OF SHORTCHAR;
+  TYPE PtrSTR = POINTER [notag] TO ARRAY [notag] OF SHORTCHAR;
 
   VAR
     Count-, current: INTEGER;
