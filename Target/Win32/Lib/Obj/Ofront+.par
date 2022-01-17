@@ -1,9 +1,1 @@
--sC -48
-Platform.Windows.Mod -atpx
-Kernel.Mod -atpx
-arC.ob2 -2 arCFormat.ob2 -2 arChar.ob2 -2 arConfiguration.ob2 -2 arCString.ob2 -2
-arDir.ob2 -2 arErr.ob2 -2 arFile.ob2 -2 arFormat.ob2 -2 arJSON.ob2 -2 arMath.ob2 -2
-arOut.ob2 -2 arPath.ob2 -2 arPattern.ob2 -2 arSize.ob2 -2 arStream.ob2 -2
-arStringAssoc.ob2 -2 arStringList.ob2 -2 arStrings.ob2 -2 arText.ob2 -2
-arValue.ob2 -2 Zip.ob2 -2 Zlib.ob2 -2 ZlibBuffers.ob2 -2 ZlibDeflate.ob2 -2
-ZlibInflate.ob2 -2 ZlibReaders.ob2 -2 ZlibWriters.ob2 -2
+-sC -48 Platform.Windows.cp -atpx Kernel.cp -atpx
