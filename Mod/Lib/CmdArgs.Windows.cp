@@ -9,7 +9,7 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
     cmdline: PtrSTR;
     dummy: ARRAY 1 OF SHORTCHAR;
 
-  PROCEDURE [stdcall] GetCommandLine* ["GetCommandLineA"] (): PtrSTR;
+  PROCEDURE [stdcall] GetCommandLine ["GetCommandLineA"] (): PtrSTR;
 
   (* based on Arthur Yefimov's module Args, free.oberon.org *)
   PROCEDURE Get* (n: INTEGER; VAR val: ARRAY OF SHORTCHAR);
@@ -64,7 +64,7 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
 
   (* Program environmet access *)
 
-  PROCEDURE [stdcall] GetEnvironmentVariable* ["GetEnvironmentVariableA"]
+  PROCEDURE [stdcall] GetEnvironmentVariable ["GetEnvironmentVariableA"]
     (lpName, lpBuffer: PtrSTR; nSize: INTEGER): INTEGER;
 
   PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);

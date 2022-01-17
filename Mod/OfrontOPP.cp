@@ -338,7 +338,9 @@
 		END;
 		IF obj^.mode IN {LProc, XProc, Var} THEN
 			IF sym = lbrak THEN OPS.Get(sym);
-				IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
+				IF obj^.mnolev # 0 THEN err(48)
+				ELSIF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135)
+				END;
 				IF (sym = number) & (OPS.numtyp = char) THEN
 					NEW(obj^.entry, 2); obj^.entry[0] := SHORT(CHR(OPS.intval)); obj^.entry[1] := 0X
 				ELSIF sym = string THEN

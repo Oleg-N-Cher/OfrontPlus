@@ -1133,7 +1133,10 @@
 					IF (obj^.entry # NIL) OR dynlib THEN OPM.WriteString(EXTERN)
 					ELSE OPM.WriteString(Extern)
 					END
-				ELSIF obj^.vis = internal THEN OPM.WriteString(Static)
+				ELSIF obj^.vis = internal THEN
+					IF (obj^.mnolev = 0) & (obj^.entry # NIL) THEN OPM.WriteString(EXTERN)
+					ELSE OPM.WriteString(Static)
+					END
 				ELSIF dynlib THEN
 					IF mainprog & (obj^.entry = NIL) THEN obj^.entry := obj^.name END;
 					OPM.WriteString(EXPORT)
