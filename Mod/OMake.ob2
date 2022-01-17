@@ -4,7 +4,7 @@ IMPORT
 	Kernel,
 	Console,
 	Files,
-	Args, 
+	Args := arArgs,
 	Platform,
 	Out := arOut,
 

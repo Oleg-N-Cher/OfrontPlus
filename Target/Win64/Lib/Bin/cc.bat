@@ -51,18 +51,18 @@ IF errorlevel 1 PAUSE
 :: Aria - Reusable Oberon-2 modules by Stewart Greenhill
 :: https://github.com/sgreenhill/aria
 
-%CC% arChar.c arCString.c arDir.c arSize.c arStrings.c arStringList.c ^
-  arStringAssoc.c arText.c arStream.c arFile.c arOut.c arPath.c ^
-  arPattern.c arErr.c arConfiguration.c arValue.c arFormat.c arJSON.c
+%CC% arArgs.c arChar.c arCString.c arDir.c arSize.c arStrings.c arStringList.c ^
+  arStringAssoc.c arText.c arStream.c arFile.c arOut.c arPath.c arPattern.c ^
+  arErr.c arConfiguration.c arValue.c arFormat.c arJSON.c
 IF errorlevel 1 PAUSE
-%AR% arChar.o arCString.o arDir.o arSize.o arStrings.o arStringList.o ^
-  arStringAssoc.o arText.o arStream.o arFile.o arOut.o arPath.o ^
-  arPattern.o arErr.o arConfiguration.o arValue.o arFormat.o arJSON.o
+%AR% arArgs.o arChar.o arCString.o arDir.o arSize.o arStrings.o arStringList.o ^
+  arStringAssoc.o arText.o arStream.o arFile.o arOut.o arPath.o arPattern.o ^
+  arErr.o arConfiguration.o arValue.o arFormat.o arJSON.o
 
 :: BlackBox
 
-%CC% bbMath.c
+%CC% bbKernel.c bbMath.c bbStrings.c
 IF errorlevel 1 PAUSE
-%AR% bbMath.o
+%AR% bbKernel.o bbMath.o bbStrings.o
 
 DEL /Q *.o

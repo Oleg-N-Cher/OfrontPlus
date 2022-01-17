@@ -57,9 +57,8 @@ MODULE arConfiguration;
 IMPORT 
 	Kernel,
 	Console,
-	CmdArgs, 
-	Platform,
-	Files, 
+	Args := arArgs,
+	Files,
 
 	Size := arSize,
 	SA := arStringAssoc,
@@ -105,8 +104,8 @@ TYPE
 
 VAR
 	(* copy of arg vector as an Oberon structure *)
-	(*argc : LONGINT;
-	argv- : SL.Array;*)
+	argc : LONGINT;
+	argv- : SL.Array;
 
 	(* list of all configuration values *)
 	values- : Value;
@@ -134,7 +133,7 @@ END CopyArgPtr;
 
 (* Copy C argument vector into an Oberon array *)
 
-PROCEDURE CopyArgVec(p : Platform.ArgVec) : SL.Array;
+PROCEDURE CopyArgVec(p : Args.ArgVec) : SL.Array;
 VAR
 	len, strLen : INTEGER;
 	i, j : INTEGER; 
@@ -351,7 +350,7 @@ END FindOption;
 (* If an option is at the current position, process it, update pos and RETURN
 TRUE *)
 
-(*PROCEDURE CheckOption*(VAR pos : LONGINT) : BOOLEAN;
+PROCEDURE CheckOption*(VAR pos : LONGINT) : BOOLEAN;
 VAR
 	arg : SL.String;
 	value : Value;
@@ -372,17 +371,17 @@ BEGIN
 		RETURN TRUE;
 	END;
 	RETURN FALSE;
-END CheckOption;*)
+END CheckOption;
 
 (* Process a sequence of options on the command line. Return the argument
 position of the first argument that is not an option. Options start with '-',
 and may include an additional argument specifying a value *)
 
-(*PROCEDURE ScanOptions*(VAR pos : LONGINT);
+PROCEDURE ScanOptions*(VAR pos : LONGINT);
 BEGIN
 	WHILE (pos < argc) & CheckOption(pos) DO
 	END;
-END ScanOptions;*)
+END ScanOptions;
 
 PROCEDURE SetBanner*(text : ARRAY OF CHAR);
 BEGIN
@@ -471,13 +470,13 @@ END Read;
 
 (* Make sure there are no extraneous arguments after <pos> *)
 
-(*PROCEDURE CheckFinished*(pos : LONGINT);
+PROCEDURE CheckFinished*(pos : LONGINT);
 BEGIN
 	IF pos # argc THEN
 		Console.String("Unexpected arguments"); Console.Ln;
 		Error;
 	END;
-END CheckFinished;*)
+END CheckFinished;
 
 (* ------ Boolean ------ *)
 
@@ -642,8 +641,8 @@ BEGIN
 END NewAssoc;
 
 BEGIN
-	(*argv := CopyArgVec(Args.argv);
-	argc := LEN(argv^);*)
+	argv := CopyArgVec(Args.argv);
+	argc := LEN(argv^);
 	banner := NIL;
 	values := NIL;
 	NewProcedure("help", "Display this message", Help);

@@ -9,7 +9,7 @@ SET oef=
 ofront+ -s -48 ^
   OfrontErrors.cp OfrontOPM.cmdln.cp -G OfrontOPS.cp OfrontOPT.cp OfrontOPB.cp ^
   OfrontOPP.cp OfrontOPC.cp OfrontOPV.cp BrowserCmd.cp -m ImportGraph.cp -m ^
-  OCatCmd.cp -m OfrontCmd.cp -m OdcToText.ob3 -m ^
+  OCatCmd.cp -m OfrontCmd.cp -m OdcToText.ob3 -m OEF.ob2 -m OMake.ob2 -m ^
   %oef%
 IF errorlevel 1 PAUSE
 
