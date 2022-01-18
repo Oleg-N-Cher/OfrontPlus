@@ -21,7 +21,9 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
   PROCEDURE Get* (n: INTEGER; VAR val: ARRAY OF SHORTCHAR);
     VAR av: ArgVec;
   BEGIN
-    IF n < argc() THEN av := argv(); val := av[n]^$ END
+    IF n < argc() THEN av := argv();
+      IF LEN(val) > LEN(av[n]^$) THEN val := av[n]^$ END
+    END
   END Get;
 
   PROCEDURE GetInt* (n: INTEGER; VAR val: INTEGER);
@@ -30,8 +32,8 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
     s := ""; Get(n, s); i := 0;
     IF s[0] = "-" THEN i := 1 END ;
     k := 0; d := ORD(s[i]) - ORD("0");
-    WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END ;
-    IF s[0] = "-" THEN k := -k; DEC(i) END ;
+    WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END;
+    IF s[0] = "-" THEN k := -k; DEC(i) END;
     IF i > 0 THEN val := k END
   END GetInt;
 
