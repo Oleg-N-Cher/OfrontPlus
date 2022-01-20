@@ -1,0 +1,52 @@
+name: Build Ofront+ for Win64
+
+on: push
+
+jobs:
+  job1:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Build Ofront+
+        run: |
+          CD Target\Win64\Bin
+          CALL build.bat
+          CD ..\..\..
+          MKDIR unix-88
+          CD unix-88
+          COPY ..\Mod\Lib\SYSTEM.* . >NUL
+          COPY ..\Mod\Lib\*.h0 . >NUL
+          CALL ..\Target\Win64\Bin\o2c-bootstrap.bat -88 Unix
+          CD ..
+          MKDIR unix-48
+          CD unix-48
+          COPY ..\Mod\Lib\SYSTEM.* . >NUL
+          COPY ..\Mod\Lib\*.h0 . >NUL
+          CALL ..\Target\Win64\Bin\o2c-bootstrap.bat -48 Unix
+          CD ..
+          MKDIR unix-44
+          CD unix-44
+          COPY ..\Mod\Lib\SYSTEM.* . >NUL
+          COPY ..\Mod\Lib\*.h0 . >NUL
+          CALL ..\Target\Win64\Bin\o2c-bootstrap.bat -44 Unix
+        shell: cmd
+
+      - name: Publish target files
+        run: |
+          rm -rf .git
+          mv -f Target/Linux_amd64/Bin/.travis.yml .
+          mv Target/Linux_amd64/Bin/cc-bootstrap .
+          git init
+          git add -f Target/Win64/*.exe
+          git add unix-88
+          git add unix-48
+          git add unix-44
+          git add .travis.yml
+          git add cc-bootstrap
+          git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "o2c #$GITHUB_RUN_NUMBER"
+          # Make sure to make the output quiet, or else the API token will leak!
+          git push -f -q https://Oleg-N-Cher:$BOOTSTRAP_TOKEN@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
+        shell: bash
+        env:
+          BOOTSTRAP_TOKEN: ${{secrets.BOOTSTRAP_TOKEN}}
