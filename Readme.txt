@@ -124,10 +124,11 @@ Contributors
   Norayr Chilingarian, he really knows how to breed Armenian dragons!
   Artur Yefimov, he could have done more, but thank him for that too.
   Sergey A. Oborotov, he implemented improved smart support of Clang.
+  GameHunter found for rarest errors that were inherited from Ofront.
 
   ... also the entire OMinc team and all OP2 & ETH Oberon developers!
   ... sorry who we forgot. Please remind...
 
 
 The Ofront+ team,
-2013-2021
+2013-2022

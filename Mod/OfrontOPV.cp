@@ -1038,7 +1038,7 @@
 				obj := if^.left^.left^.obj; typ := obj^.typ; adr := obj^.adr;
 				IF typ^.comp = Record THEN
 					(* introduce alias pointer for var records; T1 *name__ = rec; *)
-					OPC.BegStat; OPC.Ident(if^.left^.obj); OPM.WriteString(" *");
+					OPC.BegStat; OPC.Ident(if^.left^.obj^.typ^.strobj); OPM.WriteString(" *");
 					OPM.WriteString(obj.name^); OPM.WriteString("__ = (void*)");
 					obj^.adr := 0; (* for nested WITH with same variable; always take the original name *)
 					OPC.CompleteIdent(obj);
