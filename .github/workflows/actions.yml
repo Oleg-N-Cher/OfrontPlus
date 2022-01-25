@@ -35,14 +35,14 @@ jobs:
       - name: Publish target files
         run: |
           rm -rf .git
-          mv -f Target/Linux_amd64/Bin/.travis.yml .
+          mv -f Target/Linux_amd64/Bin/.cirrus.yml .
           mv Target/Linux_amd64/Bin/cc-bootstrap .
           git init
           git add -f Target/Win64/*.exe
           git add unix-88
           git add unix-48
           git add unix-44
-          git add .travis.yml
+          git add .cirrus.yml
           git add cc-bootstrap
           git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "o2c #$GITHUB_RUN_NUMBER"
           # Make sure to make the output quiet, or else the API token will leak!

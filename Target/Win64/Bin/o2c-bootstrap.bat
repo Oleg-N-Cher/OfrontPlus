@@ -49,7 +49,7 @@ IF errorlevel 1 EXIT
 
 :: BlackBox
 
-ofront+ -s %1 bbMath.cp
+ofront+ -sw %1 bbLinLibc.cp bbLinLibW.cp bbKernel.Unix.cp bbMath.cp bbStrings.cp
 IF errorlevel 1 EXIT
 
 :: Ofront+ and tools

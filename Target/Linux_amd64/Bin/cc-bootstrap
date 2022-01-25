@@ -5,9 +5,9 @@ AR="ar -rc libOfront.a"
 
 ## Ofront+
 
-$CC SYSTEM.c Heap.c Platform.c Console.c Kernel.c Args.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+$CC SYSTEM.c Heap.c Platform.c Console.c Kernel.c CmdArgs.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
 if [ $? != 0 ]; then exit 1; fi
-$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o Args.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o CmdArgs.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
 
 ## Eco
 
@@ -48,21 +48,19 @@ $AR NetHttp.o
 ## Aria - Reusable Oberon-2 modules by Stewart Greenhill
 ## https://github.com/sgreenhill/aria
 
-$CC arC.c arCFormat.c arChar.c arCString.c arDir.c arMath.c \
-  arSize.c arStrings.c arStringList.c arStringAssoc.c arText.c \
-  arStream.c arFile.c arOut.c arPath.c arPattern.c arErr.c \
-  arConfiguration.c arValue.c arFormat.c arJSON.c
+$CC arArgs.c arChar.c arCString.c arDir.c arSize.c arStrings.c arStringList.c \
+  arStringAssoc.c arText.c arStream.c arFile.c arOut.c arPath.c \
+  arPattern.c arErr.c arConfiguration.c arValue.c arFormat.c arJSON.c 
 if [ $? != 0 ]; then exit 1; fi
-$AR arC.o arCFormat.o arChar.o arCString.o arDir.o arMath.o \
-  arSize.o arStrings.o arStringList.o arStringAssoc.o arText.o \
-  arStream.o arFile.o arOut.o arPath.o arPattern.o arErr.o \
-  arConfiguration.o arValue.o arFormat.o arJSON.o
+$AR arArgs.o arChar.o arCString.o arDir.o arSize.o arStrings.o arStringList.o \
+  arStringAssoc.o arText.o arStream.o arFile.o arOut.o arPath.o \
+  arPattern.o arErr.o arConfiguration.o arValue.o arFormat.o arJSON.o
 
 ## BlackBox
 
-$CC bbMath.c
+$CC bbKernel.c bbMath.c bbStrings.c
 if [ $? != 0 ]; then exit 1; fi
-$AR bbMath.o
+$AR bbKernel.o bbMath.o bbStrings.o
 
 rm *.o 
 
@@ -104,5 +102,5 @@ $CC OdcToText.c -lOfront -lm -o../odc2txt
 if [ $? != 0 ]; then exit 1; fi
 
 cd ..
-./ofront+
-if [ $? != 0 ]; then exit 1; fi
+#./ofront+
+#if [ $? != 0 ]; then exit 1; fi
