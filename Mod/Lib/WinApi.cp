@@ -14184,7 +14184,7 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] GetDIBColorTable* (p0: HDC; p1: INTEGER; p2: INTEGER; VAR [nil] p3: RGBQUAD): INTEGER;
 	(*END GetDIBColorTable;*)
 
-	PROCEDURE [stdcall] SetDIBColorTable* (p0: HDC; p1: INTEGER; p2: INTEGER; p3: POINTER TO ARRAY [untagged] OF RGBQUAD): INTEGER;
+	PROCEDURE [stdcall] SetDIBColorTable* (p0: HDC; p1: INTEGER; p2: INTEGER; IN [nil] p3: ARRAY [untagged] OF RGBQUAD): INTEGER;
 	(*END SetDIBColorTable;*)
 
 	PROCEDURE [stdcall] SetColorAdjustment* (p0: HDC; VAR [nil] p1: COLORADJUSTMENT): BOOL;
