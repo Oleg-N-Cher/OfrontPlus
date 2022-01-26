@@ -23,7 +23,7 @@ freebsd_task:
     git pull -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
     test -f .cirrus.yml && git rm .cirrus.yml &>/dev/null
     git add Target
-    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #$CIRRUS_OS"
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #freebsd"
     git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
   on_failure:
     debug_script: |
@@ -91,7 +91,7 @@ macos_task:
     git pull -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
     test -f .cirrus.yml && git rm .cirrus.yml &>/dev/null
     git add Target
-    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #$CIRRUS_OS"
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #macos"
     git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
   on_failure:
     debug_script: |
