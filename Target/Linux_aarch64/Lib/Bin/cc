@@ -1,11 +1,12 @@
 #!/bin/sh
-
-CC="cc -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
-AR="ar -rc libOfront.a"
+cd ../Obj
+CC="cc -fPIC -I. -I../../../../Mod/Lib -Os -g0 -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+AR="ar -rc ../libOfront.a"
+if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
 
 ## Ofront+
 
-$CC SYSTEM.c Heap.c Platform.c Console.c Kernel.c CmdArgs.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+$CC ../../../../Mod/Lib/SYSTEM.c Heap.c Platform.c Console.c Kernel.c CmdArgs.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
 if [ $? != 0 ]; then exit 1; fi
 $AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o CmdArgs.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
 
@@ -50,7 +51,7 @@ $AR NetHttp.o
 
 $CC arArgs.c arChar.c arCString.c arDir.c arSize.c arStrings.c arStringList.c \
   arStringAssoc.c arText.c arStream.c arFile.c arOut.c arPath.c \
-  arPattern.c arErr.c arConfiguration.c arValue.c arFormat.c arJSON.c 
+  arPattern.c arErr.c arConfiguration.c arValue.c arFormat.c arJSON.c
 if [ $? != 0 ]; then exit 1; fi
 $AR arArgs.o arChar.o arCString.o arDir.o arSize.o arStrings.o arStringList.o \
   arStringAssoc.o arText.o arStream.o arFile.o arOut.o arPath.o \
@@ -62,45 +63,4 @@ $CC bbKernel.c bbMath.c bbStrings.c
 if [ $? != 0 ]; then exit 1; fi
 $AR bbKernel.o bbMath.o bbStrings.o
 
-rm *.o 
-
-CC="cc -I. -L. -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables"
-
-$CC -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c
-if [ $? != 0 ]; then exit 1; fi
-
-## Ofront+
-
-$CC OfrontCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPB.o OfrontOPP.o OfrontOPC.o OfrontOPV.o -lOfront -lm -o../ofront+
-if [ $? != 0 ]; then exit 1; fi
-
-## Browser
-
-$CC BrowserCmd.c OfrontErrors.o OfrontOPM.o OfrontOPS.o OfrontOPT.o OfrontOPC.o OfrontOPV.o -lOfront -lm -o../showdef
-if [ $? != 0 ]; then exit 1; fi
-
-## ImportGraph
-
-$CC ImportGraph.c -lOfront -lm -o../graphviz
-if [ $? != 0 ]; then exit 1; fi
-
-## OCat
-
-$CC OCatCmd.c -lOfront -lm -o../ocat
-if [ $? != 0 ]; then exit 1; fi
-
-## OEF & OMake
-
-$CC OEF.c -lOfront -lm -o../oef
-if [ $? != 0 ]; then exit 1; fi
-$CC OMake.c -lOfront -lm -o../omake
-if [ $? != 0 ]; then exit 1; fi
-
-## OdcToText
-
-$CC OdcToText.c -lOfront -lm -o../odc2txt
-if [ $? != 0 ]; then exit 1; fi
-
-cd ..
-#./ofront+
-#if [ $? != 0 ]; then exit 1; fi
+rm *.o

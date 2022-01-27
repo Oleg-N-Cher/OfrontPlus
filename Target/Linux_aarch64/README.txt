@@ -1,6 +1,6 @@
 The directory structure of the project Ofront+ is as follows:
 
-Linux_amd64/
+Linux_aarch64/
     /Bin      Script that builds Ofront+ and other tools for 32 and 64 bit Unix/Linux, runs on x64
     /Lib/Bin  Build scripts for libOfront
     /Lib/Obj  Working directory for library object files

@@ -1,0 +1,12 @@
+#!/bin/sh
+cd ../Obj
+PATH="..:$PATH"
+export OBERON=.:../Sym:../Lib/Sym:../../../Mod
+
+ofront+ -sC -88 \
+  OfrontErrors.cp OfrontOPM.cmdln.cp -G OfrontOPS.cp OfrontOPT.cp OfrontOPB.cp \
+  OfrontOPP.cp OfrontOPC.cp OfrontOPV.cp BrowserCmd.cp -m ImportGraph.cp -m \
+  OCatCmd.cp -m OfrontCmd.cp -m OdcToText.ob3 -3m OEF.ob2 -2m OMake.ob2 -2m
+if [ $? != 0 ]; then exit 1; fi
+
+find . -type f -name "*.sym" -exec mv -f {} ../Sym \;

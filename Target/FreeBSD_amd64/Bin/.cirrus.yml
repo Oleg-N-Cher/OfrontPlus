@@ -1,26 +1,26 @@
-linux_task:
-  container:
+freebsd_task:
+  freebsd_instance:
+    image_family: freebsd-12-3
     cpu: 4
-    memory: 8G
-    image: gcc:latest
+    memory: 4G
   environment:
     CIRRUS_KEY: ENCRYPTED[0d928cf2f2b4e912a319e684389a48e71ef890d05fea5287ab4b26adc25093395010d777f7ab56cefeb0458b9667cb5a]
-  timeout_in: 10m
+  timeout_in: 20m
+  install_script: pkg install -y git
   script: |
     chmod +x cc-bootstrap
     cd unix-88
     ../cc-bootstrap
     cd ..
-    mkdir -p Target/Linux_amd64
-    cp graphviz Target/Linux_amd64
-    cp ocat Target/Linux_amd64
-    cp odc2txt Target/Linux_amd64
-    cp oef Target/Linux_amd64
-    cp ofront+ Target/Linux_amd64
-    cp omake Target/Linux_amd64
-    cp showdef Target/Linux_amd64
-    mv Target/macOS/Bin/.cirrus.yml .
-    git add .cirrus.yml
+    mkdir -p Target/FreeBSD_amd64
+    cp graphviz Target/FreeBSD_amd64
+    cp ocat Target/FreeBSD_amd64
+    cp odc2txt Target/FreeBSD_amd64
+    cp oef Target/FreeBSD_amd64
+    cp ofront+ Target/FreeBSD_amd64
+    cp omake Target/FreeBSD_amd64
+    cp showdef Target/FreeBSD_amd64
+    git rm .cirrus.yml
     git add Target
     git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #$CIRRUS_OS"
     git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null

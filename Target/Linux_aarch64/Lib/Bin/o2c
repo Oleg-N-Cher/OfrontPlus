@@ -1,0 +1,56 @@
+#!/bin/sh
+cd ../Obj
+PATH="../..:$PATH"
+export OBERON=.:../Sym:../../../../Mod/Lib
+
+## Ofront+
+
+ofront+ -s88 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
+if [ $? != 0 ]; then exit 1; fi
+
+## Eco
+
+ofront+ -s88 ecoBigSets.cp ecoBuffer.cp ecoListen.cp ecoLists.cp ecoParser.cp ecoVector.cp
+if [ $? != 0 ]; then exit 1; fi
+
+## ETH Oberon
+
+ofront+ -s88 Zlib.ob2 ZlibBuffers.ob2 ZlibDeflate.ob2 ZlibInflate.ob2 ZlibReaders.ob2 ZlibWriters.ob2 Zip.ob2
+if [ $? != 0 ]; then exit 1; fi
+
+## OOC2
+
+ofront+ -s88 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp
+if [ $? != 0 ]; then exit 1; fi
+
+## POW
+
+ofront+ -s88 powStrings.cp
+if [ $? != 0 ]; then exit 1; fi
+
+## Free Oberon
+
+ofront+ -s88 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
+if [ $? != 0 ]; then exit 1; fi
+
+## libCurl
+
+ofront+ -s88 libCurl.cp NetHttp.cp
+if [ $? != 0 ]; then exit 1; fi
+
+## Aria - Reusable Oberon-2 modules by Stewart Greenhill
+## https://github.com/sgreenhill/aria
+
+ofront+ -sO -88 \
+  arArgs.ob2 arC.ob2 arCFormat.ob2 arChar.ob2 arCString.ob2 arDir.ob2 \
+  arMath.ob2 arSize.ob2 arStrings.ob2 arStringList.ob2 arStringAssoc.ob2 \
+  arText.ob2 arStream.ob2 arFile.ob2 arOut.ob2 arPath.ob2 arPattern.ob2 \
+  arErr.ob2 arConfiguration.ob2 arValue.ob2 arFormat.ob2 arJSON.ob2
+if [ $? != 0 ]; then exit 1; fi
+
+## BlackBox
+
+ofront+ -sw88 bbLinLibc.cp bbLinLibW.cp bbKernel.Unix.cp bbMath.cp bbStrings.cp
+if [ $? != 0 ]; then exit 1; fi
+
+find . -type f -name "*.sym" -exec mv -f {} ../Sym \;
