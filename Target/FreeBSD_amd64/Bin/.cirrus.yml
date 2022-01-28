@@ -13,13 +13,13 @@ freebsd_task:
     ../cc-bootstrap
     cd ..
     mkdir -p Target/FreeBSD_amd64
-    cp graphviz Target/FreeBSD_amd64
-    cp ocat Target/FreeBSD_amd64
-    cp odc2txt Target/FreeBSD_amd64
-    cp oef Target/FreeBSD_amd64
-    cp ofront+ Target/FreeBSD_amd64
-    cp omake Target/FreeBSD_amd64
-    cp showdef Target/FreeBSD_amd64
+    mv graphviz Target/FreeBSD_amd64
+    mv ocat Target/FreeBSD_amd64
+    mv odc2txt Target/FreeBSD_amd64
+    mv oef Target/FreeBSD_amd64
+    mv ofront+ Target/FreeBSD_amd64
+    mv omake Target/FreeBSD_amd64
+    mv showdef Target/FreeBSD_amd64
     git rm .cirrus.yml
     git add Target
     git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #$CIRRUS_OS"

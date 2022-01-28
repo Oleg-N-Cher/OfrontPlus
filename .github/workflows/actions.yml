@@ -43,7 +43,7 @@ jobs:
           mv -f Target/Linux_amd64/Bin/.cirrus.yml .
           git add .cirrus.yml
           git add Target/macOS/Bin/.cirrus.yml
-          git add Target/Linux_arm64/Bin/.cirrus.yml
+          git add Target/Linux_aarch64/Bin/.cirrus.yml
           git add Target/FreeBSD_amd64/Bin/.cirrus.yml
           mv Target/Linux_amd64/Bin/cc-bootstrap .
           git add cc-bootstrap

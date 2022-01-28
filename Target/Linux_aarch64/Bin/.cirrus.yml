@@ -12,14 +12,14 @@ linux_arm_task:
     ../cc-bootstrap
     cd ..
     mkdir -p Target/Linux_aarch64
-    cp graphviz Target/Linux_aarch64
-    cp ocat Target/Linux_aarch64
-    cp odc2txt Target/Linux_aarch64
-    cp oef Target/Linux_aarch64
-    cp ofront+ Target/Linux_aarch64
-    cp omake Target/Linux_aarch64
-    cp showdef Target/Linux_aarch64
-    mv Target/FreeBSD_amd64/Bin/.cirrus.yml .
+    mv graphviz Target/Linux_aarch64
+    mv ocat Target/Linux_aarch64
+    mv odc2txt Target/Linux_aarch64
+    mv oef Target/Linux_aarch64
+    mv ofront+ Target/Linux_aarch64
+    mv omake Target/Linux_aarch64
+    mv showdef Target/Linux_aarch64
+    mv Target/macOS/Bin/.cirrus.yml .
     git add .cirrus.yml
     git add Target
     git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #${CIRRUS_OS}_arm"

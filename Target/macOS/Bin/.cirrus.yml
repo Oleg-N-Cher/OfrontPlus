@@ -10,14 +10,14 @@ macos_task:
     ../cc-bootstrap
     cd ..
     mkdir -p Target/macOS
-    cp graphviz Target/macOS
-    cp ocat Target/macOS
-    cp odc2txt Target/macOS
-    cp oef Target/macOS
-    cp ofront+ Target/macOS
-    cp omake Target/macOS
-    cp showdef Target/macOS
-    mv Target/Linux_aarch64/Bin/.cirrus.yml .
+    mv graphviz Target/macOS
+    mv ocat Target/macOS
+    mv odc2txt Target/macOS
+    mv oef Target/macOS
+    mv ofront+ Target/macOS
+    mv omake Target/macOS
+    mv showdef Target/macOS
+    mv Target/FreeBSD_amd64/Bin/.cirrus.yml .
     git add .cirrus.yml
     git add Target
     git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #macos"
