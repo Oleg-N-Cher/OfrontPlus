@@ -37,7 +37,8 @@
 		Nconst = 7; Ntype = 8; Nproc = 9; Nupto = 10; Nmop = 11; Ndop = 12; Ncall = 13;
 		Ninittd = 14; Nenter = 18; Nassign = 19;
 		Nifelse =20; Ncase = 21; Nwhile = 22; Nrepeat = 23; Nloop = 24; Nexit = 25;
-		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30; Nraw = 31;
+		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 29; Nraw = 30; Nwhiled = 11;
+		Nwhilede = 12;
 
 		(*function number*)
 		assign = 0; newfn = 1; incfn = 19; decfn = 20;
@@ -1358,6 +1359,10 @@
 						INC(exit.level); OPM.WriteString("while "); expr(n^.left, MaxPrec);
 						OPM.Write(Blank); OPC.BegBlk; stat(n^.right, outerProc); OPC.EndBlk;
 						DEC(exit.level)
+			|	Nwhiled:
+						INC(exit.level); OPM.WriteString("for (;;) "); OPC.BegBlk
+			|	Nwhilede:
+						DEC(exit.level); OPM.WriteString("else break"); OPC.EndStat; OPC.EndBlk
 			|	Nrepeat:
 						INC(exit.level); OPM.WriteString("do "); OPC.BegBlk; stat(n^.left, outerProc); OPC.EndBlk0;
 						IF n^.right^.class = Nassign THEN (* FOR loop *)
@@ -1420,7 +1425,7 @@
 							END
 						END
 			END;
-			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Ncomp, Nraw}) THEN
+			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Nwhiled, Nwhilede, Ncomp, Nraw}) THEN
 				OPC.EndStat
 			END;
 			n := n^.link

@@ -53,7 +53,8 @@
 		Nconst = 7; Ntype = 8; Nproc = 9; Nupto = 10; Nmop = 11; Ndop = 12; Ncall = 13;
 		Ninittd = 14; Nif = 15; Ncaselse = 16; Ncasedo = 17; Nenter = 18; Nassign = 19;
 		Nifelse = 20; Ncase = 21; Nwhile = 22; Nrepeat = 23; Nloop = 24; Nexit = 25;
-		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 30; Nraw = 31;
+		Nreturn = 26; Nwith = 27; Ntrap = 28; Ncomp = 29; Nraw = 30; Nwhiled = 11;
+		Nwhilede = 12;
 
 		(* node subclasses *)
 		super = 1;
@@ -1773,19 +1774,30 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				WHILE sym = elsif DO
 					OPS.Get(sym); Expression(y); CheckBool(y); CheckSym(then); StatSeq(z);
 					OPB.Construct(Nif, y, z); SetPos(y); OPB.Link(x, lastif, y)
-				END ;
-				IF sym = else THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END ;
+				END;
+				IF sym = else THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END;
 				OPB.Construct(Nifelse, x, y); CheckSym(end); OPB.OptIf(x); pos := OPM.errpos
 			ELSIF sym = case THEN
 				OPS.Get(sym); CasePart(x); CheckSym(end)
 			ELSIF sym = while THEN
 				OPS.Get(sym); Expression(x); CheckBool(x); CheckSym(do); StatSeq(y);
-				OPB.Construct(Nwhile, x, y); CheckSym(end)
+				IF sym = end THEN OPB.Construct(Nwhile, x, y)
+				ELSIF (sym = elsif) & (OPM.Lang = "7") THEN
+					OPB.Construct(Nwhiled, z, NIL); SetPos(z); OPB.Link(stat, last, z);
+					OPB.Construct(Nif, x, y); SetPos(x); lastif := x;
+					REPEAT
+						OPS.Get(sym); Expression(y); CheckBool(y); CheckSym(do); StatSeq(z);
+						OPB.Construct(Nif, y, z); SetPos(y); OPB.Link(x, lastif, y)
+					UNTIL sym # elsif;
+					OPB.Construct(Nifelse, x, NIL); OPB.OptIf(x); pos := OPM.errpos;
+					SetPos(x); OPB.Link(stat, last, x); OPB.Construct(Nwhilede, x, NIL)
+				END;
+				CheckSym(end)
 			ELSIF sym = repeat THEN
 				OPS.Get(sym); StatSeq(x);
 				IF sym = until THEN OPS.Get(sym); Expression(y); CheckBool(y)
 				ELSE err(until)
-				END ;
+				END;
 				OPB.Construct(Nrepeat, x, y)
 			ELSIF sym = for THEN
 				IF OPM.for IN OPM.opt THEN ForImproved ELSE ForOriginal END
@@ -1799,7 +1811,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						qualident(id); y := OPB.NewLeaf(id);
 						IF (id # NIL) & (id^.typ^.form = Pointer) & ((id^.mode = VarPar) OR ~id^.leaf) THEN
 							err(245)	(* jt: do not allow WITH on non-local pointers *)
-						END ;
+						END;
 						CheckSym(colon);
 						IF sym = ident THEN qualident(t);
 							IF t^.mode = Typ THEN
@@ -1812,14 +1824,14 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						ELSE err(ident)
 						END
 					ELSE err(ident)
-					END ;
+					END;
 					pos := OPM.errpos; CheckSym(do); StatSeq(s); OPB.Construct(Nif, y, s); SetPos(y);
-					IF idtyp # NIL THEN id^.typ := idtyp; idtyp := NIL END ;
-					IF x = NIL THEN x := y; lastif := x ELSE OPB.Link(x, lastif, y) END ;
+					IF idtyp # NIL THEN id^.typ := idtyp; idtyp := NIL END;
+					IF x = NIL THEN x := y; lastif := x ELSE OPB.Link(x, lastif, y) END;
 					IF sym = bar THEN OPS.Get(sym) ELSE EXIT END
 				END;
 				e := sym = else;
-				IF e THEN OPS.Get(sym); StatSeq(s) ELSE s := NIL END ;
+				IF e THEN OPS.Get(sym); StatSeq(s) ELSE s := NIL END;
 				OPB.Construct(Nwith, x, s); CheckSym(end);
 				IF e THEN x^.subcl := 1 END
 			ELSIF sym = exit THEN
