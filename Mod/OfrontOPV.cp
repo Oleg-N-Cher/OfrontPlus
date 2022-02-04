@@ -580,12 +580,8 @@
 						END
 					END
 		|	Nindex:
-					d := n^.left; i := d^.typ^.comp;
-					WHILE d^.class = Nindex DO d := d^.left;
-						IF d^.typ^.comp = DynArr THEN i := DynArr END
-					END;
 					d := n^.left;
-					IF i = DynArr THEN dims := 0;
+					IF d^.typ^.strobj = NIL THEN dims := 0;
 						WHILE d^.class = Nindex DO d := d^.left; INC(dims) END;
 						IF n^.typ^.comp = DynArr THEN Adr(d, designPrec, FALSE) ELSE design(d, designPrec) END;
 						OPM.Write(OpenBracket);
