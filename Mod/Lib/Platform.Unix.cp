@@ -2,7 +2,7 @@ MODULE Platform; (** Unix *)
 IMPORT SYSTEM;
 
 (* Based on Vishap Oberon (voc) runtime by David C W Brown, 2016-2018
-   Improvements by Oleg N. Cher, 2019-2020
+   Improvements by Oleg N. Cher, 2019-2020 and Arthur Yefimov, 2022
 *)
 
 
@@ -131,7 +131,7 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 PROCEDURE- getenv (var: ARRAY OF CHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
 
 PROCEDURE getEnv (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
-  VAR p: EnvPtr;
+VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
   IF p # NIL THEN val := p^$ END;
@@ -178,13 +178,13 @@ PROCEDURE- tmyear (): INTEGER  "time->tm_year";
 PROCEDURE YMDHMStoClock (ye, mo, da, ho, mi, se: INTEGER; VAR t, d: INTEGER);
 BEGIN
   d := ASH(ye MOD 100, 9) + ASH(mo+1, 5) + da;
-  t := ASH(ho, 12)        + ASH(mi, 6)   + se;
+  t := ASH(ho, 12)        + ASH(mi, 6)   + se
 END YMDHMStoClock;
 
 PROCEDURE GetClock* (VAR t, d: INTEGER);
 BEGIN
   gettimeval; sectotm(tvsec());
-  YMDHMStoClock(tmyear(), tmmon(), tmmday(), tmhour(), tmmin(), tmsec(), t, d);
+  YMDHMStoClock(tmyear(), tmmon(), tmmday(), tmhour(), tmmin(), tmsec(), t, d)
 END GetClock;
 
 PROCEDURE- timeint (time: TIME_T): INTEGER "((INTEGER)(time))";
@@ -208,7 +208,7 @@ VAR s, ns: INTEGER;
 BEGIN
   s  :=  ms DIV 1000;
   ns := (ms MOD 1000) * 1000000;
-  nanosleep(s, ns);
+  nanosleep(s, ns)
 END Delay;
 
 
@@ -237,9 +237,9 @@ PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN PATHMAX() END MaxPathLength;
 PROCEDURE- InvalidHandleValue* (): FileHandle "(-1)";
 
 (* Note: Consider also using flags O_SYNC and O_DIRECT as we do buffering *)
-PROCEDURE- openrw (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDWR)";
-PROCEDURE- openro (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_RDONLY)";
-PROCEDURE- opennew (n: ARRAY OF CHAR): INTEGER "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
+PROCEDURE- openrw (n: ARRAY OF CHAR): FileHandle "open((char*)n, O_RDWR)";
+PROCEDURE- openro (n: ARRAY OF CHAR): FileHandle "open((char*)n, O_RDONLY)";
+PROCEDURE- opennew (n: ARRAY OF CHAR): FileHandle "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
 PROCEDURE- mkdir (pathname: ARRAY OF CHAR): INTEGER "mkdir((char*)pathname, 0775)";
 
 
@@ -320,13 +320,13 @@ BEGIN RETURN i1.mtime = i2.mtime
 END SameFileTime;
 
 PROCEDURE SetMTime* (VAR target: FileIdentity; source: FileIdentity);
-BEGIN target.mtime := source.mtime;
+BEGIN target.mtime := source.mtime
 END SetMTime;
 
 PROCEDURE MTimeAsClock* (i: FileIdentity; VAR t, d: INTEGER);
 BEGIN
   sectotm(i.mtime);
-  YMDHMStoClock(tmyear(), tmmon(), tmmday(), tmhour(), tmmin(), tmsec(), t, d);
+  YMDHMStoClock(tmyear(), tmmon(), tmmday(), tmhour(), tmmin(), tmsec(), t, d)
 END MTimeAsClock;
 
 
@@ -373,7 +373,7 @@ PROCEDURE- writefile (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "write(fd, (void*)(p), l)";
 
 PROCEDURE Write* (h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
-  VAR written: INTEGER;
+VAR written: INTEGER;
 BEGIN
   written := writefile(h, p, l);
   IF written < 0 THEN RETURN err() ELSE RETURN 0 END
@@ -403,7 +403,7 @@ PROCEDURE- ftruncate (fd: FileHandle; length: LONGINT): INTEGER "ftruncate(fd, l
 
 PROCEDURE TruncateFile* (h: FileHandle; limit: LONGINT): ErrorCode;
 BEGIN
-  IF ftruncate(h, limit) < 0 THEN RETURN err() ELSE RETURN 0 END;
+  IF ftruncate(h, limit) < 0 THEN RETURN err() ELSE RETURN 0 END
 END TruncateFile;
 
 
@@ -419,7 +419,7 @@ PROCEDURE- chdir (n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
 PROCEDURE- getcwd (VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
 PROCEDURE ChDir* (IN n: ARRAY OF CHAR): ErrorCode;
-  VAR r: INTEGER;
+VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
   IF r < 0 THEN RETURN err() ELSE RETURN 0 END
@@ -441,12 +441,50 @@ BEGIN
 END DirExists;
 
 
-PROCEDURE- rename (o,n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
+PROCEDURE- rename (o, n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
+
+PROCEDURE CopyFileFd (from, to: FileHandle): ErrorCode;
+VAR buf: ARRAY 32768 OF BYTE;
+  n: INTEGER;
+  err: ErrorCode;
+BEGIN
+  err := ReadBuf(from, buf, n);
+  WHILE (err = 0) & (n > 0) DO
+    err := Write(to, SYSTEM.ADR(buf), n);
+    IF err = 0 THEN err := ReadBuf(from, buf, n) END
+  END;
+  RETURN err
+END CopyFileFd;
+
+PROCEDURE CopyFile (IN oldname, newname: ARRAY OF CHAR): ErrorCode;
+VAR from, to: FileHandle;
+  res: ErrorCode;
+BEGIN
+  from := openro(oldname);
+  IF from # -1 THEN
+    to := opennew(newname);
+    IF to # -1 THEN
+      res := CopyFileFd(from, to);
+      IF closefile(to) = -1 THEN res := err() END
+    ELSE res := -101
+    END;
+    IF closefile(from) = -1 THEN res := err() END
+  ELSE res := -102
+  END;
+  RETURN res
+END CopyFile;
 
 PROCEDURE RenameFile* (IN oldname, newname: ARRAY OF CHAR): ErrorCode;
+VAR res: ErrorCode;
 BEGIN
-  IF rename(oldname, newname) < 0 THEN RETURN err() END;
-  RETURN 0
+  res := rename(oldname, newname);
+  IF res < 0 THEN
+    res := err();
+    IF res = EXDEV() THEN
+      res := CopyFile(oldname, newname)
+    END
+  END;
+  RETURN res
 END RenameFile;
 
 
@@ -464,8 +502,8 @@ BEGIN RETURN isatty(h) # 0 END IsConsole;
 
 
 PROCEDURE TestLittleEndian;
-  VAR i: INTEGER;
-BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
+VAR i: INTEGER;
+BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian) END TestLittleEndian;
 
 
 PROCEDURE- getpid (): INTEGER "(INTEGER)getpid()";
@@ -476,5 +514,5 @@ BEGIN
   PID := getpid();
   SeekSet := seekset();
   SeekCur := seekcur();
-  SeekEnd := seekend();
+  SeekEnd := seekend()
 END Platform.
