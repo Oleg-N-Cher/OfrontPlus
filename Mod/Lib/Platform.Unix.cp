@@ -481,7 +481,10 @@ BEGIN
   IF res < 0 THEN
     res := err();
     IF res = EXDEV() THEN
-      res := CopyFile(oldname, newname)
+      res := CopyFile(oldname, newname);
+      IF res = 0 THEN
+        res := DeleteFile(oldname)
+      END
     END
   END;
   RETURN res
