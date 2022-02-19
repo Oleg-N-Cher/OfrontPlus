@@ -550,8 +550,8 @@ END IsConsole;
 
 
 PROCEDURE TestLittleEndian;
-  VAR i: INTEGER;
- BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
+VAR i: INTEGER;
+BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
 
 
 PROCEDURE- getstdinhandle ():  FileHandle "(SYSTEM_ADRINT)GetStdHandle(STD_INPUT_HANDLE)";

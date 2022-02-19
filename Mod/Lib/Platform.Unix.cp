@@ -459,12 +459,9 @@ END CopyFileFd;
 PROCEDURE CopyFile (IN oldname, newname: ARRAY OF CHAR): ErrorCode;
 VAR from, to: FileHandle;
   res: ErrorCode;
-BEGIN
-  from := openro(oldname);
-  IF from # -1 THEN
-    to := opennew(newname);
-    IF to # -1 THEN
-      res := CopyFileFd(from, to);
+BEGIN from := openro(oldname);
+  IF from # -1 THEN to := opennew(newname);
+    IF to # -1 THEN res := CopyFileFd(from, to);
       IF closefile(to) = -1 THEN res := err() END
     ELSE res := -101
     END;
@@ -476,12 +473,10 @@ END CopyFile;
 
 PROCEDURE RenameFile* (IN oldname, newname: ARRAY OF CHAR): ErrorCode;
 VAR res: ErrorCode;
-BEGIN
-  res := rename(oldname, newname);
-  IF res < 0 THEN
-    res := err();
-    IF res = EXDEV() THEN
-      res := CopyFile(oldname, newname)
+BEGIN res := rename(oldname, newname);
+  IF res < 0 THEN res := err();
+    IF res = EXDEV() THEN res := CopyFile(oldname, newname);
+      IF res = 0 THEN res := DeleteFile(oldname) END
     END
   END;
   RETURN res
