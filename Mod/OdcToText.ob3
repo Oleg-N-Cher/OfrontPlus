@@ -23,6 +23,7 @@ CONST
   TAB = 09H; CR = 0DH; LF = 0AH;
   LTAB = 0AH; (* left tab *)
   PARA = 0EH; (* Unicode 2029, PARAGRAPH SEPARATOR *)
+  NULL = 0H;
 
   Cp1251 = CP1251( (* http://ru.wikipedia.org/wiki/Windows-1251 *)
     (* ЂЃ‚ѓ„…†‡ *)
@@ -155,6 +156,7 @@ BEGIN
             IF ch16 > 7FH THEN bom := TRUE; CP1251ToWideChar(@ch16); text^[txtlen] := ch16; INC(txtlen)
             ELSIF (ch16 = TAB) OR (ch16 = CR) OR (ch16 >= ORD(" ")) THEN text^[txtlen] := ch16; INC(txtlen)
             ELSIF (ch16 = LTAB) OR (ch16 = PARA) THEN  (* ignore *)
+            ELSIF ch16 = NULL THEN RETURN
             ELSE HaltMsg("Unknown SHORTCHAR code: [#]", ch16)
             END;
             DEC(len)
@@ -292,6 +294,7 @@ BEGIN
   IF f # NIL THEN
     ReadFile(f, @text, @textlen, @bom);
     IF text # NIL THEN
+      IF textlen = 0 THEN RETURN (* Empty .odc or the form *) END;
       NEW(utf8text, 4 * textlen + 1); StringToUtf8(text^, @utf8text^, @res);
       IF res = 0 THEN
         tempname := utf8name + ".tmp";
@@ -313,10 +316,9 @@ BEGIN
           IF ~emit THEN
             Files.ReadChar(@src, @byte); emit := ~src.eof OR (byte # 0X)
           END;
-          IF f # NIL THEN Files.Close(f) END;
           IF emit THEN
-            Files.Register(utf8file); res := Platform.CloseFile(utf8file.fd);
-            res := Platform.CloseFile(f.fd); (* Rename requires a closed file *)
+            Files.Register(utf8file);
+            res := Platform.CloseFile(utf8file.fd); (* Rename requires a closed file *)
             Files.Rename(tempname, utf8name, @res);
             IF res # 0 THEN
               HaltStr("Couldn't save " + '"#"', utf8name)
