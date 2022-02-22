@@ -321,7 +321,11 @@ BEGIN
             res := Platform.CloseFile(utf8file.fd); (* Rename requires a closed file *)
             Files.Rename(tempname, utf8name, @res);
             IF res # 0 THEN
-              HaltStr("Couldn't save " + '"#"', utf8name)
+              res := Platform.CloseFile(f.fd); (* Rename requires a closed file *)
+              Files.Rename(tempname, utf8name, @res);
+              IF res # 0 THEN
+                HaltStr("Couldn't save " + '"#"', utf8name)
+              END
             END
           END
         ELSE
