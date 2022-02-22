@@ -1065,10 +1065,16 @@
 			LOOP
 				DeclareBase(obj);
 				IF showParamNames THEN
-					OPM.Write(Blank); DeclareObj(obj, 0)
+					OPM.Write(Blank); DeclareObj(obj, 0);
+					IF (obj^.typ^.form = Comp) & (obj^.typ^.comp = DynArr)
+						& (obj^.typ^.BaseTyp^.form = Comp) & (obj^.typ^.BaseTyp^.comp = Array)
+						& (obj^.typ^.BaseTyp^.strobj = NIL)
+					THEN
+						OPM.Write("["); OPM.WriteInt(obj^.typ^.BaseTyp^.n); OPM.Write("]")
+					END
 				ELSE
 					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, 0); obj^.name := name
-				END ;
+				END;
 				IF showOberonParams THEN
 					IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN
 						CASE OPM.IndexSize OF
