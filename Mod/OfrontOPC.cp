@@ -289,7 +289,7 @@
 		LOOP
 			form := typ^.form;
 			comp := typ^.comp;
-			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null)) OR (form = NoTyp) OR (comp = Record) THEN EXIT
+			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null) OR (form = NoTyp) OR (comp = Record)) & ~((comp = DynArr) & (typ^.BaseTyp^.comp = Array) & (typ^.BaseTyp^.strobj = NIL)) THEN EXIT
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
 				openClause := TRUE
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
@@ -1065,13 +1065,7 @@
 			LOOP
 				DeclareBase(obj);
 				IF showParamNames THEN
-					OPM.Write(Blank); DeclareObj(obj, 0);
-					IF (obj^.typ^.form = Comp) & (obj^.typ^.comp = DynArr)
-						& (obj^.typ^.BaseTyp^.form = Comp) & (obj^.typ^.BaseTyp^.comp = Array)
-						& (obj^.typ^.BaseTyp^.strobj = NIL)
-					THEN
-						OPM.Write("["); OPM.WriteInt(obj^.typ^.BaseTyp^.n); OPM.Write("]")
-					END
+					OPM.Write(Blank); DeclareObj(obj, 0)
 				ELSE
 					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, 0); obj^.name := name
 				END;
