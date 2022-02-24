@@ -7,6 +7,7 @@ macos_task:
   script: |
     chmod +x cc-bootstrap
     cd unix-88
+    export MACOSX_DEPLOYMENT_TARGET=10.6
     ../cc-bootstrap
     cd ..
     mkdir -p Target/macOS
