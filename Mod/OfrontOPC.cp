@@ -289,7 +289,10 @@
 		LOOP
 			form := typ^.form;
 			comp := typ^.comp;
-			IF ((typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null) OR (form = NoTyp) OR (comp = Record)) & ~((comp = DynArr) & (typ^.BaseTyp^.comp = Array) & (typ^.BaseTyp^.strobj = NIL)) THEN EXIT
+			IF (typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null) & (comp # DynArr)
+				OR (form = NoTyp) OR (comp = Record)
+			THEN
+				EXIT
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
 				openClause := TRUE
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
