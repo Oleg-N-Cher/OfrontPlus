@@ -477,7 +477,7 @@ MODULE bbMath;
 	PROCEDURE Real* (m: REAL; e: INTEGER): REAL;	(* Returns m * 2 ** e *)
 		VAR s: SET; i: INTEGER;
 	BEGIN
-		IF m = 0 THEN RETURN 0. END;
+		IF m = 0. THEN RETURN m END;
 		ASSERT(~IsNaN(m) & (1 <= ABS(m)) & (ABS(m) < 2), 20);
 		IF e = MAX(INTEGER) THEN
 			SYSTEM.GET(SYSTEM.ADR(m) + 4, s);

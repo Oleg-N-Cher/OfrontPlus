@@ -14,7 +14,6 @@
 */
 
 #include "SYSTEM.oh"
-#include <math.h>
 #include <stdarg.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -107,9 +106,46 @@ LONGINT SYSTEM_ENTIERL(REAL x)
   return i;
 }
 
+SHORTREAL ldexpf (SHORTREAL value, INTEGER exp)
+{
+  INTEGER i;
+  if (exp > 0) {
+    for (INTEGER i = 1; i <= exp; i++) {
+      value = value * (SHORTREAL)2;
+    }
+  } else if (exp < 0) {
+    INTEGER _for = -exp;
+    for (INTEGER i = 1; i <= _for; i++) {
+      value = value / (SHORTREAL)2;
+    }
+  }
+  return value;
+}
+
 void SYSTEM_PACK(SHORTREAL *x, INTEGER n) // x * 2 ** n
 {
     *x = ldexpf(*x, n);
+}
+
+SHORTREAL frexpf (SHORTREAL x, INTEGER *exp)
+{
+  BOOLEAN neg;
+  *exp = 0;
+  neg = x < (SHORTREAL)0;
+  if (neg) { x = -x; }
+  if (x >= (SHORTREAL)1) {
+    do {
+      *exp += 1;
+      x = x / (SHORTREAL)2;
+    } while (x >= (SHORTREAL)1);
+  } else if (x < 0.1 && x != (SHORTREAL)0) {
+    do {
+      *exp -= 1;
+      x = x * (SHORTREAL)2;
+    } while (x < 0.1);
+  }
+  if (neg) { x = -x; }
+  return x;
 }
 
 void SYSTEM_UNPK(SHORTREAL *x, INTEGER *n)
