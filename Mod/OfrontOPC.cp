@@ -595,7 +595,13 @@
 					IF (str^.BaseTyp^.strobj # NIL) & (str^.BaseTyp^.strobj^.linkadr = ProcessingType) THEN (*cyclic base type*)
 						OPM.Mark(244, str^ .txtpos); str^.BaseTyp^.strobj^.linkadr := PredefinedType
 					END;
-					DefineType(str^.BaseTyp)
+					IF (obj # NIL) & (obj^.linkadr = RecursiveType) THEN
+						obj^.linkadr := TemporaryType;
+						DefineType(str);
+						obj^.linkadr := RecursiveType
+					ELSE
+						DefineType(str^.BaseTyp)
+					END
 				ELSIF str^.form = ProcTyp THEN
 					IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END ;
 					field := str^.link;
