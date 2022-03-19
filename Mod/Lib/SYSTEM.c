@@ -106,51 +106,53 @@ LONGINT SYSTEM_ENTIERL(REAL x)
   return i;
 }
 
-SHORTREAL ldexpf (SHORTREAL value, INTEGER exp)
+
+BOOLEAN isNaN (SHORTREAL s) // By Robert D Campbell
 {
-  INTEGER i;
-  if (exp > 0) {
-    for (INTEGER i = 1; i <= exp; i++) {
-      value = value * (SHORTREAL)2;
-    }
-  } else if (exp < 0) {
-    INTEGER _for = -exp;
-    for (INTEGER i = 1; i <= _for; i++) {
-      value = value / (SHORTREAL)2;
+  return (0x7fc00000 & ~(SET)(__VAL(INTEGER, s))) == 0x0;
+}
+
+SHORTREAL ldexpf (SHORTREAL mant, INTEGER exp) // By Robert D Campbell
+{
+  INTEGER m;
+  if (isNaN(mant) || __ABS(mant) == __INFS) return mant;
+  __ASSERT(exp <= 128 && exp >= -148, 45, "SYSTEM.c", 119);
+  if (exp == 128) { exp -= 1; mant = mant * (SHORTREAL)2; }
+  else if (exp <= -127) {
+    exp += 22; mant = mant * ((SHORTREAL)1 / __ASH(1, 22, INTEGER));
+  }
+  m = __ASHL(exp + 127, 23, INTEGER);
+  return __VAL(SHORTREAL, m) * mant;
+}
+
+void SYSTEM_PACK (SHORTREAL *x, INTEGER n) // x * 2 ** n
+{
+  *x = ldexpf(*x, n);
+}
+
+SHORTREAL frexpf (SHORTREAL x, INTEGER *exp) // By Robert D Campbell
+{
+  if (isNaN(x)) { *exp = 2147483647; return x; }
+  else if (x == (SHORTREAL)0) { *exp = 0; return x; }
+  {
+    REAL xx = __ABS(x);
+    if (xx == __INF) { *exp = 2147483647; return x; }
+    *exp = (INTEGER)__ASHR(__VAL(LONGINT, xx), 52, LONGINT);
+    xx = x;
+    {
+      LONGINT k = __VAL(LONGINT, xx);
+      LONGINT msh = (((SET)((INTEGER)__ASHR(k, 32, LONGINT)) & 0x800fffff) | 0x3fe00000);
+      k = __ASHL(msh, 32, LONGINT) + __MASK(k, -4294967296LL);
+      *exp -= 1022;
+      return (SHORTREAL)(__VAL(REAL, k));
     }
   }
-  return value;
 }
 
-void SYSTEM_PACK(SHORTREAL *x, INTEGER n) // x * 2 ** n
+// real mantissa m of 'x' and an integer n such that 'x' = m * 2 ** n
+void SYSTEM_UNPK (SHORTREAL *x, INTEGER *n)
 {
-    *x = ldexpf(*x, n);
-}
-
-SHORTREAL frexpf (SHORTREAL x, INTEGER *exp)
-{
-  BOOLEAN neg;
-  *exp = 0;
-  neg = x < (SHORTREAL)0;
-  if (neg) { x = -x; }
-  if (x >= (SHORTREAL)1) {
-    do {
-      *exp += 1;
-      x = x / (SHORTREAL)2;
-    } while (x >= (SHORTREAL)1);
-  } else if (x < 0.1 && x != (SHORTREAL)0) {
-    do {
-      *exp -= 1;
-      x = x * (SHORTREAL)2;
-    } while (x < 0.1);
-  }
-  if (neg) { x = -x; }
-  return x;
-}
-
-void SYSTEM_UNPK(SHORTREAL *x, INTEGER *n)
-{   // real mantissa m of 'x' and an integer n such that 'x' = m * 2 ** n
-    *x = frexpf(*x, n); *x += *x; (*n)--;
+  *x = frexpf(*x, n); *x += *x; (*n)--;
 }
 
 
