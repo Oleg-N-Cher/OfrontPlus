@@ -119,7 +119,7 @@ SHORTREAL ldexpf (SHORTREAL mant, INTEGER exp) // By Robert D Campbell
   __ASSERT(exp <= 128 && exp >= -148, 45, "SYSTEM.c", 119);
   if (exp == 128) { exp -= 1; mant = mant * (SHORTREAL)2; }
   else if (exp <= -127) {
-    exp += 22; mant = mant * ((SHORTREAL)1 / __ASH(1, 22, INTEGER));
+    exp += 22; mant = mant * ((SHORTREAL)1 / __ASHL(1, 22, INTEGER));
   }
   m = __ASHL(exp + 127, 23, INTEGER);
   return __VAL(SHORTREAL, m) * mant;
