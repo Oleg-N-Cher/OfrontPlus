@@ -23,4 +23,5 @@ freebsd_task:
     git rm .cirrus.yml
     git add Target
     git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #$CIRRUS_OS"
-    git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
+    git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master
+#     &>/dev/null
