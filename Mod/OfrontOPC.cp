@@ -1582,13 +1582,16 @@
 		IF obj^.adr = 1 THEN	(* WITH-variable *)
 			IF obj^.typ^.comp = Record THEN Ident(obj); OPM.WriteString("__")
 			ELSE (* cast with guard pointer type *)
-				OPM.WriteString("(("); Ident(obj^.typ^.strobj); OPM.Write(")"); Ident(obj); OPM.Write(")")
+				OPM.WriteString("(("); Ident(obj^.typ^.strobj);
+				IF obj.mode = VarPar THEN OPM.Write(Star) END;
+				OPM.Write(")"); Ident(obj); OPM.Write(")")
 			END
 		ELSIF (level # OPM.level) & (level > 0) THEN (* intermediate var *)
 			comp := obj^.typ^.comp;
-			IF (obj^.mode # VarPar) & (comp # DynArr) THEN OPM.Write(Star); END;
+			IF (comp = Array) OR (obj^.mode # VarPar) & (comp # DynArr) THEN OPM.WriteString("(*") END;
 			OPM.WriteString(obj^.scope^.name^); OPM.WriteString(GlobalScope);
-			OPM.WriteString("->"); Ident(obj)
+			OPM.WriteString("->"); Ident(obj);
+			IF (comp = Array) OR (obj^.mode # VarPar) & (comp # DynArr) THEN OPM.Write(")") END
 		ELSE
 			Ident(obj)
 		END
