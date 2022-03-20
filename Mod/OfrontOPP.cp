@@ -1848,11 +1848,9 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				END;
 				pos := OPM.errpos;
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
-			ELSE
-				WHILE sym = raw DO
-					NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
-					SetPos(x); OPB.Link(stat, last, x); x := NIL; OPS.Get(sym)
-				END
+			ELSIF sym = raw THEN
+				NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str;
+				OPB.Construct(Nraw, x, NIL); sym := semicolon
 			END;
 			IF x # NIL THEN SetPos(x); OPB.Link(stat, last, x) END;
 			IF (OPM.Lang = "7") & (sym = return) THEN (* no semicolon before RETURN *)
