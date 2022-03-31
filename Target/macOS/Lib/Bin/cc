@@ -1,6 +1,6 @@
 #!/bin/sh
 cd ../Obj
-CC="cc -m64 -I../../../../Mod/Lib -Os -g0 -fomit-frame-pointer  -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+CC="cc -m64 -I../../../../Mod/Lib -Os -g0 -mmacosx-version-min=10.6 -fomit-frame-pointer  -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 AR="ar -rc ../libOfront.a"
 if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
 
