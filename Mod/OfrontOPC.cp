@@ -16,7 +16,7 @@
 
 	CONST
 		(* structure forms *)
-		Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
+		Undef = 0; Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
 		Char16 = 17; String16 = 18;
@@ -338,10 +338,10 @@
 		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
 	BEGIN
 		typ := dcl^.typ; prev := typ;
-		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & (typ^.form # NoTyp)
-			& ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & ~ODD(typ^.BaseTyp^.sysflag)) DO
+		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & ~(typ^.form IN {NoTyp, Undef})
+			& ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp IN {Array, DynArr}) & ~ODD(typ^.BaseTyp^.sysflag)) DO
 			prev := typ; typ := typ^.BaseTyp
-		END ;
+		END;
 		obj := typ^.strobj;
 		IF typ^.form = NoTyp THEN	(* proper procedure *)
 			OPM.WriteString(VoidType)
@@ -359,7 +359,7 @@
 				IF (typ^.BaseTyp # NIL) & (typ^.BaseTyp^.strobj.vis # internal) THEN
 					OPM.WriteString(" { /* "); Ident(typ^.BaseTyp^.strobj); OPM.WriteString(" */"); OPM.WriteLn; Indent(1)
 				ELSE OPM.Write(Blank); BegBlk
-				END ;
+				END;
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
@@ -577,13 +577,13 @@
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
 					IF obj^.linkadr = ProcessingType THEN
-						IF str^.form # Pointer THEN obj^.linkadr := RecursiveType END
+						IF (str^.form # Pointer) OR (str.BaseTyp.strobj = NIL) THEN obj^.linkadr := RecursiveType END
 					ELSE obj^.linkadr := ProcessingType
 					END
 				END;
 				IF str^.comp = Record THEN
 					(* the following exports the base type of an exported type even if the former is non-exported *)
-					IF str^.BaseTyp # NIL THEN DefineType(str^.BaseTyp) END ;
+					IF str^.BaseTyp # NIL THEN DefineType(str^.BaseTyp) END;
 					field := str^.link;
 					WHILE (field # NIL) & (field^.mode = Fld) DO
 						IF (field^.vis # internal) OR (OPM.currFile = OPM.BodyFile) THEN DefineType(field^.typ) END ;
@@ -592,18 +592,9 @@
 				ELSIF str^.form = Pointer THEN
 					IF str^.BaseTyp^.comp # Record THEN DefineType(str^.BaseTyp) END
 				ELSIF str^.comp IN {Array, DynArr} THEN
-					IF (str^.BaseTyp^.strobj # NIL) & (str^.BaseTyp^.strobj^.linkadr = ProcessingType) THEN (*cyclic base type*)
-						OPM.Mark(244, str^ .txtpos); str^.BaseTyp^.strobj^.linkadr := PredefinedType
-					END;
-					IF (obj # NIL) & (obj^.linkadr = RecursiveType) THEN
-						obj^.linkadr := TemporaryType;
-						DefineType(str);
-						obj^.linkadr := RecursiveType
-					ELSE
-						DefineType(str^.BaseTyp)
-					END
+					DefineType(str^.BaseTyp)
 				ELSIF str^.form = ProcTyp THEN
-					IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END ;
+					IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END;
 					field := str^.link;
 					WHILE field # NIL DO DefineType(field^.typ); field := field^.link END
 				END

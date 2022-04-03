@@ -192,7 +192,6 @@ insertMarkers	Insert Markers
 240	identifier too long
 241	string too long
 242	address overflow
-244	cyclic type definition not allowed
 245	guarded pointer variable may be manipulated by non-local operations; use auxiliary pointer variable
 249	"^0" is not consistently imported, recompile imports
 250	"^0" is no longer visible, compile with option s
