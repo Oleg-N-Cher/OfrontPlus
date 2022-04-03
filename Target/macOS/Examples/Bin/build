@@ -12,7 +12,7 @@ ofront+ -mC -88 BlitBmp.cp BlitBmp2.cp Book.cp Cnezinka.cp Elo4ka.cp Gradient24.
 if [ $? != 0 ]; then exit 1; fi
 
 LIB="-I../../Lib/Obj -I../../../../Mod/Lib -L../../Lib -lOfront"
-CC="cc -m64 -Os -g0 -fvisibility=hidden -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables"
+CC="cc -m64 -Os -g0 -mmacosx-version-min=10.6 -fvisibility=hidden -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables"
 
 $CC HelloWorld.c -o../HelloWorld $LIB
 if [ $? != 0 ]; then exit 1; fi
