@@ -334,12 +334,17 @@
 	PROCEDURE^ Universal (typ: OPT.Struct): BOOLEAN;
 	PROCEDURE^ UniversalArrayName (typ: OPT.Struct);
 
+	PROCEDURE RecursiveArrayType (typ: OPT.Struct): BOOLEAN;
+	BEGIN
+		RETURN (typ^.comp = Array) & (typ^.strobj # NIL) & (typ^.strobj^.linkadr = RecursiveType)
+	END RecursiveArrayType;
+
 	PROCEDURE DeclareBase(dcl: OPT.Object); (* declare the specifier of object dcl*)
 		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
 	BEGIN
 		typ := dcl^.typ; prev := typ;
 		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & ~(typ^.form IN {NoTyp, Undef})
-			& ~((typ^.form = Pointer) & (typ^.BaseTyp^.comp IN {Array, DynArr}) & ~ODD(typ^.BaseTyp^.sysflag)) DO
+			& ~((typ^.form = Pointer) & ((typ^.BaseTyp^.comp = DynArr) OR RecursiveArrayType(typ^.BaseTyp)) & ~ODD(typ^.BaseTyp^.sysflag)) DO
 			prev := typ; typ := typ^.BaseTyp
 		END;
 		obj := typ^.strobj;
