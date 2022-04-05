@@ -576,7 +576,9 @@
 					IF n.subcl # 0 THEN
 						expr(n^.left, designPrec)
 					ELSE
-						IF (n^.typ^.comp = DynArr) OR OPC.RecursiveArrayType(n^.typ) THEN
+						IF (n^.typ^.comp = DynArr) OR (n^.typ^.comp = Array)
+							& (n^.typ^.strobj # NIL) & (n^.typ^.strobj^.linkadr = 3(*RecursiveType*))
+						THEN
 							IF n^.typ^.sysflag # 0 THEN design(n^.left, designPrec)
 							ELSE design(n^.left, 10); OPM.WriteString("->data")
 							END
