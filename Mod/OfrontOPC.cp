@@ -334,9 +334,9 @@
 	PROCEDURE^ Universal (typ: OPT.Struct): BOOLEAN;
 	PROCEDURE^ UniversalArrayName (typ: OPT.Struct);
 
-	PROCEDURE RecursiveArrayType (typ: OPT.Struct): BOOLEAN;
+	PROCEDURE RecursiveArrayType* (typ: OPT.Struct): BOOLEAN;
 	BEGIN
-		RETURN (typ^.comp = Array) & (typ^.strobj # NIL) & (typ^.strobj^.linkadr = RecursiveType)
+		RETURN (typ^.comp = Array) & (typ^.strobj # NIL) & ((typ^.strobj^.linkadr = RecursiveType) OR (typ^.strobj^.linkadr = UndefinedType))
 	END RecursiveArrayType;
 
 	PROCEDURE DeclareBase(dcl: OPT.Object); (* declare the specifier of object dcl*)
@@ -368,7 +368,7 @@
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
-		ELSIF (typ^.form = Pointer) & (typ^.BaseTyp^.comp = DynArr) & (typ^.BaseTyp^.sysflag <= 0) THEN
+		ELSIF (typ^.form = Pointer) & ((typ^.BaseTyp^.comp = DynArr) OR RecursiveArrayType(typ^.BaseTyp)) & (typ^.BaseTyp^.sysflag = 0) THEN
 			typ := typ^.BaseTyp;
 			OPM.WriteString(Struct);
 			IF Universal(typ) THEN
