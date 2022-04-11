@@ -61,7 +61,7 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
 
   PROCEDURE- nextenviron(p: Environ; n: INTEGER): Environ "p + n";
 
-  PROCEDURE GetEnvCount*(): INTEGER;
+  PROCEDURE EnvCount*(): INTEGER;
     VAR count: INTEGER;
       p: Environ;
   BEGIN
@@ -72,7 +72,7 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
       p := nextenviron(p, 1)
     END;
     RETURN count
-  END GetEnvCount;
+  END EnvCount;
 
   PROCEDURE GetEnvN*(n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
     VAR p: Environ;

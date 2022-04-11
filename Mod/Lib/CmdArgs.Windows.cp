@@ -7,6 +7,9 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
   VAR
     Count-, current: INTEGER;
     cmdline: PtrSTR;
+    env: POINTER TO ARRAY OF SHORTCHAR;
+    envPtr: POINTER TO ARRAY OF INTEGER;
+    envCount: INTEGER;
     dummy: ARRAY 1 OF SHORTCHAR;
 
   PROCEDURE [stdcall] GetCommandLine ["GetCommandLineA"] (): PtrSTR;
@@ -67,6 +70,12 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
   PROCEDURE [stdcall] GetEnvironmentVariable ["GetEnvironmentVariableA"]
     (lpName, lpBuffer: PtrSTR; nSize: INTEGER): INTEGER;
 
+  PROCEDURE [stdcall] GetEnvironmentStringsA ["GetEnvironmentStringsA"]
+    (): PtrSTR;
+
+  PROCEDURE [stdcall] FreeEnvironmentStringsA ["FreeEnvironmentStringsA"]
+    (env: PtrSTR): BOOLEAN;
+
   PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
     VAR buf: ARRAY 4096 OF SHORTCHAR; res: INTEGER;
   BEGIN
@@ -74,5 +83,53 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
     IF (res > 0) & (res < LEN(buf)) THEN val := buf$ ELSE val := "" END
   END GetEnv;
 
-BEGIN cmdline := GetCommandLine(); Get(-1, dummy); Count := current
+  PROCEDURE MaybeLoadEnv;
+    VAR p: PtrSTR;
+      i, j, len: INTEGER;
+  BEGIN
+    IF envCount = -1 THEN
+      envCount := 0;
+      p := GetEnvironmentStringsA();
+      IF p # NIL THEN
+        i := 0;
+        WHILE p[i] # 0X DO
+          WHILE p[i] # 0X DO INC(i) END;
+          INC(i); INC(envCount)
+        END;
+
+        NEW(env, i - 1);
+        NEW(envPtr, envCount);
+        i := 0; j := 0;
+        WHILE p[i] # 0X DO
+          envPtr[j] := i; INC(j);
+          WHILE p[i] # 0X DO env[i] := p[i]; INC(i) END;
+          env[i] := 0X; INC(i)
+        END;
+        IF FreeEnvironmentStringsA(p) THEN END
+      END
+    END
+  END MaybeLoadEnv;
+
+  PROCEDURE GetEnvN*(n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
+  VAR p: PtrSTR;
+    i, j: INTEGER;
+  BEGIN
+    MaybeLoadEnv;
+    IF (0 <= n) & (n < envCount) THEN
+      i := 0; j := envPtr[n];
+      WHILE (i < LEN(s) - 1) & (env[j] # 0X) DO
+        s[i] := env[j]; INC(i); INC(j)
+      END;
+      s[i] := 0X
+    ELSE s := '' END
+  END GetEnvN;
+
+  PROCEDURE EnvCount*(): INTEGER;
+  BEGIN
+    MaybeLoadEnv;
+    RETURN envCount
+  END EnvCount;
+
+BEGIN cmdline := GetCommandLine(); Get(-1, dummy); Count := current;
+  envCount := -1
 END CmdArgs.
