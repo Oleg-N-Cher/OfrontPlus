@@ -477,7 +477,7 @@ PROCEDURE- GetModuleFileNameW (hModule: FileHandle; lpFilename: ARRAY OF LONGCHA
 "(INTEGER)GetModuleFileNameW((HMODULE)hModule, (LPWSTR)lpFilename, nSize)";
 
 (** Get application directory ending with "\". *)
-PROCEDURE GetStartDir* (VAR dir: ARRAY OF CHAR);
+PROCEDURE GetAppDir* (VAR dir: ARRAY OF CHAR);
   VAR i: INTEGER;
 BEGIN
   dir[LEN(dir) - 1] := 0X;
@@ -486,10 +486,10 @@ BEGIN
     WHILE (i > 0) & (dir[i] # "\") DO DEC(i) END;
     IF i > 0 THEN dir[i + 1] := 0X END
   END
-END GetStartDir;
+END GetAppDir;
 
 (** Get application directory ending with "\". *)
-PROCEDURE GetStartDirW* (VAR dir: ARRAY OF LONGCHAR);
+PROCEDURE GetAppDirW* (VAR dir: ARRAY OF LONGCHAR);
   VAR i: INTEGER;
 BEGIN
   dir[LEN(dir) - 1] := 0X;
@@ -498,7 +498,7 @@ BEGIN
     WHILE (i > 0) & (dir[i] # "\") DO DEC(i) END;
     IF i > 0 THEN dir[i + 1] := 0X END
   END
-END GetStartDirW;
+END GetAppDirW;
 
 
 PROCEDURE- getFileAttributes (name: ARRAY OF CHAR): DWORD
