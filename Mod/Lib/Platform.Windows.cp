@@ -23,7 +23,7 @@ CONST
 
 
 TYPE
-  CHAR = SHORTCHAR; BOOL = INTEGER; DWORD = INTEGER;
+  LONGCHAR* = CHAR; CHAR* = SHORTCHAR; BOOL = INTEGER; DWORD = INTEGER;
   ADRINT = SYSTEM.ADRINT; (* 32 or 64 bits *)
   LARGE_INTEGER = RECORD [notag] low, high: INTEGER END;
 
@@ -470,17 +470,35 @@ BEGIN
   RETURN 0
 END ChDir;
 
-PROCEDURE- getModuleFileName (hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
+PROCEDURE- GetModuleFileName (hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
 "(INTEGER)GetModuleFileNameA((HMODULE)hModule, (LPTSTR)lpFilename, nSize)";
 
-PROCEDURE GetStartDir* (VAR dir: ARRAY MAX_PATH OF CHAR); (* get the start directory with ending "\" *)
+PROCEDURE- GetModuleFileNameW (hModule: FileHandle; lpFilename: ARRAY OF LONGCHAR; nSize: DWORD): DWORD
+"(INTEGER)GetModuleFileNameW((HMODULE)hModule, (LPWSTR)lpFilename, nSize)";
+
+(** Get application directory ending with "\". *)
+PROCEDURE GetStartDir* (VAR dir: ARRAY OF CHAR);
   VAR i: INTEGER;
 BEGIN
-  dir[MAX_PATH - 1] := 0X;
-  i := getModuleFileName(0, dir, MAX_PATH - 1);
-  WHILE (i # 0) & (dir[i] # "\") DO DEC(i) END;
-  IF i # 0 THEN dir[i+1] := 0X END
+  dir[LEN(dir) - 1] := 0X;
+  i := GetModuleFileName(0, dir, LEN(dir) - 1);
+  IF i < LEN(dir) THEN
+    WHILE (i > 0) & (dir[i] # "\") DO DEC(i) END;
+    IF i > 0 THEN dir[i + 1] := 0X END
+  END
 END GetStartDir;
+
+(** Get application directory ending with "\". *)
+PROCEDURE GetStartDirW* (VAR dir: ARRAY OF LONGCHAR);
+  VAR i: INTEGER;
+BEGIN
+  dir[LEN(dir) - 1] := 0X;
+  i := GetModuleFileNameW(0, dir, LEN(dir) - 1);
+  IF i < LEN(dir) THEN
+    WHILE (i > 0) & (dir[i] # "\") DO DEC(i) END;
+    IF i > 0 THEN dir[i + 1] := 0X END
+  END
+END GetStartDirW;
 
 
 PROCEDURE- getFileAttributes (name: ARRAY OF CHAR): DWORD
