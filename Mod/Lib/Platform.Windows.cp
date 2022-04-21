@@ -131,25 +131,25 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 (* Program arguments and environmet access *)
 
-PROCEDURE- getenv (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
-  "(INTEGER)GetEnvironmentVariable((char*)name, (char*)buf, buf__len)";
+PROCEDURE- getEnvironmentVariable (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
+  "(INTEGER)GetEnvironmentVariableA((LPSTR)name, (LPSTR)buf, buf__len)";
 
-PROCEDURE getEnv (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
-  VAR buf: ARRAY 4096 OF CHAR; res: INTEGER;
-BEGIN
-  res := getenv(var, buf);
-  IF (res > 0) & (res < LEN(buf)) THEN
-    val := buf$;
-    RETURN TRUE
-  ELSE
-    RETURN FALSE
-  END
-END getEnv;
+PROCEDURE- getEnvironmentVariableW (name: ARRAY OF LONGCHAR; VAR buf: ARRAY OF LONGCHAR): DWORD
+  "(INTEGER)GetEnvironmentVariableW((LPWSTR)name, (LPWSTR)buf, buf__len)";
 
 PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
+  VAR res: INTEGER;
 BEGIN
-  IF ~getEnv(var, val) THEN val := "" END
+  res := getEnvironmentVariable(var, val);
+  IF (res < 0) OR (res > LEN(val)) THEN val := "" END
 END GetEnv;
+
+PROCEDURE GetEnvW* (IN var: ARRAY OF LONGCHAR; OUT val: ARRAY OF LONGCHAR);
+  VAR res: INTEGER;
+BEGIN
+  res := getEnvironmentVariableW(var, val);
+  IF (res < 0) OR (res > LEN(val)) THEN val := "" END
+END GetEnvW;
 
 
 (* Time of day *)
