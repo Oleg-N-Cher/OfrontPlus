@@ -24,7 +24,7 @@ CONST
 
 TYPE
   LONGCHAR* = CHAR; CHAR* = SHORTCHAR; BOOL = INTEGER; DWORD = INTEGER;
-  ADRINT = SYSTEM.ADRINT; (* 32 or 64 bits *)
+  ADRINT* = SYSTEM.ADRINT; (* 32 or 64 bits *)
   LARGE_INTEGER = RECORD [notag] low, high: INTEGER END;
 
   ErrorCode*  = INTEGER;
@@ -57,6 +57,8 @@ VAR
   StdIn-:           FileHandle;
   StdOut-:          FileHandle;
   StdErr-:          FileHandle;
+
+  stdOutIsConsole: INTEGER; (* 0 means false, 0 means false, -1 means undefined *)
 
 
 PROCEDURE- AAincludeWindowsWrapper '#include "_windows.h"';
@@ -129,7 +131,26 @@ PROCEDURE- free (address: ADRINT) "HeapFree(GetProcessHeap(), 0, (void*)address)
 PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 
-(* Program arguments and environmet access *)
+(* Program arguments and environment access *)
+
+PROCEDURE- getConsoleMode (h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
+
+PROCEDURE IsConsole* (h: FileHandle): BOOLEAN;
+VAR mode: INTEGER;
+BEGIN
+  RETURN getConsoleMode(h, mode)
+END IsConsole;
+
+PROCEDURE IsStdOutConsole (): BOOLEAN;
+VAR mode: INTEGER;
+BEGIN
+  IF stdOutIsConsole < 0 THEN
+    IF getConsoleMode(StdOut, mode) THEN stdOutIsConsole := 1
+    ELSE stdOutIsConsole := 0
+    END
+  END;
+  RETURN stdOutIsConsole # 0
+END IsStdOutConsole;
 
 PROCEDURE- getEnvironmentVariable (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
   "(INTEGER)GetEnvironmentVariableA((LPSTR)name, (LPSTR)buf, buf__len)";
@@ -380,14 +401,63 @@ BEGIN
 END ReadBuf;
 
 
-PROCEDURE- writefile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
+PROCEDURE- writeFile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
   "(INTEGER)WriteFile((HANDLE)fd, (void*)(p), (DWORD)l, (LPDWORD)dummy, 0)";
+
+PROCEDURE- writeConsoleW (hConsoleOutput: ADRINT; lpBuffer: ADRINT;
+  nNumberOfCharsToWrite: INTEGER; VAR lpNumberOfCharsWritten: INTEGER;
+  lpReserved: INTEGER): BOOLEAN
+  "(BOOLEAN)WriteConsoleW((HANDLE)hConsoleOutput, (void *)lpBuffer, (DWORD)nNumberOfCharsToWrite, (LPDWORD)lpNumberOfCharsWritten, (LPVOID)lpReserved)";
 
 PROCEDURE Write* (h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
 VAR dummy: DWORD;
 BEGIN
-  IF writefile(h, p, l, dummy) = 0 THEN RETURN err() ELSE RETURN 0 END
+  IF writeFile(h, p, l, dummy) = 0 THEN RETURN err() ELSE RETURN 0 END
 END Write;
+
+PROCEDURE ConvertFromUTF16(IN in: ARRAY OF LONGCHAR; inLen: INTEGER;
+    OUT out: ARRAY OF CHAR; OUT outLen: INTEGER);
+VAR i, j, val, lim: INTEGER;
+  ok: BOOLEAN;
+BEGIN i := 0; j := 0; lim := LEN(out) - 1;
+  ok := TRUE;
+  IF inLen < 0 THEN inLen := LEN(in) END;
+  WHILE ok & (i # inLen) & (in[i] # 0X) & (j < lim) DO
+    val := ORD(in[i]); INC(i);
+    IF val < 128 THEN
+      out[j] := SHORT(CHR(val)); INC(j)
+    ELSIF (val < 2048) & (j < lim - 1) THEN
+      out[j] := SHORT(CHR(val DIV 64 + 192)); INC(j);
+      out[j] := SHORT(CHR(val MOD 64 + 128)); INC(j)
+    ELSIF j < lim - 2 THEN
+      out[j] := SHORT(CHR(val DIV 4096 + 224)); INC(j); 
+      out[j] := SHORT(CHR(val DIV 64 MOD 64 + 128)); INC(j);
+      out[j] := SHORT(CHR(val MOD 64 + 128)); INC(j)
+    ELSE ok := FALSE
+    END
+  END;
+  out[j] := 0X; outLen := j;
+  IF (i # inLen) & (in[i] # 0X) THEN ok := FALSE END
+END ConvertFromUTF16;
+
+PROCEDURE WriteW* (s: ARRAY OF LONGCHAR; len: INTEGER): ErrorCode;
+VAR dummy, error: DWORD;
+  written: INTEGER;
+  u: ARRAY 40960 OF CHAR;
+  ulen: INTEGER;
+  p: ADRINT;
+BEGIN
+  p := SYSTEM.ADR(s[0]);
+  IF IsStdOutConsole() & writeConsoleW(StdOut, p, len, written, 0) THEN
+    error := 0
+  ELSE
+    ConvertFromUTF16(s, len, u, ulen);
+    IF writeFile(StdOut, SYSTEM.ADR(u), ulen, dummy) = 0 THEN error := err()
+    ELSE error := 0
+    END
+  END;
+  RETURN error
+END WriteW;
 
 
 PROCEDURE- flushFileBuffers (h: FileHandle): BOOL "(INTEGER)FlushFileBuffers((HANDLE)h)";
@@ -559,14 +629,6 @@ PROCEDURE ExitOS* (code: INTEGER);
 BEGIN exit(code) END ExitOS;
 
 
-PROCEDURE- getConsoleMode (h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
-
-PROCEDURE IsConsole* (h: FileHandle): BOOLEAN;
-VAR mode: INTEGER;
-BEGIN RETURN getConsoleMode(StdOut, mode)
-END IsConsole;
-
-
 PROCEDURE TestLittleEndian;
 VAR i: INTEGER;
 BEGIN i := 1; SYSTEM.GET(SYSTEM.ADR(i), LittleEndian); END TestLittleEndian;
@@ -587,4 +649,5 @@ BEGIN
   StdIn  := getstdinhandle();
   StdOut := getstdouthandle();
   StdErr := getstderrhandle();
+  stdOutIsConsole := -1
 END Platform.
