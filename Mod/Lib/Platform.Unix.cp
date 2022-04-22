@@ -21,7 +21,7 @@ CONST
 
 
 TYPE
-  CHAR = SHORTCHAR;
+  LONGCHAR* = CHAR; CHAR* = SHORTCHAR;
   ADRINT* = SYSTEM.ADRINT;  (* 32 or 64 bits *)
   
   TIME_T = ADRINT;  (* time_t type is used
@@ -369,15 +369,53 @@ BEGIN
 END ReadBuf;
 
 
-PROCEDURE- writefile (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
+PROCEDURE- write (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "write(fd, (void*)(p), l)";
 
 PROCEDURE Write* (h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
 VAR written: INTEGER;
 BEGIN
-  written := writefile(h, p, l);
+  written := write(h, p, l);
   IF written < 0 THEN RETURN err() ELSE RETURN 0 END
 END Write;
+
+PROCEDURE ConvertFromUTF16(IN in: ARRAY OF LONGCHAR; inLen: INTEGER;
+    OUT out: ARRAY OF CHAR; OUT outLen: INTEGER);
+VAR i, j, val, lim: INTEGER;
+  ok: BOOLEAN;
+BEGIN i := 0; j := 0; lim := LEN(out) - 1;
+  ok := TRUE;
+  IF inLen < 0 THEN inLen := LEN(in) END;
+  WHILE ok & (i # inLen) & (in[i] # 0X) & (j < lim) DO
+    val := ORD(in[i]); INC(i);
+    IF val < 128 THEN
+      out[j] := SHORT(CHR(val)); INC(j)
+    ELSIF (val < 2048) & (j < lim - 1) THEN
+      out[j] := SHORT(CHR(val DIV 64 + 192)); INC(j);
+      out[j] := SHORT(CHR(val MOD 64 + 128)); INC(j)
+    ELSIF j < lim - 2 THEN
+      out[j] := SHORT(CHR(val DIV 4096 + 224)); INC(j);
+      out[j] := SHORT(CHR(val DIV 64 MOD 64 + 128)); INC(j);
+      out[j] := SHORT(CHR(val MOD 64 + 128)); INC(j)
+    ELSE ok := FALSE
+    END
+  END;
+  out[j] := 0X; outLen := j;
+  IF (i # inLen) & (in[i] # 0X) THEN ok := FALSE END
+END ConvertFromUTF16;
+
+PROCEDURE WriteW* (s: ARRAY OF LONGCHAR; len: INTEGER): ErrorCode;
+VAR error: ErrorCode;
+  u: ARRAY 40960 OF CHAR;
+  ulen: INTEGER;
+  p: ADRINT;
+BEGIN
+  ConvertFromUTF16(s, len, u, ulen);
+  IF write(StdOut, SYSTEM.ADR(u), ulen) # ulen THEN error := err()
+  ELSE error := 0
+  END;
+  RETURN error
+END WriteW;
 
 
 PROCEDURE- fsync (fd: FileHandle): INTEGER "fsync(fd)";
@@ -424,6 +462,18 @@ BEGIN
   r := chdir(n);  getcwd(CWD);
   IF r < 0 THEN RETURN err() ELSE RETURN 0 END
 END ChDir;
+
+(** Get application directory ending with "/". *)
+PROCEDURE GetAppDir* (VAR dir: ARRAY OF CHAR);
+BEGIN (*!TODO*)
+  dir[0] := '.'; dir[1] := '/'; dir[2] := 0X
+END GetAppDir;
+
+(** Get application directory ending with "\". *)
+PROCEDURE GetAppDirW* (VAR dir: ARRAY OF LONGCHAR);
+BEGIN (*!TODO*)
+  dir[0] := '.'; dir[1] := '/'; dir[2] := 0X
+END GetAppDirW;
 
 
 PROCEDURE FileExists* (IN pathname: ARRAY OF CHAR): BOOLEAN;

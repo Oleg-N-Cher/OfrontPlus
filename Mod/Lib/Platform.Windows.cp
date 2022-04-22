@@ -430,7 +430,7 @@ BEGIN i := 0; j := 0; lim := LEN(out) - 1;
       out[j] := SHORT(CHR(val DIV 64 + 192)); INC(j);
       out[j] := SHORT(CHR(val MOD 64 + 128)); INC(j)
     ELSIF j < lim - 2 THEN
-      out[j] := SHORT(CHR(val DIV 4096 + 224)); INC(j); 
+      out[j] := SHORT(CHR(val DIV 4096 + 224)); INC(j);
       out[j] := SHORT(CHR(val DIV 64 MOD 64 + 128)); INC(j);
       out[j] := SHORT(CHR(val MOD 64 + 128)); INC(j)
     ELSE ok := FALSE
