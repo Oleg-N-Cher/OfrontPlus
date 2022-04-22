@@ -12,7 +12,7 @@ CONST
 
   Unix*    = TRUE;
   Windows* = FALSE;
-  
+
   StdIn*  = 0;
   StdOut* = 1;
   StdErr* = 2;
@@ -23,7 +23,7 @@ CONST
 TYPE
   LONGCHAR* = CHAR; CHAR* = SHORTCHAR;
   ADRINT* = SYSTEM.ADRINT;  (* 32 or 64 bits *)
-  
+
   TIME_T = ADRINT;  (* time_t type is used
     instead of long, but which is also a 32-bit representation on some systems
     while there are even 64-bit representations on other systems. *)
@@ -159,7 +159,7 @@ END GetEnv;
 
    Using long int for tv_sec will work until year 2038, and after that the
    tv_sec will overflow on machines where long is 4 bytes.
-    
+
    That is why some are using unsigned long, as it will stop the overflow
    until year 2100+. You should use the time_t type instead, and you won't need
    to think about how long your program is supposed to run for in the future.
@@ -229,7 +229,7 @@ PROCEDURE- NAMEMAX (): INTEGER "NAME_MAX";
 PROCEDURE- PATHMAX (): INTEGER "PATH_MAX";
 
 PROCEDURE MaxNameLength* (): INTEGER; BEGIN RETURN NAMEMAX() END MaxNameLength;
-PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN PATHMAX() END MaxPathLength; 
+PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN PATHMAX() END MaxPathLength;
 
 
 (* File system *)

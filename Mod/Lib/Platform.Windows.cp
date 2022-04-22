@@ -133,7 +133,7 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 (* Program arguments and environment access *)
 
-PROCEDURE- getConsoleMode (h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)"; 
+PROCEDURE- getConsoleMode (h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)";
 
 PROCEDURE IsConsole* (h: FileHandle): BOOLEAN;
 VAR mode: INTEGER;
@@ -242,7 +242,7 @@ PROCEDURE Error* (): ErrorCode; BEGIN RETURN err() END Error;
 PROCEDURE- MAXPATH (): INTEGER 'MAX_PATH';
 
 PROCEDURE MaxNameLength* (): INTEGER; BEGIN RETURN MAXPATH() END MaxNameLength;
-PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN MAXPATH() END MaxPathLength; 
+PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN MAXPATH() END MaxPathLength;
 
 
 (* File system *)
