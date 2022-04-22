@@ -172,6 +172,24 @@ BEGIN
   IF (res < 0) OR (res > LEN(val)) THEN val := "" END
 END GetEnvW;
 
+PROCEDURE- getSystemDefaultLangID (): SHORTINT
+  "(SHORTINT)GetSystemDefaultLangID()";
+
+(* Returns in first two characters of lang the user's UI language, i.e. 'ru' *)
+PROCEDURE GetLang*(VAR lang: ARRAY OF CHAR);
+VAR L, n: SHORTINT;
+BEGIN
+  L := getSystemDefaultLangID();
+  n := L MOD 100H;
+  IF n = 25 THEN lang := 'ru'
+  ELSIF n = 34 THEN lang := 'ua'
+  ELSIF n = 38 THEN lang := 'lv'
+  ELSIF L = 1000H (*!FIXME?*) THEN lang := 'eo'
+  ELSE (*n = 9 is English*) lang := 'en'
+  END
+END GetLang;
+
+
 
 (* Time of day *)
 

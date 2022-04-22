@@ -143,6 +143,19 @@ BEGIN
   IF ~getEnv(var, val) THEN val := "" END
 END GetEnv;
 
+(* Returns in first two characters of lang the user's UI language, i.e. 'ru' *)
+PROCEDURE GetLang*(VAR lang: ARRAY OF CHAR);
+BEGIN
+  GetEnv('LANGUAGE', lang);
+  IF lang = '' THEN
+    GetEnv('LC_ALL', lang);
+    IF lang = '' THEN
+      GetEnv('LANG', lang)
+    END
+  END
+END GetLang;
+
+
 
 (* Time of day *)
 
