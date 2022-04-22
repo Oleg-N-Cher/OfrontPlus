@@ -180,7 +180,7 @@ PROCEDURE GetLang*(VAR lang: ARRAY OF CHAR);
 VAR L, n: SHORTINT;
 BEGIN
   L := getSystemDefaultLangID();
-  n := L MOD 100H;
+  n := SHORT(L MOD 100H);
   IF n = 25 THEN lang := 'ru'
   ELSIF n = 34 THEN lang := 'ua'
   ELSIF n = 38 THEN lang := 'lv'
