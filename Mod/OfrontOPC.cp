@@ -255,7 +255,9 @@
 				WHILE (typ^.form = Pointer) & ((typ^.strobj = NIL) OR (typ^.strobj^.name^ = "")) DO
 					INC(pointers); typ := typ^.BaseTyp
 				END;
-				IF typ^.comp # DynArr THEN ASSERT(t0 # typ); Stars(typ, forProc, openClause) END;
+				IF (typ^.comp # DynArr) & (t0 # typ^.BaseTyp) THEN ASSERT(t0 # typ);
+					Stars(typ, forProc, openClause)
+				END;
 				IF pointers > 0 THEN
 					IF openClause & ~forProc THEN OPM.Write(OpenParen) END;
 					openClause := FALSE;
@@ -290,7 +292,7 @@
 			form := typ^.form;
 			comp := typ^.comp;
 			IF (typ^.strobj # NIL) & (typ^.strobj^.name # OPT.null) & (comp # DynArr)
-				OR (form = NoTyp) OR (comp = Record)
+				OR (form = NoTyp) OR (comp = Record) OR (dcl^.typ = typ^.BaseTyp)
 			THEN
 				EXIT
 			ELSIF (form = Pointer) & (typ^.BaseTyp^.comp # DynArr) THEN
@@ -582,7 +584,17 @@
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
 					IF obj^.linkadr = ProcessingType THEN
-						IF (str^.form # Pointer) OR (str.BaseTyp.strobj = NIL) THEN obj^.linkadr := RecursiveType END
+						IF str^.form # Pointer THEN
+							IF (str^.BaseTyp^.strobj = NIL) & (str = str^.BaseTyp^.BaseTyp) THEN
+								OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+								OPM.WriteString("struct "); UniversalArrayName(str); OPM.Write(Blank);
+								obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
+								DeclareObj(obj, 0);
+								obj^.typ^.strobj := obj; (* SG: revert trick *)
+								EndStat; Indent(-1); OPM.WriteLn
+							END;
+							obj^.linkadr := RecursiveType
+						END
 					ELSE obj^.linkadr := ProcessingType
 					END
 				END;
@@ -720,9 +732,10 @@
 		VAR p: OPT.Object;
 	BEGIN
 		IF check & (typ = initial) THEN
-		ELSIF typ.form IN {Bool, Char8, Char16, Byte, SInt, Int, LInt, UByte, Set, Real, LReal} THEN
+		ELSIF typ.form IN {Byte..Set, UByte, Char16} THEN
 			IF typ.BaseTyp # OPT.undftyp THEN typ := typ.BaseTyp END;	(* basic type alias *)
 			OPM.WriteString(typ.strobj.name^)
+		ELSIF typ = OPT.sysptrtyp THEN Ident(typ^.strobj)
 		ELSE
 			IF typ.comp = Record THEN
 				ASSERT((typ.strobj # NIL) & (typ.strobj.name^ # ""), 100);
