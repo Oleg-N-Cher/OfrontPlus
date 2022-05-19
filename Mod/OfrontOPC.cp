@@ -575,7 +575,23 @@
 		END
 	END DefineTProcMacros;
 
-	PROCEDURE DefineType(str: OPT.Struct); (* define a type object *)
+	PROCEDURE DefRecursiveType (str: OPT.Struct);
+		VAR obj: OPT.Object; 
+	BEGIN
+		IF (str^.BaseTyp^.strobj = NIL) & (str = str^.BaseTyp^.BaseTyp) THEN
+			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+			OPM.WriteString(Struct);
+			IF Universal(str) THEN UniversalArrayName(str) ELSE Andent(str) END;
+			OPM.Write(Blank); obj := str^.strobj;
+			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
+			DeclareObj(obj, 0);
+			obj^.typ^.strobj := obj; (* SG: revert trick *)
+			EndStat; Indent(-1); OPM.WriteLn;
+			obj^.linkadr := MaxType+OPM.currFile
+		END
+	END DefRecursiveType;
+
+	PROCEDURE DefineType (str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
 		IF (str^.comp = DynArr) OR (str^.form IN {Byte..Set, UByte, Char16}) THEN RETURN END;
@@ -583,18 +599,8 @@
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
-					IF obj^.linkadr = ProcessingType THEN
-						IF str^.form # Pointer THEN
-							IF (str^.BaseTyp^.strobj = NIL) & (str = str^.BaseTyp^.BaseTyp) THEN
-								OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-								OPM.WriteString("struct "); UniversalArrayName(str); OPM.Write(Blank);
-								obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
-								DeclareObj(obj, 0);
-								obj^.typ^.strobj := obj; (* SG: revert trick *)
-								EndStat; Indent(-1); OPM.WriteLn
-							END;
-							obj^.linkadr := RecursiveType
-						END
+					IF obj^.linkadr = ProcessingType THEN DefRecursiveType(str);
+						IF str^.form # Pointer THEN obj^.linkadr := RecursiveType END
 					ELSE obj^.linkadr := ProcessingType
 					END
 				END;
@@ -790,7 +796,7 @@
 				ELSE Str1("LONGINT len[#]", atyp.n + 1)
 				END;
 				WHILE typ^.comp = DynArr DO typ := typ^.BaseTyp END;	(* remove open levels *)
-				IF typ.form = Pointer THEN	(* replace by anonymous pointer *)
+				IF (typ.form = Pointer) & (typ # OPT.sysptrtyp) THEN	(* replace by anonymous pointer *)
 					NEW(t); t.BaseTyp := typ.BaseTyp;
 					t.sysflag := typ.sysflag; typ := t;
 					typ.form := Pointer; typ.comp := Basic
