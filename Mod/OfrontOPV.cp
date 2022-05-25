@@ -221,11 +221,7 @@
 			ELSIF typ^.form = Pointer THEN
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ.txtpos) END;
 				TraverseType(typ^.BaseTyp);
-				IF ((typ^.BaseTyp.comp = DynArr) OR OPC.RecursiveArrayType(typ^.BaseTyp))
-					& (typ^.BaseTyp^.sysflag = 0)
-				THEN
-					OPC.InsertArrayType(typ^.BaseTyp)
-				END
+				IF OPC.NextArrayBaseType(typ^.BaseTyp) THEN OPC.InsertArrayType(typ^.BaseTyp) END
 			ELSIF typ^.form = ProcTyp THEN
 				TraverseType(typ^.BaseTyp);
 				p := typ^.link;
@@ -577,7 +573,7 @@
 						expr(n^.left, designPrec)
 					ELSE
 						IF (n^.typ^.comp = DynArr) OR (n^.typ^.comp = Array)
-							& (n^.typ^.strobj # NIL) & (n^.typ^.strobj^.linkadr = 3(*RecursiveType*))
+							& (n^.typ^.strobj # NIL) & (n^.typ^.strobj^.linkadr = 4(*RecursiveType*) + OPM.BodyFile)
 						THEN
 							IF n^.typ^.sysflag # 0 THEN design(n^.left, designPrec)
 							ELSE design(n^.left, 10); OPM.WriteString("->data")
