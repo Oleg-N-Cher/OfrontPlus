@@ -47,8 +47,8 @@
 		ProcessingType = 1; (* pointer type is being processed *)
 		PredefinedType = 2; (* for all predefined types *)
 		TemporaryType = 3; (* for all types in recursion *)
-		RecursiveType = 4; (* for all types in recursion *)
-		MaxType = 5+1;  (* to avoid RecursiveType+OPM.BodyFile *)
+		CyclicType = 4; (* for all types in recursion *)
+		MaxType = 5+1;  (* to avoid CyclicType+OPM.BodyFile *)
 
 
 		HeaderMsg = "Ofront+ 1.0 -";
@@ -328,7 +328,7 @@
 		(* imported anonymous types have obj^.name = OPT.null; used e.g. for repeating inherited fields *)
 		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # MaxType+OPM.currFile )
 			& (obj^.linkadr # PredefinedType)
-			& (obj^.linkadr # RecursiveType+OPM.currFile)
+			& (obj^.linkadr # CyclicType+OPM.currFile)
 			OR (obj^.name = OPT.null)
 	END Undefined;
 
@@ -336,20 +336,20 @@
 	PROCEDURE^ Universal (typ: OPT.Struct): BOOLEAN;
 	PROCEDURE^ UniversalArrayName (typ: OPT.Struct);
 
-	PROCEDURE NextArrayBaseType* (typ: OPT.Struct): BOOLEAN;
+	PROCEDURE ArrayType* (typ: OPT.Struct): BOOLEAN;
 	BEGIN
 		IF typ^.comp = DynArr THEN RETURN typ^.sysflag = 0 END;
-		RETURN
-			(typ^.strobj # NIL) & (typ^.strobj^.linkadr = RecursiveType+OPM.currFile) &
-			(typ^.comp = Array) & (typ^.sysflag = 0)
-	END NextArrayBaseType;
+		RETURN (typ^.comp = Array) & (typ^.sysflag = 0)
+			& ((typ^.strobj # NIL) & (typ^.strobj^.linkadr = CyclicType+OPM.currFile)
+			OR (typ = typ^.BaseTyp^.BaseTyp))
+	END ArrayType;
 
 	PROCEDURE DeclareBase(dcl: OPT.Object); (* declare the specifier of object dcl*)
 		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
 	BEGIN
 		typ := dcl^.typ; prev := typ;
 		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & ~(typ^.form IN {NoTyp, Undef})
-			& ~((typ^.form = Pointer) & NextArrayBaseType(typ^.BaseTyp)) DO
+			& ~((typ^.form = Pointer) & ArrayType(typ^.BaseTyp)) DO
 			prev := typ; typ := typ^.BaseTyp
 		END;
 		obj := typ^.strobj;
@@ -373,7 +373,7 @@
 				FieldList(typ, TRUE, off, n, dummy);
 				EndBlk0
 			END
-		ELSIF (typ^.form = Pointer) & NextArrayBaseType(typ^.BaseTyp) THEN
+		ELSIF (typ^.form = Pointer) & ArrayType(typ^.BaseTyp) THEN
 			typ := typ^.BaseTyp;
 			OPM.WriteString(Struct);
 			IF Universal(typ) THEN
@@ -578,20 +578,63 @@
 		END
 	END DefineTProcMacros;
 
-	PROCEDURE DefineRecursiveType (str: OPT.Struct);
-		VAR obj: OPT.Object; 
+	PROCEDURE InsertArrayType* (typ: OPT.Struct);
+		VAR i: INTEGER;
+	BEGIN
+		ASSERT(typ.comp IN {Array, DynArr});
+		i := 0;
+		WHILE i < arrayIndex DO
+			IF OPT.EqualType(typ, arrayTypes[i]) THEN RETURN END;
+			INC(i)
+		END;
+		arrayTypes[arrayIndex] := typ;
+		INC(arrayIndex)
+	END InsertArrayType;
+
+	PROCEDURE CleanupArrays*;
+		VAR i: INTEGER;
+	BEGIN
+		i := 0;
+		WHILE i < arrayIndex DO arrayTypes[i] := NIL; INC(i) END
+	END CleanupArrays;
+
+	PROCEDURE DefineCyclicType (str: OPT.Struct);
+		VAR obj, field: OPT.Object; 
 	BEGIN
 		obj := str^.strobj;
-		IF (str^.BaseTyp^.strobj = NIL) & (str = str^.BaseTyp^.BaseTyp) THEN
+		IF str^.form = ProcTyp THEN
 			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-			OPM.WriteString(Struct);
-			IF Universal(str) THEN UniversalArrayName(str) ELSE Andent(str) END;
-			OPM.Write(Blank);
+			DeclareBase(obj); OPM.Write(Blank);
+(*
+			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
+*)
+			DeclareObj(obj, 0);
+			obj^.typ^.strobj := obj; (* SG: revert trick *)
+			EndStat; Indent(-1); OPM.WriteLn;
+			obj^.linkadr := MaxType+OPM.currFile;
+(*
+			IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END;
+			field := str^.link;
+			WHILE field # NIL DO DefineType(field^.typ); field := field^.link END *)
+		END;
+		IF (str = str^.BaseTyp^.BaseTyp) & (str^.form # Pointer) THEN
+			IF str^.BaseTyp^.strobj = NIL THEN (*Ex5*)
+				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+				OPM.WriteString(Struct); UniversalArrayName(str); OPM.Write(Blank);
+				obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
+				DeclareObj(obj, 0);
+				obj^.typ^.strobj := obj; (* SG: revert trick *)
+				EndStat; Indent(-1); OPM.WriteLn
+			END;
+			obj^.linkadr := CyclicType+OPM.currFile; InsertArrayType(str) (*Ex4*)
+		ELSIF (str^.form = Pointer) & (str^.BaseTyp^.strobj = NIL) THEN
+			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+			OPM.WriteString(Struct); Andent(str^.BaseTyp); OPM.Write(Blank);
 			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
 			DeclareObj(obj, 0);
 			obj^.typ^.strobj := obj; (* SG: revert trick *)
 			EndStat; Indent(-1); OPM.WriteLn;
-			obj^.linkadr := RecursiveType+OPM.currFile
+			obj^.linkadr := CyclicType+OPM.currFile  (*Ex6, Ex61*)
 		ELSIF (str^.BaseTyp^.form = Comp) & (str^.BaseTyp^.comp = Record) THEN
 			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
 			DeclareBase(obj); OPM.Write(Blank); 
@@ -599,11 +642,12 @@
 			DeclareObj(obj, 0);
 			obj^.typ^.strobj := obj; (* SG: revert trick *)
 			EndStat; Indent(-1); OPM.WriteLn;
-			obj^.linkadr := MaxType+OPM.currFile
-		ELSIF str^.form # Pointer THEN
-			obj^.linkadr := RecursiveType+OPM.currFile
+			obj^.linkadr := MaxType+OPM.currFile (*Ex8*)
+		ELSIF (str^.comp = Array) & (str^.strobj # NIL) THEN
+			InsertArrayType(str);
+			obj^.linkadr := CyclicType+OPM.currFile (*Ex3*)
 		END
-	END DefineRecursiveType;
+	END DefineCyclicType;
 
 	PROCEDURE DefineType (str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
@@ -613,7 +657,7 @@
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
-					IF obj^.linkadr = ProcessingType THEN DefineRecursiveType(str)
+					IF obj^.linkadr = ProcessingType THEN DefineCyclicType(str)
 					ELSE obj^.linkadr := ProcessingType
 					END
 				END;
@@ -636,7 +680,7 @@
 				END
 			END;
 			IF (obj # NIL) & (Undefined(obj) OR (obj^.linkadr = TemporaryType)) THEN
-				IF (obj^.linkadr # RecursiveType+OPM.currFile) OR (str.comp = Array) THEN
+				IF (obj^.linkadr # CyclicType+OPM.currFile) OR (str.comp = Array) THEN
 					OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
 					obj^.linkadr := ProcessingType;
 					DeclareBase(obj); OPM.Write(Blank);
@@ -651,10 +695,10 @@
 					END;
 					IF (str^.form = Pointer) & (str^.BaseTyp^.comp = Array) THEN
 						obj := str.BaseTyp.strobj;
-						IF (obj # NIL) & (obj^.linkadr = RecursiveType+OPM.currFile) THEN
+						IF (obj # NIL) & (obj^.linkadr = CyclicType+OPM.currFile) THEN
 							obj^.linkadr := TemporaryType;
 							DefineType(str^.BaseTyp);
-							obj^.linkadr := RecursiveType+OPM.currFile
+							obj^.linkadr := CyclicType+OPM.currFile
 						END
 					END
 				END
@@ -833,26 +877,6 @@
 			INC(i)
 		END
 	END DefAnonArrays;
-
-	PROCEDURE InsertArrayType* (typ: OPT.Struct);
-		VAR i: INTEGER;
-	BEGIN
-		ASSERT(typ.comp IN {Array, DynArr});
-		i := 0;
-		WHILE i < arrayIndex DO
-			IF OPT.EqualType(typ, arrayTypes[i]) THEN RETURN END;
-			INC(i)
-		END;
-		arrayTypes[arrayIndex] := typ;
-		INC(arrayIndex)
-	END InsertArrayType;
-
-	PROCEDURE CleanupArrays*;
-		VAR i: INTEGER;
-	BEGIN
-		i := 0;
-		WHILE i < arrayIndex DO arrayTypes[i] := NIL; INC(i) END
-	END CleanupArrays;
 
 	PROCEDURE TDescDecl* (typ: OPT.Struct);
 		VAR nofptrs: INTEGER;

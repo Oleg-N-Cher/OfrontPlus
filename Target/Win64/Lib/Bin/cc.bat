@@ -2,7 +2,7 @@
 IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW64\bin
 CD ..\Obj
 
-SET CC=gcc.exe -m64 -fPIC -Os -g0 -I..\..\..\..\Mod\Lib -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c
+SET CC=gcc.exe -m64 -fPIC -Os -g0 -I..\..\..\..\Mod\Lib -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -Wfatal-errors -c
 SET AR=ar.exe -rc ..\Ofront.a
 IF EXIST ..\Ofront.a DEL ..\Ofront.a
 

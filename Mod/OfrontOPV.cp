@@ -155,6 +155,9 @@
 				typ^.n := -1  (* methods not counted yet *)
 			ELSIF c = Array THEN
 				TypSize(typ^.BaseTyp);
+				IF (typ = typ^.BaseTyp^.BaseTyp) & (typ^.align MOD 10000H = 0) THEN
+					INC(recno); INC(typ^.align, recno * 10000H)
+				END;
 				typ^.size := typ^.n * typ^.BaseTyp^.size
 			ELSIF f = Pointer THEN
 				typ^.size := OPM.AdrSize;
@@ -165,6 +168,9 @@
 				typ^.size := OPM.AdrSize;
 			ELSIF c = DynArr THEN
 				btyp := typ^.BaseTyp; TypSize(btyp);
+				IF (typ^.strobj = NIL) & (typ^.align MOD 10000H = 0) THEN
+					INC(recno); INC(typ^.align, recno * 10000H)
+				END;
 				IF ODD(typ.sysflag) THEN typ^.size := 4
 				ELSIF btyp^.comp = DynArr THEN typ^.size := btyp^.size + 4	(* describes dim not size *)
 				ELSE typ^.size := 8
@@ -221,7 +227,7 @@
 			ELSIF typ^.form = Pointer THEN
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ.txtpos) END;
 				TraverseType(typ^.BaseTyp);
-				IF OPC.NextArrayBaseType(typ^.BaseTyp) THEN OPC.InsertArrayType(typ^.BaseTyp) END
+				IF OPC.ArrayType(typ^.BaseTyp) THEN OPC.InsertArrayType(typ^.BaseTyp) END
 			ELSIF typ^.form = ProcTyp THEN
 				TraverseType(typ^.BaseTyp);
 				p := typ^.link;
@@ -573,7 +579,7 @@
 						expr(n^.left, designPrec)
 					ELSE
 						IF (n^.typ^.comp = DynArr) OR (n^.typ^.comp = Array)
-							& (n^.typ^.strobj # NIL) & (n^.typ^.strobj^.linkadr = 4(*RecursiveType*) + OPM.BodyFile)
+							& (n^.typ^.strobj # NIL) & (n^.typ^.strobj^.linkadr = 4(*CyclicType*) + OPM.BodyFile)
 						THEN
 							IF n^.typ^.sysflag # 0 THEN design(n^.left, designPrec)
 							ELSE design(n^.left, 10); OPM.WriteString("->data")
