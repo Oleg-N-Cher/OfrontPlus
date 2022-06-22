@@ -634,15 +634,9 @@
 			DeclareObj(obj, 0);
 			obj^.typ^.strobj := obj; (* SG: revert trick *)
 			EndStat; Indent(-1); OPM.WriteLn;
-			obj^.linkadr := CyclicType+OPM.currFile  (*Ex6, Ex61*)
+			obj^.linkadr := CyclicType+OPM.currFile (*Ex6, Ex61*)
 		ELSIF (str^.BaseTyp^.form = Comp) & (str^.BaseTyp^.comp = Record) THEN
-			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-			DeclareBase(obj); OPM.Write(Blank); 
-			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
-			DeclareObj(obj, 0);
-			obj^.typ^.strobj := obj; (* SG: revert trick *)
-			EndStat; Indent(-1); OPM.WriteLn;
-			obj^.linkadr := MaxType+OPM.currFile (*Ex8*)
+			obj^.linkadr := TemporaryType (*Ex8*)
 		ELSIF (str^.comp = Array) & (str^.strobj # NIL) THEN
 			InsertArrayType(str);
 			obj^.linkadr := CyclicType+OPM.currFile (*Ex3*)
@@ -657,7 +651,11 @@
 			obj := str^.strobj;
 			IF (obj = NIL) OR Undefined(obj) THEN
 				IF obj # NIL THEN (* check for cycles *)
-					IF obj^.linkadr = ProcessingType THEN DefineCyclicType(str)
+					IF obj^.linkadr = ProcessingType THEN
+						IF OPM.Lang = "C" THEN DefineCyclicType(str)
+						ELSIF (str^.form # Pointer) OR (str^.BaseTyp^.strobj = NIL) THEN
+							OPM.Mark(244, str^.txtpos); obj^.linkadr := PredefinedType
+						END
 					ELSE obj^.linkadr := ProcessingType
 					END
 				END;
