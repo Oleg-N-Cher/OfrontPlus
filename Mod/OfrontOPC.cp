@@ -348,8 +348,9 @@
 		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
 	BEGIN
 		typ := dcl^.typ; prev := typ;
-		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record) & ~(typ^.form IN {NoTyp, Undef})
-			& ~((typ^.form = Pointer) & ArrayType(typ^.BaseTyp)) DO
+		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record)
+			& (typ^.form # NoTyp) & ~((typ^.form = Pointer) & ArrayType(typ^.BaseTyp))
+		DO
 			prev := typ; typ := typ^.BaseTyp
 		END;
 		obj := typ^.strobj;
@@ -602,21 +603,6 @@
 		VAR obj, field: OPT.Object; 
 	BEGIN
 		obj := str^.strobj;
-		IF str^.form = ProcTyp THEN
-			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-			DeclareBase(obj); OPM.Write(Blank);
-(*
-			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
-*)
-			DeclareObj(obj, 0);
-			obj^.typ^.strobj := obj; (* SG: revert trick *)
-			EndStat; Indent(-1); OPM.WriteLn;
-			obj^.linkadr := MaxType+OPM.currFile;
-(*
-			IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END;
-			field := str^.link;
-			WHILE field # NIL DO DefineType(field^.typ); field := field^.link END *)
-		END;
 		IF (str = str^.BaseTyp^.BaseTyp) & (str^.form # Pointer) THEN
 			IF str^.BaseTyp^.strobj = NIL THEN (*Ex5*)
 				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
@@ -640,6 +626,20 @@
 		ELSIF (str^.comp = Array) & (str^.strobj # NIL) THEN
 			InsertArrayType(str);
 			obj^.linkadr := CyclicType+OPM.currFile (*Ex3*)
+		ELSIF str^.form = ProcTyp THEN
+			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+			DeclareBase(obj); OPM.Write(Blank);
+
+			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
+
+			DeclareObj(obj, 0);
+			obj^.typ^.strobj := obj; (* SG: revert trick *)
+			EndStat; Indent(-1); OPM.WriteLn;
+			obj^.linkadr := MaxType+OPM.currFile;
+(*
+			IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END;
+			field := str^.link;
+			WHILE field # NIL DO DefineType(field^.typ); field := field^.link END *)
 		END
 	END DefineCyclicType;
 

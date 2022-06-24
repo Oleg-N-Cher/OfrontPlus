@@ -155,7 +155,7 @@
 				typ^.n := -1  (* methods not counted yet *)
 			ELSIF c = Array THEN
 				TypSize(typ^.BaseTyp);
-				IF (typ = typ^.BaseTyp^.BaseTyp) & (typ^.align MOD 10000H = 0) THEN
+				IF (typ^.strobj = NIL) & (typ = typ^.BaseTyp^.BaseTyp) & (typ^.align MOD 10000H = 0) THEN
 					INC(recno); INC(typ^.align, recno * 10000H)
 				END;
 				typ^.size := typ^.n * typ^.BaseTyp^.size
@@ -168,7 +168,9 @@
 				typ^.size := OPM.AdrSize;
 			ELSIF c = DynArr THEN
 				btyp := typ^.BaseTyp; TypSize(btyp);
-				IF (typ^.strobj = NIL) & (typ^.align MOD 10000H = 0) THEN
+				IF (typ^.strobj = NIL) & (btyp^.BaseTyp # NIL) & (btyp = btyp^.BaseTyp^.BaseTyp)
+					& (typ^.align MOD 10000H = 0)
+				THEN (*Ex62*)
 					INC(recno); INC(typ^.align, recno * 10000H)
 				END;
 				IF ODD(typ.sysflag) THEN typ^.size := 4
