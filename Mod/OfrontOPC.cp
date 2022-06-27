@@ -603,7 +603,15 @@
 		VAR obj, field: OPT.Object; 
 	BEGIN
 		obj := str^.strobj;
-		IF (str = str^.BaseTyp^.BaseTyp) & (str^.form # Pointer) THEN
+		IF str^.form = ProcTyp THEN (*Ex11*)
+			IF (str # str^.BaseTyp) THEN
+				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+				DeclareBase(obj); OPM.WriteString(" (*"); DeclareObj(obj, 0); OPM.WriteString(")()");
+				EndStat; Indent(-1); OPM.WriteLn
+			ELSE OPM.Mark(200, str^.txtpos)
+			END;
+			obj^.linkadr := MaxType+OPM.currFile
+		ELSIF (str = str^.BaseTyp^.BaseTyp) & (str^.form # Pointer) THEN
 			IF str^.BaseTyp^.strobj = NIL THEN (*Ex5*)
 				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
 				OPM.WriteString(Struct); UniversalArrayName(str); OPM.Write(Blank);
@@ -626,20 +634,6 @@
 		ELSIF (str^.comp = Array) & (str^.strobj # NIL) THEN
 			InsertArrayType(str);
 			obj^.linkadr := CyclicType+OPM.currFile (*Ex3*)
-		ELSIF str^.form = ProcTyp THEN
-			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-			DeclareBase(obj); OPM.Write(Blank);
-
-			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
-
-			DeclareObj(obj, 0);
-			obj^.typ^.strobj := obj; (* SG: revert trick *)
-			EndStat; Indent(-1); OPM.WriteLn;
-			obj^.linkadr := MaxType+OPM.currFile;
-(*
-			IF str^.BaseTyp # OPT.notyp THEN DefineType(str^.BaseTyp) END;
-			field := str^.link;
-			WHILE field # NIL DO DefineType(field^.typ); field := field^.link END *)
 		END
 	END DefineCyclicType;
 
