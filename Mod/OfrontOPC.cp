@@ -604,13 +604,11 @@
 	BEGIN
 		obj := str^.strobj;
 		IF str^.form = ProcTyp THEN (*Ex11*)
-			IF (str # str^.BaseTyp) THEN
-				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-				DeclareBase(obj); OPM.WriteString(" (*"); DeclareObj(obj, 0); OPM.WriteString(")()");
-				EndStat; Indent(-1); OPM.WriteLn
-			ELSE OPM.Mark(200, str^.txtpos)
-			END;
-			obj^.linkadr := MaxType+OPM.currFile
+			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
+			IF str = str^.BaseTyp THEN OPM.WriteString("void*") ELSE DeclareBase(obj) END;
+			OPM.WriteString(" (*"); DeclareObj(obj, 0); OPM.WriteString(")()");
+			EndStat; Indent(-1); OPM.WriteLn;
+			obj^.linkadr := CyclicType+OPM.currFile
 		ELSIF (str = str^.BaseTyp^.BaseTyp) & (str^.form # Pointer) THEN
 			IF str^.BaseTyp^.strobj = NIL THEN (*Ex5*)
 				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
