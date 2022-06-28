@@ -4,9 +4,8 @@ SET OBERON=%CD%;%CD%\..\Mod;%CD%\..\Mod\Lib
 
 :: Ofront+
 
-ofront+ -s %1 Heap.cp -apx Platform.%2.cp -atpx Console.cp Kernel.cp -atpx
-IF errorlevel 1 EXIT
-ofront+ -s %1 CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
+ofront+ -s %1 Heap.cp -apx Platform.%2.cp -atpx Console.cp Kernel.cp -atpx ^
+  CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
 IF errorlevel 1 EXIT
 
 :: Eco
