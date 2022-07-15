@@ -1816,7 +1816,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF sym = ident THEN qualident(t);
 							IF t^.mode = Typ THEN
 								IF id # NIL THEN
-									idtyp := id^.typ; OPB.TypTest(y, t, FALSE); id^.typ := t^.typ
+									idtyp := id^.typ; OPB.TypTest(y, t, FALSE); id^.typ := t^.typ;
+									IF id.ptyp = NIL THEN id.ptyp := idtyp END
 								ELSE err(130)
 								END
 							ELSE err(52)
@@ -1826,7 +1827,10 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					ELSE err(ident)
 					END;
 					pos := OPM.errpos; CheckSym(do); StatSeq(s); OPB.Construct(Nif, y, s); SetPos(y);
-					IF idtyp # NIL THEN id^.typ := idtyp; idtyp := NIL END;
+					IF idtyp # NIL THEN
+						IF id.ptyp = idtyp THEN id.ptyp := NIL END;
+						id^.typ := idtyp; idtyp := NIL
+					END;
 					IF x = NIL THEN x := y; lastif := x ELSE OPB.Link(x, lastif, y) END;
 					IF sym = bar THEN OPS.Get(sym) ELSE EXIT END
 				END;

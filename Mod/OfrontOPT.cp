@@ -43,7 +43,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			history*: BYTE;	(* relevant if name # "" *)
 			used*, fpdone*: BOOLEAN;
 			fprint*: INTEGER;
-			typ*: Struct;
+			typ*: Struct;	(* actual type, changed in with statements *)
+			ptyp*: Struct;	(* original type if typ is changed *)
 			conval*: Const;
 			nlink*: Object;	(* link for name list, declaration order for methods, library link for imp obj *)
 			entry*: OPS.String;	(* entry name *)

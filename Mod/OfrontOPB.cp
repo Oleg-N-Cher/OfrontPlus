@@ -736,6 +736,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		WHILE fp # NIL DO
 			IF ap # NIL THEN
 				ft := fp^.typ; at := ap^.typ;
+				IF fp.ptyp # NIL THEN ft := fp.ptyp END;	(* get original formal type *)
+				IF ap.ptyp # NIL THEN at := ap.ptyp END;	(* get original formal type *)
 				IF ~OPT.EqualType(ft, at)
 					OR (fp^.mode # ap^.mode) OR (fp^.sysflag # ap^.sysflag) OR (fp^.vis # ap^.vis)
 					OR checkNames & (fp^.name^ # ap^.name^) THEN err(115) END;
@@ -1399,15 +1401,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF ~(g IN {Int8, Byte, Int16..Real64}) THEN err(113)
 				END
 		| Pointer:
-				b := x^.BaseTyp;
+				b := x.BaseTyp;
 				IF OPT.Extends(y, x) OR (g = NilTyp) OR (x = OPT.sysptrtyp) & (g = Pointer) THEN (* ok *)
-				ELSIF (b^.comp = DynArr) & (b^.sysflag # 0) THEN	(* pointer to untagged open array *)
-					IF ynode^.class = Nconst THEN CheckString(ynode, b, 113)
-					ELSIF ~(y^.comp IN {Array, DynArr}) OR ~OPT.EqualType(b^.BaseTyp, y^.BaseTyp) THEN err(113)
+				ELSIF (b.comp = DynArr) & (b.sysflag # 0) THEN	(* pointer to untagged open array *)
+					IF ynode.class = Nconst THEN CheckString(ynode, b, 113)
+					ELSIF ~(y.comp IN {Array, DynArr}) OR ~OPT.EqualType(b.BaseTyp, y.BaseTyp) THEN err(113)
 					END
-				ELSIF (b^.sysflag # 0) & (ynode^.class = Nmop) & (ynode^.subcl = adr) THEN	(* p := ADR(r) *)
-					IF (b^.comp = DynArr) & (ynode^.left^.class = Nconst) THEN CheckString(ynode^.left, b, 113)
-					ELSIF ~OPT.Extends(ynode^.left^.typ, b) THEN err(113)
+				ELSIF (b.sysflag # 0) & (ynode.class = Nmop) & (ynode.subcl = adr) THEN	(* p := ADR(r) *)
+					IF (b.comp = DynArr) & (ynode.left.class = Nconst) THEN CheckString(ynode.left, b, 113)
+					ELSIF ~OPT.Extends(ynode.left.typ, b) THEN err(113)
 					END
 				ELSE err(113)
 				END
@@ -2175,6 +2177,7 @@ avoid unnecessary intermediate variables in OFront
 		VAR at, ft: OPT.Struct;
 	BEGIN
 		at := ap.typ; ft := fp.typ;
+		IF fp.ptyp # NIL THEN ft := fp.ptyp END;	(* get original formal type *)
 		IF ft.form # Undef THEN
 			IF (ap.class = Ntype) OR (ap.class = Nproc) & (ft.form # ProcTyp) THEN err(126) END;
 			IF fp.mode = VarPar THEN
