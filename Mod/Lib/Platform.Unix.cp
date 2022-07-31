@@ -1,4 +1,4 @@
-MODULE Platform; (** Unix *)
+MODULE Platform; (** UNIX *)
 IMPORT SYSTEM;
 
 (* Based on Vishap Oberon (voc) runtime by David C W Brown, 2016-2018
@@ -21,7 +21,6 @@ CONST
 
 
 TYPE
-  LONGCHAR* = CHAR; CHAR* = SHORTCHAR;
   ADRINT* = SYSTEM.ADRINT;  (* 32 or 64 bits *)
 
   TIME_T = ADRINT;  (* time_t type is used
@@ -42,13 +41,13 @@ TYPE
     mtime:  TIME_T;  (* File modification time, value is system dependent *)
   END;
 
-  EnvPtr  = POINTER [notag] TO ARRAY 1024 OF CHAR;
+  EnvPtr  = POINTER [notag] TO ARRAY 1024 OF SHORTCHAR;
 
 
 VAR
   LittleEndian-:   BOOLEAN;
   PID-:            INTEGER;  (* Note: Must be updated by Fork implementation *)
-  CWD-:            ARRAY 4096 OF CHAR;
+  CWD-:            ARRAY 4096 OF SHORTCHAR;
 
   SeekSet-:        INTEGER;
   SeekCur-:        INTEGER;
@@ -128,9 +127,9 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 (* Program arguments and environment access *)
 
-PROCEDURE- getenv (var: ARRAY OF CHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
+PROCEDURE- getenv (var: ARRAY OF SHORTCHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
 
-PROCEDURE getEnv (IN var: ARRAY OF CHAR; VAR val: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE getEnv (IN var: ARRAY OF SHORTCHAR; VAR val: ARRAY OF SHORTCHAR): BOOLEAN;
 VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
@@ -138,23 +137,22 @@ BEGIN
   RETURN p # NIL
 END getEnv;
 
-PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
+PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
 BEGIN
   IF ~getEnv(var, val) THEN val := "" END
 END GetEnv;
 
-(* Returns in first two characters of lang the user's UI language, i.e. 'ru' *)
-PROCEDURE GetLang*(VAR lang: ARRAY OF CHAR);
+(* Returns in first two characters of lang the user's UI language, i.e. "ru" *)
+PROCEDURE GetLang* (OUT lang: ARRAY OF SHORTCHAR);
 BEGIN
-  GetEnv('LANGUAGE', lang);
-  IF lang = '' THEN
-    GetEnv('LC_ALL', lang);
-    IF lang = '' THEN
-      GetEnv('LANG', lang)
+  GetEnv("LANGUAGE", lang);
+  IF lang = "" THEN
+    GetEnv("LC_ALL", lang);
+    IF lang = "" THEN
+      GetEnv("LANG", lang)
     END
   END
 END GetLang;
-
 
 
 (* Time of day *)
@@ -227,10 +225,10 @@ END Delay;
 
 (* System call *)
 
-PROCEDURE- system (str: ARRAY OF CHAR): INTEGER "system((char*)str)";
+PROCEDURE- system (str: ARRAY OF SHORTCHAR): INTEGER "system((char*)str)";
 PROCEDURE- err (): INTEGER "errno";
 
-PROCEDURE System* (IN cmd : ARRAY OF CHAR): INTEGER;
+PROCEDURE System* (IN cmd : ARRAY OF SHORTCHAR): INTEGER;
 BEGIN RETURN system(cmd) END System;
 
 PROCEDURE Error* (): ErrorCode; BEGIN RETURN err() END Error;
@@ -250,36 +248,36 @@ PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN PATHMAX() END MaxPathLength;
 PROCEDURE- InvalidHandleValue* (): FileHandle "(-1)";
 
 (* Note: Consider also using flags O_SYNC and O_DIRECT as we do buffering *)
-PROCEDURE- openrw (n: ARRAY OF CHAR): FileHandle "open((char*)n, O_RDWR)";
-PROCEDURE- openro (n: ARRAY OF CHAR): FileHandle "open((char*)n, O_RDONLY)";
-PROCEDURE- opennew (n: ARRAY OF CHAR): FileHandle "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
-PROCEDURE- mkdir (pathname: ARRAY OF CHAR): INTEGER "mkdir((char*)pathname, 0775)";
+PROCEDURE- openrw (n: ARRAY OF SHORTCHAR): FileHandle "open((char*)n, O_RDWR)";
+PROCEDURE- openro (n: ARRAY OF SHORTCHAR): FileHandle "open((char*)n, O_RDONLY)";
+PROCEDURE- opennew (n: ARRAY OF SHORTCHAR): FileHandle "open((char*)n, O_CREAT | O_TRUNC | O_RDWR, 0664)";
+PROCEDURE- mkdir (pathname: ARRAY OF SHORTCHAR): INTEGER "mkdir((char*)pathname, 0775)";
 
 
 (* File APIs *)
 
-PROCEDURE OldRO* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewDir* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 BEGIN
   IF mkdir(pathname) # 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
@@ -293,15 +291,15 @@ BEGIN
 END CloseFile;
 
 
-PROCEDURE- fstat (fd: FileHandle):  INTEGER "fstat(fd, &s)";
-PROCEDURE- stat (n: ARRAY OF CHAR): INTEGER "stat((char*)n, &s)";
-PROCEDURE- structstats                      "struct stat s";
-PROCEDURE- statdev ():              DEV_T   "(LONGINT)s.st_dev";
-PROCEDURE- statino ():              INO_T   "(SYSTEM_ADRINT)s.st_ino";
-PROCEDURE- statmtime ():            TIME_T  "(SYSTEM_ADRINT)s.st_mtime";
-PROCEDURE- statsize ():             LONGINT "(LONGINT)s.st_size";
-PROCEDURE- statisreg ():            BOOLEAN "S_ISREG(s.st_mode)";
-PROCEDURE- statisdir ():            BOOLEAN "S_ISDIR(s.st_mode)";
+PROCEDURE- fstat (fd: FileHandle):  INTEGER      "fstat(fd, &s)";
+PROCEDURE- stat (n: ARRAY OF SHORTCHAR): INTEGER "stat((char*)n, &s)";
+PROCEDURE- structstats                           "struct stat s";
+PROCEDURE- statdev ():              DEV_T        "(LONGINT)s.st_dev";
+PROCEDURE- statino ():              INO_T        "(SYSTEM_ADRINT)s.st_ino";
+PROCEDURE- statmtime ():            TIME_T       "(SYSTEM_ADRINT)s.st_mtime";
+PROCEDURE- statsize ():             LONGINT      "(LONGINT)s.st_size";
+PROCEDURE- statisreg ():            BOOLEAN      "S_ISREG(s.st_mode)";
+PROCEDURE- statisdir ():            BOOLEAN      "S_ISDIR(s.st_mode)";
 
 PROCEDURE Identify* (h: FileHandle; VAR identity: FileIdentity): ErrorCode;
 BEGIN
@@ -313,7 +311,7 @@ BEGIN
   RETURN 0
 END Identify;
 
-PROCEDURE IdentifyByName* (IN n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
+PROCEDURE IdentifyByName* (IN n: ARRAY OF SHORTCHAR; VAR identity: FileIdentity): ErrorCode;
 BEGIN
   structstats;
   IF stat(n) < 0 THEN RETURN err() END;
@@ -354,16 +352,16 @@ END FileSize;
 (* Returns path for temporary files specified by the current OS. Path will end
    with a path delimiter. If the parameter path has no space for the whole
    path, the default /tmp/ path is used, empty string is never returned. *)
-PROCEDURE GetTempPath* (OUT path: ARRAY OF CHAR);
-VAR s: ARRAY 1024 OF CHAR;
+PROCEDURE GetTempPath* (OUT path: ARRAY OF SHORTCHAR);
+VAR s: ARRAY 1024 OF SHORTCHAR;
   i: INTEGER;
 BEGIN
-  GetEnv('TMPDIR', s);
+  GetEnv("TMPDIR", s);
   i := 0; WHILE s[i] # 0X DO INC(i) END;
   IF (i # 0) & (s[i - 1] # PathDelimiter) THEN
     s[i] := PathDelimiter; INC(i); s[i] := 0X
   END;
-  IF (i # 0) & (i < LEN(path)) THEN path := s$ ELSE path := '/tmp/' END
+  IF (i # 0) & (i < LEN(path)) THEN path := s$ ELSE path := "/tmp/" END
 END GetTempPath;
 
 PROCEDURE- readfile (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
@@ -392,10 +390,11 @@ BEGIN
   IF written < 0 THEN RETURN err() ELSE RETURN 0 END
 END Write;
 
-PROCEDURE ConvertFromUTF16(IN in: ARRAY OF LONGCHAR; inLen: INTEGER;
-    OUT out: ARRAY OF CHAR; OUT outLen: INTEGER);
-VAR i, j, val, lim: INTEGER;
-  ok: BOOLEAN;
+PROCEDURE ConvertFromUTF16 (
+  IN in: ARRAY OF CHAR; inLen: INTEGER;
+  OUT out: ARRAY OF SHORTCHAR; OUT outLen: INTEGER);
+VAR
+  i, j, val, lim: INTEGER; ok: BOOLEAN;
 BEGIN i := 0; j := 0; lim := LEN(out) - 1;
   ok := TRUE;
   IF inLen < 0 THEN inLen := LEN(in) END;
@@ -417,11 +416,8 @@ BEGIN i := 0; j := 0; lim := LEN(out) - 1;
   IF (i # inLen) & (in[i] # 0X) THEN ok := FALSE END
 END ConvertFromUTF16;
 
-PROCEDURE WriteW* (s: ARRAY OF LONGCHAR; len: INTEGER): ErrorCode;
-VAR error: ErrorCode;
-  u: ARRAY 40960 OF CHAR;
-  ulen: INTEGER;
-  p: ADRINT;
+PROCEDURE WriteW* (IN s: ARRAY OF CHAR; len: INTEGER): ErrorCode;
+  VAR error: ErrorCode; u: ARRAY 40960 OF SHORTCHAR; ulen: INTEGER; p: ADRINT;
 BEGIN
   ConvertFromUTF16(s, len, u, ulen);
   IF write(StdOut, SYSTEM.ADR(u), ulen) # ulen THEN error := err()
@@ -458,18 +454,18 @@ BEGIN
 END TruncateFile;
 
 
-PROCEDURE- unlink (n: ARRAY OF CHAR): INTEGER "unlink((char*)n)";
+PROCEDURE- unlink (n: ARRAY OF SHORTCHAR): INTEGER "unlink((char*)n)";
 
-PROCEDURE DeleteFile* (IN n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE DeleteFile* (IN n: ARRAY OF SHORTCHAR): ErrorCode;
 BEGIN
   IF unlink(n) < 0 THEN RETURN err() ELSE RETURN 0 END
 END DeleteFile;
 
 
-PROCEDURE- chdir (n: ARRAY OF CHAR): INTEGER "chdir((char*)n)";
-PROCEDURE- getcwd (VAR cwd: ARRAY OF CHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
+PROCEDURE- chdir (n: ARRAY OF SHORTCHAR): INTEGER "chdir((char*)n)";
+PROCEDURE- getcwd (VAR cwd: ARRAY OF SHORTCHAR) "{char *dummy = getcwd((char*)cwd, cwd__len);}";
 
-PROCEDURE ChDir* (IN n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE ChDir* (IN n: ARRAY OF SHORTCHAR): ErrorCode;
 VAR r: INTEGER;
 BEGIN
   r := chdir(n);  getcwd(CWD);
@@ -477,26 +473,26 @@ BEGIN
 END ChDir;
 
 (** Get application directory ending with "/". *)
-PROCEDURE GetAppDir* (VAR dir: ARRAY OF CHAR);
+PROCEDURE GetAppDir* (OUT dir: ARRAY OF SHORTCHAR);
 BEGIN (*!TODO*)
-  dir[0] := '.'; dir[1] := '/'; dir[2] := 0X
+  dir "./"
 END GetAppDir;
 
 (** Get application directory ending with "\". *)
-PROCEDURE GetAppDirW* (VAR dir: ARRAY OF LONGCHAR);
+PROCEDURE GetAppDirW* (VAR dir: ARRAY OF CHAR);
 BEGIN (*!TODO*)
-  dir[0] := '.'; dir[1] := '/'; dir[2] := 0X
+  dir := "./"
 END GetAppDirW;
 
 
-PROCEDURE FileExists* (IN pathname: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE FileExists* (IN pathname: ARRAY OF SHORTCHAR): BOOLEAN;
 BEGIN
   structstats;
   IF stat(pathname) # 0 THEN RETURN FALSE END;
   RETURN statisreg()
 END FileExists;
 
-PROCEDURE DirExists* (IN path: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE DirExists* (IN path: ARRAY OF SHORTCHAR): BOOLEAN;
 BEGIN
   structstats;
   IF stat(path) # 0 THEN RETURN FALSE END;
@@ -504,7 +500,7 @@ BEGIN
 END DirExists;
 
 
-PROCEDURE- rename (o, n: ARRAY OF CHAR): INTEGER "rename((char*)o, (char*)n)";
+PROCEDURE- rename (o, n: ARRAY OF SHORTCHAR): INTEGER "rename((char*)o, (char*)n)";
 
 PROCEDURE CopyFileFd (from, to: FileHandle): ErrorCode;
 VAR buf: ARRAY 32768 OF BYTE;
@@ -519,7 +515,7 @@ BEGIN
   RETURN err
 END CopyFileFd;
 
-PROCEDURE CopyFile (IN oldname, newname: ARRAY OF CHAR): ErrorCode;
+PROCEDURE CopyFile (IN oldname, newname: ARRAY OF SHORTCHAR): ErrorCode;
 VAR from, to: FileHandle;
   res: ErrorCode;
 BEGIN from := openro(oldname);
@@ -534,7 +530,7 @@ BEGIN from := openro(oldname);
   RETURN res
 END CopyFile;
 
-PROCEDURE RenameFile* (IN oldname, newname: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile* (IN oldname, newname: ARRAY OF SHORTCHAR): ErrorCode;
 VAR res: ErrorCode;
 BEGIN res := rename(oldname, newname);
   IF res < 0 THEN res := err();

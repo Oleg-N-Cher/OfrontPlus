@@ -110,9 +110,8 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
     END
   END MaybeLoadEnv;
 
-  PROCEDURE GetEnvN*(n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
-  VAR p: PtrSTR;
-    i, j: INTEGER;
+  PROCEDURE GetEnvN* (n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
+    VAR p: PtrSTR; i, j: INTEGER;
   BEGIN
     MaybeLoadEnv;
     IF (0 <= n) & (n < envCount) THEN
@@ -121,10 +120,10 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
         s[i] := env[j]; INC(i); INC(j)
       END;
       s[i] := 0X
-    ELSE s := '' END
+    ELSE s := "" END
   END GetEnvN;
 
-  PROCEDURE EnvCount*(): INTEGER;
+  PROCEDURE EnvCount* (): INTEGER;
   BEGIN
     MaybeLoadEnv;
     RETURN envCount

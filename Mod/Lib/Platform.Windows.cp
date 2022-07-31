@@ -23,7 +23,7 @@ CONST
 
 
 TYPE
-  LONGCHAR* = CHAR; CHAR* = SHORTCHAR; BOOL = INTEGER; DWORD = INTEGER;
+  BOOL = INTEGER; DWORD = INTEGER;
   ADRINT* = SYSTEM.ADRINT; (* 32 or 64 bits *)
   LARGE_INTEGER = RECORD [notag] low, high: INTEGER END;
 
@@ -48,7 +48,7 @@ TYPE
 VAR
   LittleEndian-:    BOOLEAN;
   PID-:             DWORD;  (* Note: Must be updated by Fork implementation *)
-  CWD-:             ARRAY MAX_PATH OF CHAR;
+  CWD-:             ARRAY MAX_PATH OF SHORTCHAR;
 
   SeekSet-:         INTEGER;
   SeekCur-:         INTEGER;
@@ -58,7 +58,7 @@ VAR
   StdOut-:          FileHandle;
   StdErr-:          FileHandle;
 
-  stdOutIsConsole: INTEGER; (* 0 means false, 0 means false, -1 means undefined *)
+  stdOutIsConsole: INTEGER; (* 1 means true, 0 means false, -1 means undefined *)
 
 
 PROCEDURE- AAincludeWindowsWrapper '#include "_windows.h"';
@@ -136,13 +136,13 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 PROCEDURE- getConsoleMode (h: FileHandle; VAR m: INTEGER): BOOLEAN "GetConsoleMode((HANDLE)h, (DWORD*)m)";
 
 PROCEDURE IsConsole* (h: FileHandle): BOOLEAN;
-VAR mode: INTEGER;
+  VAR mode: INTEGER;
 BEGIN
   RETURN getConsoleMode(h, mode)
 END IsConsole;
 
 PROCEDURE IsStdOutConsole (): BOOLEAN;
-VAR mode: INTEGER;
+  VAR mode: INTEGER;
 BEGIN
   IF stdOutIsConsole < 0 THEN
     IF getConsoleMode(StdOut, mode) THEN stdOutIsConsole := 1
@@ -152,20 +152,20 @@ BEGIN
   RETURN stdOutIsConsole # 0
 END IsStdOutConsole;
 
-PROCEDURE- getEnvironmentVariable (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
+PROCEDURE- getEnvironmentVariable (name: ARRAY OF SHORTCHAR; VAR buf: ARRAY OF SHORTCHAR): DWORD
   "(INTEGER)GetEnvironmentVariableA((LPSTR)name, (LPSTR)buf, buf__len)";
 
-PROCEDURE- getEnvironmentVariableW (name: ARRAY OF LONGCHAR; VAR buf: ARRAY OF LONGCHAR): DWORD
+PROCEDURE- getEnvironmentVariableW (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
   "(INTEGER)GetEnvironmentVariableW((LPWSTR)name, (LPWSTR)buf, buf__len)";
 
-PROCEDURE GetEnv* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
+PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
   VAR res: INTEGER;
 BEGIN
   res := getEnvironmentVariable(var, val);
   IF (res < 0) OR (res > LEN(val)) THEN val := "" END
 END GetEnv;
 
-PROCEDURE GetEnvW* (IN var: ARRAY OF LONGCHAR; OUT val: ARRAY OF LONGCHAR);
+PROCEDURE GetEnvW* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
   VAR res: INTEGER;
 BEGIN
   res := getEnvironmentVariableW(var, val);
@@ -175,20 +175,19 @@ END GetEnvW;
 PROCEDURE- getSystemDefaultLangID (): SHORTINT
   "(SHORTINT)GetSystemDefaultLangID()";
 
-(* Returns in first two characters of lang the user's UI language, i.e. 'ru' *)
-PROCEDURE GetLang*(VAR lang: ARRAY OF CHAR);
-VAR L, n: SHORTINT;
+(* Returns in first two characters of lang the user's UI language, i.e. "ru" *)
+PROCEDURE GetLang* (OUT lang: ARRAY OF SHORTCHAR);
+  VAR langId, n: SHORTINT;
 BEGIN
-  L := getSystemDefaultLangID();
-  n := SHORT(L MOD 100H);
+  langId := getSystemDefaultLangID();
+  n := SHORT(langId MOD 100H);
   IF n = 25 THEN lang := 'ru'
   ELSIF n = 34 THEN lang := 'ua'
   ELSIF n = 38 THEN lang := 'lv'
-  ELSIF L = 1000H (*!FIXME?*) THEN lang := 'eo'
+  ELSIF langId = 1000H (*!FIXME?*) THEN lang := 'eo'
   ELSE (*n = 9 is English*) lang := 'en'
   END
 END GetLang;
-
 
 
 (* Time of day *)
@@ -231,15 +230,15 @@ END Delay;
 
 (* System call *)
 
-PROCEDURE- startupInfo                                "STARTUPINFO si = {0}; si.cb = sizeof(si);";
-PROCEDURE- processInfo                                "PROCESS_INFORMATION pi = {0};";
-PROCEDURE- createProcess (str: ARRAY OF CHAR): BOOL   "(INTEGER)CreateProcess(0, (char*)str, 0,0,0,0,0,0,&si,&pi)";
-PROCEDURE- waitForProcess (): DWORD                   "(INTEGER)WaitForSingleObject(pi.hProcess, INFINITE)";
-PROCEDURE- getExitCodeProcess (VAR exitcode: INTEGER) "GetExitCodeProcess(pi.hProcess, (DWORD*)exitcode);";
-PROCEDURE- cleanupProcess                             "CloseHandle(pi.hProcess); CloseHandle(pi.hThread);";
-PROCEDURE- err(): DWORD                               "(INTEGER)GetLastError()";
+PROCEDURE- startupInfo                                   "STARTUPINFO si = {0}; si.cb = sizeof(si);";
+PROCEDURE- processInfo                                   "PROCESS_INFORMATION pi = {0};";
+PROCEDURE- createProcess (str: ARRAY OF SHORTCHAR): BOOL "(INTEGER)CreateProcess(0, (char*)str, 0,0,0,0,0,0,&si,&pi)";
+PROCEDURE- waitForProcess (): DWORD                      "(INTEGER)WaitForSingleObject(pi.hProcess, INFINITE)";
+PROCEDURE- getExitCodeProcess (VAR exitcode: INTEGER)    "GetExitCodeProcess(pi.hProcess, (DWORD*)exitcode);";
+PROCEDURE- cleanupProcess                                "CloseHandle(pi.hProcess); CloseHandle(pi.hThread);";
+PROCEDURE- err(): DWORD                                  "(INTEGER)GetLastError()";
 
-PROCEDURE System* (IN cmd : ARRAY OF CHAR): INTEGER;
+PROCEDURE System* (IN cmd : ARRAY OF SHORTCHAR): INTEGER;
 VAR
   result: INTEGER;
 BEGIN
@@ -267,43 +266,43 @@ PROCEDURE MaxPathLength* (): INTEGER; BEGIN RETURN MAXPATH() END MaxPathLength;
 
 PROCEDURE- InvalidHandleValue* (): FileHandle "(-1)";
 
-PROCEDURE- openrw (n: ARRAY OF CHAR): FileHandle
+PROCEDURE- openrw (n: ARRAY OF SHORTCHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
-PROCEDURE- openro (n: ARRAY OF CHAR): FileHandle
+PROCEDURE- openro (n: ARRAY OF SHORTCHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ              , FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0)";
 
-PROCEDURE- opennew (n: ARRAY OF CHAR): FileHandle
+PROCEDURE- opennew (n: ARRAY OF SHORTCHAR): FileHandle
 "(SYSTEM_ADRINT)CreateFile((char*)n, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)";
 
-PROCEDURE- createDirectory (lpPathName: ARRAY OF CHAR): BOOL
+PROCEDURE- createDirectory (lpPathName: ARRAY OF SHORTCHAR): BOOL
 "CreateDirectory((char*)lpPathName, (LPSECURITY_ATTRIBUTES)0)";
 
 
 (* File APIs *)
 
-PROCEDURE OldRO* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRO* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openro(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRO;
 
-PROCEDURE OldRW* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE OldRW* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := openrw(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END OldRW;
 
-PROCEDURE NewFile* (IN pathname: ARRAY OF CHAR; VAR h: FileHandle): ErrorCode;
+PROCEDURE NewFile* (IN pathname: ARRAY OF SHORTCHAR; VAR h: FileHandle): ErrorCode;
 VAR fd: FileHandle;
 BEGIN
   fd := opennew(pathname);
   IF fd = InvalidHandleValue() THEN RETURN err() ELSE h := fd; RETURN 0 END
 END NewFile;
 
-PROCEDURE NewDir* (IN pathname: ARRAY OF CHAR): ErrorCode;
+PROCEDURE NewDir* (IN pathname: ARRAY OF SHORTCHAR): ErrorCode;
 BEGIN
   IF createDirectory(pathname) = 0 THEN RETURN err() ELSE RETURN 0 END
 END NewDir;
@@ -338,7 +337,7 @@ BEGIN
   RETURN 0
 END Identify;
 
-PROCEDURE IdentifyByName* (IN n: ARRAY OF CHAR; VAR identity: FileIdentity): ErrorCode;
+PROCEDURE IdentifyByName* (IN n: ARRAY OF SHORTCHAR; VAR identity: FileIdentity): ErrorCode;
 VAR
   h:   FileHandle;
   e,i: ErrorCode;
@@ -390,10 +389,10 @@ BEGIN
 END FileSize;
 
 
-PROCEDURE- getTempPath (nBufferLengt: DWORD; VAR lpBuffer: CHAR): DWORD
+PROCEDURE- getTempPath (nBufferLengt: DWORD; VAR lpBuffer: SHORTCHAR): DWORD
   "(INTEGER)GetTempPathA((DWORD)nBufferLengt, (LPTSTR)lpBuffer)";
 
-PROCEDURE GetTempPath* (OUT path: ARRAY OF CHAR);
+PROCEDURE GetTempPath* (OUT path: ARRAY OF SHORTCHAR);
 BEGIN
   IF getTempPath(LEN(path), path[0]) = 0 THEN path := "C:\Windows\Temp\" END
 END GetTempPath;
@@ -428,15 +427,16 @@ PROCEDURE- writeConsoleW (hConsoleOutput: ADRINT; lpBuffer: ADRINT;
   "(BOOLEAN)WriteConsoleW((HANDLE)hConsoleOutput, (void *)lpBuffer, (DWORD)nNumberOfCharsToWrite, (LPDWORD)lpNumberOfCharsWritten, (LPVOID)lpReserved)";
 
 PROCEDURE Write* (h: FileHandle; p: ADRINT; l: INTEGER): ErrorCode;
-VAR dummy: DWORD;
+  VAR dummy: DWORD;
 BEGIN
   IF writeFile(h, p, l, dummy) = 0 THEN RETURN err() ELSE RETURN 0 END
 END Write;
 
-PROCEDURE ConvertFromUTF16(IN in: ARRAY OF LONGCHAR; inLen: INTEGER;
-    OUT out: ARRAY OF CHAR; OUT outLen: INTEGER);
-VAR i, j, val, lim: INTEGER;
-  ok: BOOLEAN;
+PROCEDURE ConvertFromUTF16 (
+  IN in: ARRAY OF CHAR; inLen: INTEGER;
+  OUT out: ARRAY OF SHORTCHAR; OUT outLen: INTEGER);
+VAR
+  i, j, val, lim: INTEGER; ok: BOOLEAN;
 BEGIN i := 0; j := 0; lim := LEN(out) - 1;
   ok := TRUE;
   IF inLen < 0 THEN inLen := LEN(in) END;
@@ -458,15 +458,10 @@ BEGIN i := 0; j := 0; lim := LEN(out) - 1;
   IF (i # inLen) & (in[i] # 0X) THEN ok := FALSE END
 END ConvertFromUTF16;
 
-PROCEDURE WriteW* (s: ARRAY OF LONGCHAR; len: INTEGER): ErrorCode;
-VAR dummy, error: DWORD;
-  written: INTEGER;
-  u: ARRAY 40960 OF CHAR;
-  ulen: INTEGER;
-  p: ADRINT;
+PROCEDURE WriteW* (IN s: ARRAY OF CHAR; len: INTEGER): ErrorCode;
+  VAR dummy, error: DWORD; u: ARRAY 40960 OF SHORTCHAR; ulen, written: INTEGER;
 BEGIN
-  p := SYSTEM.ADR(s[0]);
-  IF IsStdOutConsole() & writeConsoleW(StdOut, p, len, written, 0) THEN
+  IF IsStdOutConsole() & writeConsoleW(StdOut, SYSTEM.ADR(s[0]), len, written, 0) THEN
     error := 0
   ELSE
     ConvertFromUTF16(s, len, u, ulen);
@@ -538,18 +533,18 @@ BEGIN
 END TruncateFile;
 
 
-PROCEDURE- deleteFile (n: ARRAY OF CHAR): BOOL "(INTEGER)DeleteFile((char*)n)";
+PROCEDURE- deleteFile (n: ARRAY OF SHORTCHAR): BOOL "(INTEGER)DeleteFile((char*)n)";
 
-PROCEDURE DeleteFile* (IN n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE DeleteFile* (IN n: ARRAY OF SHORTCHAR): ErrorCode;
 BEGIN
   IF deleteFile(n) = 0 THEN RETURN err() ELSE RETURN 0 END
 END DeleteFile;
 
 
-PROCEDURE- setCurrentDirectory (n: ARRAY OF CHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
-PROCEDURE- getCurrentDirectory (VAR n: ARRAY OF CHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
+PROCEDURE- setCurrentDirectory (n: ARRAY OF SHORTCHAR): BOOL "(INTEGER)SetCurrentDirectory((char*)n)";
+PROCEDURE- getCurrentDirectory (VAR n: ARRAY OF SHORTCHAR) "GetCurrentDirectory((DWORD)n__len, (char*)n)";
 
-PROCEDURE ChDir* (IN n: ARRAY OF CHAR): ErrorCode;
+PROCEDURE ChDir* (IN n: ARRAY OF SHORTCHAR): ErrorCode;
   VAR r: BOOL;
 BEGIN
   r := setCurrentDirectory(n);
@@ -558,18 +553,18 @@ BEGIN
   RETURN 0
 END ChDir;
 
-PROCEDURE- GetModuleFileName (hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
+PROCEDURE- getModuleFileName (hModule: FileHandle; lpFilename: ARRAY OF SHORTCHAR; nSize: DWORD): DWORD
 "(INTEGER)GetModuleFileNameA((HMODULE)hModule, (LPTSTR)lpFilename, nSize)";
 
-PROCEDURE- GetModuleFileNameW (hModule: FileHandle; lpFilename: ARRAY OF LONGCHAR; nSize: DWORD): DWORD
+PROCEDURE- getModuleFileNameW (hModule: FileHandle; lpFilename: ARRAY OF CHAR; nSize: DWORD): DWORD
 "(INTEGER)GetModuleFileNameW((HMODULE)hModule, (LPWSTR)lpFilename, nSize)";
 
 (** Get application directory ending with "\". *)
-PROCEDURE GetAppDir* (VAR dir: ARRAY OF CHAR);
+PROCEDURE GetAppDir* (VAR dir: ARRAY OF SHORTCHAR);
   VAR i: INTEGER;
 BEGIN
   dir[LEN(dir) - 1] := 0X;
-  i := GetModuleFileName(0, dir, LEN(dir) - 1);
+  i := getModuleFileName(0, dir, LEN(dir) - 1);
   IF i < LEN(dir) THEN
     WHILE (i > 0) & (dir[i] # "\") DO DEC(i) END;
     IF i > 0 THEN dir[i + 1] := 0X END
@@ -577,11 +572,11 @@ BEGIN
 END GetAppDir;
 
 (** Get application directory ending with "\". *)
-PROCEDURE GetAppDirW* (VAR dir: ARRAY OF LONGCHAR);
+PROCEDURE GetAppDirW* (VAR dir: ARRAY OF CHAR);
   VAR i: INTEGER;
 BEGIN
   dir[LEN(dir) - 1] := 0X;
-  i := GetModuleFileNameW(0, dir, LEN(dir) - 1);
+  i := getModuleFileNameW(0, dir, LEN(dir) - 1);
   IF i < LEN(dir) THEN
     WHILE (i > 0) & (dir[i] # "\") DO DEC(i) END;
     IF i > 0 THEN dir[i + 1] := 0X END
@@ -589,11 +584,11 @@ BEGIN
 END GetAppDirW;
 
 
-PROCEDURE- getFileAttributes (name: ARRAY OF CHAR): DWORD
+PROCEDURE- getFileAttributes (name: ARRAY OF SHORTCHAR): DWORD
 "(INTEGER)GetFileAttributes((LPCTSTR)name)";
 PROCEDURE- FILEATTRIBUTEDIRECTORY (): SET "(SET)FILE_ATTRIBUTE_DIRECTORY";
 
-PROCEDURE FileExists* (IN name: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE FileExists* (IN name: ARRAY OF SHORTCHAR): BOOLEAN;
 VAR
   dwAttrib: DWORD;
 BEGIN
@@ -602,7 +597,7 @@ BEGIN
     & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() = {})
 END FileExists;
 
-PROCEDURE DirExists* (IN name: ARRAY OF CHAR): BOOLEAN;
+PROCEDURE DirExists* (IN name: ARRAY OF SHORTCHAR): BOOLEAN;
 VAR
   dwAttrib: DWORD;
 BEGIN
@@ -611,16 +606,16 @@ BEGIN
     & (SYSTEM.VAL(SET, dwAttrib) * FILEATTRIBUTEDIRECTORY() # {})
 END DirExists;
 
-PROCEDURE- moveFileEx (src, dest: ARRAY OF CHAR): BOOL
+PROCEDURE- moveFileEx (src, dest: ARRAY OF SHORTCHAR): BOOL
   "(INTEGER)MoveFileEx((LPCTSTR)src, (LPCTSTR)dest, MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)";
-PROCEDURE- copyFile (src, dest: ARRAY OF CHAR): BOOL
+PROCEDURE- copyFile (src, dest: ARRAY OF SHORTCHAR): BOOL
   "(INTEGER)CopyFile((LPCTSTR)src, (LPCTSTR)dest, FALSE)";
 
 
 (* This version of RenameFile requires a closed file,
    as FILE_SHARE_DELETE cannot be used due to compatibility issues.
 *)
-PROCEDURE RenameFile* (IN src, dest: ARRAY OF CHAR): ErrorCode;
+PROCEDURE RenameFile* (IN src, dest: ARRAY OF SHORTCHAR): ErrorCode;
 VAR
   src_id, dest_id: FileIdentity; error: ErrorCode;
 BEGIN

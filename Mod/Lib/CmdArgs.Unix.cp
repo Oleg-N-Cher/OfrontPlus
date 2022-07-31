@@ -59,11 +59,10 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
     IF p # NIL THEN val := p^$ ELSE val := "" END
   END GetEnv;
 
-  PROCEDURE- nextenviron(p: Environ; n: INTEGER): Environ "p + n";
+  PROCEDURE- nextenviron (p: Environ; n: INTEGER): Environ "p + n";
 
-  PROCEDURE EnvCount*(): INTEGER;
-    VAR count: INTEGER;
-      p: Environ;
+  PROCEDURE EnvCount* (): INTEGER;
+    VAR count: INTEGER; p: Environ;
   BEGIN
     p := environ();
     count := 0;
@@ -74,7 +73,7 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
     RETURN count
   END EnvCount;
 
-  PROCEDURE GetEnvN*(n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
+  PROCEDURE GetEnvN* (n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
     VAR p: Environ;
   BEGIN
     p := environ();
