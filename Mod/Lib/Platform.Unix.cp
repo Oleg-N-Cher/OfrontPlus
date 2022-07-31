@@ -475,7 +475,7 @@ END ChDir;
 (** Get application directory ending with "/". *)
 PROCEDURE GetAppDir* (OUT dir: ARRAY OF SHORTCHAR);
 BEGIN (*!TODO*)
-  dir "./"
+  dir := "./"
 END GetAppDir;
 
 (** Get application directory ending with "\". *)
@@ -503,9 +503,7 @@ END DirExists;
 PROCEDURE- rename (o, n: ARRAY OF SHORTCHAR): INTEGER "rename((char*)o, (char*)n)";
 
 PROCEDURE CopyFileFd (from, to: FileHandle): ErrorCode;
-VAR buf: ARRAY 32768 OF BYTE;
-  n: INTEGER;
-  err: ErrorCode;
+  VAR buf: ARRAY 32768 OF BYTE; n: INTEGER; err: ErrorCode;
 BEGIN
   err := ReadBuf(from, buf, n);
   WHILE (err = 0) & (n > 0) DO
@@ -516,8 +514,7 @@ BEGIN
 END CopyFileFd;
 
 PROCEDURE CopyFile (IN oldname, newname: ARRAY OF SHORTCHAR): ErrorCode;
-VAR from, to: FileHandle;
-  res: ErrorCode;
+  VAR from, to: FileHandle; res: ErrorCode;
 BEGIN from := openro(oldname);
   IF from # -1 THEN to := opennew(newname);
     IF to # -1 THEN res := CopyFileFd(from, to);
@@ -531,7 +528,7 @@ BEGIN from := openro(oldname);
 END CopyFile;
 
 PROCEDURE RenameFile* (IN oldname, newname: ARRAY OF SHORTCHAR): ErrorCode;
-VAR res: ErrorCode;
+  VAR res: ErrorCode;
 BEGIN res := rename(oldname, newname);
   IF res < 0 THEN res := err();
     IF res = EXDEV() THEN res := CopyFile(oldname, newname);
