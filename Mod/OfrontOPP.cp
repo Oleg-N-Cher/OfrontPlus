@@ -499,7 +499,7 @@
 				Type(ftyp, name);
 				IF ftyp.form = Pointer THEN ftyp := ftyp.BaseTyp END;
 				SetType(typ, NIL, ftyp, name);
-				IF (ftyp.comp = Record) (* & (ftyp # OPT.anytyp) *) THEN
+				IF (ftyp.comp = Record) & (ftyp # OPT.anytyp) THEN
 					ftyp.pvused := TRUE; typ^.extlev := SHORT(SHORT(ftyp.extlev + 1));
 					IF (ftyp.attribute = 0) OR (ftyp.attribute = limAttr) & (ftyp.mno # 0) THEN err(181)
 					ELSIF (typ.attribute = absAttr) & (ftyp.attribute # absAttr) THEN err(191)
@@ -521,7 +521,7 @@
 				LOOP
 					IF sym = ident THEN
 						IF (typ^.BaseTyp # NIL) & (typ.BaseTyp # OPT.undftyp) THEN
-							OPT.FindField(OPS.name, typ^.BaseTyp, fld);
+							OPT.FindBaseField(OPS.name, typ, fld);
 							IF fld # NIL THEN err(1) END
 						END;
 						OPT.Insert(OPS.name, fld);
@@ -780,7 +780,7 @@
 										IF (proc^.link = NIL) OR (proc^.link^.link # y^.obj) THEN err(75) END ;
 										typ := y^.obj^.typ;
 										IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-										OPT.FindField(x^.obj^.name^, typ^.BaseTyp, p);
+										OPT.FindBaseField(x^.obj^.name^, typ, p);
 										IF p # NIL THEN
 											x^.subcl := super; x.typ := p.typ;	(* correct result type *)
 											IF p.conval.setval * {absAttr, empAttr} # {} THEN err(194) END;
@@ -1219,7 +1219,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF sym = ident THEN
 				name := OPS.name;
 				OPT.FindField(name, recTyp, fwd);
-				OPT.FindField(name, recTyp^.BaseTyp, baseProc);
+				OPT.FindBaseField(name, recTyp, baseProc);
 				IF (baseProc # NIL) & (baseProc^.mode # TProc) THEN baseProc := NIL END ;
 				IF fwd = baseProc THEN fwd := NIL END ;
 				IF (fwd # NIL) & (fwd^.mnolev # level) THEN fwd := NIL END ;

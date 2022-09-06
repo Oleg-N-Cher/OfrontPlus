@@ -539,9 +539,9 @@
 	PROCEDURE BaseTProc*(obj: OPT.Object): OPT.Object;
 		VAR typ, base: OPT.Struct; mno: INTEGER;
 	BEGIN typ := obj^.link^.typ;	(* receiver type *)
-		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
+		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END;
 		base := typ^.BaseTyp; mno := obj^.adr DIV 10000H;
-		WHILE (base # NIL) & (mno < base^.n) DO typ := base; base := typ^.BaseTyp END ;
+		WHILE (base # NIL) & (mno < base^.n) DO typ := base; base := typ^.BaseTyp END;
 		OPT.FindField(obj^.name^, typ, obj);
 		RETURN obj
 	END BaseTProc;

@@ -163,7 +163,8 @@
 				typ^.size := OPM.AdrSize;
 				IF typ^.BaseTyp = OPT.undftyp THEN OPM.Mark(128, typ^.n)
 				ELSE TypSize(typ^.BaseTyp)
-				END
+				END;
+				IF (typ.BaseTyp = OPT.anytyp) & (typ.strobj = NIL) THEN typ.strobj := OPT.anyptrtyp.strobj END
 			ELSIF f = ProcTyp THEN
 				typ^.size := OPM.AdrSize;
 			ELSIF c = DynArr THEN
@@ -190,7 +191,7 @@
 			IF obj # NIL THEN
 				TProcs(obj.left);
 				IF obj.mode = TProc THEN
-					OPT.FindField(obj.name^, rec^.BaseTyp, redef);
+					OPT.FindBaseField(obj.name^, rec, redef);
 					IF redef # NIL THEN
 						obj.adr := redef.adr (*mthno*);
 						IF ~(isRedef IN obj.conval.setval) OR (redef.conval.setval * {extAttr, absAttr, empAttr} = {}) THEN
@@ -206,7 +207,7 @@
 
 	BEGIN
 		IF rec.n = -1 THEN
-			IF rec.sysflag > 0 THEN rec.n := 0 ELSE rec.n := 1(*OPT.anytyp.n*) END;
+			IF rec.sysflag # 0 THEN rec.n := 0 ELSE rec.n := OPT.anytyp.n END;
 			btyp := rec.BaseTyp;
 			IF btyp # NIL THEN CountTProcs(btyp); rec.n := btyp.n END;
 			TProcs(rec.link)
@@ -306,6 +307,8 @@
 		OPT.bytetyp^.strobj^.linkadr := PredefinedType;
 		OPT.ubytetyp^.strobj^.linkadr := PredefinedType;
 		OPT.sysptrtyp^.strobj^.linkadr := PredefinedType;
+		OPT.anyptrtyp^.strobj^.linkadr := PredefinedType;
+		OPT.anytyp^.strobj^.linkadr := PredefinedType
 	END AdrAndSize;
 
 (* ____________________________________________________________________________________________________________________________________________________________________ *)
@@ -745,7 +748,7 @@
 		VAR obj: OPT.Object; typ: OPT.Struct;
 	BEGIN typ := n^.right^.typ;	(* receiver type *)
 		IF typ^.form = Pointer THEN typ := typ^.BaseTyp END ;
-		OPT.FindField(n^.left^.obj^.name^, typ^.BaseTyp, obj);
+		OPT.FindBaseField(n^.left^.obj^.name^, typ, obj);
 		RETURN obj
 	END SuperProc;
 

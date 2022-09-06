@@ -82,7 +82,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		topScope*: Object;
 		undftyp*, bytetyp*, booltyp*, char8typ*, sinttyp*, inttyp*, linttyp*,
 		realtyp*, lrltyp*, settyp*, string8typ*, niltyp*, notyp*, sysptrtyp*, ubytetyp*,
-		char16typ*, string16typ*: Struct;
+		anytyp*, anyptrtyp*, char16typ*, string16typ*: Struct;
 		char8, int8, int16, int32, int64, adrint, byte, ubyte, real32, real64, char16: Object;
 		nofGmod*: BYTE;	(*nof imports*)
 		GlbMod*: ARRAY maxImps OF Object;	(* ^.right = first object, ^.name = module import name (not alias) *)
@@ -99,6 +99,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		Undef = 0; Byte = 1; Bool = 2; Char8 = 3; SInt = 4; Int = 5; LInt = 6;
 		Real = 7; LReal = 8; Set = 9; String8 = 10; NilTyp = 11; NoTyp = 12;
 		Pointer = 13; UByte = 14; ProcTyp = 15; Comp = 16;
+		AnyPtr = 15; AnyRec = 16;	(* sym file only *)
 		Char16 = 17; String16 = 18;
 
 		(* composite structure forms *)
@@ -251,7 +252,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		IF (x.form = Pointer) & (y.form = Pointer) THEN x := x.BaseTyp; y := y.BaseTyp END;
 		IF (x.comp = Record) & (y.comp = Record) THEN
-			(* IF (y = anytyp) & ~x.untagged THEN RETURN TRUE END; *)
+			IF (y = anytyp) & (x.sysflag = 0) THEN RETURN TRUE END;
 			WHILE (x # NIL) & (x # undftyp) & (x # y) DO x := x.BaseTyp END
 		END;
 		RETURN (x # NIL) & EqualType(x, y)
@@ -306,22 +307,34 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		res := obj
 	END Find;
 
-	PROCEDURE FindField*(IN name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
+	PROCEDURE FindFld (IN name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
 		VAR obj: Object;
 	BEGIN
-		WHILE typ # NIL DO obj := typ^.link;
+		WHILE (typ # NIL) & (typ # undftyp) DO obj := typ^.link;
 			WHILE obj # NIL DO
 				IF name < obj^.name^ THEN obj := obj^.left
 				ELSIF name > obj^.name^ THEN obj := obj^.right
 				ELSE (*found*) res := obj; RETURN
 				END
-			END ;
+			END;
 			typ := typ^.BaseTyp
-		END ;
+		END;
 		res := NIL
+	END FindFld;
+
+	PROCEDURE FindField* (IN name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
+	BEGIN
+		FindFld(name, typ, res);
+		IF (res = NIL) & (typ.sysflag = 0) THEN FindFld(name, anytyp, res) END
 	END FindField;
 
-	PROCEDURE Insert*(IN name: ARRAY OF SHORTCHAR; VAR obj: Object);
+	PROCEDURE FindBaseField* (IN name: ARRAY OF SHORTCHAR; typ: Struct; VAR res: Object);
+	BEGIN
+		FindFld(name, typ.BaseTyp, res);
+		IF (res = NIL) & (typ.sysflag = 0) THEN FindFld(name, anytyp, res) END
+	END FindBaseField;
+
+	PROCEDURE Insert* (IN name: ARRAY OF SHORTCHAR; VAR obj: Object);
 		VAR ob0, ob1: Object; left: BOOLEAN; mnolev: BYTE;
 	BEGIN ob0 := topScope; ob1 := ob0^.right; left := FALSE;
 		LOOP
@@ -340,10 +353,35 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		obj := ob1
 	END Insert;
 
-	PROCEDURE Insert2(IN name, lowcase: ARRAY OF SHORTCHAR; VAR obj: Object);
+	PROCEDURE Insert2 (IN name, lowcase: ARRAY OF SHORTCHAR; VAR obj: Object);
 	BEGIN
 		IF OPS.lowcase THEN Insert(lowcase, obj) ELSE Insert(name, obj) END
 	END Insert2;
+
+	PROCEDURE InsertThisField (obj: Object; typ: Struct; VAR old: Object);
+		VAR ob0, ob1: Object; left: BOOLEAN; name: OPS.String;
+	BEGIN
+		IF typ.link = NIL THEN typ.link := obj
+		ELSE
+			ob1 := typ.link; name := obj.name;
+			REPEAT
+				IF name^ < ob1.name^ THEN ob0 := ob1; ob1 := ob1.left; left := TRUE
+				ELSIF name^ > ob1.name^ THEN ob0 := ob1; ob1 := ob1.right; left := FALSE
+				ELSE old := ob1; RETURN
+				END
+			UNTIL ob1 = NIL;
+			IF left THEN ob0.left := obj ELSE ob0.right := obj END
+		END
+	END InsertThisField;
+
+	PROCEDURE InsertField (IN name, lowcase: ARRAY OF SHORTCHAR; typ: Struct; VAR obj: Object);
+		VAR old: Object;
+	BEGIN
+		obj := NewObj(); obj.leaf := TRUE;
+		IF OPS.lowcase THEN obj.name := NewName(lowcase) ELSE obj.name := NewName(name) END;
+		InsertThisField(obj, typ, old);
+		IF old # NIL THEN err(1) END	(*double def*)
+	END InsertField;
 
 (*-------------------------- Fingerprinting --------------------------*)
 
@@ -1200,20 +1238,20 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		typ^.idfp := form; typ^.idfpdone := TRUE
 	END InitStruct;
 
-	PROCEDURE EnterBoolConst(IN name, lowcase: ARRAY OF SHORTCHAR; value: INTEGER);
+	PROCEDURE EnterBoolConst (IN name, lowcase: ARRAY OF SHORTCHAR; value: INTEGER);
 		VAR obj: Object;
 	BEGIN
 		Insert2(name, lowcase, obj); obj^.conval := NewConst();
 		obj^.mode := Con; obj^.typ := booltyp; obj^.conval^.intval := value
 	END EnterBoolConst;
 
-	PROCEDURE EnterRealConst(IN name, lowcase: ARRAY OF SHORTCHAR; val: REAL; VAR obj: Object);
+	PROCEDURE EnterRealConst (IN name, lowcase: ARRAY OF SHORTCHAR; val: REAL; VAR obj: Object);
 	BEGIN
 		Insert2(name, lowcase, obj); obj^.conval := NewConst();
 		obj^.mode := Con; obj^.typ := realtyp; obj^.conval^.realval := val
 	END EnterRealConst;
 
-	PROCEDURE EnterTyp(IN name, lowcase: ARRAY OF SHORTCHAR; form: BYTE; size: SHORTINT; VAR res: Struct);
+	PROCEDURE EnterTyp (IN name, lowcase: ARRAY OF SHORTCHAR; form: BYTE; size: SHORTINT; VAR res: Struct);
 		VAR obj: Object; typ: Struct;
 	BEGIN
 		Insert2(name, lowcase, obj);
@@ -1223,26 +1261,40 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		typ^.idfp := form; typ^.idfpdone := TRUE; res := typ
 	END EnterTyp;
 
-	PROCEDURE EnterTypeAlias(IN name, lowcase: ARRAY OF SHORTCHAR; VAR res: Object; typ: Struct);
+	PROCEDURE EnterTypeAlias (IN name, lowcase: ARRAY OF SHORTCHAR; VAR res: Object; typ: Struct);
 		VAR obj: Object;
 	BEGIN
 		Insert2(name, lowcase, obj); obj^.mode := Typ; obj^.typ := typ; obj^.vis := external;
 		res := obj
 	END EnterTypeAlias;
 
-	PROCEDURE EnterProc(IN name, lowcase: ARRAY OF SHORTCHAR; num: SHORTINT);
+	PROCEDURE EnterProc (IN name, lowcase: ARRAY OF SHORTCHAR; num: SHORTINT);
 		VAR obj: Object;
 	BEGIN Insert2(name, lowcase, obj);
 		obj^.mode := SProc; obj^.typ := notyp; obj^.adr := num
 	END EnterProc;
 
-	PROCEDURE EnterAttr(IN name, lowcase: ARRAY OF SHORTCHAR; num: SHORTINT);
+	PROCEDURE EnterAttr (IN name, lowcase: ARRAY OF SHORTCHAR; num: SHORTINT);
 		VAR obj: Object;
 	BEGIN Insert2(name, lowcase, obj);
-		obj^.mode := Attr; obj^.adr := num
+		obj.mode := Attr; obj.adr := num
 	END EnterAttr;
 
-	PROCEDURE InitScope(lang: SHORTCHAR);
+	PROCEDURE EnterTProc (ptr, rec: Struct; IN name, lowcase: ARRAY OF SHORTCHAR; typ: SHORTINT);
+		VAR obj, par: Object;
+	BEGIN
+		InsertField(name, lowcase, rec, obj);
+		obj.mnolev := -128;	(* for correct implement only behaviour *)
+		obj.mode := TProc; (*obj.num := num;*) obj.conval := NewConst();
+		obj.conval.setval := obj.conval.setval + {newAttr};
+		obj.typ := notyp; obj.vis := externalR;
+		INCL(obj.conval.setval, empAttr);
+		par := NewObj(); par.name := NewName("this"); par.mode := Var;
+		par.adr := 8; par.typ := ptr;
+		par.link := obj.link; obj.link := par;
+	END EnterTProc;
+
+	PROCEDURE InitScope (lang: SHORTCHAR);
 	BEGIN
 		topScope := NIL; OpenScope(0, NIL); OPM.errpos := 0;
 		InitStruct(undftyp, Undef); InitStruct(notyp, NoTyp);
@@ -1293,6 +1345,22 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END;
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
+
+		IF lang = "C" THEN
+			EnterTyp("ANYREC", "anyrec", AnyRec, 0, anytyp)
+		ELSE
+			EnterTyp("ANYREC@", "anyrec@", AnyRec, 0, anytyp)
+		END;
+		anytyp.form := Comp; anytyp.comp := Record; anytyp.n := 1;
+		anytyp.BaseTyp := NIL; anytyp.extlev := -1;	(* !!! *)
+		anytyp.attribute := absAttr;
+		IF lang = "C" THEN
+			EnterTyp("ANYPTR", "anyptr", AnyPtr, OPM.AdrSize, anyptrtyp)
+		ELSE
+			EnterTyp("ANYPTR@", "anyptr@", AnyPtr, OPM.AdrSize, anyptrtyp)
+		END;
+		anyptrtyp.form := Pointer; anyptrtyp.BaseTyp := anytyp;
+		EnterTProc(anyptrtyp, anytyp, "FINALIZE", "finalize", 0);
 
 		EnterTyp("BOOLEAN", "boolean", Bool, 1, booltyp);
 		EnterTyp("SET", "set", Set, OPM.SetSize, settyp);
@@ -1413,6 +1481,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		impCtxt.ref[LReal] := lrltyp;  impCtxt.ref[Set] := settyp;
 		impCtxt.ref[String8] := string8typ; impCtxt.ref[NilTyp] := niltyp;
 		impCtxt.ref[NoTyp] := notyp; impCtxt.ref[Pointer] := sysptrtyp;
+		impCtxt.ref[AnyPtr] := anyptrtyp; impCtxt.ref[AnyRec] := anytyp;
 		impCtxt.ref[Char16] := char16typ; impCtxt.ref[String16] := string16typ;
 		impCtxt.ref[UByte] := ubytetyp
 	END InitScope;

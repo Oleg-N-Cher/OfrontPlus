@@ -71,6 +71,8 @@ typedef int            INTEGER;   // INTEGER is 32 bit
 typedef unsigned int   SET;       // SET is 32 bit
 typedef float          SHORTREAL;
 typedef double         REAL;
+typedef void           ANYREC;
+typedef void*          ANYPTR;
 typedef void*          SYSTEM_PTR;
 
 // Unsigned variants are for use by shift and rotate macros
