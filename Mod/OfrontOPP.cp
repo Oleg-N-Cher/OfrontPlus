@@ -328,7 +328,7 @@
 		IF (sym = times) OR (sym = minus) THEN
 			IF (sym = minus) & OPT.SYSimported & (obj^.mode = CProc) THEN obj^.sysflag := -1
 			ELSIF ((OPM.Lang = "1") OR (OPM.Lang = "7")) & (sym = minus) THEN err(48)
-			ELSIF (level > 0) OR ~(obj^.mode IN {Var, Fld}) & (sym = minus) THEN err(48)
+			ELSIF (level > 0) OR ~(obj.mode IN {Var, Fld, TProc}) & (sym = minus) THEN err(48)
 			END;
 			IF (sym = times) & ~((OPM.Lang = "7") & (obj^.mode = Var)) THEN obj^.vis := external
 			ELSE obj^.vis := externalR
@@ -1226,27 +1226,27 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF (fwd # NIL) & (fwd^.mode = TProc) & (fwd^.conval^.setval * {hasBody, absAttr, empAttr} = {}) THEN
 					(* there exists a corresponding forward declaration *)
 					proc := OPT.NewObj(); proc^.leaf := TRUE;
-					proc^.mode := TProc; proc^.conval := OPT.NewConst();
+					proc.mode := TProc; proc.conval := OPT.NewConst();
 					CheckMark(proc);
-					IF fwd^.vis # proc^.vis THEN err(118) END;
-					fwdAttr := fwd^.conval^.setval
+					IF fwd^.vis # proc.vis THEN err(118) END;
+					fwdAttr := fwd.conval.setval
 				ELSE
 					IF fwd # NIL THEN err(1); fwd := NIL END ;
 					OPT.OpenScope(0, NIL); OPT.topScope^.right := recTyp^.link; OPT.Insert(name, proc);
 					recTyp^.link := OPT.topScope^.right; OPT.CloseScope;
-					proc^.mode := TProc; proc^.conval := OPT.NewConst();
+					proc.mode := TProc; proc.conval := OPT.NewConst();
 					CheckMark(proc);
-					IF recTyp^.strobj # NIL THEN	(* preserve declaration order *)
-						o := recTyp^.strobj^.link;
-						IF o = NIL THEN recTyp^.strobj^.link := proc
+					IF recTyp.strobj # NIL THEN	(* preserve declaration order *)
+						o := recTyp.strobj.link;
+						IF o = NIL THEN recTyp.strobj.link := proc
 						ELSE
-							WHILE o^.nlink # NIL DO o := o^.nlink END;
-							o^.nlink := proc
+							WHILE o.nlink # NIL DO o := o.nlink END;
+							o.nlink := proc
 						END
 					END
 				END;
 				INC(level); OPT.OpenScope(level, proc);
-				OPT.Insert(objName, proc^.link); proc^.link^.mode := objMode; proc^.link^.vis := objVis; proc^.link^.typ := objTyp;
+				OPT.Insert(objName, proc^.link); proc^.link^.mode := objMode; proc.link.vis := objVis; proc^.link^.typ := objTyp;
 				ASSERT(OPT.topScope # NIL);
 				GetParams;	(* may change proc := fwd !!! *)
 				ASSERT(OPT.topScope # NIL);
@@ -1256,16 +1256,16 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF ~forward THEN
 					IF empAttr IN proc^.conval^.setval THEN	(* insert empty procedure *)
 						pnode := NIL; OPB.Enter(pnode, NIL, proc);
-						pnode^.conval := OPT.NewConst();
-						pnode^.conval^.intval := OPM.errpos;
-						pnode^.conval^.intval2 := OPM.errpos;
+						pnode.conval := OPT.NewConst();
+						pnode.conval.intval := OPM.errpos;
+						pnode.conval.intval2 := OPM.errpos;
 						x := pnode;
-					ELSIF ~(absAttr IN proc^.conval^.setval) THEN Body
+					ELSIF ~(absAttr IN proc.conval.setval) THEN Body
 					END;
-					proc^.adr := 0
+					proc.adr := 0
 				ELSE
-					proc^.adr := OPM.errpos;
-					IF proc^.conval^.setval * {empAttr, absAttr} # {} THEN err(184) END
+					proc.adr := OPM.errpos;
+					IF proc.conval.setval * {empAttr, absAttr} # {} THEN err(184) END
 				END;
 				DEC(level); OPT.CloseScope
 			ELSE err(ident)
@@ -1982,6 +1982,11 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			CheckSym(semicolon)
 		END;
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
+		WHILE sym = raw DO
+			NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
+			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos; procdec^.link := x;
+			OPS.Get(sym)
+		END;
 		IF (sym = begin) & ~((level = 0) & (OPM.noinit IN OPM.opt)) THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
