@@ -328,7 +328,7 @@
 		IF (sym = times) OR (sym = minus) THEN
 			IF (sym = minus) & OPT.SYSimported & (obj^.mode = CProc) THEN obj^.sysflag := -1
 			ELSIF ((OPM.Lang = "1") OR (OPM.Lang = "7")) & (sym = minus) THEN err(48)
-			ELSIF (level > 0) OR ~(obj.mode IN {Var, Fld, TProc}) & (sym = minus) THEN err(48)
+			ELSIF (level > 0) OR ~((obj.mode IN {Var, Fld}) OR (obj.mode = TProc) & (OPM.Lang = "C")) & (sym = minus) THEN err(48)
 			END;
 			IF (sym = times) & ~((OPM.Lang = "7") & (obj^.mode = Var)) THEN obj^.vis := external
 			ELSE obj^.vis := externalR
