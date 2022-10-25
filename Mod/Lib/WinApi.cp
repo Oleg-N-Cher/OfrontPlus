@@ -17993,8 +17993,10 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 
 	PROCEDURE [stdcall] PathIsDirectoryW* (path: PtrWSTR): BOOL;
 
-	PROCEDURE- Instance* (): HINSTANCE "__hInstance";
-	PROCEDURE- PrevInstance* (): HINSTANCE "__hPrevInstance";
+	PROCEDURE- Instance_extern* "extern SYSTEM_ADRINT WinApi_hInstance;";
+	PROCEDURE- Instance* (): HINSTANCE "WinApi_hInstance";
+	PROCEDURE- hPrevInstance_extern* "extern SYSTEM_ADRINT WinApi_hPrevInstance;";
+	PROCEDURE- PrevInstance* (): HINSTANCE "WinApi_hPrevInstance";
 	PROCEDURE- CmdLine* (): PtrSTR "__lpCmdLine";
 	PROCEDURE- CmdShow* (): INTEGER "__nCmdShow";
 

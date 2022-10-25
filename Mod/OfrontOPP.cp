@@ -1980,15 +1980,15 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END ;
 				lastdec := x
 			END;
-			CheckSym(semicolon)
+			CheckSym(semicolon);
+			WHILE sym = raw DO
+				NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
+				x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos;
+				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
+				lastdec := x; OPS.Get(sym)
+			END
 		END;
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
-		WHILE sym = raw DO
-			NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
-			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos;
-			IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
-			lastdec := x; OPS.Get(sym)
-		END;
 		IF (sym = begin) & ~((level = 0) & (OPM.noinit IN OPM.opt)) THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
