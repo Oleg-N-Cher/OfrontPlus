@@ -1879,7 +1879,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 	BEGIN
 		IF ((sym < begin) OR (sym > var))
 			& (sym # procedure) & (sym # end) & (sym # close) & (sym # return) & (sym # raw) THEN err(33) END;
-		first := NIL; last := NIL; userList := NIL; recList := NIL;
+		first := NIL; last := NIL; userList := NIL; recList := NIL; procdec := NIL; lastdec := NIL;
 		LOOP
 			IF sym = const THEN
 				OPS.Get(sym);
@@ -1961,17 +1961,18 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					CheckSym(semicolon)
 				END
 			END;
+			WHILE sym = raw DO
+				NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
+				x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos;
+				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
+				lastdec := x; OPS.Get(sym)
+			END;
 			IF (sym < const) OR (sym > var) THEN EXIT END ;
 		END;
 		CheckForwardTypes;
 		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
-		procdec := NIL; lastdec := NIL;
-		WHILE sym = raw DO
-			NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
-			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos; OPB.Link(statseq, procdec, x);
-			OPS.Get(sym)
-		END;
+
 		IF (sym # procedure) & (sym # begin) & (sym # end) & (sym # close) & (sym # return) THEN err(34) END;
 		WHILE sym = procedure DO
 			OPS.Get(sym); ProcedureDeclaration(x);
@@ -1984,8 +1985,9 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
 		WHILE sym = raw DO
 			NEW(x); x^.conval := OPT.NewConst(); x^.conval^.ext := OPS.str; OPB.Construct(Nraw, x, NIL);
-			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos; procdec^.link := x;
-			OPS.Get(sym)
+			x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos;
+			IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
+			lastdec := x; OPS.Get(sym)
 		END;
 		IF (sym = begin) & ~((level = 0) & (OPM.noinit IN OPM.opt)) THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
