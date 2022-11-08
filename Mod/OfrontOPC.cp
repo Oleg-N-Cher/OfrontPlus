@@ -100,7 +100,7 @@
 	VAR
 		indentLevel: INTEGER;
 		ptrinit, mainprog, ansi, oldc, dynlib, windows: BOOLEAN;
-		hashtab: ARRAY 108 OF BYTE;
+		hashtab: ARRAY 169 OF SHORTINT;
 		keytab: ARRAY 37, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
 		BodyNameExt, CloseNameExt: ARRAY 15 OF SHORTCHAR;
@@ -1810,7 +1810,7 @@
 
 
 	PROCEDURE InitKeywords;
-		VAR n, i: BYTE;
+		VAR n, i: SHORTINT;
 
 		PROCEDURE Enter(IN s: ARRAY OF SHORTCHAR);
 			VAR h: SHORTINT;
