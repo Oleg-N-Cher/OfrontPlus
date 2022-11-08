@@ -100,8 +100,8 @@
 	VAR
 		indentLevel: INTEGER;
 		ptrinit, mainprog, ansi, oldc, dynlib, windows: BOOLEAN;
-		hashtab: ARRAY 105 OF BYTE;
-		keytab: ARRAY 36, 9 OF SHORTCHAR;
+		hashtab: ARRAY 108 OF BYTE;
+		keytab: ARRAY 37, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
 		BodyNameExt, CloseNameExt: ARRAY 15 OF SHORTCHAR;
 
@@ -173,7 +173,7 @@
 		VAR i, h: SHORTINT;
 	BEGIN i := 0; h := 0;
 		WHILE (s[i] # 0X) & (i < 5) DO h := SHORT(3*h + ORD(s[i])); INC(i) END;
-		RETURN SHORT(h MOD 105)
+		RETURN SHORT(h MOD LEN(hashtab))
 	END PerfectHash;
 
 	PROCEDURE WriteName (IN s: ARRAY OF SHORTCHAR);
@@ -1818,7 +1818,7 @@
 		END Enter;
 
 	BEGIN n := 0;
-		FOR i := 0 TO 104 DO hashtab[i] := -1 END;
+		FOR i := 0 TO LEN(hashtab) - 1 DO hashtab[i] := -1 END;
 		Enter("asm");
 		Enter("auto");
 		Enter("break");
@@ -1839,6 +1839,7 @@
 		Enter("goto");
 		Enter("if");
 		Enter("import");	(* pseudo keyword used by ofront*)
+		Enter("inline");
 		Enter("int");
 		Enter("long");
 		Enter("register");
