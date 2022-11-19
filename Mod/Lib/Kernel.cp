@@ -58,7 +58,7 @@ BEGIN
   END
 END OutModName;
 
-PROCEDURE Halt*(code: INTEGER; mod: CString; pos: INTEGER);
+PROCEDURE Halt* (code: INTEGER; mod: CString; pos: INTEGER);
 BEGIN
   Heap.FINALL;
   HaltCode := code;
@@ -68,7 +68,7 @@ BEGIN
   Platform.ExitOS(code)
 END Halt;
 
-PROCEDURE AssertFail*(code: INTEGER; mod: CString; pos: INTEGER);
+PROCEDURE Assert* (code: INTEGER; mod: CString; pos: INTEGER);
 BEGIN
   Heap.FINALL;
   OutModName(mod, pos); Out.String(" Assertion failure.");
@@ -77,7 +77,7 @@ BEGIN
   END;
   Out.Ln;
   Platform.ExitOS(code)
-END AssertFail;
+END Assert;
 
 PROCEDURE Exit*(code: INTEGER);
 BEGIN
@@ -85,13 +85,14 @@ BEGIN
 END Exit;
 
 PROCEDURE -AAExternHaltHandler "extern void (*SYSTEM_HaltHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER pos);";
-PROCEDURE -AAExternAssertFailHandler "extern void (*SYSTEM_AssertFailHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER pos);";
+PROCEDURE -AAExternAssertHandler "extern void (*SYSTEM_AssertHandler)(INTEGER code, SYSTEM_ADRINT mod, INTEGER pos);";
 
 PROCEDURE -SetHaltHandler (p: HaltProcedure) "SYSTEM_HaltHandler = p";
-PROCEDURE -SetAssertFail (p: HaltProcedure) "SYSTEM_AssertFailHandler = p";
+PROCEDURE -SetAssertHandler (p: HaltProcedure) "SYSTEM_AssertHandler = p";
 
-PROCEDURE SetHalt*(p: HaltProcedure); BEGIN SetHaltHandler(p) END SetHalt;
+PROCEDURE SetHalt* (p: HaltProcedure); BEGIN SetHaltHandler(p) END SetHalt;
+PROCEDURE SetAssert* (p: HaltProcedure); BEGIN SetAssertHandler(p) END SetAssert;
 
 BEGIN
-  HaltCode := -128; SetHalt(Halt); SetAssertFail(AssertFail)
+  HaltCode := -128; SetHaltHandler(Halt); SetAssertHandler(Assert)
 END Kernel.

@@ -126,12 +126,12 @@ extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
 
 // Assertions and Halts
 
-extern void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos);
-extern void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos);
+extern void SYSTEM_HALT (INTEGER n, CHAR *mod, INTEGER pos);
+extern void SYSTEM_ASSERT (INTEGER n, CHAR *mod, INTEGER pos);
 
 #define __HALT_OLD(n)                            SYSTEM_HALT(n, (CHAR*)"", -1)
 #define __HALT(n, mod, pos)                      SYSTEM_HALT(n, (CHAR*)mod, pos)
-#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT_FAIL(n, (CHAR*)mod, pos)
+#define __ASSERT(cond, n, mod, pos) if (!(cond)) SYSTEM_ASSERT(n, (CHAR*)mod, pos)
 
 
 // String length

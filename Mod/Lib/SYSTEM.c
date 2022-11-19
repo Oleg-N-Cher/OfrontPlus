@@ -25,7 +25,7 @@ INTEGER SYSTEM_INFS = 0x7F800000;
   INTEGER SYSTEM_argc;
   void *SYSTEM_argv;
 #endif
-void (*SYSTEM_AssertFailHandler) (INTEGER n, CHAR *mod, INTEGER pos);
+void (*SYSTEM_AssertHandler) (INTEGER n, CHAR *mod, INTEGER pos);
 void (*SYSTEM_HaltHandler) (INTEGER n, CHAR *mod, INTEGER pos);
 void *SYSTEM_MainStackFrame; // adr of main proc stack frame, used for stack collection
 
@@ -198,7 +198,7 @@ extern void Heap_InitHeap();
 void SYSTEM_INIT (void *stktop)
 {
   SYSTEM_MainStackFrame = stktop; // MUST be aligned
-  SYSTEM_AssertFailHandler = 0;
+  SYSTEM_AssertHandler = 0;
   SYSTEM_HaltHandler = 0;
   // This function (SYSTEM_INIT) is called at program startup BEFORE any
   // modules have been initalized. In turn we must initialize the heap
@@ -272,13 +272,13 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #ifndef _WIN32
 
-    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) {
+    void SYSTEM_HALT (INTEGER n, CHAR *mod, INTEGER pos) {
       if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(n, mod, pos);
       exit(n);
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) {
-      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(n, mod, pos);
+    void SYSTEM_ASSERT (INTEGER n, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_AssertHandler != 0) SYSTEM_AssertHandler(n, mod, pos);
       exit(n);
     }
 
@@ -315,13 +315,13 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
 
 #   include "_windows.h"
 
-    void SYSTEM_HALT(INTEGER n, CHAR *mod, INTEGER pos) {
+    void SYSTEM_HALT (INTEGER n, CHAR *mod, INTEGER pos) {
       if (SYSTEM_HaltHandler != 0) SYSTEM_HaltHandler(n, mod, pos);
       ExitProcess((UINT)(n));
     }
 
-    void SYSTEM_ASSERT_FAIL(INTEGER n, CHAR *mod, INTEGER pos) {
-      if (SYSTEM_AssertFailHandler != 0) SYSTEM_AssertFailHandler(n, mod, pos);
+    void SYSTEM_ASSERT (INTEGER n, CHAR *mod, INTEGER pos) {
+      if (SYSTEM_AssertHandler != 0) SYSTEM_AssertHandler(n, mod, pos);
       ExitProcess((UINT)(n));
     }
 
