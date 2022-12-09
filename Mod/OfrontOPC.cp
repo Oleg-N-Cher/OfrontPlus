@@ -41,7 +41,7 @@
 		internal = 0; external = 1; externalR = 2; outPar = 4;
 
 		(* sysflag *)
-		union = 7; (* must be odd *)
+		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
 
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
@@ -345,7 +345,7 @@
 	END ArrayType;
 
 	PROCEDURE DeclareBase(dcl: OPT.Object); (* declare the specifier of object dcl*)
-		VAR typ, prev: OPT.Struct; obj: OPT.Object; nofdims: SHORTINT; off, n, dummy: INTEGER;
+		VAR typ, prev: OPT.Struct; obj: OPT.Object; off, n, dummy: INTEGER;
 	BEGIN
 		typ := dcl^.typ; prev := typ;
 		WHILE ((typ^.strobj = NIL) OR (typ^.comp = DynArr) OR Undefined(typ^.strobj)) & (typ^.comp # Record)
@@ -489,7 +489,7 @@
 			IF showOberonParams THEN
 				IF (par^.typ^.comp = DynArr) & ~ODD(par^.typ^.sysflag) THEN
 					OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
-				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) & ~ODD(par^.typ^.sysflag) THEN
+				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) & (par^.typ^.sysflag MOD 100H = 0) THEN
 					OPM.WriteString(Comma); OPM.WriteString(par.name^); OPM.WriteString(TagExt)
 				END
 			END;
@@ -635,6 +635,26 @@
 		END
 	END DefineCyclicType;
 
+	PROCEDURE GenPackedRecEnter (sysflag: SHORTINT);
+	BEGIN
+		sysflag := SHORT(sysflag MOD 100H);
+		IF (noalign <= sysflag) & (sysflag <= align8) THEN
+			OPM.WriteString("#pragma pack(push, ");
+			CASE sysflag OF
+				noalign: OPM.Write("1") | align2: OPM.Write("2") | align4: OPM.Write("4") | align8: OPM.Write("8")
+			END;
+			OPM.Write(")"); OPM.WriteLn
+		END
+	END GenPackedRecEnter;
+
+	PROCEDURE GenPackedRecLeave (sysflag: SHORTINT);
+	BEGIN
+		sysflag := SHORT(sysflag MOD 100H);
+		IF (noalign <= sysflag) & (sysflag <= align8) THEN
+			OPM.WriteString("#pragma pack(pop)"); OPM.WriteLn
+		END
+	END GenPackedRecLeave;
+
 	PROCEDURE DefineType (str: OPT.Struct); (* define a type object *)
 		VAR obj, field, par: OPT.Object; empty: BOOLEAN;
 	BEGIN
@@ -671,6 +691,7 @@
 			END;
 			IF (obj # NIL) & (Undefined(obj) OR (obj^.linkadr = TemporaryType)) THEN
 				IF (obj^.linkadr # CyclicType+OPM.currFile) OR (str.comp = Array) THEN
+					IF obj^.typ^.comp = Record THEN GenPackedRecEnter(obj^.typ^.sysflag) END;
 					OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
 					obj^.linkadr := ProcessingType;
 					DeclareBase(obj); OPM.Write(Blank);
@@ -678,7 +699,9 @@
 					DeclareObj(obj, 0);
 					obj^.typ^.strobj := obj; (* SG: revert trick *)
 					obj^.linkadr := MaxType+OPM.currFile;
-					EndStat; Indent(-1); OPM.WriteLn;
+					EndStat; Indent(-1);
+					IF obj^.typ^.comp = Record THEN GenPackedRecLeave(obj^.typ^.sysflag) END;
+					OPM.WriteLn;
 					IF obj^.typ^.comp = Record THEN empty := TRUE;
 						DeclareTProcs(str^.link, empty); DefineTProcMacros(str^.link, empty);
 						IF ~empty THEN OPM.WriteLn END
@@ -748,10 +771,11 @@
 			typ := n^.typ;
 			IF (typ^.strobj = NIL) & ((OPM.currFile = OPM.BodyFile) OR (typ.ref < OPM.MaxStruct)) THEN
 				DefineType(typ);	(* declare base and field types, if any *)
-				NEW(o); o.typ := typ; o.name := OPT.null; DeclareBase(o); EndStat; OPM.WriteLn
+				NEW(o); o.typ := typ; o.name := OPT.null; GenPackedRecEnter(typ^.sysflag);
+				DeclareBase(o); EndStat; GenPackedRecLeave(typ^.sysflag); OPM.WriteLn;
 				(* simply defines a named struct, but not a type;
 					o.name = OPT.null signals field list expansion for DeclareBase in this very special case *)
-			END ;
+			END;
 			n := n^.link
 		END
 	END DefAnonRecs;
@@ -872,7 +896,7 @@
 		VAR nofptrs: INTEGER;
 			o: OPT.Object;
 	BEGIN
-		IF ~ODD(typ^.sysflag) THEN
+		IF typ^.sysflag MOD 100H = 0 THEN
 			BegStat; OPM.WriteString("__TDESC(");
 			Andent(typ); OPM.WriteString("__desc");
 			Str1(", #", typ^.n + 1); Str1(", #) = {__TDFLDS(", NofPtrs(typ));
@@ -886,7 +910,7 @@
 
 	PROCEDURE InitTDesc*(typ: OPT.Struct);
 	BEGIN
-		IF ~ODD(typ^.sysflag) THEN
+		IF typ^.sysflag MOD 100H = 0 THEN
 			BegStat; OPM.WriteString("__INITYP(");
 			Andent(typ); OPM.WriteString(", ");
 			IF typ^.BaseTyp # NIL THEN Andent(typ^.BaseTyp) ELSE Andent(typ) END ;
@@ -907,26 +931,29 @@
 		END
 	END Align;
 
-	PROCEDURE SizeAlignment(size: INTEGER): INTEGER;
+	PROCEDURE SizeAlignment (size: INTEGER; sysflag: SHORTINT): INTEGER;
 		VAR alignment: INTEGER;
 	BEGIN
-		IF size < OPM.Alignment THEN
-			(* Round up to next power of 2 *)
-			alignment := 1; WHILE alignment < size DO alignment := alignment * 2 END
+		CASE sysflag MOD 100H OF
+			noalign: alignment := 1 | align2: alignment := 2 | align4: alignment := 4 | align8: alignment := 8
 		ELSE
 			alignment := OPM.Alignment
+		END;
+		IF size < alignment THEN
+			(* Round up to next power of 2 *)
+			alignment := 1; WHILE alignment < size DO alignment := alignment * 2 END
 		END;
 		RETURN alignment
 	END SizeAlignment;
 
-	PROCEDURE BaseAlignment*(typ: OPT.Struct): INTEGER;
+	PROCEDURE BaseAlignment* (typ: OPT.Struct; sysflag: SHORTINT): INTEGER;
 	BEGIN
 		IF typ^.form = Comp THEN
 			IF typ^.comp = Record THEN RETURN typ^.align MOD 10000H
-			ELSE RETURN BaseAlignment(typ^.BaseTyp)
+			ELSE RETURN BaseAlignment(typ^.BaseTyp, sysflag)
 			END
 		END;
-		RETURN SizeAlignment(typ^.size)
+		RETURN SizeAlignment(typ^.size, sysflag)
 	END BaseAlignment;
 
 	PROCEDURE FillGap(gap, off, align: INTEGER; VAR n, curAlign: INTEGER);
@@ -961,7 +988,7 @@
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) DO fld := fld.link END ;
 			ELSE
 				(* mimic OPV.TypSize to detect gaps caused by private fields *)
-				adr := off; fldAlign := BaseAlignment(fld^.typ); Align(adr, fldAlign);
+				adr := off; fldAlign := BaseAlignment(fld^.typ, typ^.sysflag); Align(adr, fldAlign);
 				gap := fld.adr - adr;
 				IF fldAlign > curAlign THEN curAlign := fldAlign END ;
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
@@ -1086,7 +1113,7 @@
 					ELSE OPM.WriteString("LONGINT ")
 					END;
 					LenList(obj, FALSE, TRUE)
-				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & ~ODD(obj^.typ^.sysflag) THEN
+				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & (obj^.typ^.sysflag MOD 100H = 0) THEN
 					EndStat; BegStat;
 					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
@@ -1128,7 +1155,7 @@
 						ELSE OPM.WriteString(", LONGINT ")
 						END;
 						LenList(obj, TRUE, showParamNames)
-					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & ~ODD(obj^.typ^.sysflag) THEN
+					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & (obj^.typ^.sysflag MOD 100H = 0) THEN
 						OPM.WriteString(", SYSTEM_ADRINT *");
 						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
 					END
@@ -1224,7 +1251,7 @@
 	BEGIN
 		WHILE (n # NIL) & (n^.class = Ninittd) DO
 			typ := n^.typ;
-			IF ~ODD(typ^.sysflag) & ((vis = internal) OR (typ^.ref < OPM.MaxStruct (*type needed in symbol file*))) THEN
+			IF (typ^.sysflag MOD 100H = 0) & ((vis = internal) OR (typ^.ref < OPM.MaxStruct (*type needed in symbol file*))) THEN
 				BegStat;
 				IF vis = external THEN OPM.WriteString(Extern)
 				ELSIF (typ^.strobj # NIL) & (typ^.strobj^.mnolev > 0) THEN OPM.WriteString(Static)
@@ -1555,7 +1582,7 @@
 							IF dim # 0 THEN OPM.WriteInt(dim) END ;
 							typ := typ^.BaseTyp
 						UNTIL typ^.comp # DynArr;
-					ELSIF (var^.mode = VarPar) & (var^.typ^.comp = Record) & ~ODD(var^.typ^.sysflag) THEN
+					ELSIF (var^.mode = VarPar) & (var^.typ^.comp = Record) & (var^.typ^.sysflag MOD 100H = 0) THEN
 						OPM.WriteString("; ");
 						OPM.WriteString(LocalScope); OPM.Write(Dot); Ident(var); OPM.WriteString(TagExt);
 						OPM.WriteString(Becomes); Ident(var); OPM.WriteString(TagExt)

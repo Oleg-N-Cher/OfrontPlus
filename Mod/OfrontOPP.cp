@@ -69,7 +69,7 @@
 		newAttr = 16; absAttr = 17; limAttr = 18; empAttr = 19; extAttr = 20;
 
 		(* sysflags *)
-		nilBit = 1; union = 7; (* must be odd *)
+		nilBit = 1; notag = 1; noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
 
 	TYPE
 		Elem = POINTER TO RECORD
@@ -361,7 +361,15 @@
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
 			IF (sym = ident) & ((OPS.name = "notag") OR (OPS.name = "untagged")) THEN
-				OPS.Get(sym); sysflag := 1
+				OPS.Get(sym); sysflag := notag
+			ELSIF record & (sym = ident) & (OPS.name = "noalign") THEN
+				OPS.Get(sym); sysflag := noalign
+			ELSIF record & (sym = ident) & (OPS.name = "align2") THEN
+				OPS.Get(sym); sysflag := align2
+			ELSIF record & (sym = ident) & (OPS.name = "align4") THEN
+				OPS.Get(sym); sysflag := align4
+			ELSIF record & (sym = ident) & (OPS.name = "align8") THEN
+				OPS.Get(sym); sysflag := align8
 			ELSIF record & (sym = ident) & (OPS.name = "union") THEN
 				OPS.Get(sym); sysflag := union
 			ELSE
@@ -632,7 +640,7 @@
 				(* IN only allowed for records and arrays *)
 				ELSIF (mode = VarPar) & (vis = inPar) & (typ^.form # Undef) & (typ^.form # Comp) & (typ^.sysflag = 0) THEN
 					err(177)
-				ELSIF ODD(sys) & ((typ.comp = Record) OR (typ.comp = DynArr)) & ~ODD(typ.sysflag) THEN err(142)
+				ELSIF (sys MOD 100H # 0) & ((typ.comp = Record) OR (typ.comp = DynArr)) & (typ.sysflag MOD 100H = 0) THEN err(142)
 				(* untagged open array not allowed as value parameter *)
 				ELSIF (mode = Var) & (typ^.comp = DynArr) & ODD(typ^.sysflag) THEN OPM.err(145)
 				END;
@@ -732,7 +740,7 @@
 					IF (fpar.mode = Var) OR (fpar.vis = inPar) THEN OPB.CheckBuffering(apar, NIL, fpar, pre, lastp) END;
 					OPB.Link(aparlist, last, apar);
 					IF AnchorVarPar & (fpar.mode = VarPar)	(* source output: avoid double evaluation *)
-							 & ((fpar.mode = VarPar) & (fpar.typ.comp = Record) & (fpar.typ.sysflag = 0)
+							 & ((fpar.mode = VarPar) & (fpar.typ.comp = Record) & (fpar.typ.sysflag MOD 100H = 0)
 								OR (fpar.typ.comp = DynArr) & (fpar.typ.sysflag = 0)) THEN
 						n := apar;
 						WHILE n.class IN {Nfield, Nindex, Nguard} DO n := n.left END;

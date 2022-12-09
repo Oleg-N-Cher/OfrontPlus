@@ -44,7 +44,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		MaxCases* = 256;
 		MaxCaseRange* = 512;
 
-		MaxStruct* = 1434;
+		MaxStruct* = 1754;
 
 		(* maximal number of pointer fields in a record: *)
 		MaxPtr* = MAX(INTEGER);

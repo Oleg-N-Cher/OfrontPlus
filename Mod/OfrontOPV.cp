@@ -55,7 +55,7 @@
 		absAttr = 17; empAttr = 19; extAttr = 20;
 
 		(* sysflag *)
-		union = 7; (* must be odd *)
+		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
 
 		super = 1;
 
@@ -127,13 +127,13 @@
 		ELSIF typ^.size = -1 THEN
 			f := typ^.form; c := typ^.comp;
 			IF c = Record THEN btyp := typ^.BaseTyp;
-				IF btyp = NIL THEN offset := 0; base := 1; (* OPM.RecAlign *)
+				IF btyp = NIL THEN offset := 0; base := 1 (* OPM.RecAlign *)
 				ELSE TypSize(btyp); offset := btyp^.size - btyp^.sysflag DIV 100H; base := btyp^.align
 				END;
 				fld := typ^.link;
 				WHILE (fld # NIL) & (fld^.mode = Fld) DO
 					btyp := fld^.typ; TypSize(btyp);
-					size := btyp^.size; fbase := OPC.BaseAlignment(btyp);
+					size := btyp^.size; fbase := OPC.BaseAlignment(btyp, typ^.sysflag);
 					IF typ.sysflag = union THEN
 						fld^.adr := 0;
 						IF size > offset THEN offset := size END
@@ -715,7 +715,7 @@
 				& (n^.conval^.intval <= MAX(INTEGER)) & (n^.conval^.intval >= MIN(INTEGER)) THEN
 					OPM.PromoteIntConstToLInt()
 				ELSIF (comp = Record) & (mode = VarPar) THEN
-					IF ~ODD(typ^.sysflag) THEN OPM.WriteString(", "); TypeOf(n) END
+					IF typ^.sysflag MOD 100H = 0 THEN OPM.WriteString(", "); TypeOf(n) END
 				ELSIF (comp = DynArr) & ~ODD(typ^.sysflag) THEN
 					IF ODD(n^.typ^.sysflag) & (n^.typ^.comp # Array) THEN OPM.err(137) END;
 					IF n^.class = Nconst THEN (* ap is string constant *)
@@ -1131,13 +1131,13 @@
 		design(d, MinPrec); OPM.WriteString(" = __NEWARR(");
 		WHILE base^.comp = Array DO INC(nofdim); base := base^.BaseTyp END ;
 		IF (base^.comp = Record) & (OPC.NofPtrs(base) # 0) THEN
-			IF ODD(base^.sysflag) THEN OPM.err(138) END;
+			IF base^.sysflag MOD 100H # 0 THEN OPM.err(138) END;
 			OPC.Andent(base); OPM.WriteString(DynTypExt)
 		ELSIF base^.form = Pointer THEN OPM.WriteString("POINTER__typ")
 		ELSE OPM.WriteString("NIL")
 		END ;
 		OPM.WriteString(", "); OPM.WriteInt(base^.size); OPM.PromoteIntConstToLInt();	(* element size *)
-		OPM.WriteString(", "); OPM.WriteInt(OPC.BaseAlignment(base));	(* element alignment *)
+		OPM.WriteString(", "); OPM.WriteInt(OPC.BaseAlignment(base, base^.sysflag));	(* element alignment *)
 		OPM.WriteString(", "); OPM.WriteInt(nofdim);	(* total number of dimensions = number of additional parameters *)
 		OPM.WriteString(", "); OPM.WriteInt(nofdyn);	(* number of dynamic dimensions *)
 		WHILE typ # base DO
