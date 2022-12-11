@@ -775,7 +775,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF HIFile # NIL THEN Files.Set(R[HeaderInclude], HIFile, 0) ELSE err(153) END;
 		IF include0 IN opt THEN
 			MakeFileName(moduleName, FName, ".h0"); Append(R[HeaderInclude], Files.Old(FName));
-			MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], Files.Old(FName))
+			IF ~(foreign IN opt) THEN
+				MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], Files.Old(FName))
+			END
 		END
 	END OpenFiles;
 

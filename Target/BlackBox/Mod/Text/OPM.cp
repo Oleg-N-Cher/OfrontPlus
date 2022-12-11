@@ -1103,7 +1103,9 @@ suffix does not work in K&R *)
 		IF HIFile # NIL THEN R[HeaderInclude] := HIFile.NewWriter(NIL) ELSE err(153) END;
 		IF include0 IN opt THEN
 			MakeFileName(moduleName, FName, ".h0"); Append(R[HeaderInclude], FilesOld(FName, "/Mod"));
-			MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], FilesOld(FName, "/Mod"))
+			IF ~(foreign IN opt) THEN
+				MakeFileName(moduleName, FName, ".c0"); Append(R[BodyFile], FilesOld(FName, "/Mod"))
+			END
 		END
 	END OpenFiles;
 
