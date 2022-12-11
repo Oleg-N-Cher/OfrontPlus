@@ -526,13 +526,7 @@ Especially Length would become fairly complex.
       IF HasDir(name) THEN dir := ""; path := name$
       ELSE pos := 0; ScanPath(pos, dir); MakeFileName(dir, name, path); ScanPath(pos, dir)
       END;
-      LOOP
-        Deregister(path);
-        res := Platform.DeleteFile(path);
-        IF (res = 0) OR (dir = "") THEN RETURN
-        ELSE MakeFileName(dir, name, path); ScanPath(pos, dir)
-        END
-      END
+      Deregister(path); res := Platform.DeleteFile(path);
     ELSE res := 1
     END
   END Delete;
