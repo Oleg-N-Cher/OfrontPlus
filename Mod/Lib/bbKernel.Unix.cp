@@ -226,11 +226,11 @@ MODULE bbKernel;
 		Real64Type = RECORD v: REAL END;
 		ProcType = RECORD v: PROCEDURE END;
 		UPtrType = RECORD v: INTEGER END;
-		StrPtr = POINTER TO ARRAY [untagged] OF SHORTCHAR;
+		StrPtr = POINTER TO ARRAY [untagged] OF SHORTCHAR;*)
 
 
 	VAR
-		baseStack: ADRINT;	(* modList, root, and baseStack must be together for remote debugging *)
+		(*baseStack: ADRINT;	(* modList, root, and baseStack must be together for remote debugging *)
 		root: Cluster;	(* cluster list *)
 		modList-: Module;	(* root of module list *)
 		*)trapCount-: INTEGER;(*
