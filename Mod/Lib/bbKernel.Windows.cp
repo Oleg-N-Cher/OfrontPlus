@@ -143,11 +143,11 @@ MODULE bbKernel;
 			desc*: Type;
 			ptr*: S.PTR;
 			ext*: ItemExt
-		END;
+		END;*)
 
 		Hook* = POINTER TO ABSTRACT RECORD END;
 
-		LoaderHook* = POINTER TO ABSTRACT RECORD (Hook)
+		(*LoaderHook* = POINTER TO ABSTRACT RECORD (Hook)
 			res*: INTEGER;
 			importing*, imported*, object*: ARRAY 256 OF CHAR
 		END;
@@ -241,7 +241,7 @@ MODULE bbKernel;
 		baseStack: INTEGER;	(* modList, root, and baseStack must be together for remote debugging *)
 		root: Cluster;	(* cluster list *)
 		modList-: Module;	(* root of module list *)
-		trapCount-: INTEGER;
+		*)trapCount-: INTEGER;(*
 		err-, pc-, sp-, fp-, stack-, val-: INTEGER;
 		mainWnd*: INTEGER;
 
@@ -1098,14 +1098,14 @@ MODULE bbKernel;
 		ELSE
 			RETURN NIL
 		END
-	END ThisType;
+	END ThisType;*)
 
 	PROCEDURE TypeOf* (IN rec: ANYREC): Type;
 	BEGIN
 		RETURN S.VAL(Type, S.TYP(rec))
 	END TypeOf;
 
-	PROCEDURE LevelOf* (t: Type): SHORTINT;
+	(*PROCEDURE LevelOf* (t: Type): SHORTINT;
 	BEGIN
 		RETURN SHORT(t.id DIV 16 MOD 16)
 	END LevelOf;
