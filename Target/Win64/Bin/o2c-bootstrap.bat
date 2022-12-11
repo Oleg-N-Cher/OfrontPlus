@@ -22,7 +22,7 @@ IF errorlevel 1 EXIT
 
 ofront+ -s %1 ^
   oo2cAscii.cp oo2cConvTypes.cp oo2cLongStrings.cp oo2cRandomNumbers.cp ^
-  oo2cStrings.cp %oef%
+  oo2cStrings.cp
 IF errorlevel 1 EXIT
 
 :: POW
