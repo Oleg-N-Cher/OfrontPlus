@@ -1,5 +1,5 @@
 (*	$Id: RandomNumbers.Mod,v 1.1 2002/05/09 22:08:13 mva Exp $	*)
-MODULE ooc2RandomNumbers;
+MODULE oo2cRandomNumbers;
 (** 
 For details on this algorithm take a look at
   Park S.K. and Miller K.W. (1988). ``Random number generators, good ones are
@@ -66,4 +66,4 @@ PROCEDURE Random*() : SHORTREAL;
 
 BEGIN
   z := 1
-END ooc2RandomNumbers.
+END oo2cRandomNumbers.

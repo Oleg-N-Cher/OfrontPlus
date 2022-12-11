@@ -1,5 +1,5 @@
 (*	$Id: Ascii.Mod,v 1.2 2003/01/04 10:19:19 mva Exp $	*)
-MODULE ooc2Ascii;
+MODULE oo2cAscii;
 (*  Standard short character names for control chars.
     Copyright (C) 2002  Michael van Acken
 
@@ -34,4 +34,4 @@ CONST  (* often used synonyms *)
   xon*  = dc1;
   xoff* = dc3;
   
-END ooc2Ascii.
+END oo2cAscii.

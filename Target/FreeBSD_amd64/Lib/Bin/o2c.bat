@@ -18,9 +18,11 @@ IF errorlevel 1 PAUSE
 ofront+ -s88 Zlib.ob2 ZlibBuffers.ob2 ZlibDeflate.ob2 ZlibInflate.ob2 ZlibReaders.ob2 ZlibWriters.ob2 Zip.ob2
 IF errorlevel 1 PAUSE
 
-:: OOC2
+:: OO2C
 
-ofront+ -s88 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp
+ofront+ -s88 ^
+  oo2cAscii.cp oo2cConvTypes.cp oo2cLongStrings.cp oo2cRandomNumbers.cp ^
+  oo2cStrings.cp
 IF errorlevel 1 PAUSE
 
 :: POW

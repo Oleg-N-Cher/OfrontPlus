@@ -8,43 +8,45 @@ SET oef=
 
 :: Ofront+
 
-ofront+ -sC -48 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Windows.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
+ofront+ -s48 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Windows.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Eco
 
-ofront+ -sC -48 ecoBigSets.cp ecoBuffer.cp ecoListen.cp ecoLists.cp ecoParser.cp ecoVector.cp %oef%
+ofront+ -s48 ecoBigSets.cp ecoBuffer.cp ecoListen.cp ecoLists.cp ecoParser.cp ecoVector.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: ETH Oberon
 
-ofront+ -s2 -48 Zlib.ob2 ZlibBuffers.ob2 ZlibDeflate.ob2 ZlibInflate.ob2 ZlibReaders.ob2 ZlibWriters.ob2 Zip.ob2 %oef%
+ofront+ -s48 Zlib.ob2 ZlibBuffers.ob2 ZlibDeflate.ob2 ZlibInflate.ob2 ZlibReaders.ob2 ZlibWriters.ob2 Zip.ob2 %oef%
 IF errorlevel 1 PAUSE
 
-:: OOC2
+:: OO2C
 
-ofront+ -sC -48 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp %oef%
+ofront+ -s48 ^
+  oo2cAscii.cp oo2cConvTypes.cp oo2cLongStrings.cp oo2cRandomNumbers.cp ^
+  oo2cStrings.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: POW
 
-ofront+ -sC -48 powStrings.cp %oef%
+ofront+ -s48 powStrings.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -sC -48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
+ofront+ -s48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: libCurl, libNuklear*
 
-ofront+ -sC -48 libCurl.cp NetHttp.cp libNuklear.cp libNuklearX.cp %oef%
+ofront+ -s48 libCurl.cp NetHttp.cp libNuklear.cp libNuklearX.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Aria - Reusable Oberon-2 modules by Stewart Greenhill
 :: https://github.com/sgreenhill/aria
 
-ofront+ -sO2 -48 ^
+ofront+ -sO48 ^
   arArgs.ob2 arC.ob2 arCFormat.ob2 arChar.ob2 arCString.ob2 arDir.ob2 ^
   arMath.ob2 arSize.ob2 arStrings.ob2 arStringList.ob2 arStringAssoc.ob2 ^
   arText.ob2 arStream.ob2 arFile.ob2 arOut.ob2 arPath.ob2 arPattern.ob2 ^
@@ -53,12 +55,12 @@ IF errorlevel 1 PAUSE
 
 :: WinApi
 
-ofront+ -s -48 WinApi.cp %oef%
+ofront+ -s48 WinApi.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: BlackBox
 
-ofront+ -sw -48 bbKernel.Windows.cp bbMath.cp bbStrings.cp %oef%
+ofront+ -sw48 bbKernel.Windows.cp bbMath.cp bbStrings.cp %oef%
 IF errorlevel 1 PAUSE
 
 FOR %%i IN (*.sym) DO MOVE /Y %%i ..\Sym >NUL

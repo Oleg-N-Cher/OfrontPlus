@@ -1,5 +1,5 @@
 (*	$Id: ConvTypes.Mod,v 1.1 2002/05/10 22:25:18 mva Exp $	*)
-MODULE ooc2ConvTypes;
+MODULE oo2cConvTypes;
 (**Common types used in the string conversion modules.  *)
  
 TYPE
@@ -42,4 +42,4 @@ TYPE
        in @var{cl}, the next state in @var{st}.  *)
   END;
  
-END ooc2ConvTypes.
+END oo2cConvTypes.

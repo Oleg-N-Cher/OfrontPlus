@@ -18,9 +18,11 @@ IF errorlevel 1 EXIT
 ofront+ -s %1 Zlib.ob2 ZlibBuffers.ob2 ZlibDeflate.ob2 ZlibInflate.ob2 ZlibReaders.ob2 ZlibWriters.ob2 Zip.ob2
 IF errorlevel 1 EXIT
 
-:: OOC2
+:: OO2C
 
-ofront+ -s %1 ooc2Ascii.cp ooc2ConvTypes.cp ooc2RandomNumbers.cp ooc2Strings.cp
+ofront+ -s %1 ^
+  oo2cAscii.cp oo2cConvTypes.cp oo2cLongStrings.cp oo2cRandomNumbers.cp ^
+  oo2cStrings.cp %oef%
 IF errorlevel 1 EXIT
 
 :: POW

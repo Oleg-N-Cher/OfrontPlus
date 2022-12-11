@@ -24,11 +24,13 @@ IF errorlevel 1 PAUSE
 IF errorlevel 1 PAUSE
 %AR% Zlib.o ZlibBuffers.o ZlibDeflate.o ZlibInflate.o ZlibReaders.o ZlibWriters.o Zip.o
 
-:: OOC2
+:: OO2C
 
-%CC% ooc2Ascii.c ooc2ConvTypes.c ooc2RandomNumbers.c ooc2Strings.c
+%CC% oo2cAscii.c oo2cConvTypes.c oo2cLongStrings.c oo2cRandomNumbers.c ^
+  oo2cStrings.c
 IF errorlevel 1 PAUSE
-%AR% ooc2Ascii.o ooc2ConvTypes.o ooc2RandomNumbers.o ooc2Strings.o
+%AR% oo2cAscii.o oo2cConvTypes.o oo2cLongStrings.o oo2cRandomNumbers.o ^
+  oo2cStrings.o
 
 :: POW
 
