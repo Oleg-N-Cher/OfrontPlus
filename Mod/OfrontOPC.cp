@@ -267,7 +267,7 @@
 		END
 	END Stars;
 
-	PROCEDURE^ AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
+	PROCEDURE^ AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
 	PROCEDURE^ DeclareReturnType (retTyp: OPT.Struct);
 
 	PROCEDURE DeclareObj(dcl: OPT.Object; vis: INTEGER);
@@ -300,7 +300,7 @@
 			ELSIF (form = ProcTyp) OR (comp IN {Array, DynArr}) THEN
 				IF openClause THEN OPM.Write(CloseParen); openClause := FALSE END;
 				IF form = ProcTyp THEN
-					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE, TRUE)
+					IF ansi THEN OPM.Write(")"); AnsiParamList(typ^.link, FALSE)
 					ELSE OPM.WriteString(")()")
 					END;
 					DeclareReturnType(typ^.BaseTyp);
@@ -477,7 +477,7 @@
 		END
 	END LenList;
 
-	PROCEDURE DeclareParams(par: OPT.Object; macro, showOberonParams: BOOLEAN);
+	PROCEDURE DeclareParams (par: OPT.Object; macro: BOOLEAN);
 	BEGIN
 		OPM.Write(OpenParen);
 		WHILE par # NIL DO
@@ -485,17 +485,15 @@
 			ELSE
 				IF (par^.mode = Var) & (par^.typ^.form = Real) THEN OPM.Write("_") END ;
 				Ident(par)
-			END ;
-			IF showOberonParams THEN
-				IF (par^.typ^.comp = DynArr) & ~ODD(par^.typ^.sysflag) THEN
-					OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
-				ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) & (par^.typ^.sysflag MOD 100H = 0) THEN
-					OPM.WriteString(Comma); OPM.WriteString(par.name^); OPM.WriteString(TagExt)
-				END
+			END;
+			IF (par^.typ^.comp = DynArr) & ~ODD(par^.typ^.sysflag) THEN
+				OPM.WriteString(Comma); LenList(par, FALSE, TRUE);
+			ELSIF (par^.mode = VarPar) & (par^.typ^.comp = Record) & (par^.typ^.sysflag MOD 100H = 0) THEN
+				OPM.WriteString(Comma); OPM.WriteString(par.name^); OPM.WriteString(TagExt)
 			END;
 			par := par^.link;
 			IF par # NIL THEN OPM.WriteString(Comma) END
-		END ;
+		END;
 		OPM.Write(CloseParen)
 	END DeclareParams;
 
@@ -554,7 +552,7 @@
 			IF (obj^.mode = TProc) & (obj = BaseTProc(obj)) & ((OPM.currFile # OPM.HeaderFile) OR (obj^.vis = external)) THEN
 				OPM.WriteString("#define __");
 				Ident(obj);
-				DeclareParams(obj^.link, TRUE, TRUE);
+				DeclareParams(obj^.link, TRUE);
 				OPM.WriteString(" __SEND(");
 				IF obj^.link^.typ^.form = Pointer THEN
 					OPM.WriteString("__TYPEOF("); Ident(obj^.link); OPM.Write(")")
@@ -566,13 +564,13 @@
 				IF obj^.typ^.form # NoTyp THEN Stars(obj^.typ, TRUE, oc) END;
 				OPM.WriteString("(*)");
 				IF ansi THEN
-					AnsiParamList(obj^.link, FALSE, TRUE)
+					AnsiParamList(obj^.link, FALSE)
 				ELSE
 					OPM.WriteString("()")
 				END;
 				DeclareReturnType(obj^.typ);
 				OPM.WriteString(", ");
-				DeclareParams(obj^.link, TRUE, TRUE);
+				DeclareParams(obj^.link, TRUE);
 				OPM.Write(")"); OPM.WriteLn
 			END;
 			DefineTProcMacros(obj^.right, empty)
@@ -736,7 +734,7 @@
 				ext := obj.conval.ext;
 				IF ext # NIL THEN
 					IF (ext^[0] # "#") & ~(Prefixed(ext, "extern ") OR Prefixed(ext, Extern)) THEN
-						OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE, TRUE);
+						OPM.WriteString("#define "); Ident(obj); DeclareParams(obj^.link, TRUE);
 						OPM.WriteTab
 					END;
 					FOR i := 0 TO LEN(ext^) - 1 DO OPM.Write(ext^[i]) END;
@@ -746,7 +744,7 @@
 					IF obj^.sysflag = 1 THEN OPM.WriteString(STDCALL)
 					ELSIF obj^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
 					END;
-					Ident(obj); OPM.Write(Blank); AnsiParamList(obj^.link, TRUE, FALSE); OPM.Write(";")
+					Ident(obj); OPM.Write(Blank); AnsiParamList(obj^.link, TRUE); OPM.Write(";")
 				END;
 				OPM.WriteLn
 			END;
@@ -1134,7 +1132,7 @@
 		IF ~first THEN EndStat END
 	END IdentList;
 
-	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames, showOberonParams: BOOLEAN);
+	PROCEDURE AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
 		VAR name: OPT.ConstExt(*OPS.String*);
 	BEGIN
 		OPM.Write("(");
@@ -1147,18 +1145,16 @@
 				ELSE
 					name := obj^.name; obj^.name := OPT.null; DeclareObj(obj, 0); obj^.name := name
 				END;
-				IF showOberonParams THEN
-					IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN
-						CASE OPM.IndexSize OF
-						| 2: OPM.WriteString(", SHORTINT ")
-						| 4: OPM.WriteString(", INTEGER ")
-						ELSE OPM.WriteString(", LONGINT ")
-						END;
-						LenList(obj, TRUE, showParamNames)
-					ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & (obj^.typ^.sysflag MOD 100H = 0) THEN
-						OPM.WriteString(", SYSTEM_ADRINT *");
-						IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
-					END
+				IF (obj^.typ^.comp = DynArr) & ~ODD(obj^.typ^.sysflag) THEN
+					CASE OPM.IndexSize OF
+					| 2: OPM.WriteString(", SHORTINT ")
+					| 4: OPM.WriteString(", INTEGER ")
+					ELSE OPM.WriteString(", LONGINT ")
+					END;
+					LenList(obj, TRUE, showParamNames)
+				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & (obj^.typ^.sysflag MOD 100H = 0) THEN
+					OPM.WriteString(", SYSTEM_ADRINT *");
+					IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
 				END;
 				IF (obj^.link = NIL) OR (obj^.link.mode = TProc) THEN EXIT END ;
 				OPM.WriteString(", ");
@@ -1171,7 +1167,7 @@
 	PROCEDURE DeclareReturnType (retTyp: OPT.Struct);
 	BEGIN
 		IF (retTyp^.form = ProcTyp) & ((retTyp^.strobj = NIL) OR (retTyp^.strobj^.name^ = "")) THEN
-			IF ansi THEN OPM.Write(")"); AnsiParamList(retTyp^.link, FALSE, TRUE)
+			IF ansi THEN OPM.Write(")"); AnsiParamList(retTyp^.link, FALSE)
 			ELSE OPM.WriteString(")()")
 			END;
 			DeclareReturnType(retTyp^.BaseTyp)
@@ -1188,12 +1184,12 @@
 		END;
 		Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
-			AnsiParamList(proc^.link, TRUE, TRUE);
+			AnsiParamList(proc^.link, TRUE);
 			DeclareReturnType(proc^.typ);
 			IF ~define THEN OPM.Write(";") END;
 			OPM.WriteLn
 		ELSIF define THEN
-			DeclareParams(proc^.link, FALSE, TRUE);
+			DeclareParams(proc^.link, FALSE);
 			DeclareReturnType(proc^.typ);
 			OPM.WriteLn;
 			Indent(1); IdentList(proc^.link, 2(* map REAL to double *)); Indent(-1)

@@ -496,6 +496,7 @@
 	BEGIN typ := OPT.NewStr(Comp, Record); typ^.BaseTyp := NIL;
 		IF OPM.Lang # "C" THEN typ^.attribute := extAttr END;
 		CheckSysFlag(typ^.sysflag, 0, TRUE);
+		IF (typ^.sysflag = 0) & (OPM.foreign IN OPM.opt) THEN typ^.sysflag := notag END;
 		IF attr # NIL THEN
 			IF (OPM.Lang = "C") & (attr.adr # empAttr) THEN typ.attribute := SHORT(SHORT(attr.adr))
 			ELSE err(178)
