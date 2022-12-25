@@ -72,6 +72,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		HFext = ".oh";	(* header file extension *)
 		SFtag = 0F7X;	(* symbol file tag *)
 
+		DummyFile* = -1;
 		HeaderFile* = 0;
 		BodyFile* = 1;
 		HeaderInclude* = 2;
@@ -665,14 +666,17 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- Write Header & Body Files ------------------------- *)
 
 	PROCEDURE Write* (ch: SHORTCHAR);
-	BEGIN Files.WriteChar(R[currFile], ch)
+	BEGIN
+		IF currFile # DummyFile THEN Files.WriteChar(R[currFile], ch) END
 	END Write;
 
 	PROCEDURE WriteString* (IN s: ARRAY OF SHORTCHAR);
 		VAR i: INTEGER;
-	BEGIN i := 0;
-		WHILE s[i] # 0X DO INC(i) END;
-		Files.WriteBytes(R[currFile], SYSTEM.THISARR(SYSTEM.ADR(s), LEN(s)), i)
+	BEGIN
+		IF currFile # DummyFile THEN
+			i := LEN(s$);
+			Files.WriteBytes(R[currFile], SYSTEM.THISARR(SYSTEM.ADR(s), i), i)
+		END
 	END WriteString;
 
 	PROCEDURE WriteHex* (i: INTEGER);

@@ -26,6 +26,7 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 
 		(* sysflags *)
 		nilBit = 1; notag = 1; noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
+		ccall = 0; stdcall = 1; fastcall = 2; inline = 3;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -193,8 +194,11 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 							ELSIF (option = "x") & (obj^.mode = CProc) THEN Wch("-")
 							END;
 							Wch(" ");
-							IF obj^.sysflag = 1 THEN Ws("[stdcall] ")
-							ELSIF obj^.sysflag = 2 THEN Ws("[fastcall] ")
+							CASE obj^.sysflag OF
+								| ccall:
+								| stdcall: Ws("[stdcall] ")
+								| fastcall: Ws("[fastcall] ")
+								| inline: Ws("[inline] ")
 							END;
 							Ws(obj^.name^);
 							Wsign(obj^.typ, obj^.link);
@@ -302,8 +306,8 @@ MODULE OfrontBrowser;	(* RC 29.10.93 *)	(* object model 4.12.93 *)
 				DEC(global.level); Wtype(typ^.BaseTyp); INC(global.level)
 		| ProcTyp:
 				Ws("PROCEDURE");
-				IF typ^.sysflag = 1 THEN Ws(" [stdcall]")
-				ELSIF typ^.sysflag = 2 THEN Ws(" [fastcall]")
+				IF typ^.sysflag = stdcall THEN Ws(" [stdcall]")
+				ELSIF typ^.sysflag = fastcall THEN Ws(" [fastcall]")
 				END;
 				Wsign(typ^.BaseTyp, typ^.link)
 		| Comp:

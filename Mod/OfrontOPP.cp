@@ -70,6 +70,7 @@
 
 		(* sysflags *)
 		nilBit = 1; notag = 1; noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
+		ccall = 0; stdcall = 1; fastcall = 2; inline = 3;
 
 	TYPE
 		Elem = POINTER TO RECORD
@@ -397,14 +398,15 @@
 		END
 	END CheckSysFlagVarPar;
 
-	PROCEDURE CheckSysFlagProc (VAR sysflag: SHORTINT);
+	PROCEDURE CheckSysFlagProc (VAR sysflag: SHORTINT; checkinline: BOOLEAN);
 	BEGIN
 		IF sym = lbrak THEN OPS.Get(sym);
 			IF ~(OPT.SYSimported OR (OPM.foreign IN OPM.opt)) THEN err(135) END;
-			IF (sym = ident) & (OPS.name = "ccall") THEN OPS.Get(sym); sysflag := 0
-			ELSIF (sym = ident) & ((OPS.name = "stdcall") OR (OPS.name = "callback")) THEN OPS.Get(sym); sysflag := 1
-			ELSIF (sym = ident) & (OPS.name = "fastcall") THEN OPS.Get(sym); sysflag := 2
-			ELSE OPS.Get(sym); err(178); sysflag := 0
+			IF (sym = ident) & (OPS.name = "ccall") THEN OPS.Get(sym); sysflag := ccall
+			ELSIF (sym = ident) & ((OPS.name = "stdcall") OR (OPS.name = "callback")) THEN OPS.Get(sym); sysflag := stdcall
+			ELSIF (sym = ident) & (OPS.name = "fastcall") THEN OPS.Get(sym); sysflag := fastcall
+			ELSIF (sym = ident) & checkinline & (OPS.name = "inline") THEN OPS.Get(sym); sysflag := inline
+			ELSE OPS.Get(sym); err(178); sysflag := ccall
 			END;
 			CheckSym(rbrak)
 		ELSE sysflag := 0
@@ -707,7 +709,7 @@
 		ELSIF sym = pointer THEN
 			OPS.Get(sym); PointerType(typ)
 		ELSIF sym = procedure THEN
-			OPS.Get(sym); typ := OPT.NewStr(ProcTyp, Basic); CheckSysFlagProc(typ^.sysflag);
+			OPS.Get(sym); typ := OPT.NewStr(ProcTyp, Basic); CheckSysFlagProc(typ^.sysflag, FALSE);
 			IF sym = lparen THEN
 				OPS.Get(sym); OPT.OpenScope(level, NIL);
 				FormalParameters(typ^.link, typ^.BaseTyp, tname); SetType(typ, NIL, typ^.BaseTyp, tname); OPT.CloseScope
@@ -1291,7 +1293,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			ELSE
 			END;
 			IF (mode IN {IProc, CProc}) & ~OPT.SYSimported THEN err(135) END;
-			CheckSysFlagProc(sys)
+			CheckSysFlagProc(sys, TRUE)
 		END;
 		IF (sym = lparen) & (mode = LProc) & (sys = 0) & (OPM.Lang # "1") & (OPM.Lang # "7") THEN TProcDecl
 		ELSIF sym = ident THEN OPT.Find(OPS.name, fwd);
@@ -1316,7 +1318,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			INC(level); OPT.OpenScope(level, proc);
 			proc^.link := NIL; GetParams;	(* may change proc := fwd !!! *)
 			IF mode = CProc THEN GetCode
-			ELSIF proc^.entry # NIL THEN INCL(proc^.conval^.setval, hasBody)
+			ELSIF (proc^.entry # NIL) & (proc^.sysflag # inline) THEN INCL(proc^.conval^.setval, hasBody)
 			ELSIF ~forward THEN Body; proc.adr := 0
 			ELSE proc.adr := OPM.errpos
 			END;

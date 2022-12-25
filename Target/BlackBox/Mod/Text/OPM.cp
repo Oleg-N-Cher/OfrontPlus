@@ -75,6 +75,7 @@
 		HFext = ".oh";	(* header file extension *)
 		SFtag = 0F7X;	(* symbol file tag *)
 
+		DummyFile* = -1;
 		HeaderFile* = 0;
 		BodyFile* = 1;
 		HeaderInclude* = 2;
@@ -1002,13 +1003,16 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 	PROCEDURE Write* (ch: SHORTCHAR);
 	BEGIN
-		R[currFile].WriteByte(SYSTEM.VAL(BYTE, ch))
+		IF currFile # DummyFile THEN R[currFile].WriteByte(SYSTEM.VAL(BYTE, ch)) END
 	END Write;
 
 	PROCEDURE WriteString* (IN s: ARRAY OF SHORTCHAR);
-		VAR i: INTEGER; ch: SHORTCHAR;
-	BEGIN i := 0; ch := s[0];
-	WHILE ch # 0X DO Write(ch); INC(i); ch := s[i] END
+		VAR i: INTEGER;
+	BEGIN
+		IF currFile # DummyFile THEN
+			i := LEN(s$);
+			R[currFile].WriteBytes(SYSTEM.THISARRAY(SYSTEM.ADR(s), i), 0, i)
+		END
 	END WriteString;
 
 	PROCEDURE WriteHex* (i: INTEGER);
@@ -1061,7 +1065,7 @@ suffix does not work in K&R *)
 
 	PROCEDURE WriteLn*;
 	BEGIN
-		R[currFile].WriteByte(0DH); R[currFile].WriteByte(0AH)
+		WriteString(0DX + 0AX)
 	END WriteLn;
 
 	PROCEDURE WriteTab*;

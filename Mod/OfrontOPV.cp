@@ -56,6 +56,7 @@
 
 		(* sysflag *)
 		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
+		inline = 3;
 
 		super = 1;
 
@@ -1273,7 +1274,13 @@
 						IF ~proc^.scope^.leaf THEN OPC.DefineInter (proc) END; (* define intermediate procedure scope *)
 						INC(OPM.level); stat(n^.left, proc); DEC(OPM.level);
 						OPC.EnterProc(proc); stat(n^.right, proc);
-						OPC.ExitProc(proc, TRUE, ImplicitReturn(n^.right))
+						OPC.ExitProc(proc, TRUE, ImplicitReturn(n^.right));
+						IF (proc^.sysflag = inline) & (proc^.vis # internal) THEN
+							i := OPM.currFile; OPM.currFile := OPM.HeaderFile;
+							OPC.EnterProc(proc); stat(n^.right, proc);
+							OPC.ExitProc(proc, TRUE, ImplicitReturn(n^.right));
+							OPM.currFile := i
+						END
 			|	Ninittd: (* done in enter module *)
 			|	Nassign:
 					CASE n^.subcl OF
@@ -1449,20 +1456,19 @@
 	BEGIN
 		OPM.level := 0;
 		IF ~mainprog THEN OPC.GenHdr(prog^.right); OPC.GenHdrIncludes END;
-		IF ~(OPM.foreign IN OPM.opt) THEN
-			OPC.GenBdy(prog^.right);
-			INC(OPM.level); stat(prog^.left, NIL); DEC(OPM.level);
-			IF ~(OPM.noinit IN OPM.opt) THEN
-				OPC.GenEnumPtrs(OPT.topScope^.scope);
-				DefineTDescs(prog^.right); OPC.EnterBody; InitTDescs(prog^.right);
-				OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
-				stat(prog^.right, NIL); OPC.ExitBody;
-				IF prog.link # NIL THEN (* close section *)
-					OPC.EnterClose; stat(prog^.link, NIL); OPC.ExitClose
-				END;
-				IF mainprog & (OPM.dynlib IN OPM.opt) THEN OPC.DllMainBody(prog^.link # NIL) END
-			END
+		OPC.GenBdy(prog^.right);
+		INC(OPM.level); stat(prog^.left, NIL); DEC(OPM.level);
+		IF ~(OPM.noinit IN OPM.opt) THEN
+			OPC.GenEnumPtrs(OPT.topScope^.scope);
+			DefineTDescs(prog^.right); OPC.EnterBody; InitTDescs(prog^.right);
+			OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
+			stat(prog^.right, NIL); OPC.ExitBody;
+			IF prog.link # NIL THEN (* close section *)
+				OPC.EnterClose; stat(prog^.link, NIL); OPC.ExitClose
+			END;
+			IF mainprog & (OPM.dynlib IN OPM.opt) THEN OPC.DllMainBody(prog^.link # NIL) END
 		END;
+		OPM.currFile := OPM.HeaderFile; OPM.WriteString("#endif"); OPM.WriteLn;
 		OPC.CleanupArrays
 	END Module;
 

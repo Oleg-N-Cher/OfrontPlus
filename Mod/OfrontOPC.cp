@@ -42,6 +42,7 @@
 
 		(* sysflag *)
 		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
+		stdcall = 1; fastcall = 2; inline = 3;
 
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
@@ -246,8 +247,8 @@
 			ELSIF typ^.form = ProcTyp THEN
 				Stars(typ^.BaseTyp, forProc, openClause);
 				OPM.Write(OpenParen);
-				IF typ^.sysflag = 1 THEN OPM.WriteString(STDCALL)
-				ELSIF typ^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
+				IF typ^.sysflag = stdcall THEN OPM.WriteString(STDCALL)
+				ELSIF typ^.sysflag = fastcall THEN OPM.WriteString(FASTCALL)
 				END;
 				OPM.Write(Star)
 			ELSIF typ^.form = Pointer THEN
@@ -741,8 +742,8 @@
 				ELSE
 					OPM.WriteString(Extern); DeclareBase(obj); OPM.Write(Blank);
 					IF obj^.typ # OPT.notyp THEN Stars(obj^.typ, TRUE, oc) END;
-					IF obj^.sysflag = 1 THEN OPM.WriteString(STDCALL)
-					ELSIF obj^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
+					IF obj^.sysflag = stdcall THEN OPM.WriteString(STDCALL)
+					ELSIF obj^.sysflag = fastcall THEN OPM.WriteString(FASTCALL)
 					END;
 					Ident(obj); OPM.Write(Blank); AnsiParamList(obj^.link, TRUE); OPM.Write(";")
 				END;
@@ -1177,10 +1178,11 @@
 	PROCEDURE ProcHeader(proc: OPT.Object; define: BOOLEAN);
 		VAR oc: BOOLEAN;
 	BEGIN
+		IF proc^.sysflag = inline THEN OPM.WriteString("inline ") END;
 		DeclareBase(proc); OPM.Write(Blank);
 		IF proc^.typ^.form # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
-		IF proc^.sysflag = 1 THEN OPM.WriteString(STDCALL)
-		ELSIF proc^.sysflag = 2 THEN OPM.WriteString(FASTCALL)
+		IF proc^.sysflag = stdcall THEN OPM.WriteString(STDCALL)
+		ELSIF proc^.sysflag = fastcall THEN OPM.WriteString(FASTCALL)
 		END;
 		Ident(proc); OPM.Write(Blank);
 		IF ansi THEN
@@ -1203,7 +1205,11 @@
 			ProcPredefs(obj^.left, vis);
 			IF (obj^.mode IN {LProc, XProc}) & (obj^.vis >= vis) & ((obj^.history # removed) OR (obj^.mode = LProc)) THEN
 				(* previous XProc may be deleted or become LProc after interface change*)
-				IF vis = external THEN
+				IF obj^.sysflag = inline THEN
+					IF obj^.vis = internal THEN OPM.WriteString(Static)
+					ELSIF vis = internal THEN OPM.WriteString(Export)
+					END
+				ELSIF vis = external THEN
 					IF (obj^.entry # NIL) OR dynlib THEN OPM.WriteString(EXTERN)
 					ELSE OPM.WriteString(Extern)
 					END
@@ -1278,8 +1284,7 @@
 			EndStat
 		END;
 		OPM.WriteLn;
-		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn;
-		OPM.WriteString("#endif"); OPM.WriteLn
+		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn
 	END GenHdr;
 
 	PROCEDURE GenHeaderMsg;
@@ -1320,7 +1325,9 @@
 
 	PROCEDURE GenBdy*(n: OPT.Node);
 	BEGIN
-		OPM.currFile := OPM.BodyFile;
+		IF OPM.foreign IN OPM.opt THEN OPM.currFile := OPM.DummyFile
+		ELSE OPM.currFile := OPM.BodyFile
+		END;
 		GenHeaderMsg;
 		Include(BasicIncludeFile);
 		IncludeImports(0); OPM.WriteLn;
@@ -1634,7 +1641,7 @@
 		IF eoBlock THEN EndBlk; OPM.WriteLn
 		ELSIF indent THEN BegStat
 		END;
-		IF eoBlock & (proc^.vis = external) THEN
+		IF eoBlock & (proc^.vis = external) & (OPM.currFile = OPM.BodyFile) THEN
 			OPM.WriteString("/*----------------------------------------------------------------------------*/"); OPM.WriteLn
 		END
 	END ExitProc;
