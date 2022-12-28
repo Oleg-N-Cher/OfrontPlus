@@ -123,7 +123,7 @@ BEGIN
   IF size > 0 THEN
     RETURN allocate(size)  (* If the function HeapAlloc fails and you have not specified HEAP_GENERATE_EXCEPTIONS, the return value is NULL. *)
   END;
-  SystemHalt(-25, "Platform.Mod", 133); RETURN 0 (* To remove __RETCHK *)
+  SystemHalt(-25, "Platform", 126); RETURN 0 (* To remove __RETCHK *)
 END OSAllocate;
 
 PROCEDURE- free (address: ADRINT) "HeapFree(GetProcessHeap(), 0, (void*)address)";
