@@ -6,9 +6,9 @@ if [ -f "../libOfront.a" ]; then rm "../libOfront.a"; fi
 
 ## Ofront+
 
-$CC ../../../../Mod/Lib/SYSTEM.c Heap.c Platform.c Console.c Kernel.c CmdArgs.c Strings.c Files.c Reals.c Modules.c Texts.c Oberon.c
+$CC ../../../../Mod/Lib/SYSTEM.c Heap.c Platform.c Console.c Kernel.c CmdArgs.c Strings.c Files.c Math.c MathL.c Reals.c Modules.c Texts.c Oberon.c
 if [ $? != 0 ]; then exit 1; fi
-$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o CmdArgs.o Strings.o Files.o Reals.o Modules.o Texts.o Oberon.o
+$AR SYSTEM.o Heap.o Platform.o Console.o Kernel.o CmdArgs.o Strings.o Files.o Math.o MathL.o Reals.o Modules.o Texts.o Oberon.o
 
 ## Eco
 
@@ -38,9 +38,9 @@ $AR powStrings.o
 
 ## Free Oberon
 
-$CC SDL2.c SDL2mixer.c In.c Out.c Graph.c Math.c MathL.c Sound.c Turtle.c -w
+$CC SDL2.c SDL2mixer.c In.c Out.c Graph.c Sound.c Turtle.c -w
 if [ $? != 0 ]; then exit 1; fi
-$AR SDL2.o SDL2mixer.o In.o Out.o Graph.o Math.o MathL.o Sound.o Turtle.o
+$AR SDL2.o SDL2mixer.o In.o Out.o Graph.o Sound.o Turtle.o
 
 ## libCurl
 

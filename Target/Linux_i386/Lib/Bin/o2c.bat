@@ -5,7 +5,7 @@ SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\..\Mod\Lib
 
 :: Ofront+
 
-ofront+ -s44 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
+ofront+ -s44 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Math.cp MathL.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
 IF errorlevel 1 PAUSE
 
 :: Eco
@@ -32,7 +32,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -s44 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
+ofront+ -s44 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Sound.cp Turtle.cp
 IF errorlevel 1 PAUSE
 
 :: libCurl

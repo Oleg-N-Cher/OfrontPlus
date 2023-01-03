@@ -5,7 +5,7 @@ export OBERON=.:../Sym:../../../../Mod/Lib
 
 ## Ofront+
 
-ofront+ -s48 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
+ofront+ -s48 Heap.cp -apx Platform.Unix.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Unix.cp -px Math.cp MathL.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp
 if [ $? != 0 ]; then exit 1; fi
 
 ## Eco
@@ -31,7 +31,7 @@ if [ $? != 0 ]; then exit 1; fi
 
 ## Free Oberon
 
-ofront+ -s48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp
+ofront+ -s48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Sound.cp Turtle.cp
 if [ $? != 0 ]; then exit 1; fi
 
 ## libCurl

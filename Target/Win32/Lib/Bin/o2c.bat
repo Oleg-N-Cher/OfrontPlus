@@ -8,7 +8,7 @@ SET oef=
 
 :: Ofront+
 
-ofront+ -s48 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Windows.cp -px Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
+ofront+ -s48 Heap.cp -apx Platform.Windows.cp -atpx Console.cp Kernel.cp -atpx CmdArgs.Windows.cp -px Math.cp MathL.cp Reals.cp Strings.cp Files.cp Modules.cp Texts.cp Oberon.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: Eco
@@ -35,7 +35,7 @@ IF errorlevel 1 PAUSE
 
 :: Free Oberon
 
-ofront+ -s48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Math.cp MathL.cp Sound.cp Turtle.cp %oef%
+ofront+ -s48 SDL2.cp SDL2mixer.cp SQLite.cp Out.cp In.cp Graph.cp Sound.cp Turtle.cp %oef%
 IF errorlevel 1 PAUSE
 
 :: libCurl, libNuklear*
