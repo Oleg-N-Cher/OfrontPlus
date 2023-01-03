@@ -1,23 +1,10 @@
 MODULE Reals;
   (* JT, 5.2.90 / RC 9.12.91 conversion between reals and strings for HP-700, MB 9.12.91, JT for Ofront, 16.3. 95*)
 
-  IMPORT S := SYSTEM;
+  IMPORT S := SYSTEM, bbStrings;
 
-  TYPE
-    SHORTINT = S.INT8; INTEGER = S.INT16; LONGINT = S.INT32; ADRINT = S.ADRINT;
-    CHAR = S.CHAR8; REAL = S.REAL32; LONGREAL = S.REAL64;
-
-
-  PROCEDURE -Offset(adr: ADRINT; offset: LONGINT): ADRINT
-      "((SYSTEM_ADRINT)adr + offset)";
-  PROCEDURE -AAincludeStdio "#include <stdio.h>"; (* sprintf() *)
-  PROCEDURE -sprintf (buf, format: ADRINT; x: LONGREAL): LONGINT
-      "sprintf ((char*)buf, (char*)format, x)";
-  PROCEDURE -sprintd (buf, format: ADRINT; x: LONGINT): LONGINT
-      "sprintf ((char*)buf, (char*)format, x)";
-
-  PROCEDURE Ten*(e: INTEGER): REAL;
-    VAR r, power: LONGREAL;
+  PROCEDURE Ten* (e: SHORTINT): SHORTREAL;
+    VAR r, power: REAL;
   BEGIN r := 1.0;
     power := 10.0;
     WHILE e > 0 DO
@@ -27,8 +14,8 @@ MODULE Reals;
     RETURN SHORT(r)
   END Ten;
   
-  PROCEDURE TenL* (n: INTEGER): LONGREAL; (*compute 10^n *)
-    VAR r, power: LONGREAL;
+  PROCEDURE TenL* (n: SHORTINT): REAL; (*compute 10^n *)
+    VAR r, power: REAL;
   BEGIN r := 1.0; power := 10.0;
     WHILE n > 0 DO
       IF ODD(n) THEN r := r * power END;
@@ -37,14 +24,14 @@ MODULE Reals;
     RETURN r
   END TenL;
   
-  PROCEDURE Expo*(x: REAL): INTEGER;
+  PROCEDURE Expo* (x: SHORTREAL): SHORTINT;
   BEGIN
-    RETURN SHORT(ASH(S.VAL(LONGINT, x), -23) MOD 256)
+    RETURN SHORT(ASH(S.VAL(INTEGER, x), -23) MOD 256)
   END Expo;
   
-  PROCEDURE ExpoL* (x: LONGREAL): INTEGER;
+  PROCEDURE ExpoL* (x: REAL): SHORTINT;
     CONST ExpoMax = 1023;
-    VAR exp, offset: LONGINT;
+    VAR exp, offset: INTEGER;
   BEGIN
     x := ABS(x);
     exp := SHORT(ASH(S.VAL(S.INT64, x), -52));
@@ -55,13 +42,13 @@ MODULE Reals;
     RETURN SHORT(exp - offset)
   END ExpoL;
 
-  PROCEDURE SetExpo*(e: INTEGER; VAR x: REAL);
+  PROCEDURE SetExpo* (e: SHORTINT; VAR x: SHORTREAL);
     CONST expo = {1..8};
   BEGIN
-    x := S.VAL(REAL, S.VAL(SET, x) - expo + S.VAL(SET, ASH(LONG(e), 23)))
+    x := S.VAL(SHORTREAL, S.VAL(SET, x) - expo + S.VAL(SET, ASH(LONG(e), 23)))
   END SetExpo;
   
-  PROCEDURE SetExpoL*(e: INTEGER; VAR x: LONGREAL);
+  PROCEDURE SetExpoL* (e: SHORTINT; VAR x: REAL);
     CONST expo = {1..11};
     VAR h: SET;
   BEGIN
@@ -70,8 +57,8 @@ MODULE Reals;
     S.PUT(S.ADR(x)+4, h)
   END SetExpoL;
   
-  PROCEDURE Convert*(x: REAL; n: INTEGER; VAR d: ARRAY OF CHAR);
-    VAR i, k: LONGINT;
+  PROCEDURE Convert* (x: SHORTREAL; n: SHORTINT; VAR d: ARRAY OF SHORTCHAR);
+    VAR i, k: INTEGER;
   BEGIN
     i := SHORT(ENTIER(x)); k := 0;
     WHILE k < n DO
@@ -79,40 +66,37 @@ MODULE Reals;
     END
   END Convert;
   
-  PROCEDURE Unpack(VAR b, d: ARRAY OF BYTE);
-    VAR i, k: SHORTINT; len: LONGINT;
+  PROCEDURE Unpack (VAR b, d: ARRAY OF BYTE);
+    VAR i, k: BYTE; len: INTEGER;
   BEGIN i := 0; len := LEN(b);
     WHILE i < len DO
-      k := SHORT(SHORT(ORD(S.VAL(CHAR, b[i])) DIV 16));
+      k := SHORT(SHORT(ORD(S.VAL(SHORTCHAR, b[i])) DIV 16));
       IF k > 9 THEN d[i*2] := SHORT(SHORT(k + 55)) ELSE d[i*2] := SHORT(SHORT(k + 48)) END;
-      k := SHORT(SHORT(ORD(S.VAL(CHAR, b[i])) MOD 16));
+      k := SHORT(SHORT(ORD(S.VAL(SHORTCHAR, b[i])) MOD 16));
       IF k > 9 THEN d[i*2+1] := SHORT(SHORT(k + 55)) ELSE d[i*2+1] := SHORT(SHORT(k + 48)) END;
       INC(i)
     END
   END Unpack;
   
-  PROCEDURE ConvertH* (y: REAL; VAR d: ARRAY OF CHAR);
+  PROCEDURE ConvertH* (y: SHORTREAL; VAR d: ARRAY OF SHORTCHAR);
   BEGIN
     Unpack(
-      S.THISARR(S.ADR(y), SIZE(REAL)),
+      S.THISARR(S.ADR(y), SIZE(SHORTREAL)),
       S.THISARR(S.ADR(d), LEN(d)))
   END ConvertH;
   
-  PROCEDURE ConvertHL* (x: LONGREAL; VAR d: ARRAY OF CHAR);
+  PROCEDURE ConvertHL* (x: REAL; VAR d: ARRAY OF SHORTCHAR);
   BEGIN
     Unpack(
-      S.THISARR(S.ADR(x), SIZE(LONGREAL)),
+      S.THISARR(S.ADR(x), SIZE(REAL)),
       S.THISARR(S.ADR(d), LEN(d)))
   END ConvertHL;
 
-  PROCEDURE RealToStr* (x: LONGREAL; digits: LONGINT; VAR d: ARRAY OF CHAR);
-    VAR buf: ARRAY 28 OF CHAR; format: ARRAY 8 OF CHAR;
+  PROCEDURE RealToStr* (x: REAL; digits: INTEGER; VAR d: ARRAY OF SHORTCHAR);
+    VAR buf: ARRAY 32 OF CHAR;
   BEGIN
-    format[0] := "%"; format[1] := ".";
-    ASSERT((0 < digits) & (digits <= 17));
-    ASSERT(sprintd(S.ADR(format)+2, S.ADR("%dG"), digits) < LEN(format)-2);
-    ASSERT(sprintf(S.ADR(buf), S.ADR(format), x) < LEN(buf));
-    d := buf$
+    bbStrings.RealToStringForm(x, digits, 0, 0, " ", buf);
+    d := SHORT(buf$)
   END RealToStr;
 
 END Reals.
