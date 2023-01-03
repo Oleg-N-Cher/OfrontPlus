@@ -1,6 +1,6 @@
 macos_task:
-  osx_instance:
-    image: catalina-base
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-monterey-base:latest
   environment:
     CIRRUS_KEY: ENCRYPTED[0d928cf2f2b4e912a319e684389a48e71ef890d05fea5287ab4b26adc25093395010d777f7ab56cefeb0458b9667cb5a]
   timeout_in: 10m
