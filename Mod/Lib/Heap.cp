@@ -105,7 +105,7 @@ MODULE Heap;
     interrupted: BOOLEAN;
 
     (* File system file count monitor *)
-    FileCount*: SHORTINT;
+    FileCount*: INTEGER;
 
 
   PROCEDURE Lock*;
@@ -119,17 +119,18 @@ MODULE Heap;
   BEGIN
     DEC(lockdepth);
     IF interrupted & (lockdepth = 0) THEN
-      SystemHalt(-9, "Heap.Mod", 122)
+      SystemHalt(-9, "Heap", 122)
     END
   END Unlock;
 
 
-  PROCEDURE -uLT(x, y: ADDRESS): BOOLEAN  "((__U_ADRINT)x <  (__U_ADRINT)y)";
-  PROCEDURE -uLE(x, y: ADDRESS): BOOLEAN  "((__U_ADRINT)x <= (__U_ADRINT)y)";
+  PROCEDURE -uLT (x, y: ADDRESS): BOOLEAN  "((__U_ADRINT)x <  (__U_ADRINT)y)";
+  PROCEDURE -uLE (x, y: ADDRESS): BOOLEAN  "((__U_ADRINT)x <= (__U_ADRINT)y)";
 
-  PROCEDURE REGMOD*(IN name: ModuleName; enumPtrs: EnumProc): S.PTR;
+  PROCEDURE REGMOD* (IN name: ARRAY OF SHORTCHAR; enumPtrs: EnumProc): S.PTR;
     VAR m: Module;
   BEGIN
+    ASSERT(LEN(name$) < ModNameLen, 114);
     (* REGMOD is called at the start of module initialisation code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type
        descriptors being ready for use, therefore, just for the Heap module itself, we
@@ -140,13 +141,14 @@ MODULE Heap;
       NEW(m)
     END;
     m.types := 0; m.cmds := NIL;
-    S.COPY(name, m.name); (* safe for non-0X-terminated strings, then will be truncated. *)
+
+    m.name := name$;
     m.refcnt := 0; m.enumPtrs := enumPtrs; m.next := S.VAL(Module, modules);
     modules := m;
     RETURN m
   END REGMOD;
 
-  PROCEDURE FreeModule*(IN name: ARRAY OF SHORTCHAR): INTEGER;
+  PROCEDURE FreeModule* (IN name: ARRAY OF SHORTCHAR): INTEGER;
   (* Returns 0 if freed, -1 if not found, refcount if found and refcount > 0. *)
     VAR m, p: Module;
   BEGIN m := S.VAL(Module, modules);
@@ -162,9 +164,10 @@ MODULE Heap;
   END FreeModule;
 
 
-  PROCEDURE REGCMD*(m: Module; VAR name: CmdName; cmd: Command);
+  PROCEDURE REGCMD* (m: Module; IN name: ARRAY OF SHORTCHAR; cmd: Command);
     VAR c: Cmd;
   BEGIN
+    ASSERT(LEN(name$) < CmdNameLen, 114);
     (* REGCMD is called during module initialisation code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type
        descriptors being ready for use, therefore, just for the commands registered
@@ -174,8 +177,7 @@ MODULE Heap;
     ELSE
       NEW(c)
     END;
-    S.COPY(name, c.name); (* safe for non-0X-terminated strings, then will be truncated. *)
-    c.cmd := cmd; c.next := m.cmds; m.cmds := c
+    c.name := name$; c.cmd := cmd; c.next := m.cmds; m.cmds := c
   END REGCMD;
 
   PROCEDURE REGTYP*(m: Module; typ: ADDRESS);
