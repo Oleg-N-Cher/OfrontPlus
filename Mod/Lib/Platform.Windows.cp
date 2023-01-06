@@ -401,6 +401,9 @@ END GetTempPath;
 PROCEDURE- readfile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
   "(INTEGER)ReadFile ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
 
+PROCEDURE- readconsole (fd: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): BOOL
+  "(INTEGER)ReadConsoleW ((HANDLE)fd, (void*)(p), (DWORD)l, (DWORD*)n, 0)";
+
 PROCEDURE Read* (h: FileHandle; p: ADRINT; l: INTEGER; VAR n: INTEGER): ErrorCode;
 VAR result: INTEGER;
 BEGIN
@@ -416,6 +419,14 @@ BEGIN
   result := readfile(h, SYSTEM.ADR(b), LEN(b), n);
   IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
+
+PROCEDURE ReadBufW* (h: FileHandle; VAR b: ARRAY OF CHAR; VAR n: INTEGER): ErrorCode;
+VAR result: INTEGER;
+BEGIN
+  n := 0;
+  result := readconsole(h, SYSTEM.ADR(b), LEN(b) (* *2? *), n);
+  IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
+END ReadBufW;
 
 
 PROCEDURE- writeFile (fd: FileHandle; p: ADRINT; l: INTEGER; VAR dummy: DWORD): BOOL
