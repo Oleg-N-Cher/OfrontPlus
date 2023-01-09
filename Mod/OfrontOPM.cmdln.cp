@@ -86,7 +86,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		InfRealPat = 07F800000H;	(* real infinity pattern *)
 
 	TYPE
-		FileName = ARRAY 32 OF SHORTCHAR;
+		FileName = ARRAY 36 OF SHORTCHAR; (* LEN(modName) + LEN(".sym") *)
 
 	VAR
 		LEHost: BOOLEAN;	(* little or big endian host *)
@@ -439,7 +439,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		IF (longch < 09X) & ~inR.eot THEN longch := " " END
 	END Get;
 
-	PROCEDURE MakeFileName(IN name: ARRAY OF SHORTCHAR; VAR FName: ARRAY OF SHORTCHAR; IN ext: ARRAY OF SHORTCHAR);
+	PROCEDURE MakeFileName (IN name: ARRAY OF SHORTCHAR; OUT FName: ARRAY OF SHORTCHAR; IN ext: ARRAY OF SHORTCHAR);
 		VAR i, j: INTEGER; ch: SHORTCHAR;
 	BEGIN i := 0;
 		LOOP ch := name[i];
@@ -764,7 +764,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END Append;
 
 	PROCEDURE OpenFiles*(VAR moduleName: ARRAY OF SHORTCHAR);
-		VAR FName: ARRAY 32 OF SHORTCHAR;
+		VAR FName: FileName;
 	BEGIN
 		modName := moduleName$;
 		HFile := Files.New("");
@@ -786,7 +786,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END OpenFiles;
 
 	PROCEDURE CloseFiles*;
-		VAR FName: ARRAY 32 OF SHORTCHAR; res: INTEGER; body: BOOLEAN;
+		VAR FName: FileName; res: INTEGER; body: BOOLEAN;
 	BEGIN
 		body := ~(foreign IN opt);
 		IF noerr THEN LogWStr("    ");

@@ -2031,6 +2031,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		IF sym = ident THEN
 			OPM.LogW(" "); OPM.LogWStr(OPS.name);
 			OPT.Init(OPS.name, OPM.Lang, opt); OPS.Get(sym);
+			IF LEN(OPS.name$) >= LEN(OPM.modName) THEN err(240) END;
 			CheckSym(semicolon);
 			IF sym = import THEN OPS.Get(sym);
 				LOOP

@@ -733,7 +733,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 
 
 
-	PROCEDURE MakeFileName(IN name: ARRAY OF SHORTCHAR; VAR FName: Files.Name; IN ext: ARRAY OF CHAR);
+	PROCEDURE MakeFileName (IN name: ARRAY OF SHORTCHAR; OUT FName: Files.Name; IN ext: ARRAY OF CHAR);
 		VAR i, j: INTEGER; ch: CHAR;
 	BEGIN i := 0;
 		LOOP ch := name[i];
