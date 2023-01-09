@@ -16080,6 +16080,15 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	PROCEDURE [stdcall] GetWindowLong* ["GetWindowLongA"] (hWnd: HWND; nIndex: INTEGER): INTEGER;
 	(*END GetWindowLong;*)
 
+	PROCEDURE [stdcall] GetWindowLongPtrA* (hWnd: HWND; nIndex: INTEGER): SIZE_T;
+	(*END GetWindowLongA;*)
+
+	PROCEDURE [stdcall] GetWindowLongPtrW* (hWnd: HWND; nIndex: INTEGER): SIZE_T;
+	(*END GetWindowLongW;*)
+
+	PROCEDURE [stdcall] GetWindowLongPtr* ["GetWindowLongPtrA"] (hWnd: HWND; nIndex: INTEGER): SIZE_T;
+	(*END GetWindowLong;*)
+
 	PROCEDURE [stdcall] SetWindowLongA* (hWnd: HWND; nIndex: INTEGER; dwNewLong: INTEGER): INTEGER;
 	(*END SetWindowLongA;*)
 
@@ -16087,6 +16096,15 @@ MODULE [foreign] WinApi (*KERNEL32.dll*);
 	(*END SetWindowLongW;*)
 
 	PROCEDURE [stdcall] SetWindowLong* ["SetWindowLongA"] (hWnd: HWND; nIndex: INTEGER; dwNewLong: INTEGER): INTEGER;
+	(*END SetWindowLong;*)
+
+	PROCEDURE [stdcall] SetWindowLongPtrA* (hWnd: HWND; nIndex: INTEGER; dwNewLong: SIZE_T): SIZE_T;
+	(*END SetWindowLongA;*)
+
+	PROCEDURE [stdcall] SetWindowLongPtrW* (hWnd: HWND; nIndex: INTEGER; dwNewLong: SIZE_T): SIZE_T;
+	(*END SetWindowLongW;*)
+
+	PROCEDURE [stdcall] SetWindowLongPtr* ["SetWindowLongPtrA"] (hWnd: HWND; nIndex: INTEGER; dwNewLong: SIZE_T): SIZE_T;
 	(*END SetWindowLong;*)
 
 	PROCEDURE [stdcall] GetClassWord* (hWnd: HWND; nIndex: INTEGER): SHORTINT;
