@@ -1156,7 +1156,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			OutObj(obj^.left);
 			IF obj^.mode IN {Con, Typ, Var, VarPar, LProc, XProc, CProc, IProc} THEN
 				IF obj^.history = removed THEN FPrintErr(obj, 250)
-				ELSIF ~ (obj^.vis IN {internal, inPar}) THEN
+				ELSIF obj^.vis IN {external, externalR} THEN
 					CASE obj^.history OF
 					| inserted: FPrintErr(obj, 253)
 					| same:	(* ok *)
