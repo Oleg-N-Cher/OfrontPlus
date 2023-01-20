@@ -1,4 +1,5 @@
 #!/bin/sh
+cd "$(dirname $0)"
 cd ../Obj
 PATH="../..:$PATH"
 export OBERON=.:../Sym:../../../../Mod/Lib

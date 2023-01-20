@@ -1,4 +1,5 @@
 #!/bin/sh
+cd "$(dirname $0)"
 cd ../Obj
 CC="cc -m64 -fPIC -I. -I../../../../Mod/Lib -Os -g0 -fomit-frame-pointer -finline-small-functions -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 AR="ar -rc ../libOfront.a"

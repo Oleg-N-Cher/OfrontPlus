@@ -2,6 +2,7 @@
 # -------------------- YOU NEED --------------------
 # libsdl2-dev libsdl2-image-dev libcurl4-openssl-dev
 
+cd "$(dirname $0)"
 cd ../Obj
 PATH="../..:$PATH"
 export OBERON=.:../../Lib/Sym:../../../../Examples
