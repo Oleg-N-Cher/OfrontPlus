@@ -379,6 +379,10 @@ BEGIN
   IF n < 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBuf;
 
+PROCEDURE ReadBufW* (h: FileHandle; VAR b: ARRAY OF CHAR; VAR n: INTEGER): ErrorCode;
+BEGIN RETURN 105 (* Not supported on Unix, user should use ReadBuf *)
+END ReadBufW;
+
 
 PROCEDURE- write (fd: FileHandle; p: ADRINT; l: INTEGER): INTEGER
 "write(fd, (void*)(p), l)";

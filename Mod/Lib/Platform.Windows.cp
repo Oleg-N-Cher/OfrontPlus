@@ -424,7 +424,7 @@ PROCEDURE ReadBufW* (h: FileHandle; VAR b: ARRAY OF CHAR; VAR n: INTEGER): Error
 VAR result: INTEGER;
 BEGIN
   n := 0;
-  result := readconsole(h, SYSTEM.ADR(b), LEN(b) (* *2? *), n);
+  result := readconsole(h, SYSTEM.ADR(b), LEN(b), n);
   IF result = 0 THEN n := 0; RETURN err() ELSE RETURN 0 END
 END ReadBufW;
 
