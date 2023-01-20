@@ -131,7 +131,7 @@ MODULE Heap;
     VAR m: Module;
   BEGIN
     ASSERT(LEN(name$) < ModNameLen, 114);
-    (* REGMOD is called at the start of module initialisation code before that modules
+    (* REGMOD is called at the start of module initialization code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type
        descriptors being ready for use, therefore, just for the Heap module itself, we
        must use S.NEW. *)
@@ -168,7 +168,7 @@ MODULE Heap;
     VAR c: Cmd;
   BEGIN
     ASSERT(LEN(name$) < CmdNameLen, 114);
-    (* REGCMD is called during module initialisation code before that modules
+    (* REGCMD is called during module initialization code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type
        descriptors being ready for use, therefore, just for the commands registered
        by the Heap module itself, we must use S.NEW. *)
@@ -624,7 +624,7 @@ MODULE Heap;
 
   PROCEDURE InitHeap*;
   (* InitHeap is called by Platform.init before any module bodies have been
-     initialised, to enable NEW, S.NEW *)
+     initialized, to enable NEW, S.NEW *)
   BEGIN
     heap          := 0;
     heapsize      := 0;
