@@ -1904,8 +1904,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					ELSE err(eql); x := OPB.NewIntConst(1)
 					END ;
 					obj^.mode := Con; obj^.typ := x^.typ; obj^.conval := x^.conval; (* ConstDesc ist not copied *)
-					IF obj^.conval^.arr # NIL THEN  (* константный массив *)
-						obj^.mode := VarPar; (* преобразуем в переменную-параметр *)
+					IF obj^.conval^.arr # NIL THEN  (* a constant array *)
+						obj^.mode := VarPar; (* converts to a VAR parameter *)
 						IF obj^.vis = internal THEN obj^.vis := inPar ELSE obj^.vis := externalR END;
 						IF x^.obj # NIL THEN obj^.typ := x^.obj^.typ END;
 						IF last = NIL THEN OPT.topScope^.scope := obj ELSE last^.link := obj END;

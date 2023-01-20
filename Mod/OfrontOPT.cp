@@ -521,7 +521,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 	BEGIN
 		IF ~obj^.fpdone THEN
 			fprint := 0; obj^.fpdone := TRUE;
-			OPM.FPrint(fprint, obj^.mode);
+			IF obj^.mode = VarPar THEN OPM.FPrint(fprint, Var) ELSE OPM.FPrint(fprint, obj^.mode) END;
 			IF obj^.mode = Con THEN
 				f := obj^.typ^.form; OPM.FPrint(fprint, f);
 				CASE f OF
@@ -541,7 +541,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				| NilTyp:
 				ELSE err(127)
 				END
-			ELSIF obj^.mode = Var THEN
+			ELSIF obj^.mode IN {Var, VarPar} THEN
 				OPM.FPrint(fprint, obj^.vis); FPrintStr(obj^.typ); OPM.FPrint(fprint, obj^.typ^.pbfp)
 			ELSIF obj^.mode IN {XProc, IProc}  THEN
 				FPrintSign(fprint, obj^.typ, obj^.link)
@@ -1156,7 +1156,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			OutObj(obj^.left);
 			IF obj^.mode IN {Con, Typ, Var, VarPar, LProc, XProc, CProc, IProc} THEN
 				IF obj^.history = removed THEN FPrintErr(obj, 250)
-				ELSIF obj^.vis # internal THEN
+				ELSIF ~ (obj^.vis IN {internal, inPar}) THEN
 					CASE obj^.history OF
 					| inserted: FPrintErr(obj, 253)
 					| same:	(* ok *)
@@ -1175,14 +1175,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 						ELSE OPM.SymWInt(Salias); OutStr(obj^.typ); OutName(obj^.name^)
 						END
 					| Var, VarPar:
-						IF (obj^.mode = VarPar) & (obj^.vis # externalR) THEN	(* not exported *)
-						ELSE
-							IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END;
-							OutStr(obj^.typ); OutName(obj^.name^);
-							IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
-								(* compute fingerprint to avoid structural type equivalence *)
-								OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
-							END
+						IF obj^.vis = externalR THEN OPM.SymWInt(Srvar) ELSE OPM.SymWInt(Svar) END;
+						OutStr(obj^.typ); OutName(obj^.name^);
+						IF (obj^.typ^.strobj = NIL) OR (obj^.typ^.strobj^.name = null) THEN
+							(* compute fingerprint to avoid structural type equivalence *)
+							OPM.FPrint(expCtxt.reffp, obj^.typ^.ref)
 						END
 					| XProc:
 						OPM.SymWInt(Sxpro); OutSign(obj^.typ, obj^.link); OutName(obj^.name^)
