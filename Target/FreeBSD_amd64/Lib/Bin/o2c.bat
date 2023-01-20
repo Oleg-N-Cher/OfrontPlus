@@ -1,5 +1,6 @@
 @ECHO OFF
 SET PATH=%CD%\..\..\..\Win32
+CD "%~dp0"
 CD ..\Obj
 SET OBERON=%CD%;%CD%\..\Sym;%CD%\..\..\..\..\Mod\Lib
 

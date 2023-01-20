@@ -1,4 +1,5 @@
-@CD ..\Obj
+@CD "%~dp0"
+CD ..\Obj
 DEL /Q *.a
 DEL /Q *.c
 DEL /Q *.h

@@ -1,4 +1,5 @@
 @ECHO OFF
+CD "%~dp0"
 IF EXIST ..\Lib\Ofront.a GOTO Lib
 CD ..\Lib\Bin
 CALL build.bat

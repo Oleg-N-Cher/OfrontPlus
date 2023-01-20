@@ -5,6 +5,8 @@ PAUSE
 EXIT
 
 :XDev
+
+CD "%~dp0"
 SET txt=..\Win32\odc2txt.exe
 %txt% Mod\Browser.odc Mod\Text\Browser.cp
 IF errorlevel 1 PAUSE

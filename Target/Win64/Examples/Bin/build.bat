@@ -1,4 +1,5 @@
 @ECHO OFF
+CD "%~dp0"
 CD ..\Obj
 SET PATH=..\..\..\Win32;%PATH%
 IF NOT "%XDev%"=="" SET PATH=%XDev%\WinDev\Bin\MinGW64\bin;%PATH%
