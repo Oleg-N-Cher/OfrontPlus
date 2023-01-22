@@ -1887,10 +1887,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			name: OPS.String;
 			rec: Elem;
 
+	PROCEDURE ConstTypeVar;
 	BEGIN
-		IF ((sym < begin) OR (sym > var))
-			& (sym # procedure) & (sym # end) & (sym # close) & (sym # return) & (sym # raw) THEN err(33) END;
-		first := NIL; last := NIL; userList := NIL; recList := NIL; procdec := NIL; lastdec := NIL;
 		LOOP
 			IF sym = const THEN
 				OPS.Get(sym);
@@ -1980,6 +1978,13 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			END;
 			IF (sym < const) OR (sym > var) THEN EXIT END ;
 		END;
+	END ConstTypeVar;
+
+	BEGIN
+		IF ((sym < begin) OR (sym > var))
+			& (sym # procedure) & (sym # end) & (sym # close) & (sym # return) & (sym # raw) THEN err(33) END;
+		first := NIL; last := NIL; userList := NIL; recList := NIL; procdec := NIL; lastdec := NIL;
+		ConstTypeVar;
 		CheckForwardTypes;
 		userList := NIL; rec := recList; recList := NIL;
 		OPT.topScope^.adr := OPM.errpos;
@@ -1997,7 +2002,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				x^.conval := OPT.NewConst(); x^.conval^.intval := OPM.errpos;
 				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
 				lastdec := x; OPS.Get(sym)
-			END
+			END;
+			IF OPM.Lang = "3" THEN ConstTypeVar END
 		END;
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
 		IF (sym = begin) & ~((level = 0) & (OPM.noinit IN OPM.opt)) THEN OPS.Get(sym); StatSeq(statseq)
