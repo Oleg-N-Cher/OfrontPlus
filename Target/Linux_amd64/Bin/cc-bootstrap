@@ -1,5 +1,4 @@
 #!/bin/sh
-cd "$(dirname $0)"
 
 CC="cc -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 AR="ar -rc libOfront.a"
