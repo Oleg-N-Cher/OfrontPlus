@@ -972,7 +972,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				Insert(aliasName, obj);
 				obj^.mode := Mod; obj^.scope := GlbMod[mno].right;
 				GlbMod[mno].link := obj;
-				obj^.mnolev  := SHORT(SHORT(-mno)); obj^.typ := notyp;
+				obj^.mnolev := SHORT(SHORT(-mno)); obj^.typ := notyp;
 				OPM.CloseOldSym
 			ELSIF impCtxt.self THEN
 				newsf := TRUE; extsf := TRUE; sfpresent := FALSE

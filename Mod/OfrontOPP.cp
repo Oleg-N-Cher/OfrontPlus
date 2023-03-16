@@ -1410,12 +1410,14 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		END CheckBool;
 
 		PROCEDURE ForOriginal;
+			VAR vis, mnolev: BYTE;
 		BEGIN
 			OPS.Get(sym);
 			IF sym = ident THEN qualident(id);
 				IF ~(id^.typ^.form IN intSet) THEN err(68) END;
 				CheckSym(becomes); Expression(y); pos := OPM.errpos;
 				x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
+				vis := id^.vis; id^.vis := externalR; mnolev := id^.mnolev; id^.mnolev := -128;
 				CheckSym(to); Expression(y); pos := OPM.errpos;
 				IF (OPM.Lang # "7") & (y^.class # Nconst) THEN
 					name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
@@ -1432,20 +1434,21 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				ELSE OPB.CheckAssign(x^.left^.typ, y)
 				END;
 				OPB.Link(stat, last, x);
-				IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END ;
+				IF sym = by THEN OPS.Get(sym); ConstExpression(z) ELSE z := OPB.NewIntConst(1) END;
 				pos := OPM.errpos; x := OPB.NewLeaf(id);
 				IF z^.conval^.intval > 0 THEN OPB.Op(leq, x, y)
 				ELSIF z^.conval^.intval < 0 THEN OPB.Op(geq, x, y)
 				ELSE err(63); OPB.Op(geq, x, y)
-				END ;
+				END;
 				CheckSym(do); StatSeq(s);
 				y := OPB.NewLeaf(id); OPB.StPar1(y, z, incfn); SetPos(y);
 				IF s = NIL THEN s := y
 				ELSE z := s;
-					WHILE z^.link # NIL DO z := z^.link END ;
+					WHILE z^.link # NIL DO z := z^.link END;
 					z^.link := y
-				END ;
-				CheckSym(end); OPB.Construct(Nwhile, x, s)
+				END;
+				CheckSym(end); OPB.Construct(Nwhile, x, s);
+				id^.vis := vis; id^.mnolev := mnolev
 			ELSE err(ident)
 			END
 		END ForOriginal;
@@ -1543,18 +1546,21 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			где cond задается как apar^.subcl *)
 		END FindCond;
 
+		PROCEDURE VarFor (id: OPT.Object): BOOLEAN;
+		BEGIN
+			RETURN (id^.mode = Var) & (id^.vis = 0) & (id^.mnolev = level)
+		END VarFor;
+
 		PROCEDURE ForImproved;	(* Concept and implementation by Oleg Komlev *)
-			PROCEDURE varFor(id: OPT.Object): BOOLEAN;
-			BEGIN
-				RETURN (id^.mode = Var) & (id^.vis = 0) & (id^.mnolev = level)
-			END varFor;
-		BEGIN (* построение синтаксического дерева для FOR *)
+			VAR vis, mnolev: BYTE;
+		BEGIN (* building a FOR syntax tree *)
 			OPS.Get(sym);	(* взять символ после FOR *)
 			IF sym = ident THEN qualident(id);	(* если это идентификатор, уточнить его *)
 				IF id^.typ^.form IN intSet THEN	(* он должен быть целого типа *)
-					IF ~varFor(id) THEN err(91) END;	(* он должен быть нужной локальности *)
+					IF ~VarFor(id) THEN err(91) END;	(* он должен быть нужной локальности *)
 					CheckSym(becomes); Expression(apar); pos := OPM.errpos;	(* потом д б  «:=  А » *)
 					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
+					vis := id^.vis; id^.vis := externalR; mnolev := id^.mnolev; id^.mnolev := -128;
 					(* apar = "A" *)
 					CheckSym(to); Expression(y); pos := OPM.errpos;	(* далее д б ТО выражение (В) *)
 					IF id^.typ = OPT.ubytetyp THEN y^.typ := OPT.ubytetyp END;
@@ -1737,7 +1743,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						pos := OPM.errpos
 					ELSE
 						x := NIL	(* nothing is left of the loop *)
-					END	(* id # NIL *)
+					END;	(* id # NIL *)
+					id^.vis := vis; id^.mnolev := mnolev
 				ELSE err(68); sym := while	(* id is not integer, process the block as if WHILE *)
 				END
 			ELSE err(ident)
