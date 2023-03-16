@@ -1983,7 +1983,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
 				lastdec := x; OPS.Get(sym)
 			END;
-			IF (sym < const) OR (sym > var) THEN EXIT END;
+			IF (OPM.Lang = "7") OR (sym < const) OR (sym > var) THEN EXIT END
 		END;
 		CheckForwardTypes
 	END ConstTypeVar;
