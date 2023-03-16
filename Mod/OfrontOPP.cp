@@ -1417,7 +1417,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 				IF ~(id^.typ^.form IN intSet) THEN err(68) END;
 				CheckSym(becomes); Expression(y); pos := OPM.errpos;
 				x := OPB.NewLeaf(id); OPB.Assign(x, y); SetPos(x);
-				vis := id^.vis; id^.vis := externalR; mnolev := id^.mnolev; id^.mnolev := -128;
+				vis := id^.vis; mnolev := id^.mnolev;
+				IF OPM.Lang = "3" THEN id^.vis := externalR; id^.mnolev := -128 END;
 				CheckSym(to); Expression(y); pos := OPM.errpos;
 				IF (OPM.Lang # "7") & (y^.class # Nconst) THEN
 					name := "@@"; OPT.Insert(name, t); t^.name := OPT.NewName("@for");	(* avoid err 1 *)
@@ -1560,7 +1561,8 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					IF ~VarFor(id) THEN err(91) END;	(* он должен быть нужной локальности *)
 					CheckSym(becomes); Expression(apar); pos := OPM.errpos;	(* потом д б  «:=  А » *)
 					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
-					vis := id^.vis; id^.vis := externalR; mnolev := id^.mnolev; id^.mnolev := -128;
+					vis := id^.vis; mnolev := id^.mnolev;
+					IF OPM.Lang = "3" THEN id^.vis := externalR; id^.mnolev := -128 END;
 					(* apar = "A" *)
 					CheckSym(to); Expression(y); pos := OPM.errpos;	(* далее д б ТО выражение (В) *)
 					IF id^.typ = OPT.ubytetyp THEN y^.typ := OPT.ubytetyp END;
