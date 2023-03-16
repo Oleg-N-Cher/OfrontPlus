@@ -1684,7 +1684,9 @@ PROCEDURE Factor(VAR x: OPT.Node);
 									s := x
 								END
 							END;
-							x := OPB.NewLeaf(t); OPB.Assign(x, s); SetPos(x);(* строим узел х=«t:= колво итераций*)
+							x := OPB.NewLeaf(t);
+							IF id^.typ = OPT.ubytetyp THEN s^.typ := OPT.ubytetyp END;
+							OPB.Assign(x, s); SetPos(x); (* build node х=<<t:= number of iterations *)
 						ELSE	(* фиктивный узел id=0 *)
 							x := OPB.NewLeaf(id); OPB.Assign(x, OPB.NewIntConst(0)); SetPos(x);
 						END
