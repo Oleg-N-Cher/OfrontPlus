@@ -1075,7 +1075,9 @@
 		WHILE (obj # NIL) & (obj^.mode # TProc) DO
 			constarr := (obj^.conval # NIL) & (obj^.conval^.arr # NIL);
 			IF constarr & (vis # 0) & (obj^.vis # externalR) THEN	(* not exported in header *)
-			ELSIF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf) THEN
+			ELSIF (vis IN {0, 2}) OR ((vis = 1) & (obj^.vis # 0)) OR ((vis = 3) & ~obj^.leaf)
+				OR (vis = 4) & (obj^.typ^.comp = Array) & (obj^.mode = Var)
+			THEN
 				IF (base # NIL) & (obj^.typ^.form = base^.form) & (base^.form IN {Byte..Set, UByte, Char16}) THEN
 					base := obj^.typ 
 				END;
@@ -1513,18 +1515,9 @@
 		IF ~scope^.leaf THEN (* declare intermediate procedure scope record variable*)
 			BegStat; OPM.WriteString(Struct); OPM.WriteString(scope^.name^);
 			OPM.Write(Blank); OPM.WriteString(LocalScope); EndStat
-		END ;
-		IF NeedsRetval(proc) THEN BegStat; Ident(proc^.typ^.strobj); OPM.WriteString(" __retval"); EndStat END ;
-		var := proc^.link;
-		WHILE var # NIL DO (* declare copy of fixed size value array parameters *)
-			IF (var^.typ^.comp = Array) & (var^.mode = Var) THEN
-				BegStat;
-				IF var^.typ^.strobj = NIL THEN OPM.Mark(200, var^.typ^.txtpos) ELSE Ident(var^.typ^.strobj) END ;
-				OPM.Write(Blank); Ident(var); OPM.WriteString("__copy");
-				EndStat
-			END ;
-			var := var^.link
-		END ;
+		END;
+		IF NeedsRetval(proc) THEN BegStat; Ident(proc^.typ^.strobj); OPM.WriteString(" __retval"); EndStat END;
+		IdentList(proc^.link, 4);	(* declare copy of fixed size value array parameters *)
 		IF ~ansi THEN
 			var := proc^.link;
 			WHILE var # NIL DO (* "unpromote" value real parameters *)
