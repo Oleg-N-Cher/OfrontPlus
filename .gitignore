@@ -1,5 +1,17 @@
 Arch/
 Mod/TextReplacer.cp
+Target/FreeBSD_amd64/graphviz
+Target/FreeBSD_amd64/ocat
+Target/FreeBSD_amd64/odc2txt
+Target/FreeBSD_amd64/oef
+Target/FreeBSD_amd64/omake
+Target/FreeBSD_amd64/showdef
+Target/Linux_aarch64/graphviz
+Target/Linux_aarch64/ocat
+Target/Linux_aarch64/odc2txt
+Target/Linux_aarch64/oef
+Target/Linux_aarch64/omake
+Target/Linux_aarch64/showdef
 Target/Linux_amd64/Examples/Obj/*.c
 Target/Linux_amd64/Examples/Obj/*.oh
 Target/Linux_amd64/Examples/Obj/*.sym
