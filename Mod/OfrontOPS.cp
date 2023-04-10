@@ -172,7 +172,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 				IF name = "VAR" THEN sym := var END
 		| "W":
 				IF name = "WHILE" THEN sym := while
-				ELSIF name = "WITH" THEN sym := with
+				ELSIF (OPM.Lang # "7") & (name = "WITH") THEN sym := with
 				END
 		ELSE
 		END
@@ -500,3 +500,4 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 	END Init;
 
 END OfrontOPS.
+
