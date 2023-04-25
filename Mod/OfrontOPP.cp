@@ -46,7 +46,8 @@
 		Basic = 1; Array = 2; DynArr = 3; Record = 4;
 
 		(*function number*)
-		haltfn = 0; newfn = 1; incfn = 19; decfn = 20; sysnewfn = 36;
+		haltfn = 0; newfn = 1; incfn = 19; decfn = 20; inclfn = 21; exclfn = 22; copyfn = 24;
+		packfn = 32; unpkfn = 33; getfn = 30; sysnewfn = 36;
 
 		(* nodes classes *)
 		Nvar = 0; Nvarpar = 1; Nfield = 2; Nderef = 3; Nindex = 4; Nguard = 5; Neguard = 6;
@@ -858,27 +859,39 @@
 		END
 	END selector;
 
-	PROCEDURE StandProcCall(VAR x: OPT.Node);
+	PROCEDURE StandProcCall (VAR x: OPT.Node);
 		VAR y: OPT.Node; m: BYTE; n: SHORTINT;
 	BEGIN m := SHORT(SHORT(x^.obj^.adr)); n := 0;
 		IF sym = lparen THEN OPS.Get(sym);
 			IF sym # rparen THEN
 				LOOP
-					IF n = 0 THEN Expression(x); OPB.StPar0(x, m); n := 1
-					ELSIF n = 1 THEN Expression(y); OPB.StPar1(x, y, m); n := 2
+					IF n = 0 THEN
+						IF OPM.Lang = "3" THEN
+							CASE m OF newfn, incfn, decfn, inclfn, exclfn, packfn, unpkfn, sysnewfn:
+								IF sym = at THEN OPS.Get(sym) ELSE err(42) END
+							ELSE END
+						END;
+						Expression(x); OPB.StPar0(x, m); n := 1
+					ELSIF n = 1 THEN
+						IF OPM.Lang = "3" THEN
+							CASE m OF copyfn, getfn, unpkfn:
+								IF sym = at THEN OPS.Get(sym) ELSE err(42) END
+							ELSE END
+						END;
+						Expression(y); OPB.StPar1(x, y, m); n := 2
 					ELSE Expression(y); OPB.StParN(x, y, m, n); INC(n)
-					END ;
+					END;
 					IF sym = comma THEN OPS.Get(sym)
 					ELSIF (lparen <= sym) & (sym <= ident) THEN err(comma)
 					ELSE EXIT
 					END
-				END ;
+				END;
 				CheckSym(rparen)
 			ELSE OPS.Get(sym)
-			END ;
+			END;
 			OPB.StFct(x, m, n)
 		ELSE err(lparen)
-		END ;
+		END;
 		IF (level > 0) & ((m = newfn) OR (m = sysnewfn)) THEN OPT.topScope^.link^.leaf := FALSE END
 	END StandProcCall;
 

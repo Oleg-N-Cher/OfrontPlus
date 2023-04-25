@@ -69,7 +69,7 @@ BEGIN
   i := 0; ch := msg[0];
   WHILE ch # 0X DO
     IF ch = "#" THEN Out.Int(n, 0) ELSE Out.Char(ch) END;
-    INC(i);
+    INC(@i);
     ch := msg[i]
   END;
   Out.Ln; HALT(1)
@@ -81,7 +81,7 @@ BEGIN
   i := 0; ch := msg[0];
   WHILE ch # 0X DO
     IF ch = "#" THEN Out.String(str) ELSE Out.Char(ch) END;
-    INC(i);
+    INC(@i);
     ch := msg[i]
   END;
   Out.Ln; HALT(1)
@@ -145,7 +145,7 @@ BEGIN
       Files.ReadByte(@in, @b); Files.ReadByte(@in, @b); Files.ReadByte(@in, @b);
       ReadInt(@x); Files.Set(@in1, f, SHORT(Files.Pos(@in)) + x);  (* text offset *)
       next := down;
-      NEW(text, Files.Length(f));
+      NEW(@text, Files.Length(f));
       Files.ReadByte(@in, @b);
       WHILE b # -1 DO
         IF next = SHORT(Files.Pos(@in)) THEN ReadHead(@next, @down, @end); Files.Set(@in, f, end) END;  (* skip attributes *)
@@ -153,19 +153,19 @@ BEGIN
         IF len > 0 THEN  (* shortchar run *)
           WHILE len > 0 DO
             Files.ReadByte(@in1, @b); ch16 := b MOD 256;
-            IF ch16 > 7FH THEN bom := TRUE; CP1251ToWideChar(@ch16); text^[txtlen] := ch16; INC(txtlen)
-            ELSIF (ch16 = TAB) OR (ch16 = CR) OR (ch16 >= ORD(" ")) THEN text^[txtlen] := ch16; INC(txtlen)
+            IF ch16 > 7FH THEN bom := TRUE; CP1251ToWideChar(@ch16); text^[txtlen] := ch16; INC(@txtlen)
+            ELSIF (ch16 = TAB) OR (ch16 = CR) OR (ch16 >= ORD(" ")) THEN text^[txtlen] := ch16; INC(@txtlen)
             ELSIF (ch16 = LTAB) OR (ch16 = PARA) THEN  (* ignore *)
             ELSIF ch16 = NULL THEN RETURN
             ELSE HaltMsg("Unknown SHORTCHAR code: [#]", ch16)
             END;
-            DEC(len)
+            DEC(@len)
           END
         ELSIF len < 0 THEN    (* longchar run *)
           bom := TRUE;
           WHILE len < 0 DO
             Files.ReadByte(@in1, @b); x := b MOD 256; Files.ReadByte(@in1, @b); ch16 := SHORT(x + 256*(b + 128));
-            text^[txtlen] := ch16; INC(txtlen); INC(len, 2)
+            text^[txtlen] := ch16; INC(@txtlen); INC(@len, 2)
           END
         ELSE  (* view *)
           ReadInt(@x); ReadInt(@x); Files.ReadByte(@in1, @b)  (* ignore *)
@@ -237,7 +237,7 @@ BEGIN
       WHILE n < textlen DO
         ch16 := text16^[n];
         IF ch16 # CR THEN Out.Char(WideCharToCP1251(ch16)) ELSE Out.Ln END;
-        INC(n)
+        INC(@n)
       END
     ELSE
       HaltStr("Couldn't read " + '"#"', pathname)
@@ -254,16 +254,16 @@ PROCEDURE StringToUtf8* (in: ARRAY OF INT16; VAR out: ARRAY OF CHAR;
 BEGIN
   i := 0; j := 0; max := LEN(out) - 3;
   WHILE (in[i] # 0) & (j < max) DO
-    val := in[i]; INC(i);
+    val := in[i]; INC(@i);
     IF val < 128 THEN
-      out[j] := CHR(val); INC(j)
+      out[j] := CHR(val); INC(@j)
     ELSIF val < 2048 THEN
-      out[j] := CHR(val DIV 64 + 192); INC(j);
-      out[j] := CHR(val MOD 64 + 128); INC(j)
+      out[j] := CHR(val DIV 64 + 192); INC(@j);
+      out[j] := CHR(val MOD 64 + 128); INC(@j)
     ELSE
-      out[j] := CHR(val DIV 4096 + 224); INC(j);
-      out[j] := CHR(val DIV 64 MOD 64 + 128); INC(j);
-      out[j] := CHR(val MOD 64 + 128); INC(j)
+      out[j] := CHR(val DIV 4096 + 224); INC(@j);
+      out[j] := CHR(val DIV 64 MOD 64 + 128); INC(@j);
+      out[j] := CHR(val MOD 64 + 128); INC(@j)
     END
   END;
   out[j] := 0X;
@@ -295,7 +295,7 @@ BEGIN
     ReadFile(f, @text, @textlen, @bom);
     IF text # NIL THEN
       IF textlen = 0 THEN RETURN (* Empty .odc or the form *) END;
-      NEW(utf8text, 4 * textlen + 1); StringToUtf8(text^, @utf8text^, @res);
+      NEW(@utf8text, 4 * textlen + 1); StringToUtf8(text^, @utf8text^, @res);
       IF res = 0 THEN
         tempname := utf8name + ".tmp";
         utf8file := Files.New(tempname);
@@ -311,7 +311,7 @@ BEGIN
               IF crlf THEN Emit(CHR(CR)) END;
               Emit(CHR(LF))
             END;
-            INC(res); byte:= utf8text^[res]
+            INC(@res); byte:= utf8text^[res]
           END;
           IF ~emit THEN
             Files.ReadChar(@src, @byte); emit := ~src.eof OR (byte # 0X)

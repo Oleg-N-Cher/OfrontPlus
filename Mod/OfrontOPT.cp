@@ -1339,6 +1339,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF lang = "7" THEN
 			EnterProc("SHORT", "short", shortfn);
 			EnterProc("LONG", "long", longfn)
+		ELSE
+			EnterProc("PACK", "pack", packfn);
+			EnterProc("UNPK", "unpk", unpkfn)
 		END;
 		syslink := topScope^.right;
 		universe := topScope; topScope^.right := NIL;
