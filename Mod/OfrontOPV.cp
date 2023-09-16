@@ -971,7 +971,8 @@
 									StringModifier(l); StringModifier(r); OPM.Write("(");
 									expr(l, MinPrec); OPM.WriteString(Comma); expr(r, MinPrec)
 								END;
-								OPM.Write(")"); OPC.Cmp(subclass); OPM.Write("0")
+								OPM.WriteString(Comma); MaxLen(l, r); OPM.WriteString(Comma);
+								OPM.WriteModPos; OPM.Write(")"); OPC.Cmp(subclass); OPM.Write("0")
 							ELSE
 								expr(l, exprPrec); OPC.Cmp(subclass);
 								typ := l^.typ;
