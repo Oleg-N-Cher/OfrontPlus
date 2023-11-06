@@ -989,9 +989,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		REPEAT ch := name[i]; OPM.SymWCh(ch); INC(i) UNTIL ch = 0X
 	END OutName;
 
-	PROCEDURE OutMod(mno: SHORTINT);
+	PROCEDURE OutMod (mno: SHORTINT);
 	BEGIN
 		IF expCtxt.locmno[mno] < 0 THEN (* new mod *)
+			IF GlbMod[mno].sysflag # 0 THEN OPM.SymWInt(Ssys); OPM.SymWInt(GlbMod[mno].sysflag) END;
 			OPM.SymWInt(Smname);
 			expCtxt.locmno[mno] := expCtxt.nofm; INC(expCtxt.nofm);
 			OutName(GlbMod[mno].name^)
