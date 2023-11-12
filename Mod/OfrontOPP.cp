@@ -1574,8 +1574,6 @@ PROCEDURE Factor(VAR x: OPT.Node);
 					IF ~VarFor(id) THEN err(91) END;	(* он должен быть нужной локальности *)
 					CheckSym(becomes); Expression(apar); pos := OPM.errpos;	(* потом д б  «:=  А » *)
 					x := OPB.NewLeaf(id); OPB.Assign(x, apar); SetPos(x);	(* строим узел х=«id :=  А» *)
-					vis := id^.vis; mnolev := id^.mnolev;
-					IF OPM.Lang = "3" THEN id^.vis := externalR; id^.mnolev := -128 END;
 					(* apar = "A" *)
 					CheckSym(to); Expression(y); pos := OPM.errpos;	(* далее д б ТО выражение (В) *)
 					IF id^.typ = OPT.ubytetyp THEN y^.typ := OPT.ubytetyp END;
@@ -1595,7 +1593,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						IF apar^.class = Nconst THEN (* А и В - константы*)
 							IF (z^.conval^.intval > 0) & (apar^.conval^.intval <= y^.conval^.intval ) OR
 								(z^.conval^.intval < 0) & (apar^.conval^.intval >= y^.conval^.intval ) THEN
-									obj := id;	(* IF condition is not needed *)
+									obj := id	(* IF condition is not needed *)
 							ELSE
 									id := NIL (* цикл не выполнится ни разу *)
 							END
@@ -1701,14 +1699,17 @@ PROCEDURE Factor(VAR x: OPT.Node);
 							IF id^.typ = OPT.ubytetyp THEN s^.typ := OPT.ubytetyp END;
 							OPB.Assign(x, s); SetPos(x); (* build node х=<<t:= number of iterations *)
 						ELSE	(* фиктивный узел id=0 *)
-							x := OPB.NewLeaf(id); OPB.Assign(x, OPB.NewIntConst(0)); SetPos(x);
-						END
+							x := OPB.NewLeaf(id); OPB.Assign(x, OPB.NewIntConst(0)); SetPos(x)
+						END;
+						vis := id^.vis; mnolev := id^.mnolev;
+						IF OPM.Lang = "3" THEN id^.vis := externalR; id^.mnolev := -128 END
 					ELSE x := NIL  (* от цикла не остается ничего *)
-					END; (* id # NIL *)
+					END;
 
 					CheckSym(do); StatSeq(s); CheckSym(end);
 
 					IF id # NIL THEN
+						id^.vis := vis; id^.mnolev := mnolev;
 						(* х=«t:= колво итераций; z=Step; apar="A"; y = "t := B"(или просто "В"); s="тело цикла" *)
 						IF (t = id) & (idtyp = NIL) THEN
 							x^.link := s;
@@ -1760,8 +1761,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 						pos := OPM.errpos
 					ELSE
 						x := NIL	(* nothing is left of the loop *)
-					END;	(* id # NIL *)
-					id^.vis := vis; id^.mnolev := mnolev
+					END	(* id # NIL *)
 				ELSE err(68); sym := while	(* id is not integer, process the block as if WHILE *)
 				END
 			ELSE err(ident)
