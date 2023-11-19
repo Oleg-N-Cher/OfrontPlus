@@ -336,7 +336,6 @@
 			ELSE obj^.vis := externalR
 			END;
 			OPS.Get(sym)
-		ELSIF OPM.foreign IN OPM.opt THEN obj^.vis := external
 		ELSE obj^.vis := internal
 		END;
 		IF obj^.mode IN {LProc, XProc, Var} THEN
@@ -648,9 +647,7 @@
 				(* untagged open array not allowed as value parameter *)
 				ELSIF (mode = Var) & (typ^.comp = DynArr) & ODD(typ^.sysflag) THEN OPM.err(145)
 				END;
-				IF (mode = Var) & (typ^.form = Comp)
-					& ((OPM.Lang = "3") OR (OPM.Lang = "7")) & ~(OPM.foreign IN OPM.opt)
-				THEN
+				IF (mode = Var) & (typ^.form = Comp) & ((OPM.Lang = "3") OR (OPM.Lang = "7")) THEN
 					par := first;
 					WHILE par # NIL DO
 						par^.mode := VarPar; par^.vis := inPar;	(* r/o array or record *)
