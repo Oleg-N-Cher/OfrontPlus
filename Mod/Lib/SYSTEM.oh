@@ -432,7 +432,7 @@ extern void       Heap_INCREF();
 // Main module initialization, registration and finalization
 
 extern void SYSTEM_INIT (void *stktop);
-extern void Heap_FINALL();
+extern void Heap_FINALL (void);
 
 #define __INIT(argc, argv)    static void *m; SYSTEM_INIT(stktop)
 #define __REGMAIN(name, enum) m = Heap_REGMOD((CHAR*)name, 32, (void*)enum)
@@ -454,8 +454,8 @@ extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ARRLEN, int, int, int, ..
 /* Type handling */
 
 extern void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0);
-extern void SYSTEM_ENUMP  (void *adr, SYSTEM_ADRINT n, void (*P)());
-extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)());
+extern void SYSTEM_ENUMP  (void *adr, SYSTEM_ADRINT n, void (*P)(void*));
+extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)(void*));
 
 #define __TDESC(t__desc, m, n)                                                \
   static struct t__desc {                                                     \

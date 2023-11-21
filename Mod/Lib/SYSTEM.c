@@ -164,16 +164,16 @@ void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0)
 }
 
 
-void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)())
+void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)(void*))
 {
     while (n > 0) {
-        P((SYSTEM_ADRINT)(*((void**)(adr))));
+        P((void*)(*((void**)(adr))));
         adr = ((void**)adr) + 1;
         n--;
     }
 }
 
-void SYSTEM_ENUMR(void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)())
+void SYSTEM_ENUMR(void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)(void*))
 {
     SYSTEM_ADRINT *t, off;
     if (typ == 0) return; // not yet initialized
@@ -181,19 +181,19 @@ void SYSTEM_ENUMR(void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRI
     while (n > 0) {
         t = typ;
         off = *t;
-        while (off >= 0) {P(*(SYSTEM_ADRINT*)((char*)adr+off)); t++; off = *t;}
+        while (off >= 0) {P(*(void**)((char*)adr+off)); t++; off = *t;}
         adr = ((char*)adr) + size;
         n--;
     }
 }
 
-extern void Heap_Lock();
-extern void Heap_Unlock();
+extern void Heap_Lock (void);
+extern void Heap_Unlock (void);
 
 
 // Program startup
 
-extern void Heap_InitHeap();
+extern void Heap_InitHeap (void);
 
 void SYSTEM_INIT (void *stktop)
 {
@@ -347,7 +347,7 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         return FALSE;
     }
 
-    void EnsureConsoleCtrlHandler() {
+    void EnsureConsoleCtrlHandler (void) {
         if (!ConsoleCtrlHandlerSet) {
         SetConsoleCtrlHandler(SystemConsoleCtrlHandler, TRUE);
             ConsoleCtrlHandlerSet = TRUE;
