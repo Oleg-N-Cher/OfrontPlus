@@ -1,4 +1,4 @@
-MODULE SDL2mixer;
+MODULE [foreign] SDL2mixer;
 (******************************************************************************}
 {
   $Id: sdl_mixer.pas,v 1.20 2007/12/20 22:37:17 savage Exp $

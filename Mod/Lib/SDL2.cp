@@ -1,4 +1,4 @@
-MODULE SDL2;
+MODULE [foreign] SDL2;
 (* Copyright 2017-2019 Arthur Yefimov
 
 This file is part of Free Oberon.
@@ -294,7 +294,7 @@ TYPE
 
   KeyArray* = POINTER [1] TO ARRAY 1024 OF BOOLEAN;
 
-PROCEDURE -AAIncludeSDL2h0 '#include "SDL2.h0"';
+PROCEDURE -AAIncludeSDL2h0- '#include "SDL2.h0"';
 
 PROCEDURE -Init*(flags: SET): SHORTINT "SDL_Init(flags)";
 PROCEDURE -InitSubSystem* (flags: SET): INTEGER "SDL_InitSubSystem(flags)";
