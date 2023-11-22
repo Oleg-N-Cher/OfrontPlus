@@ -834,7 +834,7 @@
 					|	odd:
 								OPM.WriteString("__ODD("); expr(l, MinPrec); OPM.Write(CloseParen)
 					|	typfn: (*SYSTEM*)
-								OPM.WriteString("(SYSTEM_ADRINT)"); TypeOf(l)
+								OPM.WriteString("(void*)"); TypeOf(l)
 					|	adr: (*SYSTEM*)
 								IF ~oldc THEN OPM.WriteString("(SYSTEM_ADRINT)") END;
 								IF l^.class = Ntype THEN TypeOf(l)

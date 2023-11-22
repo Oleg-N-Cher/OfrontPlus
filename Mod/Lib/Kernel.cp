@@ -4,7 +4,7 @@ IMPORT SYSTEM, Heap, Platform, Out := Console;
 TYPE
   CString = SYSTEM.ADRINT;
   HaltProcedure = PROCEDURE(code: INTEGER; mod: CString; pos: INTEGER);
-  SignalHandler = PROCEDURE(signal: INTEGER);
+  SignalHandler = PROCEDURE (signal: INTEGER);
 
 VAR
   HaltCode-: INTEGER;
@@ -15,9 +15,9 @@ VAR
 
 (* Ctrl/C handling *)
 
-PROCEDURE -SetInterruptHandler*     (h: SignalHandler) "SystemSetInterruptHandler((SYSTEM_ADRINT)h)";
-PROCEDURE -SetQuitHandler*          (h: SignalHandler) "SystemSetQuitHandler((SYSTEM_ADRINT)h)";
-PROCEDURE -SetBadInstructionHandler*(h: SignalHandler) "SystemSetBadInstructionHandler((SYSTEM_ADRINT)h)";
+PROCEDURE- SetInterruptHandler*     (h: SignalHandler) "SystemSetInterruptHandler(h)";
+PROCEDURE- SetQuitHandler*          (h: SignalHandler) "SystemSetQuitHandler(h)";
+PROCEDURE- SetBadInstructionHandler*(h: SignalHandler) "SystemSetBadInstructionHandler(h)";
 
 
 PROCEDURE DisplayHaltCode(code: INTEGER);

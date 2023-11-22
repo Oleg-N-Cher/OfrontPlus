@@ -55,7 +55,7 @@ typedef int SYSTEM_ARRLEN; // 32 or 64 bits, see also OPM.IndexSize and MaxIndex
 
 #define NIL          ((void*)0)
 #define __MAXEXT     16
-#define POINTER__typ ((SYSTEM_ADRINT*)(1))  // not NIL and not a valid type
+#define POINTER__typ ((void**)(1))  // not NIL and not a valid type
 #define __INF        (*(REAL*)&SYSTEM_INF)
 #define __INFS       (*(SHORTREAL*)&SYSTEM_INFS)
 
@@ -118,9 +118,9 @@ extern void    SYSTEM_UNPK   (SHORTREAL *x, INTEGER *n);
 
 // Signal handling in SYSTEM.c
 
-extern void SystemSetInterruptHandler     (SYSTEM_ADRINT h);
-extern void SystemSetQuitHandler          (SYSTEM_ADRINT h);
-extern void SystemSetBadInstructionHandler(SYSTEM_ADRINT h);
+extern void SystemSetInterruptHandler      (void (*h)(INTEGER));
+extern void SystemSetQuitHandler           (void (*h)(INTEGER));
+extern void SystemSetBadInstructionHandler (void (*h)(INTEGER));
 
 
 // Assertions and Halts
@@ -399,7 +399,7 @@ static inline REAL __MAXFD (REAL x, REAL y)                { return x>y?x:y; }
 
 extern void Heap_REGCMD (SYSTEM_PTR m, CHAR *name, INTEGER name__len, void (*cmd)(void));
 extern SYSTEM_PTR Heap_REGMOD (CHAR *name, INTEGER name__len, void (*enumPtrs)(void(*)(SYSTEM_PTR)));
-extern void Heap_REGTYP (SYSTEM_PTR m, SYSTEM_ADRINT typ);
+extern void Heap_REGTYP (SYSTEM_PTR m, SYSTEM_PTR typ);
 extern void Heap_INCREF (SYSTEM_PTR m);
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
@@ -442,20 +442,20 @@ extern void Heap_FINALL (void);
 // Memory allocation
 
 extern SYSTEM_PTR Heap_NEWBLK (SYSTEM_ADRINT size);
-extern SYSTEM_PTR Heap_NEWREC (SYSTEM_ADRINT tag);
-extern SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT*, SYSTEM_ARRLEN, int, int, int, ...);
+extern SYSTEM_PTR Heap_NEWREC (SYSTEM_PTR tag);
+extern SYSTEM_PTR SYSTEM_NEWARR (SYSTEM_PTR*, SYSTEM_ARRLEN, INTEGER, INTEGER, INTEGER, ...);
 
 #define __SYSNEW(p, len) p = Heap_NEWBLK((SYSTEM_ADRINT)(len))
-#define __NEW(p, t)      p = Heap_NEWREC((SYSTEM_ADRINT)t##__typ)
+#define __NEW(p, t)      p = Heap_NEWREC(t##__typ)
 #define __NEWARR         SYSTEM_NEWARR
 
 
 
 /* Type handling */
 
-extern void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0);
-extern void SYSTEM_ENUMP  (void *adr, SYSTEM_ADRINT n, void (*P)(void*));
-extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)(void*));
+extern void SYSTEM_INHERIT (SYSTEM_PTR *t, SYSTEM_PTR *t0);
+extern void SYSTEM_ENUMP (void *adr, SYSTEM_ADRINT n, void (*P)(void*));
+extern void SYSTEM_ENUMR (void *adr, SYSTEM_PTR *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)(void*));
 
 #define __TDESC(t__desc, m, n)                                                \
   static struct t__desc {                                                     \
@@ -463,9 +463,9 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
     SYSTEM_ADRINT  tag;                                                       \
     SYSTEM_ADRINT  next;             /* Module table type list points here */ \
     SYSTEM_ADRINT  level;                                                     \
-    SYSTEM_ADRINT  module;                                                    \
+    SYSTEM_PTR     module;                                                    \
     char           name[24];                                                  \
-    SYSTEM_ADRINT  basep[__MAXEXT];  /* List of bases this extends         */ \
+    SYSTEM_PTR     basep[__MAXEXT];  /* List of bases this extends         */ \
     SYSTEM_ADRINT  reserved;                                                  \
     SYSTEM_ADRINT  blksz;            /* xxx_typ points here                */ \
     SYSTEM_ADRINT  ptr[n+1];         /* Offsets of ptrs up to -ve sentinel */ \
@@ -479,22 +479,22 @@ extern void SYSTEM_ENUMR  (void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SY
 #define __ENUMR(adr, typ, size, n, P) SYSTEM_ENUMR(adr, typ, (SYSTEM_ADRINT)(size), (SYSTEM_ADRINT)(n), P)
 
 #define __INITYP(t, t0, level) \
-  t##__typ               = (SYSTEM_ADRINT*)&t##__desc.blksz;                     \
-  memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_ADRINT));   \
-  t##__desc.basep[level] = (SYSTEM_ADRINT)t##__typ;                              \
-  t##__desc.module       = (SYSTEM_ADRINT)m;                                     \
-  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.oh", 324);           \
-  t##__desc.blksz        = (t##__desc.blksz+5*sizeof(SYSTEM_ADRINT)-1)/(4*sizeof(SYSTEM_ADRINT))*(4*sizeof(SYSTEM_ADRINT)); \
-  Heap_REGTYP(m, (SYSTEM_ADRINT)&t##__desc.next);                                \
+  t##__typ               = (SYSTEM_PTR*)&t##__desc.blksz;                    \
+  memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_PTR));  \
+  t##__desc.basep[level] = t##__typ;                                         \
+  t##__desc.module       = (SYSTEM_PTR)m;                                    \
+  if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.oh", 486);       \
+  t##__desc.blksz        = (t##__desc.blksz+5*sizeof(SYSTEM_PTR)-1)/(4*sizeof(SYSTEM_PTR))*(4*sizeof(SYSTEM_PTR)); \
+  Heap_REGTYP(m, &t##__desc.next);                                           \
   SYSTEM_INHERIT(t##__typ, t0##__typ)
 
-#define __IS(tag, typ, level) (*(tag-(__BASEOFF-level))==(SYSTEM_ADRINT)typ##__typ)
-#define __TYPEOF(p)           (*(((SYSTEM_ADRINT**)(p))-1))
+#define __IS(tag, typ, level) ((SYSTEM_PTR)*(tag-(__BASEOFF-level))==typ##__typ)
+#define __TYPEOF(p)           (*(((SYSTEM_PTR**)(p))-1))
 #define __ISP(p, typ, level)  __IS(__TYPEOF(p),typ,level)
 
 // Oberon-2 type bound procedures support
-#define __INITBP(t, proc, num)            *(t##__typ-(__TPROC0OFF+num))=(SYSTEM_ADRINT)proc
-#define __SEND(typ, procname, num, funtyp, parlist) ((funtyp)((SYSTEM_ADRINT)*(typ-(__TPROC0OFF+num))))parlist
+#define __INITBP(t, proc, num) *(t##__typ-(__TPROC0OFF+num))=proc
+#define __SEND(typ, procname, num, funtyp, parlist) ((funtyp)((SYSTEM_PTR)*(typ-(__TPROC0OFF+num))))parlist
 
 
 #ifndef _WIN32

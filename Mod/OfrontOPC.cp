@@ -1116,7 +1116,7 @@
 					LenList(obj, FALSE, TRUE)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & (obj^.typ^.sysflag MOD 100H = 0) THEN
 					EndStat; BegStat;
-					OPM.WriteString("SYSTEM_ADRINT *"); Ident(obj); OPM.WriteString(TagExt);
+					OPM.WriteString("void **"); Ident(obj); OPM.WriteString(TagExt);
 					base := NIL
 				ELSIF constarr & (vis = 0) THEN	(* элементы конст. массива *)
 					OPM.WriteString(" ="); OPM.WriteLn; Indent(1);
@@ -1156,7 +1156,7 @@
 					END;
 					LenList(obj, TRUE, showParamNames)
 				ELSIF (obj^.mode = VarPar) & (obj^.typ^.comp = Record) & (obj^.typ^.sysflag MOD 100H = 0) THEN
-					OPM.WriteString(", SYSTEM_ADRINT *");
+					OPM.WriteString(", void **");
 					IF showParamNames THEN Ident(obj); OPM.WriteString(TagExt) END
 				END;
 				IF (obj^.link = NIL) OR (obj^.link.mode = TProc) THEN EXIT END ;
@@ -1262,7 +1262,7 @@
 				ELSIF dynlib THEN OPM.WriteString(EXPORT)
 				ELSE OPM.WriteString(Export)
 				END ;
-				OPM.WriteString("SYSTEM_ADRINT *"); Andent(typ); OPM.WriteString(DynTypExt);
+				OPM.WriteString("void **"); Andent(typ); OPM.WriteString(DynTypExt);
 				EndStat
 			END ;
 			n := n^.link

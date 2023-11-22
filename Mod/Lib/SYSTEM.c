@@ -48,7 +48,7 @@ INTEGER SYSTEM_DIV(INTEGER x, INTEGER y)
     if (x > 0) return -1 + (x - 1) / y;
     else       return x / y;
   }
-  __HALT(-12, "SYSTEM.c", 48); return 0; // noreturn
+  __HALT(-12, "SYSTEM.c", 51); return 0; // noreturn
 }
 
 LONGINT SYSTEM_DIVL(LONGINT x, LONGINT y)
@@ -61,7 +61,7 @@ LONGINT SYSTEM_DIVL(LONGINT x, LONGINT y)
     if (x > 0) return -1 + (x - 1) / y;
     else       return x / y;
   }
-  __HALT(-12, "SYSTEM.c", 61); return 0; // noreturn
+  __HALT(-12, "SYSTEM.c", 64); return 0; // noreturn
 }
 
 INTEGER SYSTEM_MOD(INTEGER x, INTEGER y)
@@ -74,7 +74,7 @@ INTEGER SYSTEM_MOD(INTEGER x, INTEGER y)
     if (x > 0) return y + 1 + (x - 1) % y;
     else       return x % y;
   }
-  __HALT(-12, "SYSTEM.c", 74); return 0; // noreturn
+  __HALT(-12, "SYSTEM.c", 77); return 0; // noreturn
 }
 
 LONGINT SYSTEM_MODL(LONGINT x, LONGINT y)
@@ -87,7 +87,7 @@ LONGINT SYSTEM_MODL(LONGINT x, LONGINT y)
     if (x > 0) return y + 1 + (x - 1) % y;
     else       return x % y;
   }
-  __HALT(-12, "SYSTEM.c", 87); return 0; // noreturn
+  __HALT(-12, "SYSTEM.c", 90); return 0; // noreturn
 }
 
 INTEGER SYSTEM_ENTIER(REAL x)
@@ -156,15 +156,15 @@ void SYSTEM_UNPK (SHORTREAL *x, INTEGER *n)
 }
 
 
-void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0)
+void SYSTEM_INHERIT (SYSTEM_PTR *t, SYSTEM_PTR *t0)
 {
     t -= __TPROC0OFF;
     t0 -= __TPROC0OFF;
-    while (*t0 != __EOM) {*t = *t0; t--; t0--;}
+    while (*t0 != (SYSTEM_PTR)__EOM) {*t = *t0; t--; t0--;}
 }
 
 
-void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)(void*))
+void SYSTEM_ENUMP (void *adr, SYSTEM_ADRINT n, void (*P)(void*))
 {
     while (n > 0) {
         P(*((void**)(adr)));
@@ -173,15 +173,15 @@ void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)(void*))
     }
 }
 
-void SYSTEM_ENUMR(void *adr, SYSTEM_ADRINT *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)(void*))
+void SYSTEM_ENUMR (void *adr, SYSTEM_PTR *typ, SYSTEM_ADRINT size, SYSTEM_ADRINT n, void (*P)(void*))
 {
-    SYSTEM_ADRINT *t, off;
+    SYSTEM_PTR *t; SYSTEM_ADRINT off;
     if (typ == 0) return; // not yet initialized
     typ++;
     while (n > 0) {
         t = typ;
-        off = *t;
-        while (off >= 0) {P(*(void**)((char*)adr+off)); t++; off = *t;}
+        off = (SYSTEM_ADRINT)*t;
+        while (off >= 0) {P(*(void**)((char*)adr+off)); t++; off = (SYSTEM_ADRINT)*t;}
         adr = ((char*)adr) + size;
         n--;
     }
@@ -206,7 +206,7 @@ void SYSTEM_INIT (void *stktop)
   Heap_InitHeap();
 }
 
-SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn, int nofdim, int nofdyn, ...)
+SYSTEM_PTR SYSTEM_NEWARR (SYSTEM_PTR *typ, SYSTEM_ARRLEN elemsz, INTEGER elemalgn, INTEGER nofdim, INTEGER nofdyn, ...)
 {
     SYSTEM_ADRINT *x, *p, *ptab;
     SYSTEM_ARRLEN nofelems, size, dataoff, n, nptr, nofptrs, i, *pi, off;
@@ -215,7 +215,7 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
     nofelems = 1;
     while (nofdim > 0) {
         nofelems = nofelems * va_arg(ap, SYSTEM_ARRLEN); nofdim--;
-        if (nofelems <= 0) __HALT(-20, "SYSTEM.c", 178);
+        if (nofelems <= 0) __HALT(-20, "SYSTEM.c", 218);
     }
     va_end(ap);
     dataoff = nofdyn * sizeof(SYSTEM_ARRLEN);
@@ -229,23 +229,23 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
         /* element typ does not contain pointers */
         x = Heap_NEWBLK(size);
     }
-    else if (typ == (SYSTEM_ADRINT*)POINTER__typ) {
+    else if (typ == POINTER__typ) {
         /* element type is a pointer */
-        x = Heap_NEWBLK(size + nofelems * sizeof(SYSTEM_ADRINT));
+        x = Heap_NEWBLK(size + nofelems * sizeof(SYSTEM_PTR));
         p = (SYSTEM_ADRINT*)x[-1];
         p[-nofelems] = *p;  /* build new type desc in situ: 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nofelems - 1;
 		for (n=0; n<nofelems; n++, p++)
-			*p = dataoff + n*sizeof(SYSTEM_ADRINT);
-        *p = - (nofelems + 1) * sizeof(SYSTEM_ADRINT);    /* sentinel */
-        x[-1] -= nofelems * sizeof(SYSTEM_ADRINT);
+			*p = dataoff + n*sizeof(SYSTEM_PTR);
+        *p = - (nofelems + 1) * sizeof(SYSTEM_PTR);    /* sentinel */
+        x[-1] -= nofelems * sizeof(SYSTEM_PTR);
     }
     else {
         /* element type is a record that contains pointers */
-        ptab = typ + 1; nofptrs = 0;
+        ptab = (SYSTEM_ADRINT*)typ + 1; nofptrs = 0;
         while (ptab[nofptrs] >= 0) {nofptrs++;} /* number of pointers per element */
         nptr = nofelems * nofptrs;  /* total number of pointers */
-        x = Heap_NEWBLK(size + nptr * sizeof(SYSTEM_ADRINT));
+        x = Heap_NEWBLK(size + nptr * sizeof(SYSTEM_PTR));
         p = (SYSTEM_ADRINT*)x[-1];
         p[-nptr] = *p;  /* build new type desc in situ; 1. copy block size; 2. setup ptr tab; 3. set sentinel; 4. patch tag */
         p -= nptr - 1; n = 0; off = dataoff;
@@ -253,8 +253,8 @@ SYSTEM_PTR SYSTEM_NEWARR(SYSTEM_ADRINT *typ, SYSTEM_ARRLEN elemsz, int elemalgn,
             while (i < nofptrs) {*p = off + ptab[i]; p++; i++;}
             off += elemsz; n++;
         }
-        *p = - (nptr + 1) * sizeof(SYSTEM_ADRINT);    /* sentinel */
-        x[-1] -= nptr * sizeof(SYSTEM_ADRINT);
+        *p = - (nptr + 1) * sizeof(SYSTEM_PTR);    /* sentinel */
+        x[-1] -= nptr * sizeof(SYSTEM_PTR);
     }
     if (nofdyn != 0) {
         /* setup len vector for index checks */
@@ -286,28 +286,28 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
     SystemSignalHandler handler[3] = {0};
 
     // Provide signal handling for Unix based systems
-    void signalHandler(int s) {
+    void signalHandler (int s) {
         if (s >= 2  &&  s <= 4) handler[s-2](s);
         // (Ignore other signals)
     }
 
-    void SystemSetHandler(int s, SYSTEM_ADRINT h) {
+    void SystemSetHandler (int s, SystemSignalHandler h) {
         if (s >= 2 && s <= 4) {
             int needtosetsystemhandler = handler[s-2] == 0;
-            handler[s-2] = (SystemSignalHandler)h;
+            handler[s-2] = h;
             if (needtosetsystemhandler) {signal(s, signalHandler);}
         }
     }
 
-    void SystemSetInterruptHandler(SYSTEM_ADRINT h) {
+    void SystemSetInterruptHandler (SystemSignalHandler h) {
         SystemSetHandler(2, h);
     }
 
-    void SystemSetQuitHandler(SYSTEM_ADRINT h) {
+    void SystemSetQuitHandler (SystemSignalHandler h) {
         SystemSetHandler(3, h);
     }
 
-    void SystemSetBadInstructionHandler(SYSTEM_ADRINT h) {
+    void SystemSetBadInstructionHandler (SystemSignalHandler h) {
         SystemSetHandler(4, h);
     }
 
@@ -354,17 +354,17 @@ typedef void (*SystemSignalHandler)(INTEGER); // = Platform_SignalHandler
         }
     }
 
-    void SystemSetInterruptHandler(SYSTEM_ADRINT h) {
+    void SystemSetInterruptHandler (SystemSignalHandler h) {
         EnsureConsoleCtrlHandler();
-        SystemInterruptHandler = (SystemSignalHandler)h;
+        SystemInterruptHandler = h;
     }
 
-    void SystemSetQuitHandler(SYSTEM_ADRINT h) {
+    void SystemSetQuitHandler (SystemSignalHandler h) {
         EnsureConsoleCtrlHandler();
-        SystemQuitHandler = (SystemSignalHandler)h;
+        SystemQuitHandler = h;
     }
 
-    void SystemSetBadInstructionHandler(SYSTEM_ADRINT h) {
+    void SystemSetBadInstructionHandler (SystemSignalHandler h) {
     }
 
 #endif
