@@ -397,10 +397,10 @@ static inline REAL __MAXFD (REAL x, REAL y)                { return x>y?x:y; }
 
 // Module entry/registration/exit
 
-extern void       Heap_REGCMD();
-extern SYSTEM_PTR Heap_REGMOD();
-extern void       Heap_REGTYP();
-extern void       Heap_INCREF();
+extern void Heap_REGCMD (SYSTEM_PTR m, CHAR *name, INTEGER name__len, void (*cmd)(void));
+extern SYSTEM_PTR Heap_REGMOD (CHAR *name, INTEGER name__len, void (*enumPtrs)(void(*)(SYSTEM_PTR)));
+extern void Heap_REGTYP (SYSTEM_PTR m, SYSTEM_ADRINT typ);
+extern void Heap_INCREF (SYSTEM_PTR m);
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
 #define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, 24, cmd)

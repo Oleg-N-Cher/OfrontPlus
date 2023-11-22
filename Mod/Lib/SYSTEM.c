@@ -167,7 +167,7 @@ void SYSTEM_INHERIT(SYSTEM_ADRINT *t, SYSTEM_ADRINT *t0)
 void SYSTEM_ENUMP(void *adr, SYSTEM_ADRINT n, void (*P)(void*))
 {
     while (n > 0) {
-        P((void*)(*((void**)(adr))));
+        P(*((void**)(adr)));
         adr = ((void**)adr) + 1;
         n--;
     }

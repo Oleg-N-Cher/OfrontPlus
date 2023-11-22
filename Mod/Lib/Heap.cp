@@ -164,14 +164,15 @@ MODULE Heap;
   END FreeModule;
 
 
-  PROCEDURE REGCMD* (m: Module; IN name: ARRAY OF SHORTCHAR; cmd: Command);
-    VAR c: Cmd;
+  PROCEDURE REGCMD* (mod: S.PTR; IN name: ARRAY OF SHORTCHAR; cmd: Command);
+    VAR c: Cmd; m: Module;
   BEGIN
     ASSERT(LEN(name$) < CmdNameLen, 114);
     (* REGCMD is called during module initialization code before that modules
        type descriptors have been set up. 'NEW' depends on the Heap modules type
        descriptors being ready for use, therefore, just for the commands registered
        by the Heap module itself, we must use S.NEW. *)
+    m := mod;
     IF m.name = "Heap" THEN
       S.NEW(c, SIZE(CmdDesc))
     ELSE
@@ -180,12 +181,14 @@ MODULE Heap;
     c.name := name$; c.cmd := cmd; c.next := m.cmds; m.cmds := c
   END REGCMD;
 
-  PROCEDURE REGTYP*(m: Module; typ: ADDRESS);
-  BEGIN S.PUT(typ, m.types); m.types := typ
+  PROCEDURE REGTYP* (mod: S.PTR; typ: ADDRESS);
+    VAR m: Module;
+  BEGIN m := mod; S.PUT(typ, m.types); m.types := typ
   END REGTYP;
 
-  PROCEDURE INCREF*(m: Module);
-  BEGIN INC(m.refcnt)
+  PROCEDURE INCREF* (mod: S.PTR);
+    VAR m: Module;
+  BEGIN m := mod; INC(m.refcnt)
   END INCREF;
 
 
