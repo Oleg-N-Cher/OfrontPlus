@@ -451,7 +451,7 @@ type
     error* : Integer;
   END;
 
-PROCEDURE -AAIncludeSDL2h0* '#include "SDL2.h0"';
+PROCEDURE- AAIncludeSDL2h0- '#include "SDL2.h0"';
 
 (*
   {$IFNDEF __GPC__}
@@ -473,7 +473,7 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_Linked_Version'{$ELSE} SDL_MixerLibNam
 {$EXTERNALSYM Mix_Linked_Version}
 *)
 (* Open the mixer with a certain audio format *)
-PROCEDURE -Mix_OpenAudio* (frequency: Integer; format: UInt16;
+PROCEDURE Mix_OpenAudio* (frequency: Integer; format: UInt16;
   channels: Integer; chunksize: Integer): Integer;
 (*
 { Dynamically change the number of channels managed by the mixer.
@@ -481,38 +481,38 @@ PROCEDURE -Mix_OpenAudio* (frequency: Integer; format: UInt16;
    stopped.
    This function returns the new number of allocated channels.
  *)
-PROCEDURE -Mix_AllocateChannels* (numchannels: Integer): Integer;
+PROCEDURE Mix_AllocateChannels* (numchannels: Integer): Integer;
 
 (* Find out what the actual audio device parameters are.
    This function returns 1 if the audio has been opened, 0 otherwise.
  *)
-PROCEDURE -Mix_QuerySpec* (VAR frequency: Integer;
+PROCEDURE Mix_QuerySpec* (VAR frequency: Integer;
   VAR format: UInt16; VAR channels: Integer): Integer;
 
 (* Load a wave file or a music (.mod .s3m .it .xm) file *)
-PROCEDURE -Mix_LoadWAV_RW* (src: PRWops; freesrc: Integer): PMix_Chunk;
+PROCEDURE Mix_LoadWAV_RW* (src: PRWops; freesrc: Integer): PMix_Chunk;
 
-PROCEDURE -Mix_LoadWAV* (file: PChar): PMix_Chunk
+PROCEDURE- Mix_LoadWAV* (file: PChar): PMix_Chunk
   'Mix_LoadWAV_RW((SYSTEM_ADRINT)SDL_RWFromFile((SYSTEM_PTR)file, (SYSTEM_PTR)"rb"), 1)';
 
-PROCEDURE -Mix_LoadMUS* (file: PChar): PMix_Music;
+PROCEDURE Mix_LoadMUS* (file: PChar): PMix_Music;
 
 (*#if 0 { This hasn't been hooked into music.c yet *)
 (* Load a music file from an SDL_RWop object (MikMod-specific currently)
    Matt Campbell (matt@campbellhome.dhs.org) April 2000 *)
-PROCEDURE -Mix_LoadMUS_RW* (rw: PRWops): PMix_Music;
+PROCEDURE Mix_LoadMUS_RW* (rw: PRWops): PMix_Music;
 
 (* Load a wave file of the mixer format from a memory buffer *)
-PROCEDURE -Mix_QuickLoad_WAV* (mem: PUInt8): PMix_Chunk;
+PROCEDURE Mix_QuickLoad_WAV* (mem: PUInt8): PMix_Chunk;
 
 (* Free an audio chunk previously loaded *)
-PROCEDURE -Mix_FreeChunk* (chunk: PMix_Chunk);
+PROCEDURE Mix_FreeChunk* (chunk: PMix_Chunk);
 
-PROCEDURE -Mix_FreeMusic* (music: PMix_Music);
+PROCEDURE Mix_FreeMusic* (music: PMix_Music);
 
 (* Find out the music format of a mixer music, or the currently playing
    music, if 'music' is NULL. *)
-PROCEDURE -Mix_GetMusicType* (music: PMix_Music): Mix_MusicType;
+PROCEDURE Mix_GetMusicType* (music: PMix_Music): Mix_MusicType;
 
 (* Set a function that is called after all mixing is performed.
    This can be used to provide real-time visual display of the audio stream
@@ -701,7 +701,7 @@ const
   * mode is a no - op, but this call will return successful in that case .
   * Error messages can be retrieved from Mix_GetError( ).
   *)
-  PROCEDURE -Mix_SetPanning* (channel: Integer; left, right: UInt8): Integer;
+  PROCEDURE Mix_SetPanning* (channel: Integer; left, right: UInt8): Integer;
   
   (** set the position ofa channel.( angle ) is an integer from 0 to 360, that
     * specifies the location of the sound in relation to the listener.( angle )
@@ -740,7 +740,7 @@ const
   * nonzero if position effect is enabled.
   * Error messages can be retrieved from Mix_GetError( ).
   *)
-  PROCEDURE -Mix_SetPosition* (
+  PROCEDURE Mix_SetPosition* (
     channel: Integer; angle: SInt16; distance: UInt8): Integer;
 
   (* set the "distance" of a channel.( distance ) is an integer from 0 to 255
@@ -770,7 +770,7 @@ const
   * nonzero if position effect is enabled.
     * Error messages can be retrieved from Mix_GetError( ).
     *)
-    PROCEDURE -Mix_SetDistance* (channel: Integer; distance: UInt8): Integer;
+    PROCEDURE Mix_SetDistance* (channel: Integer; distance: UInt8): Integer;
 
   (*
     * !!! FIXME : Haven't implemented, since the effect goes past the
@@ -815,14 +815,14 @@ const
   * mode is a no - op, but this call will return successful in that case .
   * Error messages can be retrieved from Mix_GetError( ).
   *)
-  PROCEDURE -Mix_SetReverseStereo* (channel: Integer; flip: Integer): Integer;
+  PROCEDURE Mix_SetReverseStereo* (channel: Integer; flip: Integer): Integer;
   (* end of effects API. - -ryan. *)
 
 (* Reserve the first channels (0 -> n-1) for the application, i.e. don't allocate
    them dynamically to the next sample if requested with a -1 value below.
    Returns the number of reserved channels.
  *)
-PROCEDURE -Mix_ReserveChannels* (num: Integer): Integer;
+PROCEDURE Mix_ReserveChannels* (num: Integer): Integer;
 
 (* Channel grouping functions *)
 
@@ -832,27 +832,27 @@ PROCEDURE -Mix_ReserveChannels* (num: Integer): Integer;
    represent the group of all the channels).
    Returns true if everything was OK.
  *)
-PROCEDURE -Mix_GroupChannel* (which, tag: Integer): Integer;
+PROCEDURE Mix_GroupChannel* (which, tag: Integer): Integer;
 
 (* Assign several consecutive channels to a group *)
-PROCEDURE -Mix_GroupChannels* (from, to, tag: Integer): Integer;
+PROCEDURE Mix_GroupChannels* (from, to, tag: Integer): Integer;
 
 (* Finds the first available channel in a group of channels *)
-PROCEDURE -Mix_GroupAvailable* (tag: Integer): Integer;
+PROCEDURE Mix_GroupAvailable* (tag: Integer): Integer;
 
 (* Returns the number of channels in a group. This is also a subtle
    way to get the total number of channels when 'tag' is -1
  *)
-PROCEDURE -Mix_GroupCount* (tag: Integer): Integer;
+PROCEDURE Mix_GroupCount* (tag: Integer): Integer;
 
 (* Finds the "oldest" sample playing in a group of channels *)
-PROCEDURE -Mix_GroupOldest* (tag: Integer): Integer;
+PROCEDURE Mix_GroupOldest* (tag: Integer): Integer;
 
 (* Finds the "most recent" (i.e. last) sample playing in a group of channels *)
-PROCEDURE -Mix_GroupNewer* (tag: Integer): Integer;
+PROCEDURE Mix_GroupNewer* (tag: Integer): Integer;
 
 (* The same as above, but the sound is played at most 'ticks' milliseconds *)
-PROCEDURE -Mix_PlayChannelTimed* (
+PROCEDURE Mix_PlayChannelTimed* (
   channel: Integer; chunk: PMix_Chunk; loops, ticks: Integer): Integer;
 
 (* Play an audio chunk on a specific channel.
@@ -861,18 +861,18 @@ PROCEDURE -Mix_PlayChannelTimed* (
    If 'loops' is -1, loop inifinitely (~65000 times).
    Returns which channel was used to play the sound.
 *)
-PROCEDURE -Mix_PlayChannel* (channel: Integer; chunk: PMix_Chunk;
+PROCEDURE- Mix_PlayChannel* (channel: Integer; chunk: PMix_Chunk;
   loops: Integer): Integer "Mix_PlayChannelTimed(channel, chunk, loops, -1)";
 
-PROCEDURE -Mix_PlayMusic* (music: PMix_Music; loops: Integer): Integer;
+PROCEDURE Mix_PlayMusic* (music: PMix_Music; loops: Integer): Integer;
 
 (* Fade in music or a channel over "ms" milliseconds, same semantics as the "Play" functions *)
-PROCEDURE -Mix_FadeInMusic* (music: PMix_Music; loops, ms: Integer): Integer;
+PROCEDURE Mix_FadeInMusic* (music: PMix_Music; loops, ms: Integer): Integer;
 
-PROCEDURE -Mix_FadeInChannelTimed* (channel: Integer;
+PROCEDURE Mix_FadeInChannelTimed* (channel: Integer;
   chunk: PMix_Chunk; loops, ms, ticks: Integer): Integer;
 
-PROCEDURE -Mix_FadeInChannel* (channel: Integer;
+PROCEDURE- Mix_FadeInChannel* (channel: Integer;
   chunk: PMix_Chunk; loops, ms: Integer): Integer
   "Mix_FadeInChannelTimed(channel, chunk, loops, ms, -1)";
 
@@ -881,53 +881,53 @@ PROCEDURE -Mix_FadeInChannel* (channel: Integer;
    Returns the original volume.
    If the specified volume is -1, just return the current volume.
 *)
-PROCEDURE -Mix_Volume* (channel, volume: Integer): Integer;
+PROCEDURE Mix_Volume* (channel, volume: Integer): Integer;
 
-PROCEDURE -Mix_VolumeChunk* (chunk: PMix_Chunk; volume: Integer): Integer;
+PROCEDURE Mix_VolumeChunk* (chunk: PMix_Chunk; volume: Integer): Integer;
 
-PROCEDURE -Mix_VolumeMusic* (volume: Integer): Integer;
+PROCEDURE Mix_VolumeMusic* (volume: Integer): Integer;
 
 (* Halt playing of a particular channel *)
-PROCEDURE -Mix_HaltChannel* (channel: Integer): Integer;
+PROCEDURE Mix_HaltChannel* (channel: Integer): Integer;
 
-PROCEDURE -Mix_HaltGroup* (tag: Integer): Integer;
+PROCEDURE Mix_HaltGroup* (tag: Integer): Integer;
 
-PROCEDURE -Mix_HaltMusic* (): Integer;
+PROCEDURE Mix_HaltMusic* (): Integer;
 
 (* Change the expiration delay for a particular channel.
    The sample will stop playing after the 'ticks' milliseconds have elapsed,
    or remove the expiration if 'ticks' is -1
 *)
-PROCEDURE -Mix_ExpireChannel* (channel, ticks: Integer): Integer;
+PROCEDURE Mix_ExpireChannel* (channel, ticks: Integer): Integer;
 
 (* Halt a channel, fading it out progressively till it's silent
    The ms parameter indicates the number of milliseconds the fading
    will take.
  *)
-PROCEDURE -Mix_FadeOutChannel* (which, ms: Integer): Integer;
-PROCEDURE -Mix_FadeOutGroup* (tag, ms: Integer): Integer;
-PROCEDURE -Mix_FadeOutMusic* (ms: Integer): Integer;
+PROCEDURE Mix_FadeOutChannel* (which, ms: Integer): Integer;
+PROCEDURE Mix_FadeOutGroup* (tag, ms: Integer): Integer;
+PROCEDURE Mix_FadeOutMusic* (ms: Integer): Integer;
 
 (* Query the fading status of a channel *)
-PROCEDURE -Mix_FadingMusic* (): Mix_Fading;
+PROCEDURE Mix_FadingMusic* (): Mix_Fading;
 
-PROCEDURE -Mix_FadingChannel* (which: Integer): Mix_Fading;
+PROCEDURE Mix_FadingChannel* (which: Integer): Mix_Fading;
 
 (* Pause/Resume a particular channel *)
-PROCEDURE -Mix_Pause* (channel: Integer );
+PROCEDURE Mix_Pause* (channel: Integer );
 
-PROCEDURE -Mix_Resume* (channel: Integer);
+PROCEDURE Mix_Resume* (channel: Integer);
 
-PROCEDURE -Mix_Paused* (channel: Integer): Integer;
+PROCEDURE Mix_Paused* (channel: Integer): Integer;
 
 (* Pause/Resume the music stream *)
-PROCEDURE -Mix_PauseMusic* ;
+PROCEDURE Mix_PauseMusic* ;
 
-PROCEDURE -Mix_ResumeMusic* ;
+PROCEDURE Mix_ResumeMusic* ;
 
-PROCEDURE -Mix_RewindMusic* ;
+PROCEDURE Mix_RewindMusic* ;
 
-PROCEDURE -Mix_PausedMusic* (): Integer;
+PROCEDURE Mix_PausedMusic* (): Integer;
 
 (* Set the current position in the music stream.
   This returns 0 if successful, or -1 if it failed or isn't implemented.
@@ -935,17 +935,17 @@ PROCEDURE -Mix_PausedMusic* (): Integer;
   order number) and for OGG music (set position in seconds), at the
   moment.
 *)
-PROCEDURE -Mix_SetMusicPosition* (position: Double): Integer;
+PROCEDURE Mix_SetMusicPosition* (position: Double): Integer;
 
 (* Check the status of a specific channel.
    If the specified channel is -1, check all channels.
 *)
-PROCEDURE -Mix_Playing* (channel: Integer): Integer;
+PROCEDURE Mix_Playing* (channel: Integer): Integer;
 
-PROCEDURE -Mix_PlayingMusic* (): Integer;
+PROCEDURE Mix_PlayingMusic* (): Integer;
 
 (* Stop music and set external music playback command *)
-PROCEDURE -Mix_SetMusicCMD* (command: PChar): Integer;
+PROCEDURE Mix_SetMusicCMD* (command: PChar): Integer;
 
 (* Synchro value is set by MikMod from modules while playing }
 function Mix_SetSynchroValue( value : Integer ) : Integer; overload;
@@ -965,7 +965,7 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_GetChunk'{$ELSE} SDL_MixerLibName{$END
 {$EXTERNALSYM Mix_GetChunk}
 *)
 (* Close the mixer, halting all playing audio *)
-PROCEDURE -Mix_CloseAudio* ;
+PROCEDURE Mix_CloseAudio* ;
 
 (* We'll use SDL for reporting errors }
 procedure Mix_SetError( fmt : PChar );
@@ -991,8 +991,8 @@ begin
   X.patch := SDL_MIXER_PATCHLEVEL;
 end;
 *)
-PROCEDURE -Mix_SetError* (fmt: PChar) "SDL_SetError(fmt)";
+PROCEDURE- Mix_SetError* (fmt: PChar) "SDL_SetError(fmt)";
 
-PROCEDURE -Mix_GetError* () : PChar "SDL_GetError()";
+PROCEDURE- Mix_GetError* () : PChar "SDL_GetError()";
 
 END SDL2mixer.
