@@ -482,7 +482,7 @@ extern void SYSTEM_ENUMR (void *adr, SYSTEM_PTR *typ, SYSTEM_ADRINT size, SYSTEM
   t##__typ               = (SYSTEM_PTR*)&t##__desc.blksz;                    \
   memcpy(t##__desc.basep, t0##__typ - __BASEOFF, level*sizeof(SYSTEM_PTR));  \
   t##__desc.basep[level] = t##__typ;                                         \
-  t##__desc.module       = (SYSTEM_PTR)m;                                    \
+  t##__desc.module       = m;                                                \
   if(t##__desc.blksz!=sizeof(struct t)) __HALT(-15, "SYSTEM.oh", 486);       \
   t##__desc.blksz        = (t##__desc.blksz+5*sizeof(SYSTEM_PTR)-1)/(4*sizeof(SYSTEM_PTR))*(4*sizeof(SYSTEM_PTR)); \
   Heap_REGTYP(m, &t##__desc.next);                                           \

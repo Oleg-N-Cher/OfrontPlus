@@ -56,7 +56,7 @@ MODULE Heap;
       name-:     ModuleName;
       refcnt-:   INTEGER;
       cmds-:     Cmd;
-      types-:    ADDRESS;
+      types-:    S.PTR;
       enumPtrs-: EnumProc;
       reserved1,
       reserved2: ADDRESS
@@ -140,7 +140,7 @@ MODULE Heap;
     ELSE
       NEW(m)
     END;
-    m.types := 0; m.cmds := NIL;
+    m.types := NIL; m.cmds := NIL;
 
     m.name := name$;
     m.refcnt := 0; m.enumPtrs := enumPtrs; m.next := S.VAL(Module, modules);
@@ -181,7 +181,7 @@ MODULE Heap;
     c.name := name$; c.cmd := cmd; c.next := m.cmds; m.cmds := c
   END REGCMD;
 
-  PROCEDURE REGTYP* (mod: S.PTR; typ: ADDRESS);
+  PROCEDURE REGTYP* (mod: S.PTR; typ: S.PTR);
     VAR m: Module;
   BEGIN m := mod; S.PUT(typ, m.types); m.types := typ
   END REGTYP;
@@ -249,7 +249,7 @@ MODULE Heap;
 
   PROCEDURE ^GC*(markStack: BOOLEAN);
 
-  PROCEDURE NEWREC*(tag: ADDRESS): S.PTR;
+  PROCEDURE NEWREC* (tag: S.PTR): S.PTR;
     VAR
       i, i0, di, blksz, restsize, t, adr, end, next, prev: ADDRESS;
       new: S.PTR;
@@ -346,7 +346,7 @@ MODULE Heap;
   BEGIN
     Lock();
     blksz := (size + (4*SZA + Unit - 1)) DIV Unit * Unit;  (*size + tag + meta + blksz + sntnl + UnitAlignment*)
-    new := NEWREC(S.ADR(blksz));
+    new := NEWREC(S.VAL(S.PTR, S.ADR(blksz)));
     tag := S.VAL(ADDRESS, new) + blksz - 3*SZA;
     S.PUT(tag - SZA,                      AddressZero); (*reserved for meta info*)
     S.PUT(tag,                            blksz);
