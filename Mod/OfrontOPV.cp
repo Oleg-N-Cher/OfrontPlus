@@ -1311,8 +1311,15 @@
 										design(l, MinPrec); OPM.WriteString(" = ")
 									END ;
 									IF l^.typ = r^.typ THEN expr(r, MinPrec)
-									ELSIF (l^.typ^.form = Pointer) & (r^.typ^.form # NilTyp) & (l^.typ^.strobj # NIL) THEN
-										OPM.Write("("); OPC.Ident(l^.typ^.strobj); OPM.Write(")"); expr(r, MinPrec)
+									ELSIF (l^.typ^.form = Pointer) & (r^.typ^.form # NilTyp) THEN
+										IF l^.typ^.strobj # NIL THEN
+											OPM.Write("("); OPC.Ident(l^.typ^.strobj); OPM.Write(")")
+										ELSIF (l^.typ^.BaseTyp # NIL) & (l^.typ^.BaseTyp^.strobj # NIL)
+											& (l^.typ^.BaseTyp # r^.typ^.BaseTyp)
+										THEN
+											OPM.Write("("); OPC.Ident(l^.typ^.BaseTyp^.strobj); OPM.WriteString("*)")
+										END;
+										expr(r, MinPrec)
 									ELSIF l^.typ^.comp = Record THEN
 										OPM.WriteString("*("); OPC.Andent(l^.typ); OPM.WriteString("*)"); Adr(r, 9, FALSE)
 									ELSE expr(r, MinPrec)
