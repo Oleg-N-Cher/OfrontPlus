@@ -1376,15 +1376,15 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				ELSIF g # Byte THEN err(113) END
 		| Int8:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
-					(MIN(BYTE) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(BYTE)) THEN (* Ok *)
+					(MIN(BYTE) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(BYTE)) THEN (* ok *)
 				ELSIF ~(g IN {Int8, Byte}) THEN err(113) END
 		| Int16:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
-					(MIN(SHORTINT) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(SHORTINT)) THEN (* Ok *)
+					(MIN(SHORTINT) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(SHORTINT)) THEN (* ok *)
 				ELSIF ~(g IN {Int8, Byte, Int16}) THEN err(113) END
 		| Int32:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
-					(MIN(INTEGER) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(INTEGER)) THEN (* Ok *)
+					(MIN(INTEGER) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(INTEGER)) THEN (* ok *)
 				ELSIF ~(g IN {Int8, Byte, Int16, Int32}) THEN err(113) END
 		| Int64:
 				IF ~(g IN intSet) THEN err(113) END
@@ -1444,7 +1444,9 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 					IF (ynode^.class = Nconst) & (g = Char8) THEN CharToString8(ynode); y := ynode^.typ; g := String8
 					ELSIF (ynode^.class = Nconst) & (g = Char16) THEN CharToString16(ynode); y := ynode^.typ; g := String16
 					END;
-					IF x = y THEN (* ok *)
+					IF (x = y)
+						OR (OPM.Lang = "7") & (g = Comp) & (y^.comp = Array)
+						& (y^.n = x^.n) & (y^.BaseTyp = x^.BaseTyp) THEN (* ok *)
 					ELSIF (OPM.Lang = "7") & (g = Comp) & (y^.comp = DynArr)
 						& ((y^.BaseTyp = OPT.char8typ) & (x^.BaseTyp = OPT.char8typ)
 						OR (y^.BaseTyp = OPT.char16typ) & (x^.BaseTyp = OPT.char16typ))

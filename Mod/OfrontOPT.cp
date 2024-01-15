@@ -1409,9 +1409,11 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				EnterTypeAlias("CHAR", "char", char8, char8typ)
 			END;
 			IF OPM.AdrSize = 2 THEN
-				EnterTypeAlias("INTEGER", "integer", int16, sinttyp)
+				EnterTypeAlias("INTEGER", "integer", int16, sinttyp);
+				EnterTypeAlias("LONGINT", "longint", int16, sinttyp)
 			ELSE
-				EnterTypeAlias("INTEGER", "integer", int32, inttyp)
+				EnterTypeAlias("INTEGER", "integer", int32, inttyp);
+				EnterTypeAlias("LONGINT", "longint", int32, inttyp)
 			END;
 			EnterTypeAlias("REAL", "real", real32, realtyp)
 		END;
