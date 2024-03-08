@@ -69,3 +69,7 @@ MODULE OfrontCmd;	(* J. Templ 3.2.95 *)
 BEGIN
 	OPB.typSize := OPV.TypSize; OPT.typSize := OPV.TypSize
 END OfrontCmd.
+
+DevCompiler.CompileThis
+	OfrontOPM OfrontOPS OfrontOPT OfrontOPC OfrontOPB OfrontOPV OfrontOPP
+	OfrontCmd OfrontBrowser

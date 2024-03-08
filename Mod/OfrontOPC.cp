@@ -1573,10 +1573,10 @@
 						REPEAT (* copy len(s) *)
 							OPM.WriteString("; ");
 							OPM.WriteString(LocalScope); OPM.Write(Dot); Ident(var); OPM.WriteString(LenExt);
-							IF dim # 0 THEN OPM.WriteInt(dim) END ;
+							IF dim # 0 THEN OPM.WriteInt(dim) END;
 							OPM.WriteString(Becomes); Ident(var); OPM.WriteString(LenExt);
-							IF dim # 0 THEN OPM.WriteInt(dim) END ;
-							typ := typ^.BaseTyp
+							IF dim # 0 THEN OPM.WriteInt(dim) END;
+							typ := typ^.BaseTyp; INC(dim)
 						UNTIL typ^.comp # DynArr;
 					ELSIF (var^.mode = VarPar) & (var^.typ^.comp = Record) & (var^.typ^.sysflag MOD 100H = 0) THEN
 						OPM.WriteString("; ");
