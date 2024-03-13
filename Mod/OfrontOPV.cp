@@ -658,6 +658,8 @@
 					END
 		|	Nmop:
 					IF n^.subcl = val THEN design(n^.left, prec) END
+		|	Ncall:
+					expr(n, MinPrec)
 		END ;
 		IF prec > designPrec THEN OPM.Write(CloseParen) END
 	END design_adr;
