@@ -415,16 +415,16 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 			IF ch # "@" THEN
 				LOOP
 					LOOP
-						WHILE ch = "(" DO OPM.Get(ch);
+						WHILE ch = "(" DO OPM.GetNoChk(ch);
 							IF ch = "*" THEN
 								IF Comment() THEN END
 							END
 						END;
-						IF ch = "*" THEN OPM.Get(ch); EXIT END;
+						IF ch = "*" THEN OPM.GetNoChk(ch); EXIT END;
 						IF ch = OPM.Eot THEN EXIT END;
-						OPM.Get(ch)
+						OPM.GetNoChk(ch)
 					END;
-					IF ch = ")" THEN OPM.Get(ch); EXIT END;
+					IF ch = ")" THEN OPM.GetNoChk(ch); EXIT END;
 					IF ch = OPM.Eot THEN err(5); EXIT END
 				END;
 				RETURN TRUE

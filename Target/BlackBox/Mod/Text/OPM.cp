@@ -822,6 +822,22 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		END
 	END Get;
 
+	PROCEDURE GetNoChk* (OUT ch: CHAR);	(* read next character from source text, 0X if eof *)
+		VAR n: INTEGER;
+	BEGIN
+		inR.Read();
+		IF inR.eot THEN ch := 0X
+		ELSE
+			ch := inR.char; INC(curpos);
+			IF ~(widechar IN opt) & (ch > 7FX) THEN
+				FOR n := 7FH TO 0 BY -1 DO
+					IF ch = CP[n] THEN ch := CHR(n + 80H); RETURN END
+				END;
+				ch := "?" (* Replace an unknown character to "?" *)
+			END
+		END
+	END GetNoChk;
+
 	PROCEDURE err*(n: SHORTINT);
 	BEGIN Mark(n, errpos)
 	END err;

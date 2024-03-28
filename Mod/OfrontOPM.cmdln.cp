@@ -426,18 +426,29 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	(* ------------------------- read source text -------------------------*)
 	PROCEDURE ^ err*(n: SHORTINT);
 
-	PROCEDURE Get* (OUT longch: CHAR);	(* read next character from source text, 0X if eof *)
+	PROCEDURE GetCh (OUT longch: CHAR; chk: BOOLEAN);	(* read next character from source text, 0X if eof *)
 		VAR ch: SHORTCHAR;
 	BEGIN
 		IF ~(widechar IN opt) THEN Texts.Read(inR, ch); longch := ch
-		ELSIF ~Texts.ReadLong(inR, longch) THEN err(-3); longch := "?"
+		ELSIF ~Texts.ReadLong(inR, longch) THEN longch := "?";
+			IF chk THEN err(-3) END
 		END;
 		IF longch = 0DX THEN curpos := (curpos DIV 256 + 1) * 256
 		ELSIF curpos MOD 256 # 255 THEN INC(curpos)
 			(* at 255 means:  >= 255 *)
 		END;
 		IF (longch < 09X) & ~inR.eot THEN longch := " " END
+	END GetCh;
+
+	PROCEDURE Get* (OUT longch: CHAR);	(* read next character from source text, 0X if eof *)
+	BEGIN
+		GetCh(longch, TRUE)
 	END Get;
+
+	PROCEDURE GetNoChk* (OUT longch: CHAR);	(* read next character from source text, 0X if eof *)
+	BEGIN
+		GetCh(longch, FALSE)
+	END GetNoChk;
 
 	PROCEDURE MakeFileName (IN name: ARRAY OF SHORTCHAR; OUT FName: ARRAY OF SHORTCHAR; IN ext: ARRAY OF SHORTCHAR);
 		VAR i, j: INTEGER; ch: SHORTCHAR;
