@@ -909,10 +909,10 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 		VAR b: BYTE; s: INTEGER; n: LONGINT;
 	BEGIN s := 0; n := 0; oldSF.ReadByte(b);
 		IF ~oldSF.rider.eof THEN ChkSum(checksum, b) END;
-		WHILE b < 0 DO INC(n, ASH(b + 128, s)); INC(s, 7);
+		WHILE b < 0 DO INC(n, ASH(LONG(b + 128), s)); INC(s, 7);
 			oldSF.ReadByte(b); ChkSum(checksum, b)
 		END;
-		INC(n, ASH((b + 64) MOD 128 - 64, s));
+		INC(n, ASH(LONG((b + 64) MOD 128 - 64), s));
 		RETURN n
 	END SymRInt;
 

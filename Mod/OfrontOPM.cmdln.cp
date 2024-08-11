@@ -576,10 +576,10 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		VAR b: BYTE; s: INTEGER; n: LONGINT;
 	BEGIN s := 0; n := 0; Files.ReadByte(oldSF, b);
 		IF ~oldSF.eof THEN ChkSum(checksum, b) END;
-		WHILE b < 0 DO INC(n, ASH(b + 128, s)); INC(s, 7);
+		WHILE b < 0 DO INC(n, ASH(LONG(b + 128), s)); INC(s, 7);
 			Files.ReadByte(oldSF, b); ChkSum(checksum, b)
 		END;
-		INC(n, ASH((b + 64) MOD 128 - 64, s));
+		INC(n, ASH(LONG((b + 64) MOD 128 - 64), s));
 		RETURN n
 	END SymRInt;
 
