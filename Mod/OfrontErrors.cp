@@ -218,8 +218,8 @@ BEGIN
   | 240: Log.String("identifier too long")
   | 241: Log.String("string too long")
   | 242: Log.String("address overflow")
-  | 243: Log.String("concatenation of module, type, and guarded variable exceeds maximum name length")
   | 244: Log.String("cyclic type definition not allowed")
+  | 245: Log.String("guarded pointer variable may be manipulated by non-local operations; use auxiliary pointer variable")
   | 265: Log.String("unsupported string operation")
 
 (*

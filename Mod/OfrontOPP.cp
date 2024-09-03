@@ -1377,39 +1377,85 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		VAR fpar, id, t, obj: OPT.Object; idtyp: OPT.Struct; e: BOOLEAN; L: LONGINT;
 				s, x, y, z, apar, last, lastif, pre, lastp: OPT.Node; pos: INTEGER; name: OPS.Name;
 
+		PROCEDURE SetPos(x: OPT.Node);
+		BEGIN
+			x^.conval := OPT.NewConst(); x^.conval^.intval := pos
+		END SetPos;
+
 		PROCEDURE CasePart(VAR x: OPT.Node);
 			VAR n: SHORTINT; low, high: INTEGER; e: BOOLEAN;
 					tab: CaseTable; cases, lab, y, lastcase: OPT.Node;
 		BEGIN
 			Expression(x); pos := OPM.errpos;
 			IF (x^.class = Ntype) OR (x^.class = Nproc) THEN err(126)
-			ELSIF ~(x^.typ^.form IN intSet + charSet) THEN err(125)
-			END;
-			CheckSym(of); cases := NIL; lastcase := NIL; n := 0;
-			LOOP
-				IF sym < bar THEN
-					CaseLabelList(lab, x^.typ^.form, n, tab);
-					CheckSym(colon); StatSeq(y);
-					OPB.Construct(Ncasedo, lab, y); OPB.Link(cases, lastcase, lab)
+			ELSIF ((OPM.Lang = "3") OR (OPM.Lang = "7")) &
+				((x^.typ^.form = Pointer) OR (x^.typ^.comp = Record) & (x^.class = Nvarpar))
+			THEN
+				id := x^.obj; idtyp := NIL; x := NIL;
+				IF (id # NIL) & (id^.typ^.form = Pointer) & ((id^.mode = VarPar) OR ~id^.leaf) THEN
+					err(245)	(* jt: do not allow WITH on non-local pointers *)
 				END;
-				IF sym = bar THEN OPS.Get(sym) ELSE EXIT END
-			END;
-			IF n > 0 THEN low := tab[0].low; high := tab[n-1].high;
-				IF high - low > OPM.MaxCaseRange THEN err(209) END
-			ELSE low := 1; high := 0
-			END;
-			e := (sym = else) OR (OPM.Lang = "7");
-			IF e & (OPM.Lang # "7") THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END;
-			OPB.Construct(Ncaselse, cases, y); OPB.Construct(Ncase, x, cases);
-			cases^.conval := OPT.NewConst();
-			cases^.conval^.intval := low; cases^.conval^.intval2 := high;
-			IF e THEN cases^.conval^.setval := {1} ELSE cases^.conval^.setval := {} END
+				CheckSym(of);
+				LOOP
+					IF sym < bar THEN
+						y := OPB.NewLeaf(id);
+						IF sym = ident THEN qualident(t);
+							IF t^.mode = Typ THEN
+								IF id # NIL THEN
+									idtyp := id^.typ; OPB.TypTest(y, t, FALSE); id^.typ := t^.typ;
+									IF id.ptyp = NIL THEN id.ptyp := idtyp END
+								ELSE err(130)
+								END
+							ELSE err(52)
+							END
+						ELSE err(ident)
+						END;
+						pos := OPM.errpos; CheckSym(colon); StatSeq(s); OPB.Construct(Nif, y, s); SetPos(y);
+						IF idtyp # NIL THEN
+							IF id.ptyp = idtyp THEN id.ptyp := NIL END;
+							id^.typ := idtyp; idtyp := NIL
+						END;
+						IF x = NIL THEN x := y; lastif := x ELSE OPB.Link(x, lastif, y) END
+					END;
+					IF sym = bar THEN OPS.Get(sym);
+						IF (OPM.Lang = "3") & ((sym = bar) OR (sym = else) OR (sym = end)) THEN
+							err(61)
+						END
+					ELSE EXIT
+					END
+				END;
+				e := (sym = else) OR (OPM.Lang = "7");
+				IF e & (OPM.Lang # "7") THEN OPS.Get(sym); StatSeq(s) ELSE s := NIL END;
+				OPB.Construct(Nwith, x, s);
+				IF e THEN x^.subcl := 1 END
+			ELSE
+				IF ~(x^.typ^.form IN intSet + charSet) THEN err(125) END;
+				CheckSym(of); cases := NIL; lastcase := NIL; n := 0;
+				LOOP
+					IF sym < bar THEN
+						CaseLabelList(lab, x^.typ^.form, n, tab);
+						CheckSym(colon); StatSeq(y);
+						OPB.Construct(Ncasedo, lab, y); OPB.Link(cases, lastcase, lab)
+					END;
+					IF sym = bar THEN OPS.Get(sym);
+						IF (OPM.Lang = "3") & ((sym = bar) OR (sym = else) OR (sym = end)) THEN
+							err(61)
+						END
+					ELSE EXIT
+					END
+				END;
+				IF n > 0 THEN low := tab[0].low; high := tab[n-1].high;
+					IF high - low > OPM.MaxCaseRange THEN err(209) END
+				ELSE low := 1; high := 0
+				END;
+				e := (sym = else) OR (OPM.Lang = "7");
+				IF e & (OPM.Lang # "7") THEN OPS.Get(sym); StatSeq(y) ELSE y := NIL END;
+				OPB.Construct(Ncaselse, cases, y); OPB.Construct(Ncase, x, cases);
+				cases^.conval := OPT.NewConst();
+				cases^.conval^.intval := low; cases^.conval^.intval2 := high;
+				IF e THEN cases^.conval^.setval := {1} ELSE cases^.conval^.setval := {} END
+			END
 		END CasePart;
-
-		PROCEDURE SetPos(x: OPT.Node);
-		BEGIN
-			x^.conval := OPT.NewConst(); x^.conval^.intval := pos
-		END SetPos;
 
 		PROCEDURE CheckBool(VAR x: OPT.Node);
 		BEGIN
