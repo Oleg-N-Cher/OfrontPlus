@@ -255,7 +255,7 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 				IF Cmp("VAR", "var") THEN sym := var END
 		| "W":
 				IF Cmp("WHILE", "while") THEN sym := while
-				ELSIF Cmp("WITH", "with") THEN sym := with
+				ELSIF (OPM.Lang # "3") & (OPM.Lang # "7") & Cmp("WITH", "with") THEN sym := with
 				END
 		ELSE
 		END
@@ -321,18 +321,17 @@ MODULE OfrontOPS;	(* NW, RC 6.3.89 / 18.10.92 *)		(* object model 3.6.92 *)
 					ELSE err(203)
 					END
 				ELSIF ch = "H" THEN (* hexadecimal *) OPM.Get(ch); numtyp := integer;
-					IF (OPM.Lang = "3") OR (OPM.Lang = "7") THEN m := 2*SIZE(LONGINT)
+					IF OPM.Lang = "3" THEN m := 2*SIZE(LONGINT)
 					ELSE m := 2*SIZE(INTEGER)
 					END;
 					IF n <= m THEN
 						IF (n = m) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1;
-							IF (OPM.Lang = "3") OR (OPM.Lang = "7") THEN err(203) END
+							IF OPM.Lang = "3" THEN err(203) END (* forbid to set the sign by digit *)
 						END;
 						WHILE i < n DO intval := intval*10H + Ord(dig[i], TRUE); INC(i) END;
-						IF (OPM.Lang = "7") & (intval > MAX(INTEGER)) THEN err(-203) END
 					ELSE err(203); intval := 1 (* to prevent "division by zero" on DIV 10000000000000000H *)
 					END
-				ELSIF (ch = "L") & (OPM.Lang # "3") & (OPM.Lang # "7") THEN (* long hex *)
+				ELSIF (ch = "L") & (OPM.Lang # "3") THEN (* long hex *)
 					OPM.Get(ch); numtyp := integer;
 					IF n <= 2*SIZE(LONGINT) THEN
 						IF (n = 2*SIZE(LONGINT)) & (dig[0] > "7") THEN (* prevent overflow *) intval := -1 END;
