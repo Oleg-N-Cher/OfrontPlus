@@ -28,7 +28,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 		noinit* = 15;	(* don't generate BEGIN section's body *)
 		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
 		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
-		widechar* = 18;	(* UCS-2 encoded wide character format enabled *)
+		widechar* = 18;	(* UTF-8 to UCS-2 wide character transcoding enabled *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
@@ -368,7 +368,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			Console.String('       "t": check type guards                                        (on)'); Console.Ln;
 			Console.String('       "f": allow "proper FOR" (concept by Oleg Komlev)             (off)'); Console.Ln;
 			Console.String('       "d": translate a module into dynamic library (.dll/.so)      (off)'); Console.Ln;
-			Console.String('       "w": UCS-2 encoded wide character format enabled             (off)'); Console.Ln;
+			Console.String('       "w": UTF-8 to UCS-2 wide character transcoding enabled       (off)'); Console.Ln;
 			Console.String('  "1": Oberon "2": Oberon-2 "C": Component Pascal "7": Oberon-07 "3": Oberon-3'); Console.Ln;
 			Console.String('  "21": 16-bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU)'); Console.Ln;
 			Console.String('  "44": 32-bit addresses, 32-bit alignment (32-bit UNIX/Linux on x86)'); Console.Ln;
