@@ -93,6 +93,7 @@ END Flush;
 PROCEDURE (self : File) Seek*(offset : C.longint; whence : C.int) : C.int;
 BEGIN
 	self.success := fseek(self.file, offset, whence) = 0;
+	RETURN 0
 END Seek;
 
 PROCEDURE (self : File) Tell*() : C.longint;
@@ -100,6 +101,7 @@ VAR result : C.longint;
 BEGIN
 	result := ftell(self.file);
 	self.success := result >= 0;
+	RETURN 0
 END Tell;
 
 PROCEDURE (self : File) PutC*(ch : CHAR);
@@ -110,6 +112,7 @@ END PutC;
 PROCEDURE (self : File) PutS*(str : ARRAY OF CHAR) : C.int;
 BEGIN
 	self.success := fputs(self.file, str) = 0;
+	RETURN 0
 END PutS;
 
 PROCEDURE (self : File) EOF*() : BOOLEAN;

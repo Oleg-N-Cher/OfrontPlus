@@ -140,6 +140,7 @@ END Format;
 
 PROCEDURE (self : Object) Copy*() : Object;
 BEGIN
+	RETURN NIL;
 END Copy;
 
 PROCEDURE (self : Object) DeepCopy*() : Object;
@@ -778,6 +779,7 @@ BEGIN
 		END;
 		it := it.next;
 	END;
+	RETURN NIL;
 END Map;
 
 PROCEDURE (self : String) Split*(separator : CHAR) : List;
@@ -993,6 +995,7 @@ BEGIN
 		IF deep THEN value := DeepCopy(value) END;
 		a.value[i] := value;
 	END;
+	RETURN NIL;
 END CopyT;
 
 PROCEDURE (self : Array) Copy*() : Object;
@@ -1041,6 +1044,7 @@ PROCEDURE (self : Array) Set*(index : LONGINT; value : Object) : Object;
 BEGIN
 	ASSERT((index >= 0) & (index < self.length));
 	self.value[index] := value;
+	RETURN NIL;
 END Set;
 
 (* ----- Miscellaneous ----- *)
