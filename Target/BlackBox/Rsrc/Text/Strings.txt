@@ -122,7 +122,8 @@ insertMarkers	Insert Markers
 130	WITH clause does not specify a variable
 131	LEN not applied to array
 132	dimension in LEN too large or negative
-133	system flag doesn't match forward declaration
+133	function without RETURN
+134	system flag doesn't match forward declaration
 135	SYSTEM not imported
 136	LEN applied to untagged array
 137	unknown array length

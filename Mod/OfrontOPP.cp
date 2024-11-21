@@ -92,6 +92,7 @@
 		LoopLevel, ReturnLevel: SHORTINT;
 		TDinit, lastTDinit: OPT.Node;
 		userList, recList: Elem;
+		hasReturn: BOOLEAN;
 
 	PROCEDURE^ Type(VAR typ: OPT.Struct; VAR name: OPS.String);
 	PROCEDURE^ Expression(VAR x: OPT.Node);
@@ -1312,7 +1313,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF (fwd # NIL) & (fwd^.mode IN {LProc, XProc}) & ~(hasBody IN fwd^.conval^.setval) THEN
 				(* there exists a corresponding forward declaration *)
 				proc := OPT.NewObj(); proc^.leaf := TRUE;
-				IF (mode IN {IProc, CProc}) OR (fwd^.sysflag # sys) THEN err(133) END;
+				IF (mode IN {IProc, CProc}) OR (fwd^.sysflag # sys) THEN err(134) END;
 				proc^.mode := mode; proc^.conval := OPT.NewConst();
 				CheckMark(proc);
 				IF fwd^.vis # proc^.vis THEN err(118) END
@@ -1924,10 +1925,12 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			ELSIF sym = return THEN OPS.Get(sym);
 				IF OPM.Lang = "7" THEN
 					IF (sym < semicolon) & (ReturnLevel = 1) THEN Expression(x) ELSE err(49) END
-				ELSIF sym < semicolon THEN Expression(x) END;
+				ELSIF sym < semicolon THEN Expression(x)
+				END;
 				IF level > 0 THEN OPB.Return(x, OPT.topScope^.link)
 				ELSE (* not standard Oberon *) OPB.Return(x, NIL); err(-49)
 				END;
+				hasReturn := TRUE;
 				pos := OPM.errpos;
 				IF OPM.Lang = "7" THEN SetPos(x); OPB.Link(stat, last, x); EXIT END
 			ELSIF sym = raw THEN
@@ -2058,7 +2061,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		WHILE sym = procedure DO
 			OPS.Get(sym); ProcedureDeclaration(x);
 			IF x # NIL THEN
-				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END ;
+				IF lastdec = NIL THEN procdec := x ELSE lastdec^.link := x END;
 				lastdec := x
 			END;
 			CheckSym(semicolon);
@@ -2072,10 +2075,13 @@ PROCEDURE Factor(VAR x: OPT.Node);
 		END;
 		userList := NIL; rec := recList; recList := NIL;
 		IF OPM.noerr & (OPM.Lang = "C") THEN CheckRecords(rec) END;
+		hasReturn := FALSE;
 		IF (sym = begin) & ~((level = 0) & (OPM.noinit IN OPM.opt)) THEN OPS.Get(sym); StatSeq(statseq)
 		ELSIF (OPM.Lang = "7") & (sym = return) THEN StatSeq(statseq)
 		ELSE statseq := NIL
 		END;
+		IF (OPT.topScope.link # NIL) & (OPT.topScope.link.typ # OPT.notyp)
+			& ~hasReturn & (OPT.topScope.link.sysflag = 0) THEN err(133) END;
 		IF (level = 0) & (TDinit # NIL) THEN
 			lastTDinit^.link := statseq; statseq := TDinit
 		END
