@@ -1418,7 +1418,9 @@
 						END
 			|	Nreturn:
 						IF OPM.level = 0 THEN
-							IF mainprog THEN OPM.WriteString("__FINI") ELSE OPM.WriteString("__ENDMOD") END
+							IF mainprog THEN OPC.DoClose; OPM.WriteString("__FINI")
+							ELSE OPM.WriteString("__ENDMOD")
+							END
 						ELSIF OPC.NeedsRetval(outerProc) THEN
 							OPM.WriteString("__retval = ");
 							IF (n^.left^.typ^.form = Pointer) & (n^.obj^.typ # n^.left^.typ) THEN

@@ -1285,6 +1285,12 @@
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
 			EndStat
 		END;
+		IF OPM.close IN OPM.opt THEN
+			IF dynlib THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
+			OPM.WriteString("void ");
+			OPM.WriteString(OPM.modName); OPM.WriteString(CloseNameExt);
+			EndStat
+		END;
 		OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn
 	END GenHdr;
@@ -1340,6 +1346,11 @@
 		GenDynTypes(n, internal); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 0); OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn;
+		IF mainprog & ~dynlib & (OPM.close IN OPM.opt) THEN
+			OPM.WriteString("static void ");
+			OPM.WriteString(OPM.modName); OPM.WriteString(CloseNameExt);
+			EndStat; OPM.WriteLn
+		END;
 		OPM.WriteString("/*============================================================================*/");
 		OPM.WriteLn; OPM.WriteLn
 	END GenBdy;
@@ -1443,11 +1454,31 @@
 		IF OPM.modName # "SYSTEM" THEN RegCmds(OPT.topScope) END
 	END EnterBody;
 
+	PROCEDURE DoClose*;
+		VAR i: INTEGER;
+	BEGIN
+		IF OPM.close IN OPM.opt THEN
+			BegStat;
+			OPM.WriteString(OPM.modName); OPM.WriteString("__close()");
+			EndStat
+		END;
+		i := 0;
+		WHILE (i < LEN(OPT.GlbMod)) & (OPT.GlbMod[i] # NIL) DO
+			IF OPT.GlbMod[i].sysflag < 0 THEN
+				BegStat;
+				OPM.WriteString(OPT.GlbMod[i].name^); OPM.WriteString("__close()");
+				EndStat;
+			END;
+			INC(i)
+		END;
+	END DoClose;
+
 	PROCEDURE ExitBody*;
 	BEGIN
 		IF ~(mainprog & dynlib) THEN
-			BegStat;
-			IF mainprog THEN OPM.WriteString("__FINI;") ELSE OPM.WriteString("__ENDMOD;") END;
+			IF mainprog THEN DoClose; BegStat; OPM.WriteString("__FINI;")
+			ELSE BegStat; OPM.WriteString("__ENDMOD;")
+			END;
 			OPM.WriteLn
 		END;
 		EndBlk
@@ -1456,7 +1487,11 @@
 	PROCEDURE EnterClose*;
 	BEGIN
 		OPM.WriteLn;
-		OPM.WriteString("__CLOSE void "); OPM.WriteString(OPM.modName);
+		IF mainprog THEN
+			IF dynlib THEN OPM.WriteString("__CLOSE ") ELSE OPM.WriteString("static ") END
+		ELSE OPM.WriteString(Export)
+		END;
+		OPM.WriteString("void "); OPM.WriteString(OPM.modName);
 		OPM.WriteString(CloseNameExt); OPM.WriteLn;
 		BegBlk;
 		OPM.WriteString("/* CLOSE */"); OPM.WriteLn

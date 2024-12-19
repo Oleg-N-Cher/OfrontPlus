@@ -129,7 +129,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		inserted = 0; same = 1; pbmodified = 2; pvmodified = 3; removed = 4; inconsistent = 5;
 
 		(* sysflags *)
-		noInit = 1; inBit = 2; outBit = 4;
+		noInit = 1; hasClose = MIN(BYTE); inBit = 2; outBit = 4;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -1210,6 +1210,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				OPM.checksum := 0;	(* start checksum here to avoid problems with proc id fixup *)
 				IF {OPM.foreign, OPM.noinit} * OPM.opt # {} THEN
 					OPM.SymWInt(Ssys); OPM.SymWInt(noInit)
+				ELSIF OPM.close IN OPM.opt THEN
+					OPM.SymWInt(Ssys); OPM.SymWInt(hasClose)
 				END;
 				OPM.SymWInt(Smname); OutName(SelfName);
 				expCtxt.reffp := 0; expCtxt.ref := FirstRef;

@@ -31,7 +31,8 @@
 		noinit* = 15;	(* don't generate BEGIN section's body *)
 		gpcp* = 16;	(* Gardens Point Component Pascal extensions enabled *)
 		oakwood* = 17;	(* Oakwood Guidelines extensions enabled *)
-		widechar* = 18;	(* UCS-2 encoded character format enabled *)
+		widechar* = 18;	(* UTF-8 to UCS-2 wide character transcoding enabled *)
+		close* = 19;	(* the module has CLOSE section *)
 		defopt* = {inxchk, typchk, ptrinit, assert, ansi};	(* default options *)
 
 		nilval* = 0;
