@@ -129,7 +129,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		inserted = 0; same = 1; pbmodified = 2; pvmodified = 3; removed = 4; inconsistent = 5;
 
 		(* sysflags *)
-		noInit = 1; hasClose = MIN(BYTE); inBit = 2; outBit = 4;
+		noInit = 1; doClose = 2; inBit = 2; outBit = 4;
 
 		(* symbol file items *)
 		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
@@ -625,6 +625,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF mn = 0 THEN mno := impCtxt.glbmno[0]
 		ELSE
 			IF mn = Ssys THEN
+				INCL(OPM.opt, OPM.close);
 				sysflag := SHORT(SHORT(SHORT(OPM.SymRInt())));
 				mn := SHORT(OPM.SymRInt())
 			ELSE
@@ -1211,7 +1212,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				IF {OPM.foreign, OPM.noinit} * OPM.opt # {} THEN
 					OPM.SymWInt(Ssys); OPM.SymWInt(noInit)
 				ELSIF OPM.close IN OPM.opt THEN
-					OPM.SymWInt(Ssys); OPM.SymWInt(hasClose)
+					OPM.SymWInt(Ssys); OPM.SymWInt(doClose)
 				END;
 				OPM.SymWInt(Smname); OutName(SelfName);
 				expCtxt.reffp := 0; expCtxt.ref := FirstRef;

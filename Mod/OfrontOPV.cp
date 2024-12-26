@@ -1418,7 +1418,7 @@
 						END
 			|	Nreturn:
 						IF OPM.level = 0 THEN
-							IF mainprog THEN OPC.DoClose; OPM.WriteString("__FINI")
+							IF mainprog THEN OPC.DoClose(OPT.topScope^.right); OPM.WriteString("__FINI")
 							ELSE OPM.WriteString("__ENDMOD")
 							END
 						ELSIF OPC.NeedsRetval(outerProc) THEN
@@ -1475,7 +1475,7 @@
 			DefineTDescs(prog^.right); OPC.EnterBody; InitTDescs(prog^.right);
 			OPM.WriteString("/* BEGIN */"); OPM.WriteLn;
 			stat(prog^.right, NIL); OPC.ExitBody;
-			IF prog.link # NIL THEN (* close section *)
+			IF (prog.link # NIL) OR (OPM.close IN OPM.opt) THEN (* close section *)
 				OPC.EnterClose; stat(prog^.link, NIL); OPC.ExitClose
 			END;
 			IF mainprog & (OPM.dynlib IN OPM.opt) THEN OPC.DllMainBody(prog^.link # NIL) END

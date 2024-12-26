@@ -42,7 +42,7 @@
 
 		(* sysflag *)
 		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
-		stdcall = 1; fastcall = 2; inline = 3;
+		stdcall = 1; fastcall = 2; inline = 3; doClose = 2;
 
 		UndefinedType = 0; (* named type not yet defined *)
 		ProcessingType = 1; (* pointer type is being processed *)
@@ -1435,7 +1435,7 @@
 				OPM.WriteTab; OPM.WriteString("int argc; char **argv;")
 			END
 		ELSE
-			IF mainprog THEN OPM.WriteString("__BEGIN void ")
+			IF mainprog THEN OPM.WriteString("__ONBEGIN void ")
 			ELSIF dynlib THEN OPM.WriteString(EXPORT + "void *")
 			ELSE OPM.WriteString(Export + "void *")
 			END;
@@ -1454,29 +1454,31 @@
 		IF OPM.modName # "SYSTEM" THEN RegCmds(OPT.topScope) END
 	END EnterBody;
 
-	PROCEDURE DoClose*;
-		VAR i: INTEGER;
+	PROCEDURE DoClose* (obj: OPT.Object);
 	BEGIN
-		IF OPM.close IN OPM.opt THEN
-			BegStat;
-			OPM.WriteString(OPM.modName); OPM.WriteString("__close()");
-			EndStat
-		END;
-		i := 0;
-		WHILE (i < LEN(OPT.GlbMod)) & (OPT.GlbMod[i] # NIL) DO
-			IF OPT.GlbMod[i].sysflag < 0 THEN
+		IF obj # NIL THEN
+			DoClose(obj^.left);
+			IF (obj^.mode = Mod) & ODD(OPT.GlbMod[-obj^.mnolev].sysflag DIV doClose) THEN
 				BegStat;
-				OPM.WriteString(OPT.GlbMod[i].name^); OPM.WriteString("__close()");
-				EndStat;
+				OPM.WriteString("__CLOSE(");
+				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init, ");
+				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__close)");
+				EndStat
 			END;
-			INC(i)
-		END;
+			DoClose(obj^.right)
+		END
 	END DoClose;
 
 	PROCEDURE ExitBody*;
 	BEGIN
 		IF ~(mainprog & dynlib) THEN
-			IF mainprog THEN DoClose; BegStat; OPM.WriteString("__FINI;")
+			IF mainprog THEN
+				IF OPM.close IN OPM.opt THEN
+					BegStat;
+					OPM.WriteString(OPM.modName); OPM.WriteString("__close()");
+					EndStat
+				END;
+				BegStat; OPM.WriteString("__FINI;")
 			ELSE BegStat; OPM.WriteString("__ENDMOD;")
 			END;
 			OPM.WriteLn
@@ -1488,7 +1490,7 @@
 	BEGIN
 		OPM.WriteLn;
 		IF mainprog THEN
-			IF dynlib THEN OPM.WriteString("__CLOSE ") ELSE OPM.WriteString("static ") END
+			IF dynlib THEN OPM.WriteString("__ONCLOSE ") ELSE OPM.WriteString("static ") END
 		ELSE OPM.WriteString(Export)
 		END;
 		OPM.WriteString("void "); OPM.WriteString(OPM.modName);
@@ -1499,7 +1501,7 @@
 
 	PROCEDURE ExitClose*;
 	BEGIN
-		EndBlk
+		DoClose(OPT.topScope^.right); EndBlk
 	END ExitClose;
 
 	PROCEDURE DllMainBody* (close: BOOLEAN);

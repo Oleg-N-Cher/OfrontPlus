@@ -191,6 +191,11 @@ MODULE Heap;
   BEGIN m := mod; INC(m.refcnt)
   END INCREF;
 
+  PROCEDURE DECREF* (mod: S.PTR): BOOLEAN;
+    VAR m: Module;
+  BEGIN m := mod; DEC(m.refcnt); RETURN m.refcnt = 0
+  END DECREF;
+
 
   PROCEDURE- ExternPlatformOSAllocate "extern SYSTEM_ADRINT Platform_OSAllocate (SYSTEM_ADRINT size);";
   PROCEDURE- OSAllocate (size: ADDRESS): ADDRESS "Platform_OSAllocate(size)";

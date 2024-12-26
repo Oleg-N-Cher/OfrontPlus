@@ -401,12 +401,14 @@ extern void Heap_REGCMD (SYSTEM_PTR m, CHAR *name, INTEGER name__len, void (*cmd
 extern SYSTEM_PTR Heap_REGMOD (CHAR *name, INTEGER name__len, void (*enumPtrs)(void(*)(SYSTEM_PTR)));
 extern void Heap_REGTYP (SYSTEM_PTR m, SYSTEM_PTR typ);
 extern void Heap_INCREF (SYSTEM_PTR m);
+extern BOOLEAN Heap_DECREF (SYSTEM_PTR m);
 
 #define __DEFMOD              static void *m; if (m!=0) {return m;}
 #define __REGCMD(name, cmd)   Heap_REGCMD(m, (CHAR*)name, 24, cmd)
 #define __REGMOD(name, enum)  if (m==0) {m = Heap_REGMOD((CHAR*)name, 32, (void*)enum);}
 #define __ENDMOD              return m
 #define __IMPORT(name__init)  Heap_INCREF(name__init())
+#define __CLOSE(name__init, name__close) if (Heap_DECREF(name__init())) name__close()
 
 #if defined _WIN32 || defined __CYGWIN__
 #  ifdef __GNUC__
@@ -425,8 +427,8 @@ extern void Heap_INCREF (SYSTEM_PTR m);
 #    define __EXTERN
 #  endif
 #endif
-#define __BEGIN __attribute__((constructor))
-#define __CLOSE __attribute__((destructor))
+#define __ONBEGIN __attribute__((constructor))
+#define __ONCLOSE __attribute__((destructor))
 #define __STDCALL __attribute__((__stdcall__))
 
 // Main module initialization, registration and finalization
