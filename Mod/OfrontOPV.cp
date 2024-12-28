@@ -1417,10 +1417,7 @@
 							OPM.WriteString("goto exit__"); OPM.WriteInt(exit.label)
 						END
 			|	Nreturn:
-						IF OPM.level = 0 THEN
-							IF mainprog THEN OPC.DoClose(OPT.topScope^.right); OPM.WriteString("__FINI")
-							ELSE OPM.WriteString("__ENDMOD")
-							END
+						IF OPM.level = 0 THEN OPC.retmain := TRUE; OPM.WriteString("goto return__")
 						ELSIF OPC.NeedsRetval(outerProc) THEN
 							OPM.WriteString("__retval = ");
 							IF (n^.left^.typ^.form = Pointer) & (n^.obj^.typ # n^.left^.typ) THEN

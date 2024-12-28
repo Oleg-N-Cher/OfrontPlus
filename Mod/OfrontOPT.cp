@@ -625,8 +625,8 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		IF mn = 0 THEN mno := impCtxt.glbmno[0]
 		ELSE
 			IF mn = Ssys THEN
-				INCL(OPM.opt, OPM.close);
 				sysflag := SHORT(SHORT(SHORT(OPM.SymRInt())));
+				IF ODD(sysflag DIV doClose) & ~impCtxt.self THEN INCL(OPM.opt, OPM.close) END;
 				mn := SHORT(OPM.SymRInt())
 			ELSE
 				sysflag := 0

@@ -100,7 +100,7 @@
 
 	VAR
 		indentLevel: INTEGER;
-		ptrinit, mainprog, ansi, oldc, dynlib, windows: BOOLEAN;
+		ptrinit, mainprog, ansi, oldc, dynlib, windows, retmain*: BOOLEAN;
 		hashtab: ARRAY 169 OF SHORTINT;
 		keytab: ARRAY 37, 9 OF SHORTCHAR;
 		GlbPtrs: BOOLEAN;
@@ -118,6 +118,7 @@
 		oldc := OPM.oldc IN OPM.opt;
 		dynlib := OPM.dynlib IN OPM.opt;
 		windows := FALSE;
+		retmain := FALSE;
 		IF ansi THEN
 			BodyNameExt := "__init (void)"; CloseNameExt := "__close (void)"
 		ELSE
@@ -1283,13 +1284,13 @@
 			IF dynlib THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
 			OPM.WriteString("void *");
 			OPM.WriteString(OPM.modName); OPM.WriteString(BodyNameExt);
-			EndStat
-		END;
-		IF OPM.close IN OPM.opt THEN
-			IF dynlib THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
-			OPM.WriteString("void ");
-			OPM.WriteString(OPM.modName); OPM.WriteString(CloseNameExt);
-			EndStat
+			EndStat;
+			IF OPM.close IN OPM.opt THEN
+				IF dynlib THEN OPM.WriteString(EXTERN) ELSE OPM.WriteString(Extern) END;
+				OPM.WriteString("void ");
+				OPM.WriteString(OPM.modName); OPM.WriteString(CloseNameExt);
+				EndStat
+			END
 		END;
 		OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 1); OPM.WriteLn
@@ -1346,7 +1347,7 @@
 		GenDynTypes(n, internal); OPM.WriteLn;
 		ProcPredefs(OPT.topScope^.right, 0); OPM.WriteLn;
 		CProcDefs(OPT.topScope^.right, 0); OPM.WriteLn;
-		IF mainprog & ~dynlib & (OPM.close IN OPM.opt) THEN
+		IF mainprog & ~dynlib & (OPM.close IN OPM.opt) & ~(OPM.noinit IN OPM.opt) THEN
 			OPM.WriteString("static void ");
 			OPM.WriteString(OPM.modName); OPM.WriteString(CloseNameExt);
 			EndStat; OPM.WriteLn
@@ -1369,14 +1370,14 @@
 		END
 	END RegCmds;
 
-	PROCEDURE InitImports(obj: OPT.Object);
+	PROCEDURE InitImports (obj: OPT.Object);
 	BEGIN
 		IF obj # NIL THEN
 			InitImports(obj^.left);
 			IF (obj^.mode = Mod) & (obj^.mnolev # 0) & ~ODD(OPT.GlbMod[-obj^.mnolev].sysflag) THEN
 				BegStat; OPM.WriteString("__IMPORT(");
-				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init");
-				OPM.Write(CloseParen); EndStat
+				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init);");
+				OPM.WriteLn
 			END;
 			InitImports(obj^.right)
 		END
@@ -1454,16 +1455,15 @@
 		IF OPM.modName # "SYSTEM" THEN RegCmds(OPT.topScope) END
 	END EnterBody;
 
-	PROCEDURE DoClose* (obj: OPT.Object);
+	PROCEDURE DoClose (obj: OPT.Object);
 	BEGIN
 		IF obj # NIL THEN
 			DoClose(obj^.left);
 			IF (obj^.mode = Mod) & ODD(OPT.GlbMod[-obj^.mnolev].sysflag DIV doClose) THEN
-				BegStat;
-				OPM.WriteString("__CLOSE(");
+				BegStat; OPM.WriteString("__CLOSE(");
 				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__init, ");
-				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__close)");
-				EndStat
+				OPM.WriteString(OPT.GlbMod[-obj^.mnolev].name^); OPM.WriteString("__close);");
+				OPM.WriteLn
 			END;
 			DoClose(obj^.right)
 		END
@@ -1472,14 +1472,15 @@
 	PROCEDURE ExitBody*;
 	BEGIN
 		IF ~(mainprog & dynlib) THEN
+			IF retmain THEN retmain := FALSE; OPM.WriteString("return__:"); OPM.WriteLn END;
+			BegStat;
 			IF mainprog THEN
 				IF OPM.close IN OPM.opt THEN
-					BegStat;
-					OPM.WriteString(OPM.modName); OPM.WriteString("__close()");
-					EndStat
+					OPM.WriteString(OPM.modName); OPM.WriteString("__close();");
+					OPM.WriteLn; BegStat
 				END;
-				BegStat; OPM.WriteString("__FINI;")
-			ELSE BegStat; OPM.WriteString("__ENDMOD;")
+				OPM.WriteString("__FINI;")
+			ELSE OPM.WriteString("__ENDMOD;")
 			END;
 			OPM.WriteLn
 		END;
@@ -1501,6 +1502,7 @@
 
 	PROCEDURE ExitClose*;
 	BEGIN
+		IF retmain THEN retmain := FALSE; OPM.WriteString("return__: "); OPM.WriteLn END;
 		DoClose(OPT.topScope^.right); EndBlk
 	END ExitClose;
 

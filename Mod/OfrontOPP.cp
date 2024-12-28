@@ -2131,7 +2131,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			IF OPM.noerr THEN TDinit := NIL; lastTDinit := NIL; c := OPM.errpos;
 				Block(procdec, statseq); OPB.Enter(procdec, statseq, NIL); prog := procdec;
 				prog^.conval := OPT.NewConst(); prog^.conval^.intval := c;
-				IF sym = close THEN
+				IF (sym = close) & ~(OPM.noinit IN OPM.opt) THEN
 					INCL(OPM.opt, OPM.close); OPS.Get(sym); StatSeq(prog.link)
 				END;
 				CheckSym(end);
