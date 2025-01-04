@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CC="cc -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+CC="cc $1 -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 AR="ar -rc libOfront.a"
 
 ## Ofront+
