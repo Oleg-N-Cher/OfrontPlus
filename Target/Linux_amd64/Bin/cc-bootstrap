@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CC="cc -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
+CC="cc $1 -fPIC -I. -Os -g0 -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -c"
 AR="ar -rc libOfront.a"
 
 ## Ofront+
@@ -66,7 +66,7 @@ $AR bbKernel.o bbMath.o bbStrings.o
 
 rm *.o 
 
-CC="cc -I. -L. -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables"
+CC="cc $1 -I. -L. -s -Os -g0 -fvisibility=hidden -fomit-frame-pointer -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables"
 
 $CC -c OfrontErrors.c OfrontOPM.c OfrontOPS.c OfrontOPT.c OfrontOPB.c OfrontOPP.c OfrontOPC.c OfrontOPV.c
 if [ $? != 0 ]; then exit 1; fi

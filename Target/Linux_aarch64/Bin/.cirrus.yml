@@ -22,5 +22,5 @@ linux_arm_task:
     mv Target/macOS/Bin/.cirrus.yml .
     git add .cirrus.yml
     git add Target
-    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "cc #${CIRRUS_OS}_arm"
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "#${CIRRUS_OS}_arm"
     git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null

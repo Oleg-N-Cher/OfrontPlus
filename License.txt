@@ -1,7 +1,7 @@
 License
 
 Copyright 1992-2016 Software Templ OG. All rights reserved.
-Copyright 2013-2023 VEDAsoft Oberon Club.
+Copyright 2013-2025 VEDAsoft Oberon Club.
 
 Redistribution and use in source and binary forms, with or without modification, 
 are permitted provided that the following conditions are met:

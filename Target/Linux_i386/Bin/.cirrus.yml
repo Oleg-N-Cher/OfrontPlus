@@ -1,0 +1,26 @@
+linux_x86_task:
+  container:
+    cpu: 4
+    memory: 4G
+    image: gcc:latest
+  environment:
+    CIRRUS_KEY: ENCRYPTED[0d928cf2f2b4e912a319e684389a48e71ef890d05fea5287ab4b26adc25093395010d777f7ab56cefeb0458b9667cb5a]
+  timeout_in: 10m
+  install_script: dpkg --add-architecture i386 && apt-get update && apt-get install -y gcc-12-base:i386 libgcc-12-dev:i386 libc6-dev:i386
+  script: |
+    chmod +x cc-bootstrap
+    cd unix-44
+    ../cc-bootstrap "-m32 -L/usr/lib/gcc/i686-linux-gnu/12 -B/usr/lib/gcc/i686-linux-gnu/12"
+    cd ..
+    mkdir -p Target/Linux_i386
+    mv graphviz Target/Linux_i386
+    mv ocat Target/Linux_i386
+    mv odc2txt Target/Linux_i386
+    mv oef Target/Linux_i386
+    mv ofront+ Target/Linux_i386
+    mv omake Target/Linux_i386
+    mv showdef Target/Linux_i386
+    git rm .cirrus.yml
+    git add Target
+    git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "#${CIRRUS_OS}_x86"
+    git push -q https://Oleg-N-Cher:$CIRRUS_KEY@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
