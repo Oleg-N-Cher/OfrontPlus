@@ -328,7 +328,7 @@
 	PROCEDURE Undefined(obj: OPT.Object): BOOLEAN;
 	BEGIN
 		(* imported anonymous types have obj^.name = OPT.null; used e.g. for repeating inherited fields *)
-		RETURN (obj^.mnolev >= 0) & (obj^.linkadr # MaxType+OPM.currFile )
+		RETURN (obj^.mnolev >= 0) & (obj^.linkadr < MaxType+OPM.currFile)
 			& (obj^.linkadr # PredefinedType)
 			& (obj^.linkadr # CyclicType+OPM.currFile)
 			OR (obj^.name = OPT.null)

@@ -55,8 +55,7 @@
 		absAttr = 17; empAttr = 19; extAttr = 20;
 
 		(* sysflag *)
-		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7;
-		inline = 3;
+		noalign = 3; align2 = 4; align4 = 5; align8 = 6; union = 7; inline = 3;
 
 		super = 1;
 
