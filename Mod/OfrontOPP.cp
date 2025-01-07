@@ -1196,6 +1196,7 @@ PROCEDURE Factor(VAR x: OPT.Node);
 			VAR name: OPS.String;
 		BEGIN
 			proc^.mode := mode; proc^.typ := OPT.notyp;
+			IF (sys = inline) & (proc^.vis # internal) & (OPM.dynlib IN OPM.opt) THEN err(196) END;
 			proc^.sysflag := SHORT(sys);
 			proc^.conval := OPT.NewConst(); proc^.conval^.setval := {};
 			IF sym = lparen THEN

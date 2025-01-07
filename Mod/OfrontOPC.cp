@@ -1181,7 +1181,7 @@
 	PROCEDURE ProcHeader(proc: OPT.Object; define: BOOLEAN);
 		VAR oc: BOOLEAN;
 	BEGIN
-		IF proc^.sysflag = inline THEN OPM.WriteString("inline ") END;
+		IF proc^.sysflag = inline THEN OPM.WriteString("static inline ") END;
 		DeclareBase(proc); OPM.Write(Blank);
 		IF proc^.typ^.form # NoTyp THEN Stars(proc^.typ, TRUE, oc) END;
 		IF proc^.sysflag = stdcall THEN OPM.WriteString(STDCALL)
@@ -1208,10 +1208,7 @@
 			ProcPredefs(obj^.left, vis);
 			IF (obj^.mode IN {LProc, XProc}) & (obj^.vis >= vis) & ((obj^.history # removed) OR (obj^.mode = LProc)) THEN
 				(* previous XProc may be deleted or become LProc after interface change*)
-				IF obj^.sysflag = inline THEN
-					IF obj^.vis = internal THEN OPM.WriteString(Static)
-					ELSIF vis = internal THEN OPM.WriteString(Export)
-					END
+				IF obj^.sysflag = inline THEN (* static *)
 				ELSIF vis = external THEN
 					IF (obj^.entry # NIL) OR dynlib THEN OPM.WriteString(EXTERN)
 					ELSE OPM.WriteString(Extern)
@@ -1546,7 +1543,7 @@
 	PROCEDURE EnterProc* (proc: OPT.Object);
 		VAR var, scope: OPT.Object; typ: OPT.Struct; dim: SHORTINT;
 	BEGIN
-		IF proc^.vis # external THEN OPM.WriteString(Static) END ;
+		IF (proc^.vis # external) & (proc^.sysflag # inline) THEN OPM.WriteString(Static) END;
 		ProcHeader(proc, TRUE);
 		BegBlk;
 		scope := proc^.scope;
