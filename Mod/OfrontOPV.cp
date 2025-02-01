@@ -1450,7 +1450,8 @@
 							WHILE ch # 0X DO
 								IF ch = 0DX THEN OPM.WriteLn ELSE OPM.Write(ch) END;
 								INC(i); ch := n^.left^.conval^.ext[i]
-							END
+							END;
+							OPM.WriteLn
 						END
 			END;
 			IF ~(n^.class IN {Nenter, Ninittd, Nifelse, Nwith, Ncase, Nwhile, Nloop, Nwhiled, Nwhilede, Ncomp, Nraw}) THEN
