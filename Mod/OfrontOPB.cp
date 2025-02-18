@@ -1664,13 +1664,19 @@ avoid unnecessary intermediate variables in OFront
 				ELSIF x^.readonly THEN err(76)
 				END
 		| lenfn: (*LEN*)
-				IF (* (x^.class = Ntype) OR *) (x^.class = Nproc) THEN err(126)	(* !!! *)
+				IF (* (x.class = Ntype) OR *) (x.class = Nproc) THEN err(126)	(* !!! *)
 				ELSE
-					IF (OPM.Lang = "C") & (x^.typ^.form = Pointer) THEN DeRef(x) END;
-					IF (x^.class = Nconst) & (x^.typ^.form = Char8) THEN CharToString8(x)
-					ELSIF (x^.class = Nconst) & (x^.typ^.form = Char16) THEN CharToString16(x)
+					IF (OPM.Lang = "C") & (x.typ.form = Pointer) THEN DeRef(x) END;
+					IF x.class = Nconst THEN
+						IF x.typ.form = Char8 THEN CharToString8(x)
+						ELSIF x.typ.form = Char16 THEN CharToString16(x)
+						END
 					END;
-					IF ~(x^.typ^.comp IN {DynArr, Array}) & ~(x^.typ^.form IN {String8, String16}) THEN err(131) END
+					IF ~(x^.typ^.comp IN {DynArr, Array}) & (
+						(OPM.Lang # "C") & (OPM.Lang # "3") OR ~(x.typ.form IN {String8, String16})
+					)
+						THEN err(131)
+					END
 				END
 		| copyfn: (*COPY*)
 				IF (x^.class = Nconst) & (f = Char8) THEN CharToString8(x); f := String8
