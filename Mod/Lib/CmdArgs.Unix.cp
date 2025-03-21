@@ -5,9 +5,9 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
   IMPORT SYSTEM;
 
   TYPE
-    ArgPtr = POINTER [notag] TO ARRAY 2048 OF SHORTCHAR;
-    ArgVec = POINTER [notag] TO ARRAY 2048 OF ArgPtr;
-    EnvPtr = POINTER [notag] TO ARRAY 2048 OF SHORTCHAR;
+    ArgPtr = POINTER [notag] TO ARRAY [notag] OF SHORTCHAR;
+    ArgVec = POINTER [notag] TO ARRAY [notag] OF ArgPtr;
+    EnvPtr = POINTER [notag] TO ARRAY [notag] OF SHORTCHAR;
     Environ = POINTER [notag] TO RECORD [notag] e: EnvPtr END;
 
   VAR
