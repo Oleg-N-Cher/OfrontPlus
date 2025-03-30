@@ -673,7 +673,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		VAR f, g: INTEGER; new: OPT.Struct;
 	BEGIN
 		f := left^.typ^.form; g := right^.typ^.form; new := left^.typ;
-		IF (OPM.Lang # "3") & (f IN intSet + realSet) THEN
+		IF (OPM.Lang > "3") & (f IN intSet + realSet) THEN
 			IF g IN intSet + realSet THEN
 				IF (f = Real32) & (right^.class = Nconst) & (g IN realSet) & (left^.class # Nconst)
 				OR (g = Real32) & (left^.class = Nconst) & (f IN realSet) & (right^.class # Nconst) THEN
@@ -1088,7 +1088,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		IF (z^.class = Ntype) OR (y^.class = Ntype) THEN err(126)
 		ELSE
 			IF (z^.typ^.form = Byte) OR (y^.typ^.form = Byte) THEN PromoteByte(z, y)
-			ELSIF OPM.Lang > "2" THEN Promote(z, y, op)
+			ELSE Promote(z, y, op)
 			END;
 			IF (z^.class = Nconst) & (y^.class = Nconst) THEN ConstOp(op, z, y); z^.obj := NIL
 			ELSE
