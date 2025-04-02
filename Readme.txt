@@ -43,7 +43,7 @@ Ofront+ differences from Ofront/voc
 
   2. Outputs module name and position on any runtime error, HALT or ASSERT.
 
-  3. New SYSTEM types: CHAR8, UINT8, INT8, INT16, INT32, INT64, ADRINT, REAL32, REAL64.
+  3. New SYSTEM types: CHAR8, BYTE(UINT8), INT8, INT16, INT32, INT64, ADRINT, REAL32, REAL64.
 
   4. Allows arithmetic operations with type BYTE (Oberon-3 & Component Pascal).
 
@@ -59,7 +59,7 @@ Ofront+ differences from Ofront/voc
 
   10. Support UTF-8 encoded sources (with or without BOM) with EOL as 0DX (Oberon System), 0AX (UNIX/Linux) and 0DX+0AX (Windows).
 
-  11. "Proper FOR" support in Oberon-3 (concept and implementation by Oleg Komlev).
+  11. "Proper FOR" support (concept and implementation by Oleg Komlev).
 
   12. Constant arrays support in Oberon-3.
 
@@ -73,9 +73,9 @@ Ofront+ differences from Ofront/voc
 
   17. Advanced features for defining bindings to foreign libraries, system flag [stdcall].
 
-  18. It is possible to use modules written in Oberon, Oberon-2, Component Pascal and Oberon-3 together in one project.
+  18. It is possible to mix different Oberon dialects together in one project.
 
-  19. Tested with GCC/MinGW, Clang, Intel C++, SDCC and Borland Turbo C.
+  19. Tested with GCC/MinGW, Clang, Tiny C (tcc), SDCC and Borland Turbo C.
 
 
 Get it!
@@ -83,10 +83,11 @@ Get it!
 
 Here you have:
 
-  1. Ofront+ for Windows & Linux command line.
+  1. Ofront+ for Windows, Linux, macOS and FreeBSD command line.
   2. Ofront+ for BlackBox Component Builder (runs as a subsystem).
 
 You can download it at https://github.com/Oleg-N-Cher/OfrontPlus
+Bootstrap C sources at https://github.com/Oleg-N-Cher/OfrontPlus-bootstrap
 
 
 Ofront+ now is in active development and we provide free support of the project.
@@ -99,15 +100,6 @@ To discuss and ask questions, you can join the forum:
 Telegram group:
 
   https://t.me/ofrontplus
-
-Rocket-chat channel:
-
-  https://chat.oberon.org/channel/ofrontplus
-
-Yahoo group:
-
-  https://groups.yahoo.com/neo/groups/ofront/info
-
 
 Your comments and suggestions are welcome.
 
