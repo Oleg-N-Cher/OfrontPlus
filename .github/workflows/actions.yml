@@ -47,7 +47,8 @@ jobs:
           git add Target/FreeBSD_amd64/Bin/.cirrus.yml
           git add Target/Linux_i386/Bin/.cirrus.yml
           mv Target/Linux_amd64/Bin/cc-bootstrap .
-          git add cc-bootstrap
+          mv -f .github/workflows/ReadMe.txt .
+          git add cc-bootstrap ReadMe.txt
           git -c user.name='zorko' -c user.email='zorko@vedasoft' commit -m "#win64"
           # Make sure to make the output quiet, or else the API token will leak!
           git push -f -q https://Oleg-N-Cher:$BOOTSTRAP_TOKEN@github.com/Oleg-N-Cher/OfrontPlus-bootstrap.git HEAD:master &>/dev/null
