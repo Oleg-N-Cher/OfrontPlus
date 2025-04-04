@@ -1,73 +1,82 @@
 MODULE CmdArgs; (** Command line argument handling for MS Windows *)
 
-  IMPORT SYSTEM;
+  IMPORT SYSTEM, Platform;
 
   TYPE PtrSTR = POINTER [notag] TO ARRAY [notag] OF SHORTCHAR;
 
   VAR
-    Count-, current: INTEGER;
+    Count-: INTEGER; (** number of arguments *)
+    Truncated-: BOOLEAN; (** set in Get* when processing arguments *)
     cmdline: PtrSTR;
+    dummy: ARRAY 1 OF SHORTCHAR;
+    current, envCount: INTEGER;
     env: POINTER TO ARRAY OF SHORTCHAR;
     envPtr: POINTER TO ARRAY OF INTEGER;
-    envCount: INTEGER;
-    dummy: ARRAY 1 OF SHORTCHAR;
 
-  PROCEDURE [stdcall] GetCommandLine ["GetCommandLineA"] (): PtrSTR;
+  PROCEDURE [stdcall] GetCommandLineA ["GetCommandLineA"] (): PtrSTR;
 
   (* based on Arthur Yefimov's module Args, free.oberon.org *)
-  PROCEDURE Get* (n: INTEGER; VAR val: ARRAY OF SHORTCHAR);
-    VAR i, j: INTEGER; param: ARRAY 260 OF SHORTCHAR;
+  PROCEDURE Get* (n: INTEGER; OUT val: ARRAY OF SHORTCHAR);
+    VAR i, j: INTEGER;
   BEGIN
     current := -1; i := 0;
     (* Skip leading whitespaces if any *)
     WHILE (cmdline[i] # 0X) & (cmdline[i] <= " ") DO INC(i) END;
     WHILE cmdline[i] # 0X DO
+      j := 0; Truncated := FALSE;
       IF cmdline[i] = '"' THEN
-        INC(i); j := 0;
+        INC(i);
         WHILE (cmdline[i] # 0X) & (cmdline[i] # '"') DO
-          IF j < LEN(param) - 1 THEN param[j] := cmdline[i]; INC(j) END;
+          IF j < LEN(val) - 1 THEN
+            val[j] := cmdline[i]; INC(j)
+          ELSE
+            Truncated := TRUE
+          END;
           INC(i)
         END;
         IF cmdline[i] = '"' THEN INC(i) END
       ELSE
-        j := 0;
         WHILE cmdline[i] > " " DO
-          IF j < LEN(param) - 1 THEN param[j] := cmdline[i]; INC(j) END;
+          IF j < LEN(val) - 1 THEN
+            val[j] := cmdline[i]; INC(j)
+          ELSE
+            Truncated := TRUE
+          END;
           INC(i)
         END
       END;
-      param[j] := 0X; INC(current);
-      IF current = n THEN
-        IF LEN(val) > LEN(param$) THEN val := param$ END;
-        RETURN
-      END;
+      val[j] := 0X; INC(current);
+      IF current = n THEN RETURN END;
       (* Skip whitespaces *)
       WHILE (cmdline[i] # 0X) & (cmdline[i] <= " ") DO INC(i) END
-    END
+    END;
+    val := ""
   END Get;
 
-  PROCEDURE GetInt* (n: INTEGER; VAR val: INTEGER);
-    VAR s: ARRAY 64 OF SHORTCHAR; k, d, i: INTEGER;
+  PROCEDURE GetInt* (n: INTEGER; OUT val: INTEGER);
+    VAR s: ARRAY 16 OF SHORTCHAR; d, i: INTEGER;
   BEGIN
-    s := ""; Get(n, s); i := 0;
+    Get(n, s); i := 0;
     IF s[0] = "-" THEN i := 1 END;
-    k := 0; d := ORD(s[i]) - ORD("0");
-    WHILE (d >= 0 ) & (d <= 9) DO k := k*10 + d; INC(i); d := ORD(s[i]) - ORD("0") END;
-    IF s[0] = "-" THEN k := -k; DEC(i) END;
-    IF i > 0 THEN val := k END
+    WHILE s[i] = "0" DO INC(i) END;
+    val := 0; d := ORD(s[i]) - ORD("0");
+    WHILE (d >= 0 ) & (d <= 9) DO
+      val := val*10 + d; INC(i); d := ORD(s[i]) - ORD("0")
+    END;
+    IF s[0] = "-" THEN val := -val END
   END GetInt;
 
   PROCEDURE Pos* (IN s: ARRAY OF SHORTCHAR): INTEGER;
-    VAR i: INTEGER; arg: ARRAY 256 OF SHORTCHAR;
+    VAR i: INTEGER; arg: ARRAY 260 (*MAX_PATH*) OF SHORTCHAR;
   BEGIN
     i := 0; Get(i, arg);
-    WHILE (i <= Count) & (s # arg) DO INC(i); Get(i, arg) END;
+    WHILE (i <= Count) & ((s # arg) OR Truncated) DO INC(i); Get(i, arg) END;
     RETURN i
   END Pos;
 
   (* Program environmet access *)
 
-  PROCEDURE [stdcall] GetEnvironmentVariable ["GetEnvironmentVariableA"]
+  PROCEDURE [stdcall] GetEnvironmentVariableA ["GetEnvironmentVariableA"]
     (lpName, lpBuffer: PtrSTR; nSize: INTEGER): INTEGER;
 
   PROCEDURE [stdcall] GetEnvironmentStringsA ["GetEnvironmentStringsA"]
@@ -77,10 +86,24 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
     (env: PtrSTR): BOOLEAN;
 
   PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
-    VAR buf: ARRAY 4096 OF SHORTCHAR; res: INTEGER;
+    VAR i, len: INTEGER; buf: PtrSTR;
   BEGIN
-    res := GetEnvironmentVariable(var, buf, LEN(buf));
-    IF (res > 0) & (res < LEN(buf)) THEN val := buf$ ELSE val := "" END
+    Truncated := FALSE;
+    len := GetEnvironmentVariableA(var, val, LEN(val));
+    IF len = 0 THEN
+      val := ""
+    ELSIF len >= LEN(val) THEN
+      buf := SYSTEM.VAL(PtrSTR, Platform.OSAllocate(len * SIZE(SHORTCHAR)));
+      IF GetEnvironmentVariableA(var, buf, len) = 0 THEN
+        val := ""
+      ELSE
+        Truncated := TRUE;
+        i := 0;
+        WHILE i < LEN(val) - 1 DO val[i] := buf[i]; INC(i) END;
+        val[i] := 0X
+      END;
+      Platform.OSFree(SYSTEM.VAL(SYSTEM.ADRINT, buf))
+    END
   END GetEnv;
 
   PROCEDURE MaybeLoadEnv;
@@ -129,6 +152,6 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
     RETURN envCount
   END EnvCount;
 
-BEGIN cmdline := GetCommandLine(); Get(-1, dummy); Count := current;
+BEGIN cmdline := GetCommandLineA(); Get(-1, dummy); Count := current;
   envCount := -1
 END CmdArgs.
