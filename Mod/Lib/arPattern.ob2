@@ -5,7 +5,7 @@
 MODULE arPattern;
 
 IMPORT 
-	Platform,
+	CmdArgs,
 	Out := arOut,
 	Char := arChar,
 	SL := arStringList,
@@ -218,7 +218,7 @@ BEGIN
 				ch := string[i]; INC(i);
 			END;
 			key := keyBuffer.GetString();
-			Platform.GetEnv(key^, arg);
+			CmdArgs.GetEnv(key^, arg);
 			outBuffer.String(arg);
 		END;
 		IF ch = 0X THEN EXIT END;

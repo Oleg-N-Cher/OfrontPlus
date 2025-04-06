@@ -107,19 +107,17 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
   END GetEnv;
 
   PROCEDURE MaybeLoadEnv;
-    VAR p: PtrSTR;
-      i, j, len: INTEGER;
+    VAR p: PtrSTR; i, j: INTEGER;
   BEGIN
-    IF envCount = -1 THEN
-      envCount := 0;
-      p := GetEnvironmentStringsA();
-      IF p # NIL THEN
-        i := 0;
-        WHILE p[i] # 0X DO
-          WHILE p[i] # 0X DO INC(i) END;
-          INC(i); INC(envCount)
-        END;
-
+    envCount := 0;
+    p := GetEnvironmentStringsA();
+    IF p # NIL THEN
+      i := 0;
+      WHILE p[i] # 0X DO
+        WHILE p[i] # 0X DO INC(i) END;
+        INC(i); INC(envCount)
+      END;
+      IF envCount > 0 THEN
         NEW(env, i - 1);
         NEW(envPtr, envCount);
         i := 0; j := 0;
@@ -127,28 +125,38 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
           envPtr[j] := i; INC(j);
           WHILE p[i] # 0X DO env[i] := p[i]; INC(i) END;
           env[i] := 0X; INC(i)
-        END;
-        IF FreeEnvironmentStringsA(p) THEN END
-      END
+        END
+      END;
+      IF FreeEnvironmentStringsA(p) THEN END
     END
   END MaybeLoadEnv;
 
-  PROCEDURE GetEnvN* (n: INTEGER; VAR s: ARRAY OF SHORTCHAR);
+  PROCEDURE GetEnvN* (n: INTEGER; OUT val: ARRAY OF SHORTCHAR);
     VAR p: PtrSTR; i, j: INTEGER;
   BEGIN
+    Truncated := FALSE;
     MaybeLoadEnv;
     IF (0 <= n) & (n < envCount) THEN
       i := 0; j := envPtr[n];
-      WHILE (i < LEN(s) - 1) & (env[j] # 0X) DO
-        s[i] := env[j]; INC(i); INC(j)
+      WHILE env[j] # 0X DO
+        IF i < LEN(val) - 1 THEN val[i] := env[j]
+        ELSE
+          val[i] := 0X; Truncated := TRUE;
+          env := NIL; envPtr := NIL;
+          RETURN
+        END;
+        INC(i); INC(j)
       END;
-      s[i] := 0X
-    ELSE s := "" END
+      val[i] := 0X
+    ELSE
+      val := ""
+    END;
+    env := NIL; envPtr := NIL
   END GetEnvN;
 
   PROCEDURE EnvCount* (): INTEGER;
   BEGIN
-    MaybeLoadEnv;
+    MaybeLoadEnv; env := NIL; envPtr := NIL;
     RETURN envCount
   END EnvCount;
 

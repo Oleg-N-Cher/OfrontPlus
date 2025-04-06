@@ -205,7 +205,7 @@ BEGIN
    END;
    subsystem := "";
    IF ident [i] # 0X THEN
-			Str.Extract (ident, 0, i, subsystem);
+      Str.Extract (ident, 0, i, subsystem);
       name := "";
       Str.Extract (ident, i, LEN (name), name);
    ELSE
@@ -479,10 +479,10 @@ BEGIN
    InitScanner;
    i := 1; NEW (first); first.name [0] := 0X;
    WHILE i <= CmdArgs.Count DO
-			CmdArgs.Get(i, arg);
-			IF arg = "-r" THEN reduced := ~reduced;
-			ELSE tmp := EnlistModule (arg);
-			END;
+      CmdArgs.Get(i, arg);
+      IF arg = "-r" THEN reduced := ~reduced;
+      ELSE tmp := EnlistModule (arg);
+      END;
       INC (i)
    END;
    m := first.next;

@@ -27,12 +27,9 @@ BEGIN
 
   CmdArgs.GetEnv("OBERON", @env); Write.Ln;
   IF env # "" THEN Write.String("OBERON="); Write.String(env); Write.Ln END;
-  env := "";
   CmdArgs.GetEnv("PATH", @env); Write.Ln;
   IF env # "" THEN Write.String("PATH="); Write.String(env); Write.Ln END;
-  env := "";
   CmdArgs.GetEnv("HOME", @env); Write.Ln;
   IF env # "" THEN Write.String("HOME="); Write.String(env); Write.Ln END;
-  env := "";
 
 END TestArgs.

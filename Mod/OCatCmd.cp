@@ -18,9 +18,9 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 		VAR optTab: BOOLEAN; path: ARRAY 128 OF SHORTCHAR; arg: INTEGER;
 			T: Texts.Text; R: Texts.Reader; ch: SHORTCHAR;
 	BEGIN
-		optTab := FALSE; path := ""; arg := 1; NEW(T);
+		optTab := FALSE; arg := 1; NEW(T);
 		CmdArgs.Get(1, path);
-		IF path = "-t" THEN optTab := TRUE; arg := 2; path := ""; CmdArgs.Get(2, path) END;
+		IF path = "-t" THEN optTab := TRUE; arg := 2; CmdArgs.Get(2, path) END;
 		WHILE path # "" DO
 			IF Files.Old(path) # NIL THEN
 				Texts.Open(T, path);
@@ -36,7 +36,7 @@ MODULE OCatCmd;	(* J. Templ, 13-Jan-96 *)
 			ELSE
 				Console.String("OCat: cannot open "); Console.String(path); Console.Ln
 			END;
-			INC(arg); path := "";
+			INC(arg);
 			CmdArgs.Get(arg, path)
 		END;
 		Console.Flush

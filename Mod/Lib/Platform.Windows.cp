@@ -152,26 +152,6 @@ BEGIN
   RETURN stdOutIsConsole # 0
 END IsStdOutConsole;
 
-PROCEDURE- getEnvironmentVariable (name: ARRAY OF SHORTCHAR; VAR buf: ARRAY OF SHORTCHAR): DWORD
-  "(INTEGER)GetEnvironmentVariableA((LPSTR)name, (LPSTR)buf, buf__len)";
-
-PROCEDURE- getEnvironmentVariableW (name: ARRAY OF CHAR; VAR buf: ARRAY OF CHAR): DWORD
-  "(INTEGER)GetEnvironmentVariableW((LPWSTR)name, (LPWSTR)buf, buf__len)";
-
-PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
-  VAR res: INTEGER;
-BEGIN
-  res := getEnvironmentVariable(var, val);
-  IF (res < 0) OR (res > LEN(val)) THEN val := "" END
-END GetEnv;
-
-PROCEDURE GetEnvW* (IN var: ARRAY OF CHAR; OUT val: ARRAY OF CHAR);
-  VAR res: INTEGER;
-BEGIN
-  res := getEnvironmentVariableW(var, val);
-  IF (res < 0) OR (res > LEN(val)) THEN val := "" END
-END GetEnvW;
-
 PROCEDURE- getSystemDefaultLangID (): SHORTINT
   "(SHORTINT)GetSystemDefaultLangID()";
 

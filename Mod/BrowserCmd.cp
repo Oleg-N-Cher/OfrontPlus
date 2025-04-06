@@ -484,12 +484,12 @@ BEGIN
 	IF CmdArgs.Count # 0 THEN ShowDef
 	ELSE
 		Console.String("Ofront+ (TM) Show Definition (Browser) Tool v1.0"); Console.Ln;
-		Console.String("Copyright (c) Software Templ OG, 1995-2020 & VEDAsoft Oberon Club, 2013-2020"); Console.Ln; Console.Ln;
+		Console.String("Copyright (c) Software Templ OG, 1995-2020 & VEDAsoft Oberon Club, 2013-2025"); Console.Ln; Console.Ln;
 		Console.String('  command = "showdef" [-option] module'); Console.Ln;
 		Console.String('  option  = "1" | "2" | "7" | "C" | "3" | "x"'); Console.Ln; Console.Ln;
-		Console.String('       "1": Oberon'); Console.Ln;
+		Console.String('       "1": Oberon (1990)'); Console.Ln;
 		Console.String('       "2": Oberon-2'); Console.Ln;
-		Console.String('       "7": Oberon-07'); Console.Ln;
+		Console.String('       "7": Oberon-07/16'); Console.Ln;
 		Console.String('       "C": Component Pascal (by default)'); Console.Ln;
 		Console.String('       "3": Oberon-3 (experimental dialect)'); Console.Ln;
 		Console.String('       "x": eXtra system information'); Console.Ln

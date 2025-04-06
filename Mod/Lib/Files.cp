@@ -1,6 +1,6 @@
 MODULE Files;  (* J. Templ 1.12. 89/12.4.95 Oberon files mapped onto Unix files *)
 
-  IMPORT SYSTEM, Platform, Heap, Strings, Console;
+  IMPORT SYSTEM, Platform, Heap, Strings, CmdArgs, Console;
 
   (* standard data type I/O
 
@@ -778,5 +778,5 @@ Especially Length would become fairly complex.
 BEGIN
   tempno := -1;
   Heap.FileCount := 0;
-  HOME := "";  Platform.GetEnv("HOME", HOME);
+  CmdArgs.GetEnv("HOME", HOME)
 END Files.

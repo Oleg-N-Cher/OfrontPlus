@@ -44,8 +44,8 @@ MODULE OEF;
 IMPORT 
 	Kernel,
 	Files,
+	CmdArgs,
 	Console,
-	Platform,
 	Pattern := arPattern,
 	Strings := arStrings,
 	C := arConfiguration;
@@ -341,7 +341,8 @@ BEGIN
 END Options;
 
 BEGIN
-	OBERON := "."; Platform.GetEnv("OBERON", OBERON);
+	CmdArgs.GetEnv("OBERON", OBERON);
+	IF OBERON = "" THEN OBERON := "." END;
 	Files.SetSearchPath(OBERON);
 	C.SetBanner("oef - Ofront+ Error Filter\nThis tool shows source code context for Ofront+ compiler messages\nUsage:\n  ofront+ ... Module.Mod | oef [options]\n");
 	Options;

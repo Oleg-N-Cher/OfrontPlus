@@ -379,9 +379,9 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			(* set options to initial defaults *)
 			Lang := "C";	(* default input language: Component Pascal *)
 			AdrSize := -1;	(* undefined *)
-			glbopt := defopt; S := 1; s := "";
+			glbopt := defopt; S := 1;
 			CmdArgs.Get(1, s); stop := FALSE;
-			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); s := ""; CmdArgs.Get(S, s) END;
+			WHILE s[0] = OptionChar DO ScanOptions(s, glbopt); INC(S); CmdArgs.Get(S, s) END;
 			(* Record global option settings for this command line *)
 			GlobalAdrSize := AdrSize; GlobalAlignment := Alignment;	GlobalLang := Lang
 		END
@@ -392,8 +392,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		Alignment := GlobalAlignment; AdrSize := GlobalAdrSize;
 		opt := glbopt;
-		s := ""; CmdArgs.Get(S, s);
-		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); s := ""; CmdArgs.Get(S, s) END;
+		CmdArgs.Get(S, s);
+		WHILE s[0] = OptionChar DO ScanOptions(s, opt); INC(S); CmdArgs.Get(S, s) END;
 		curpos := 256; errpos := curpos; lasterrpos := curpos - 10;
 		GetProperties
 	END InitOptions;
@@ -404,7 +404,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	BEGIN
 		done := FALSE; curpos := 0;
 		IF stop OR (S > CmdArgs.Count) THEN noerr := TRUE; RETURN END;
-		s := ""; CmdArgs.Get(S, s);
+		CmdArgs.Get(S, s);
 		endpos := LEN(s$) - 4;
 		IF    Strings.Pos(".ob1", s, 1) = endpos THEN Lang := "1"
 		ELSIF Strings.Pos(".ob2", s, 1) = endpos THEN Lang := "2"
@@ -854,6 +854,7 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 	END InitHost;
 
 BEGIN InitCrcTab; InitHost; Texts.OpenWriter(W);
-  OBERON := "."; Platform.GetEnv("OBERON", OBERON);
-  Files.SetSearchPath(OBERON);
+  CmdArgs.GetEnv("OBERON", OBERON);
+  IF OBERON = "" THEN OBERON := "." END;
+  Files.SetSearchPath(OBERON)
 END OfrontOPM.

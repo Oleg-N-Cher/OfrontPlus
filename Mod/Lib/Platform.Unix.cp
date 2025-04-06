@@ -129,27 +129,22 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 PROCEDURE- getenv (var: ARRAY OF SHORTCHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
 
-PROCEDURE getEnv (IN var: ARRAY OF SHORTCHAR; VAR val: ARRAY OF SHORTCHAR): BOOLEAN;
+PROCEDURE getEnv (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR): BOOLEAN;
 VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
-  IF p # NIL THEN val := p^$ END;
+  IF p # NIL THEN val := p^$ ELSE val := "" END;
   RETURN p # NIL
 END getEnv;
-
-PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
-BEGIN
-  IF ~getEnv(var, val) THEN val := "" END
-END GetEnv;
 
 (* Returns in first two characters of lang the user's UI language, i.e. "ru" *)
 PROCEDURE GetLang* (OUT lang: ARRAY OF SHORTCHAR);
 BEGIN
-  GetEnv("LANGUAGE", lang);
+  getEnv("LANGUAGE", lang);
   IF lang = "" THEN
-    GetEnv("LC_ALL", lang);
+    getEnv("LC_ALL", lang);
     IF lang = "" THEN
-      GetEnv("LANG", lang)
+      getEnv("LANG", lang)
     END
   END
 END GetLang;
@@ -356,7 +351,7 @@ PROCEDURE GetTempPath* (OUT path: ARRAY OF SHORTCHAR);
 VAR s: ARRAY 1024 OF SHORTCHAR;
   i: INTEGER;
 BEGIN
-  GetEnv("TMPDIR", s);
+  getEnv("TMPDIR", s);
   i := 0; WHILE s[i] # 0X DO INC(i) END;
   IF (i # 0) & (s[i - 1] # PathDelimiter) THEN
     s[i] := PathDelimiter; INC(i); s[i] := 0X
