@@ -129,12 +129,11 @@ PROCEDURE OSFree* (address: ADRINT); BEGIN free(address) END OSFree;
 
 PROCEDURE- getenv (var: ARRAY OF SHORTCHAR): EnvPtr "(Platform_EnvPtr)getenv((char*)var)";
 
-PROCEDURE getEnv (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR): BOOLEAN;
+PROCEDURE getEnv (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
 VAR p: EnvPtr;
 BEGIN
   p := getenv(var);
-  IF p # NIL THEN val := p^$ ELSE val := "" END;
-  RETURN p # NIL
+  IF p # NIL THEN val := p^$ ELSE val := "" END
 END getEnv;
 
 (* Returns in first two characters of lang the user's UI language, i.e. "ru" *)
