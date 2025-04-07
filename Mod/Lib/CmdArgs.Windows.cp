@@ -1,6 +1,6 @@
 MODULE CmdArgs; (** Command line argument handling for MS Windows *)
 
-  IMPORT SYSTEM, Platform;
+  IMPORT SYSTEM;
 
   TYPE PtrSTR = POINTER [notag] TO ARRAY [notag] OF SHORTCHAR;
 
@@ -85,6 +85,14 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
   PROCEDURE [stdcall] FreeEnvironmentStringsA ["FreeEnvironmentStringsA"]
     (env: PtrSTR): BOOLEAN;
 
+  PROCEDURE- ExternPlatformOSAllocate
+    "extern SYSTEM_ADRINT Platform_OSAllocate (SYSTEM_ADRINT size);";
+  PROCEDURE- ExternPlatformOSFree
+    "extern void Platform_OSFree (SYSTEM_ADRINT adr);";
+
+  PROCEDURE- OSAllocate (size: SYSTEM.ADRINT): SYSTEM.ADRINT "Platform_OSAllocate(size)";
+  PROCEDURE- OSFree (adr: SYSTEM.ADRINT) "Platform_OSFree(adr)";
+
   PROCEDURE GetEnv* (IN var: ARRAY OF SHORTCHAR; OUT val: ARRAY OF SHORTCHAR);
     VAR i, len: INTEGER; buf: PtrSTR;
   BEGIN
@@ -93,7 +101,7 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
     IF len = 0 THEN
       val := ""
     ELSIF len >= LEN(val) THEN
-      buf := SYSTEM.VAL(PtrSTR, Platform.OSAllocate(len * SIZE(SHORTCHAR)));
+      buf := SYSTEM.VAL(PtrSTR, OSAllocate(len * SIZE(SHORTCHAR)));
       IF GetEnvironmentVariableA(var, buf, len) = 0 THEN
         val := ""
       ELSE
@@ -102,7 +110,7 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
         WHILE i < LEN(val) - 1 DO val[i] := buf[i]; INC(i) END;
         val[i] := 0X
       END;
-      Platform.OSFree(SYSTEM.VAL(SYSTEM.ADRINT, buf))
+      OSFree(SYSTEM.VAL(SYSTEM.ADRINT, buf))
     END
   END GetEnv;
 

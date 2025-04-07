@@ -197,10 +197,13 @@ MODULE Heap;
   END DECREF;
 
 
-  PROCEDURE- ExternPlatformOSAllocate "extern SYSTEM_ADRINT Platform_OSAllocate (SYSTEM_ADRINT size);";
+  PROCEDURE- ExternPlatformOSAllocate
+    "extern SYSTEM_ADRINT Platform_OSAllocate (SYSTEM_ADRINT size);";
+  PROCEDURE- ExternPlatformOSFree
+    "extern void Platform_OSFree (SYSTEM_ADRINT adr);";
+
   PROCEDURE- OSAllocate (size: ADDRESS): ADDRESS "Platform_OSAllocate(size)";
-  PROCEDURE- ExternPlatformOSFree     "extern void Platform_OSFree (SYSTEM_ADRINT address);";
-  PROCEDURE- OSFree (address: ADDRESS)           "Platform_OSFree(address)";
+  PROCEDURE- OSFree (adr: ADDRESS) "Platform_OSFree(adr)";
 
   PROCEDURE NewChunk(blksz: ADDRESS): ADDRESS;
     VAR chnk, blk, end: ADDRESS;

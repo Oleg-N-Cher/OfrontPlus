@@ -27,13 +27,14 @@ MODULE CmdArgs; (* jt, 8.12.94 *)
   BEGIN
     val := ""; Truncated := FALSE;
     IF n < argc() THEN av := argv(); i := 0;
-    WHILE av[n]^[i] # 0X DO
-      IF i < LEN(val) - 1 THEN val[i] := av[n]^[i]
-      ELSE val[i] := 0X; Truncated := TRUE; RETURN
+      WHILE av[n]^[i] # 0X DO
+        IF i < LEN(val) - 1 THEN val[i] := av[n]^[i]
+        ELSE val[i] := 0X; Truncated := TRUE; RETURN
+        END;
+        INC(i)
       END;
-      INC(i)
-    END;
-    val[i] := 0X
+      val[i] := 0X
+    END
   END Get;
 
   PROCEDURE GetInt* (n: INTEGER; OUT val: INTEGER);
