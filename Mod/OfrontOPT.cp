@@ -1341,6 +1341,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterProc("LCHR", "lchr", lchrfn)
 		END;
 		IF lang = "7" THEN
+			EnterProc("SIZE", "size", sizefn);
 			EnterProc("SHORT", "short", shortfn);
 			EnterProc("LONG", "long", longfn)
 		ELSE
@@ -1454,15 +1455,14 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterProc("MAX", "max", maxfn);
 			EnterProc("SHORT", "short", shortfn);
 			EnterProc("LONG", "long", longfn);
+			EnterProc("SIZE", "size", sizefn);
 			IF lang = "C" THEN EnterProc("CHR", "chr", lchrfn)
 			ELSE
-				IF lang = "3" THEN EnterProc("LCHR", "lchr", lchrfn) END;
-				EnterProc("CHR", "chr", chrfn)
+				EnterProc("CHR", "chr", chrfn);
+				IF lang = "3" THEN EnterProc("LCHR", "lchr", lchrfn) END
 			END
 		END;
 		EnterProc("ODD", "odd", oddfn);
-
-		EnterProc("SIZE", "size", sizefn);
 		EnterProc("INC", "inc", incfn);
 		EnterProc("DEC", "dec", decfn);
 		EnterProc("INCL", "incl", inclfn);
