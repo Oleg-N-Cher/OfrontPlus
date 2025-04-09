@@ -118,6 +118,7 @@ Contributors
   Artur Yefimov, he could have done more, but thank him for that too.
   Sergey A. Oborotov, he implemented improved smart support of Clang.
   GameHunter found the rarest bugs and helped us become more stable.
+  @AlexBogy (Alexander Bogdanov) for his essential help and support.
 
   ... also the entire OMinc team and all OP2 & ETH Oberon developers!
   ... sorry who we forgot. Please remind...

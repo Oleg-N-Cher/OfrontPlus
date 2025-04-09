@@ -675,7 +675,8 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		f := left^.typ^.form; g := right^.typ^.form; new := left^.typ;
 		IF (OPM.Lang > "3") & (f IN intSet + realSet) THEN
 			IF g IN intSet + realSet THEN
-				IF (f = Real32) & (right^.class = Nconst) & (g IN realSet) & (left^.class # Nconst)
+				IF (OPM.Lang = "7") & ((f IN intSet) # (g IN intSet)) THEN err(100)
+				ELSIF (f = Real32) & (right^.class = Nconst) & (g IN realSet) & (left^.class # Nconst)
 				OR (g = Real32) & (left^.class = Nconst) & (f IN realSet) & (right^.class # Nconst) THEN
 					new := OPT.realtyp	(* SR *)
 				ELSIF (f = Real64) OR (g = Real64) THEN new := OPT.lrltyp
