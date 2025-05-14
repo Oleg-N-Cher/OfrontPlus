@@ -205,7 +205,7 @@ IF starsLevel > 10 THEN HALT(99) END ;
 
 	PROCEDURE ^AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
 
-	PROCEDURE DeclareObj(dcl: OPT.Object; scopeDef: BOOLEAN);
+	PROCEDURE DeclareObjEx (dcl: OPT.Object; scopeDef: BOOLEAN; VAR n: INTEGER);
 		VAR
 			typ: OPT.Struct;
 			varPar, openClause: BOOLEAN; form, comp: SHORTINT;
@@ -217,7 +217,13 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			IF openClause THEN OPM.Write(OpenParen) END ;
 			OPM.Write(Star)
 		END ;
-		IF dcl.name # "" THEN Ident(dcl) END ;
+		IF dcl.name # "" THEN
+			IF (dcl^.mode = Fld) & (dcl^.vis = internal) & (OPM.currFile = OPM.HeaderFile) THEN
+				Str1("_prvt#", n); INC(n)
+			ELSE
+				Ident(dcl)
+			END
+		END;
 		IF varPar & openClause THEN OPM.Write(CloseParen) END ;
 		openClause := FALSE;
 		LOOP
@@ -241,6 +247,13 @@ IF starsLevel > 10 THEN HALT(99) END ;
 			END ;
 			typ := typ^.BaseTyp
 		END
+	END DeclareObjEx;
+
+	PROCEDURE DeclareObj (dcl: OPT.Object; scopeDef: BOOLEAN);
+		VAR n: INTEGER;
+	BEGIN
+		n := 0;
+		DeclareObjEx(dcl, scopeDef, n)
 	END DeclareObj;
 
 	PROCEDURE Andent*(typ: OPT.Struct);	(* ident of possibly anonymous record type *)
@@ -647,6 +660,26 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		IF gap > 0 THEN BegStat; Str1("char _prvt#", n); INC(n); Str1("[#]", gap); EndStat END
 	END FillGap;
 
+	PROCEDURE ContainsRealType (typ: OPT.Struct): BOOLEAN;
+		VAR fld: OPT.Object;
+	BEGIN
+		IF typ = NIL THEN RETURN FALSE END;
+		IF typ^.form IN {Real, LReal} THEN RETURN TRUE END;
+		CASE typ^.comp OF
+			| Array:
+				RETURN ContainsRealType(typ^.BaseTyp)
+			| Record:
+				IF ContainsRealType(typ^.BaseTyp) THEN RETURN TRUE END;
+				fld := typ^.link;
+				WHILE (fld # NIL) & (fld^.mode = Fld) DO
+					IF ContainsRealType(fld^.typ) THEN RETURN TRUE END;
+					fld := fld^.link
+				END
+			ELSE
+		END;
+		RETURN FALSE
+	END ContainsRealType;
+
 	PROCEDURE FieldList (typ: OPT.Struct; last: BOOLEAN; VAR off, n, curAlign: INTEGER);
 		VAR fld: OPT.Object; base: OPT.Struct; gap, adr, align, fldAlign: INTEGER;
 	BEGIN
@@ -655,25 +688,28 @@ IF starsLevel > 10 THEN HALT(99) END ;
 		ELSE off := 0; n := 0; curAlign := 1
 		END ;
 		WHILE (fld # NIL) & (fld.mode = Fld) DO
-			IF (OPM.currFile = OPM.HeaderFile) & (fld.vis = internal) OR
-				(OPM.currFile = OPM.BodyFile) & (fld.vis = internal) & (typ^.mno # 0) THEN
+			IF ~ContainsRealType(fld^.typ) & ((OPM.currFile = OPM.HeaderFile) & (fld.vis = internal) OR
+				(OPM.currFile = OPM.BodyFile) & (fld.vis = internal) & (typ^.mno # 0)) THEN
 				fld := fld.link;
-				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) DO fld := fld.link END ;
+				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) & ~ContainsRealType(fld^.typ) DO
+					fld := fld.link
+				END
 			ELSE
 				(* mimic OPV.TypSize to detect gaps caused by private fields *)
 				adr := off; fldAlign := Base(fld^.typ); Align(adr, fldAlign);
 				gap := fld.adr - adr;
-				IF fldAlign > curAlign THEN curAlign := fldAlign END ;
-				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
-				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, FALSE);
+				IF fldAlign > curAlign THEN curAlign := fldAlign END;
+				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END;
+				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObjEx(fld, FALSE, n);
 				off := fld.adr + fld.typ.size; base := fld.typ; fld := fld.link;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.typ = base) & (fld.adr = off)
-(* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)) DO
-					OPM.WriteString(", "); DeclareObj(fld, FALSE); off := fld.adr + fld.typ.size; fld := fld.link
-				END ;
+(* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)
+						OR ContainsRealType(fld^.typ)) DO
+					OPM.WriteString(", "); DeclareObjEx(fld, FALSE, n); off := fld.adr + fld.typ.size; fld := fld.link
+				END;
 				EndStat
 			END
-		END ;
+		END;
 		IF last THEN
 			adr := typ.size - typ^.sysflag DIV 100H;
 			IF adr = 0 THEN gap := 1 (* avoid empty struct *) ELSE gap := adr - off END ;
