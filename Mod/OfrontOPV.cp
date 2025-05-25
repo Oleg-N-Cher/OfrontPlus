@@ -1272,7 +1272,7 @@
 				Nenter:
 						ASSERT(n^.obj # NIL); (* enter proc *)
 						proc := n^.obj;
-						OPC.TypeDefs(proc^.scope^.right, 0);
+						OPC.TypeDefs(proc^.scope^.right);
 						IF ~proc^.scope^.leaf THEN OPC.DefineInter (proc) END; (* define intermediate procedure scope *)
 						INC(OPM.level); stat(n^.left, proc); DEC(OPM.level);
 						OPC.EnterProc(proc); stat(n^.right, proc);

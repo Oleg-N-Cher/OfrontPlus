@@ -132,7 +132,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		noInit = 1; doClose = 2; inBit = 2; outBit = 4;
 
 		(* symbol file items *)
-		Smname = 16; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
+		Smname = 16; Shdfld = 17; Send = 18; Stype = 19; Salias = 20; Svar = 21; Srvar = 22;
 		Svalpar = 23; Svarpar = 24; Sfld = 25; Srfld = 26; Shdptr = 27; Shdpro = 28; Stpro = 29; Shdtpro = 30;
 		Sxpro = 31; Sipro = 32; Scpro = 33; Sstruct = 34; Ssys = 35; Sptr = 36; Sarr = 37; Sdarr = 38; Srec = 39; Spro = 40;
 		Sentry = 43; Sinpar = 25; Soutpar = 26;
@@ -729,7 +729,7 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		tag := impCtxt.nextTag; obj := NewObj();
 		IF tag <= Srfld THEN
 			obj^.mode := Fld;
-			IF tag = Srfld THEN obj^.vis := externalR ELSE obj^.vis := external END ;
+			CASE tag OF Sfld: obj^.vis := external | Srfld: obj^.vis := externalR ELSE obj^.vis := internal END;
 			InStruct(obj^.typ); InName(obj^.name);
 			obj^.adr := SHORT(OPM.SymRInt())
 		ELSE
@@ -827,7 +827,9 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 				ELSIF tag = Sextrec THEN typ^.attribute := extAttr
 				END;
 				impCtxt.nextTag := SHORT(OPM.SymRInt()); last := NIL;
-				WHILE (impCtxt.nextTag >= Sfld) & (impCtxt.nextTag <= Shdpro) OR (impCtxt.nextTag = Ssys) DO
+				WHILE (impCtxt.nextTag >= Sfld) & (impCtxt.nextTag <= Shdpro)
+					OR (impCtxt.nextTag = Shdfld) OR (impCtxt.nextTag = Ssys)
+				DO
 					fld := InFld(); fld^.mnolev := SHORT(SHORT(-mno));
 					IF last # NIL THEN last^.link := fld END ;
 					last := fld; InsertImport(fld, typ^.link, dummy);
@@ -1025,14 +1027,37 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 		END
 	END OutHdFld;
 
-	PROCEDURE OutFlds(fld: Object; adr: INTEGER; visible: BOOLEAN);
+	PROCEDURE ContainsRealType* (typ: Struct): BOOLEAN;
+		VAR fld: Object;
+	BEGIN
+		IF typ = NIL THEN RETURN FALSE END;
+		IF typ^.form IN {Real, LReal} THEN RETURN TRUE END;
+		CASE typ^.comp OF
+			| Array:
+				RETURN ContainsRealType(typ^.BaseTyp)
+			| Record:
+				IF ContainsRealType(typ^.BaseTyp) THEN RETURN TRUE END;
+				fld := typ^.link;
+				WHILE (fld # NIL) & (fld^.mode = Fld) DO
+					IF ContainsRealType(fld^.typ) THEN RETURN TRUE END;
+					fld := fld^.link
+				END
+			ELSE
+		END;
+		RETURN FALSE
+	END ContainsRealType;
+
+	PROCEDURE OutFlds (fld: Object; adr: INTEGER; visible: BOOLEAN);
 	BEGIN
 		WHILE (fld # NIL) & (fld^.mode = Fld) DO
 			IF (fld^.vis # internal) & visible THEN
-				IF fld^.vis = externalR THEN OPM.SymWInt(Srfld) ELSE OPM.SymWInt(Sfld) END ;
+				IF fld^.vis = externalR THEN OPM.SymWInt(Srfld) ELSE OPM.SymWInt(Sfld) END;
+				OutStr(fld^.typ); OutName(fld^.name^); OPM.SymWInt(fld^.adr)
+			ELSIF ContainsRealType(fld^.typ) THEN
+				OPM.SymWInt(Shdfld);
 				OutStr(fld^.typ); OutName(fld^.name^); OPM.SymWInt(fld^.adr)
 			ELSE OutHdFld(fld^.typ, fld, fld^.adr + adr)
-			END ;
+			END;
 			fld := fld^.link
 		END
 	END OutFlds;

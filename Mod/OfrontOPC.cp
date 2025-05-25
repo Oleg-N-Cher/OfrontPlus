@@ -272,7 +272,7 @@
 	PROCEDURE^ AnsiParamList (obj: OPT.Object; showParamNames: BOOLEAN);
 	PROCEDURE^ DeclareReturnType (retTyp: OPT.Struct);
 
-	PROCEDURE DeclareObj(dcl: OPT.Object; vis: INTEGER);
+	PROCEDURE DeclareObjEx (dcl: OPT.Object; vis: INTEGER; VAR n: INTEGER);
 		VAR
 			typ: OPT.Struct;
 			varPar, openClause: BOOLEAN; form, comp: SHORTINT;
@@ -285,7 +285,11 @@
 			OPM.Write(Star)
 		END;
 		IF dcl.name # OPT.null THEN
-			Ident(dcl);
+			IF (dcl^.mode = Fld) & (dcl^.vis = internal) & (OPM.currFile = OPM.HeaderFile) THEN
+				Str1("_prvt#", n); INC(n)
+			ELSE
+				Ident(dcl)
+			END;
 			IF vis = 4 THEN OPM.WriteString("__copy") END
 		END;
 		IF varPar & openClause THEN OPM.Write(CloseParen) END;
@@ -315,6 +319,11 @@
 			END;
 			typ := typ^.BaseTyp
 		END
+	END DeclareObjEx;
+
+	PROCEDURE DeclareObj (dcl: OPT.Object; vis: INTEGER);
+		VAR n: INTEGER;
+	BEGIN n := 0; DeclareObjEx(dcl, vis, n)
 	END DeclareObj;
 
 	PROCEDURE Andent*(typ: OPT.Struct);	(* ident of possibly anonymous record type *)
@@ -754,13 +763,13 @@
 		END
 	END CProcDefs;
 
-	PROCEDURE TypeDefs* (obj: OPT.Object; vis(*replaced by test on currFile in DefineType*): SHORTINT);
+	PROCEDURE TypeDefs* (obj: OPT.Object (* vis: SHORTINT replaced by test on currFile in DefineType*));
 	BEGIN
 		IF obj # NIL THEN
-			TypeDefs(obj^.left, vis);
+			TypeDefs(obj^.left);
 			(* test typ.txtpos to skip types that have been unexported; obj.history # removed is not enough!*)
 			IF (obj^.mode = Typ) & (obj^.typ^.txtpos > 0) THEN DefineType(obj^.typ) END ;
-			TypeDefs(obj^.right, vis)
+			TypeDefs(obj^.right)
 		END
 	END TypeDefs;
 
@@ -877,7 +886,7 @@
 				EndStat
 			END;
 			BegStat; NEW(obj);	(* aux. object for easy declaration *)
-			obj.typ := typ; obj.mode := Fld;
+			obj.typ := typ; obj.mode := Fld; obj.vis := external;
 			obj.name := OPT.NewName("data");
 			obj.linkadr := UndefinedType; DeclareBase(obj); OPM.Write(Blank); DeclareObj(obj, 0);
 			EndStat; EndBlk0; OPM.Write(" ");
@@ -980,26 +989,31 @@
 		fld := typ.link; align := typ^.align MOD 10000H;
 		IF typ.BaseTyp # NIL THEN FieldList(typ.BaseTyp, FALSE, off, n, curAlign)
 		ELSE off := 0; n := 0; curAlign := 1
-		END ;
+		END;
 		WHILE (fld # NIL) & (fld.mode = Fld) DO
-			IF (OPM.currFile = OPM.HeaderFile) & (fld.vis = internal) OR
-				(OPM.currFile = OPM.BodyFile) & (fld.vis = internal) & (typ^.mno # 0) THEN
+			IF ((OPM.currFile = OPM.HeaderFile) & (fld.vis = internal) OR
+				(OPM.currFile = OPM.BodyFile) & (fld.vis = internal) & (typ^.mno # 0))
+				& ~OPT.ContainsRealType(fld^.typ)
+			THEN
 				fld := fld.link;
-				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) DO fld := fld.link END ;
+				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.vis = internal) & ~OPT.ContainsRealType(fld^.typ) DO
+					fld := fld.link
+				END
 			ELSE
 				(* mimic OPV.TypSize to detect gaps caused by private fields *)
 				adr := off; fldAlign := BaseAlignment(fld^.typ, typ^.sysflag); Align(adr, fldAlign);
 				gap := fld.adr - adr;
 				IF fldAlign > curAlign THEN curAlign := fldAlign END ;
 				IF gap > 0 THEN FillGap(gap, off, align, n, curAlign) END ;
-				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObj(fld, 0);
+				BegStat; DeclareBase(fld); OPM.Write(Blank); DeclareObjEx(fld, 0, n);
 				off := fld.adr + fld.typ.size; base := fld.typ; fld := fld.link;
 				IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte, Char16}) THEN
 					base := fld.typ
 				END;
 				WHILE (fld # NIL) & (fld.mode = Fld) & (fld.typ = base) & (fld.adr = off)
-(* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)) DO
-					OPM.WriteString(", "); DeclareObj(fld, 0); off := fld.adr + fld.typ.size; fld := fld.link;
+(* ?? *)		& ((OPM.currFile = OPM.BodyFile) OR (fld.vis # internal) OR (fld.typ.strobj = NIL)
+				OR OPT.ContainsRealType(fld^.typ)) DO
+					OPM.WriteString(", "); DeclareObjEx(fld, 0, n); off := fld.adr + fld.typ.size; fld := fld.link;
 					IF (fld # NIL) & (fld.typ.form = base.form) & (base.form IN {Byte..Set, UByte, Char16}) THEN
 						base := fld.typ
 					END
@@ -1272,7 +1286,7 @@
 		(* includes are delayed until it is known which ones are needed in the header *)
 		OPM.currFile := OPM.HeaderFile;
 		DefAnonRecs(n);
-		TypeDefs(OPT.topScope^.right, 1); OPM.WriteLn;
+		TypeDefs(OPT.topScope^.right); OPM.WriteLn;
 		DefAnonArrays;
 		IdentList(OPT.topScope^.scope, 1); OPM.WriteLn;
 		GenDynTypes(n, external); OPM.WriteLn;
@@ -1338,7 +1352,7 @@
 		Include(BasicIncludeFile);
 		IncludeImports(0); OPM.WriteLn;
 		DefAnonRecs(n);
-		TypeDefs(OPT.topScope^.right, 0); OPM.WriteLn;
+		TypeDefs(OPT.topScope^.right); OPM.WriteLn;
 		DefAnonArrays;
 		IdentList(OPT.topScope^.scope, 0); OPM.WriteLn;
 		GenDynTypes(n, internal); OPM.WriteLn;
