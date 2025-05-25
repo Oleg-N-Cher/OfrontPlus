@@ -395,7 +395,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 	(* ------------------------- initialization ------------------------- *)
 
 	PROCEDURE GetAlignment(VAR a: SHORTINT);
-	BEGIN a := 8	(* Windows x86/Linux ARM = 48, Linux x86 = 44, x64 = 88 *)
+	BEGIN a := 8	(* Windows x86/Linux ARM = 48, Linux x86 = 44, x64/ARM64 = 88 *)
 	END GetAlignment;
 
 	PROCEDURE GetProperties;

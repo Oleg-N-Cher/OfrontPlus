@@ -1373,8 +1373,10 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 				IF g IN intSet THEN
 					IF ynode^.class = Nconst THEN
 						IF (ynode^.conval^.intval < 0) OR (ynode^.conval^.intval > 0FFH) THEN err(113) END
-					ELSIF (OPM.Lang = "C") & (g # Byte) THEN err(113) END
-				ELSIF g # Byte THEN err(113) END
+					ELSIF g # Byte THEN
+						IF OPM.Lang = "C" THEN err(113) ELSE Convert(ynode, OPT.ubytetyp) END
+					END
+				ELSE err(113) END
 		| Int8:
 				IF (g IN intSet) & (ynode^.class = Nconst) &
 					(MIN(BYTE) <= ynode^.conval^.intval) & (ynode^.conval^.intval <= MAX(BYTE)) THEN (* ok *)
