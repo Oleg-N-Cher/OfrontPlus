@@ -11,7 +11,7 @@ MODULE Heap;
     ADDRESS = S.ADRINT;
     
   CONST
-    ModNameLen    = 32;
+    ModNameLen    = 48;
     CmdNameLen    = 24;
     SZA           = SIZE(ADDRESS);    (* Size of address *)
     Unit          = 4*SZA;            (* Smallest possible heap block *)
