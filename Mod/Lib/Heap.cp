@@ -12,7 +12,7 @@ MODULE Heap;
     
   CONST
     ModNameLen    = 48;
-    CmdNameLen    = 24;
+    CmdNameLen    = 48;
     SZA           = SIZE(ADDRESS);    (* Size of address *)
     Unit          = 4*SZA;            (* Smallest possible heap block *)
     ldUnit        = 4 + SZA DIV 8;    (* Unit = 2^ldUnit, for unsigned division expressed as logical shift right *)
