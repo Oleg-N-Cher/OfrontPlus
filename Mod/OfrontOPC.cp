@@ -609,17 +609,17 @@
 	END CleanupArrays;
 
 	PROCEDURE DefineCyclicType (str: OPT.Struct);
-		VAR obj, field: OPT.Object; 
+		VAR obj, field: OPT.Object; base: OPT.Struct;
 	BEGIN
-		obj := str^.strobj;
+		obj := str^.strobj; base := str^.BaseTyp;
 		IF str^.form = ProcTyp THEN (*Ex11*)
 			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-			IF str = str^.BaseTyp THEN OPM.WriteString("void*") ELSE DeclareBase(obj) END;
+			IF str = base THEN OPM.WriteString("void*") ELSE DeclareBase(obj) END;
 			OPM.WriteString(" (*"); DeclareObj(obj, 0); OPM.WriteString(")()");
 			EndStat; Indent(-1); OPM.WriteLn;
 			obj^.linkadr := CyclicType+OPM.currFile
-		ELSIF (str = str^.BaseTyp^.BaseTyp) & (str^.form # Pointer) THEN
-			IF str^.BaseTyp^.strobj = NIL THEN (*Ex5*)
+		ELSIF (str^.form # Pointer) & (base # NIL) & (str = base^.BaseTyp) THEN
+			IF base^.strobj = NIL THEN (*Ex5*)
 				OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
 				OPM.WriteString(Struct); UniversalArrayName(str); OPM.Write(Blank);
 				obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
@@ -628,15 +628,15 @@
 				EndStat; Indent(-1); OPM.WriteLn
 			END;
 			obj^.linkadr := CyclicType+OPM.currFile; InsertArrayType(str) (*Ex4*)
-		ELSIF (str^.form = Pointer) & (str^.BaseTyp^.strobj = NIL) THEN
+		ELSIF (str^.form = Pointer) & (base^.strobj = NIL) THEN
 			OPM.WriteString("typedef"); OPM.WriteLn; OPM.WriteTab; Indent(1);
-			OPM.WriteString(Struct); Andent(str^.BaseTyp); OPM.Write(Blank);
+			OPM.WriteString(Struct); Andent(base); OPM.Write(Blank);
 			obj^.typ^.strobj := NIL; (* SG: trick to make DeclareObj declare the type *)
 			DeclareObj(obj, 0);
 			obj^.typ^.strobj := obj; (* SG: revert trick *)
 			EndStat; Indent(-1); OPM.WriteLn;
 			obj^.linkadr := CyclicType+OPM.currFile (*Ex6, Ex61*)
-		ELSIF (str^.BaseTyp^.form = Comp) & (str^.BaseTyp^.comp = Record) THEN
+		ELSIF (base # NIL) & (base^.form = Comp) & (base^.comp = Record) THEN
 			obj^.linkadr := TemporaryType (*Ex8*)
 		ELSIF (str^.comp = Array) & (str^.strobj # NIL) THEN
 			InsertArrayType(str);
