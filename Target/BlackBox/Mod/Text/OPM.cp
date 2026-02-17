@@ -426,7 +426,7 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			| "s": opt := opt / {newsf}
 			| "m": opt := opt / {mainprog}
 			| "x": opt := opt / {inxchk}
-			| "v": opt := opt / {vcpp, ansi};
+			| "v": opt := opt / {vcpp}
 			| "r": opt := opt / {ranchk}
 			| "t": opt := opt / {typchk}
 			| "a": opt := opt / {assert}
@@ -441,10 +441,10 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			| "G": opt := opt / {gpcp}
 			| "O": opt := opt / {oakwood}
 			(* target machine address size and alignment
-					"21": 16 bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
-					"44": 32 bit addresses, 32 bit alignment (e.g. Unix/Linux 32 bit on x86).
-					"48": 32 bit addresses, 64 bit alignment (e.g. Windows 32 bit on x86, Linux 32 bit on ARM).
-					"88": 64 bit addresses, 64 bit alignment (e.g. 64 bit platforms).
+					"21": 16-bit addresses, SIZE(SET) = 1 byte (e.g. Zilog Z80 CPU).
+					"44": 32-bit addresses, 32-bit alignment (e.g. 32-bit Unix/Linux on x86).
+					"48": 32-bit addresses, 64-bit alignment (e.g. 32-bit Windows on x86, 32-bit Linux on ARM).
+					"88": 64-bit addresses, 64-bit alignment (e.g. 64-bit platforms).
 			*)
 			| "2":
 				IF s[i+1] = "1" THEN AdrSize := 2; Alignment := 1; INC(i)
@@ -469,6 +469,9 @@ PROCEDURE [code] udiv (x, y: LongCard): LongCard
 			ELSE LogWStr("  warning: option "); LogW(OptionChar); LogW(s[i]); LogWStr(" ignored"); LogWLn
 			END;
 			INC(i)
+		END;
+		IF {vcpp, ansi} * opt = {vcpp} THEN INCL(opt, ansi);
+			LogWStr("  warning: option "); LogW(OptionChar); LogWStr("k ignored"); LogWLn
 		END
 	END ScanOptions;
 

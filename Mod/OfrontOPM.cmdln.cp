@@ -343,8 +343,8 @@ MODULE OfrontOPM;	(* RC 6.3.89 / 28.6.89, J.Templ 10.7.89 / 22.7.96  *)
 			END;
 			INC(i)
 		END;
-		IF {dynlib, mainprog} * opt = {dynlib, mainprog} THEN EXCL(opt, mainprog);
-			LogWStr("  warning: option "); LogW(OptionChar); LogWStr("m ignored"); LogWLn
+		IF {vcpp, ansi} * opt = {vcpp} THEN INCL(opt, ansi);
+			LogWStr("  warning: option "); LogW(OptionChar); LogWStr("k ignored"); LogWLn
 		END
 	END ScanOptions;
 
