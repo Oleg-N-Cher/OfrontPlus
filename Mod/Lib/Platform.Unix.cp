@@ -197,7 +197,7 @@ PROCEDURE- timeint (time: TIME_T): INTEGER "((INTEGER)(time))";
 PROCEDURE Time* (): INTEGER;
 BEGIN
   gettimeval;
-  RETURN (tvusec() DIV 1000 + timeint(tvsec()) * 1000) MOD 7FFFFFFFH
+  RETURN ORD(BITS(tvusec() DIV 1000 + timeint(tvsec()) * 1000) - {31})
 END Time;
 
 (* struct timespec

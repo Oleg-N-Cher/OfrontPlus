@@ -196,7 +196,7 @@ PROCEDURE- GetTickCount (): DWORD "(INTEGER)GetTickCount()";
 
 PROCEDURE Time* (): INTEGER;
 BEGIN
-  RETURN GetTickCount() MOD 7FFFFFFFH
+  RETURN ORD(BITS(GetTickCount()) - {31})
 END Time;
 
 PROCEDURE- sleep (ms: INTEGER) "Sleep((DWORD)ms)";
