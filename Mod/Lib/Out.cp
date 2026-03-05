@@ -309,4 +309,7 @@ END RealFix;
 BEGIN
   IsConsole := Platform.IsConsole(Platform.StdOut);
   in := 0
+
+CLOSE
+  Flush
 END Out.
