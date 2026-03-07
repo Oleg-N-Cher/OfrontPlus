@@ -1497,8 +1497,10 @@ MODULE OfrontOPT;	(* NW, RC 6.3.89 / 23.1.92 *)	(* object model 24.2.94 *)
 			EnterProc("COPY", "copy", copyfn)
 		END;
 		EnterProc("ASSERT", "assert", assertfn);
-		IF (lang = "C") OR (lang = "3") THEN
-			EnterProc("BITS", "bits", bitsfn);
+		IF (lang = "C") OR (lang = "3") OR (OPM.gpcp IN OPM.opt) THEN
+			EnterProc("BITS", "bits", bitsfn)
+		END;
+		IF (lang = "C") & (OPM.gpcp IN OPM.opt) THEN
 			EnterProc("USHORT", "ushort", ushortfn)
 		END;
 		EnterAttr("ABSTRACT", "abstract", absAttr);
