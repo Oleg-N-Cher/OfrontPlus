@@ -69,7 +69,7 @@ MODULE OfrontOPB;	(* RC 6.3.89 / 21.2.94 *)	(* object model 17.1.93 *)
 		(* sysflags *)
 		nilBit = 1;
 
-		AssertTrap = 0;	(* default trap number *)
+		AssertTrap = -1;	(* default trap number *)
 
 	VAR
 		typSize*: PROCEDURE (typ: OPT.Struct);
