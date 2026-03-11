@@ -54,16 +54,15 @@ MODULE CmdArgs; (** Command line argument handling for MS Windows *)
   END Get;
 
   PROCEDURE GetInt* (n: INTEGER; OUT val: INTEGER);
-    VAR s: ARRAY 16 OF SHORTCHAR; d, i: INTEGER;
+    VAR s: ARRAY 16 OF SHORTCHAR; i: INTEGER; d: SHORTCHAR;
   BEGIN
     Get(n, s); i := 0;
-    IF s[0] = "-" THEN i := 1 END;
-    WHILE s[i] = "0" DO INC(i) END;
-    val := 0; d := ORD(s[i]) - ORD("0");
-    WHILE (d >= 0 ) & (d <= 9) DO
-      val := val*10 + d; INC(i); d := ORD(s[i]) - ORD("0")
+    IF s[0] = "-" THEN INC(i) END;
+    val := 0; d := s[i];
+    WHILE (d >= "0") & (d <= "9") DO
+      val := val*10 - ORD(d) + ORD("0"); INC(i); d := s[i]
     END;
-    IF s[0] = "-" THEN val := -val END
+    IF s[0] # "-" THEN val := -val END
   END GetInt;
 
   PROCEDURE Pos* (IN s: ARRAY OF SHORTCHAR): INTEGER;
